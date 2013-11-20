@@ -1,7 +1,6 @@
 package lape
 
-import (
-)
+import ()
 
 type Bitboard struct {
         Rook   [64]Bitmask

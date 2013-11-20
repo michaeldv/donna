@@ -37,7 +37,7 @@ func (b Bitmask) ToString() string {
 			if b.IsSet(position) {
 				buffer.WriteString("\u2022") // Set
 			} else {
-				buffer.WriteString("\u0387") // Clear
+				buffer.WriteString("\u22C5") // Clear
 			}
 		}
 		buffer.WriteByte('\n')
