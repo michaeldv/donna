@@ -1,12 +1,12 @@
 package main
 
 import (
-        `github.com/michaeldv/lape/engine`
+        `github.com/michaeldv/lape`
         `fmt`
 )
 
 func main() {
-        b := new(engine.Bitboard).Initialize()
+        b := new(lape.Bitboard).Initialize()
         fmt.Printf("Main... %v\n", b)
 
         fmt.Println(b.Rook[0].ToString())
