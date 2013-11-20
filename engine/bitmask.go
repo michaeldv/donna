@@ -90,6 +90,14 @@ func Index(row, column int) int {
 	return (row << 3) + column
 }
 
+func Abs(i int) int {
+        if i >= 0 {
+                return i
+        } else {
+                return -i
+        }
+}
+
 // func main() {
 //         b := Bitmask(0xFF0011)
 //         fmt.Println(b.ToString())
