@@ -14,27 +14,27 @@ const (
 )
 
 
-func (p Piece)King(color int) Piece {
+func King(color int) Piece {
         return Piece(color | KING)
 }
 
-func (p Piece)Queen(color int) Piece {
+func Queen(color int) Piece {
         return Piece(color | QUEEN)
 }
 
-func (p Piece)Rook(color int) Piece {
+func Rook(color int) Piece {
         return Piece(color | ROOK)
 }
 
-func (p Piece)Bishop(color int) Piece {
+func Bishop(color int) Piece {
         return Piece(color | BISHOP)
 }
 
-func (p Piece)Kinight(color int) Piece {
+func Knight(color int) Piece {
         return Piece(color | KNIGHT)
 }
 
-func (p Piece)Pawn(color int) Piece {
+func Pawn(color int) Piece {
         return Piece(color | PAWN)
 }
 
@@ -70,7 +70,7 @@ func (p Piece)IsBishop() bool {
         return p & 0xF7 == BISHOP
 }
 
-func (p Piece)IsKinight() bool {
+func (p Piece)IsKnight() bool {
         return p & 0xF7 == KNIGHT
 }
 

@@ -28,4 +28,8 @@ func main() {
         fmt.Println(b.King[0].ToString())
         fmt.Println(b.King[9].ToString())
         fmt.Println(b.King[63].ToString())
+
+        game := new(lape.Game).Initialize().SetInitialPosition()
+        fmt.Println("...Initial Position...\n")
+        fmt.Println(game.ToString())
 }

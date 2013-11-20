@@ -97,8 +97,3 @@ func Abs(i int) int {
                 return -i
         }
 }
-
-// func main() {
-//         b := Bitmask(0xFF0011)
-//         fmt.Println(b.ToString())
-// }
