@@ -1,8 +1,8 @@
-package main
+package engine
 
 import (
         `bytes`
-        `fmt`
+        //`fmt`
 )
 
 type Bitmask uint64
@@ -75,7 +75,22 @@ func (b *Bitmask) Exclude(bitmask Bitmask) {
 	*b ^= (bitmask & *b)
 }
 
-func main() {
-        b := Bitmask(0xFF0011)
-        fmt.Println(b.ToString())
+// Finds out row number of bit position.
+func Row(position int) int {
+	return position / 8 // position >> 3
 }
+
+// Finds out column number of bit position.
+func Column(position int) int {
+	return position % 8 // position & 7
+}
+
+// Finds out bit position for given row and column.
+func Index(row, column int) int {
+	return (row << 3) + column
+}
+
+// func main() {
+//         b := Bitmask(0xFF0011)
+//         fmt.Println(b.ToString())
+// }
