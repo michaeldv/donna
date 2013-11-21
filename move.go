@@ -1,6 +1,8 @@
 package lape
 
-import ()
+import (
+        `fmt`
+)
 
 type Move struct {
         From     int
@@ -28,4 +30,26 @@ func (m *Move)IsQueenSideCastle() bool {
 
 func (m *Move)IsCastle() bool {
         return m.IsKingSideCastle() || m.IsQueenSideCastle()
+}
+
+func (m *Move)ToString() string {
+        if !m.IsCastle() {
+                col := [2]int{ Column(m.From) + 'a', Column(m.To) + 'a' }
+                row := [2]int{ Row(m.From) + 1, Row(m.To) + 1 }
+
+                capture := '-'
+                if m.Captured != 0 {
+                        capture = 'x'
+                }
+                piece := ``
+                if !m.Piece.IsPawn() {
+                        piece = m.Piece.ToString()
+                }
+
+                return fmt.Sprintf(`%s%c%d%c%c%d`, piece, col[0], row[0], capture, col[1], row[1])
+        } else if m.IsKingSideCastle() {
+                return `0-0`
+        } else {
+                return `0-0-0`
+        }
 }
