@@ -43,7 +43,7 @@ func (p Piece)Color() int {
 }
 
 func (p Piece)Type() int {
-        return int(p) & 0xF7
+        return int(p) & 0x7F
 }
 
 func (p Piece)IsWhite() bool {
@@ -55,27 +55,27 @@ func (p Piece)IsBlack() bool {
 }
 
 func (p Piece)IsKing() bool {
-        return p & 0xF7 == KING
+        return p & 0x7F == KING
 }
 
 func (p Piece)IsQueen() bool {
-        return p & 0xF7 == QUEEN
+        return p & 0x7F == QUEEN
 }
 
 func (p Piece)IsRook() bool {
-        return p & 0xF7 == ROOK
+        return p & 0x7F == ROOK
 }
 
 func (p Piece)IsBishop() bool {
-        return p & 0xF7 == BISHOP
+        return p & 0x7F == BISHOP
 }
 
 func (p Piece)IsKnight() bool {
-        return p & 0xF7 == KNIGHT
+        return p & 0x7F == KNIGHT
 }
 
 func (p Piece)IsPawn() bool {
-        return p & 0xF7 == PAWN
+        return p & 0x7F == PAWN
 }
 
 func (p Piece)ToString() string {

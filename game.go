@@ -2,17 +2,21 @@ package lape
 
 import (
         `bytes`
+        `math/rand`
+        `time`
 )
 
 type Game struct {
 	pieces	[64]Piece
 	players	[2]*Player
+        attacks *Bitboard
         current int
 }
 
 func (g *Game)Initialize() *Game {
         g.players[0] = new(Player).Initialize(0)
         g.players[1] = new(Player).Initialize(1)
+        g.attacks = new(Bitboard).Initialize()
         g.current = 0
 
         return g
@@ -49,9 +53,10 @@ func (g *Game)SetInitialPosition() *Game {
 
 func (g *Game)MakeMove(depth int) *Move {
         position := new(Position).Initialize(g)
-        moves := position.Moves()
+        moves := position.Moves(g.current)
 
-        return moves[0]
+        rand.Seed(time.Now().Unix())
+        return moves[rand.Intn(len(moves))]
 }
 
 func (g *Game)ToString() string {

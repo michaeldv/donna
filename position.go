@@ -1,11 +1,14 @@
 package lape
 
-import()
+import(
+        `fmt`
+)
 
 type Position struct {
         pieces  [64]Piece
-        board   [2]Bitmask
-        attacks [2]Bitmask
+        board   Bitmask
+        attacks *Bitboard
+        sides   [2]Bitmask
         kings   [2]Bitmask
         queens  [2]Bitmask
         rooks   [2]Bitmask
@@ -16,18 +19,42 @@ type Position struct {
 
 func (p *Position)Initialize(g *Game) *Position {
         p.pieces = g.pieces
+        p.attacks = g.attacks
 
         p.setupBoard()
         return p
 }
 
-func (p *Position)Moves() []*Move {
+func (p *Position)Moves(color int) []*Move {
         var moves []*Move
-        
-        moves = append(moves, new(Move).Initialize(Index(1,4), Index(3,4), Pawn(0), 0))
+
+        for side := p.sides[color]; !side.IsEmpty(); {
+                index := side.FirstSet()
+                piece := p.pieces[index]
+                moves = append(moves, p.PossibleMoves(piece, index)...)
+                side.Clear(index)
+        }
+
+        fmt.Printf("%d: %v\n", len(moves), moves)
+        return moves
+}
+
+func (p *Position)PossibleMoves(piece Piece, index int) []*Move {
+        var moves []*Move
+
+        if piece.IsKnight() {
+                attacks := p.attacks.Knight[index]
+                attacks.Exclude(p.sides[piece.Color()])
+                for !attacks.IsEmpty() {
+                        target := attacks.FirstSet()
+                        moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
+                        attacks.Clear(target)
+                }
+        }
 
         return moves
 }
+
 
 func (p *Position)setupBoard() *Position {
         for i, piece := range p.pieces {
@@ -35,7 +62,7 @@ func (p *Position)setupBoard() *Position {
                         continue
                 }
                 color := piece.Color()
-                p.board[color].Set(i)
+                p.sides[color].Set(i)
 
                 switch piece.Type() {
                 case KING:
@@ -52,6 +79,8 @@ func (p *Position)setupBoard() *Position {
                         p.pawns[color].Set(i)
                 }
         }
+        p.board = p.sides[0]
+        p.board.Combine(p.sides[1])
 
         return p
 }
