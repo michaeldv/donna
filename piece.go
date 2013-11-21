@@ -42,7 +42,7 @@ func (p Piece)Color() int {
         return int(p) & 0x01
 }
 
-func (p Piece)Type() int {
+func (p Piece)Kind() int {
         return int(p) & 0x7F
 }
 

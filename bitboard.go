@@ -3,11 +3,12 @@ package lape
 import ()
 
 type Bitboard struct {
-        Rook   [64]Bitmask
-        Knight [64]Bitmask
-        Bishop [64]Bitmask
-        Queen  [64]Bitmask
-        King   [64]Bitmask
+        Knight  [64]Bitmask
+        Bishop  [64]Bitmask
+        Rook    [64]Bitmask
+        Queen   [64]Bitmask
+        King    [64]Bitmask
+        Hash    map[Piece][64]Bitmask
 }
 
 func (b *Bitboard)Initialize() *Bitboard {
@@ -34,6 +35,13 @@ func (b *Bitboard)Initialize() *Bitboard {
                         }
                 }
         }
+
+        b.Hash = make(map[Piece][64]Bitmask)
+        b.Hash[KNIGHT] = b.Knight
+        b.Hash[BISHOP] = b.Bishop
+        b.Hash[ROOK] = b.Rook
+        b.Hash[QUEEN] = b.Queen
+        b.Hash[KING] = b.King
 
         return b
 }

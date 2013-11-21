@@ -7,8 +7,8 @@ import(
 type Position struct {
         pieces  [64]Piece
         board   Bitmask
-        attacks *Bitboard
         sides   [2]Bitmask
+        attacks *Bitboard
         layout  map[Piece]*Bitmask
 }
 
@@ -43,8 +43,9 @@ func (p *Position)Moves(color int) []*Move {
 func (p *Position)PossibleMoves(piece Piece, index int) []*Move {
         var moves []*Move
 
-        if piece.IsKnight() {
-                attacks := p.attacks.Knight[index]
+        switch kind := piece.Kind(); kind {
+        case KNIGHT, BISHOP, ROOK, QUEEN:
+                attacks := p.attacks.Hash[Piece(kind)][index]
                 attacks.Exclude(p.sides[piece.Color()])
                 for !attacks.IsEmpty() {
                         target := attacks.FirstSet()
