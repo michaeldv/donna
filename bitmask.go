@@ -27,7 +27,7 @@ func (b Bitmask) IsClear(position int) bool {
 	return !b.IsSet(position)
 }
 
-func (b Bitmask) ToString() string {
+func (b Bitmask) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h\n")
 	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))

@@ -32,7 +32,7 @@ func (m *Move)IsCastle() bool {
         return m.IsKingSideCastle() || m.IsQueenSideCastle()
 }
 
-func (m *Move)ToString() string {
+func (m *Move)String() string {
         if !m.IsCastle() {
                 col := [2]int{ Column(m.From) + 'a', Column(m.To) + 'a' }
                 row := [2]int{ Row(m.From) + 1, Row(m.To) + 1 }
@@ -43,7 +43,7 @@ func (m *Move)ToString() string {
                 }
                 piece := ``
                 if !m.Piece.IsPawn() {
-                        piece = m.Piece.ToString()
+                        piece = m.Piece.String()
                 }
 
                 return fmt.Sprintf(`%s%c%d%c%c%d`, piece, col[0], row[0], capture, col[1], row[1])

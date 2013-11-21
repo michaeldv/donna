@@ -78,7 +78,7 @@ func (p Piece)IsPawn() bool {
         return p & 0x7F == PAWN
 }
 
-func (p Piece)ToString() string {
+func (p Piece)String() string {
         switch p {
         case KING:
                 return "\u2654"

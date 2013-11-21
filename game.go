@@ -59,7 +59,7 @@ func (g *Game)MakeMove(depth int) *Move {
         return moves[rand.Intn(len(moves))]
 }
 
-func (g *Game)ToString() string {
+func (g *Game)String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h\n")
 	for row := 7;  row >= 0;  row-- {
 		buffer.WriteByte('1' + byte(row))
@@ -67,7 +67,7 @@ func (g *Game)ToString() string {
 			index := Index(row, col)
 			buffer.WriteByte(' ')
 			if piece := g.pieces[index]; piece != 0 {
-				buffer.WriteString(piece.ToString())
+				buffer.WriteString(piece.String())
 			} else {
 				buffer.WriteString("\u22C5")
 			}
