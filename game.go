@@ -5,7 +5,7 @@ import (
 )
 
 type Game struct {
-	board	[64]Piece
+	pieces	[64]Piece
 	players	[2]*Player
         current int
 }
@@ -19,13 +19,13 @@ func (g *Game)Initialize() *Game {
 }
 
 func (g *Game)Set(row, col int, piece Piece) *Game {
-        g.board[Index(row, col)] = piece
+        g.pieces[Index(row, col)] = piece
 
         return g
 }
 
 func (g *Game)Get(row, col int) Piece {
-        return g.board[Index(row, col)]
+        return g.pieces[Index(row, col)]
 }
 
 func (g *Game)SetInitialPosition() *Game {
@@ -47,6 +47,13 @@ func (g *Game)SetInitialPosition() *Game {
         return g
 }
 
+func (g *Game)MakeMove(depth int) *Move {
+        position := new(Position).Initialize(g)
+        moves := position.Moves()
+
+        return moves[0]
+}
+
 func (g *Game)ToString() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h\n")
 	for row := 7;  row >= 0;  row-- {
@@ -54,7 +61,7 @@ func (g *Game)ToString() string {
 		for col := 0;  col <= 7; col++ {
 			index := Index(row, col)
 			buffer.WriteByte(' ')
-			if piece := g.board[index]; piece != 0 {
+			if piece := g.pieces[index]; piece != 0 {
 				buffer.WriteString(piece.ToString())
 			} else {
 				buffer.WriteString("\u22C5")

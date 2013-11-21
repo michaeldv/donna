@@ -42,4 +42,9 @@ func main() {
         fmt.Println(m.ToString())
         m = new(lape.Move).Initialize(lape.Index(5,5), lape.Index(3,4), lape.Knight(1), lape.Pawn(0))
         fmt.Println(m.ToString())
+
+        fmt.Println("...Make Move...\n")
+
+        move := game.MakeMove(1)
+        fmt.Println(move.ToString())
 }
