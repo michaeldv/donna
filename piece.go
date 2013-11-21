@@ -5,12 +5,12 @@ import ()
 type Piece uint8
 
 const (
-        KING   = 1 << 7
-        QUEEN  = 1 << 6
-        ROOK   = 1 << 5
-        BISHOP = 1 << 4
-        KNIGHT = 1 << 3
         PAWN   = 1 << 2
+        KNIGHT = 1 << 3
+        BISHOP = 1 << 4
+        ROOK   = 1 << 5
+        QUEEN  = 1 << 6
+        KING   = 1 << 7
 )
 
 

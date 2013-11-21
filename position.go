@@ -9,17 +9,18 @@ type Position struct {
         board   Bitmask
         attacks *Bitboard
         sides   [2]Bitmask
-        kings   [2]Bitmask
-        queens  [2]Bitmask
-        rooks   [2]Bitmask
-        bishops [2]Bitmask
-        knights [2]Bitmask
-        pawns   [2]Bitmask
+        layout  map[Piece]*Bitmask
 }
 
 func (p *Position)Initialize(g *Game) *Position {
         p.pieces = g.pieces
         p.attacks = g.attacks
+
+        p.layout = make(map[Piece]*Bitmask)
+        for piece := Piece(PAWN); piece <= Piece(KING); piece++ {
+                p.layout[piece] = new(Bitmask)
+                p.layout[piece | 1] = new(Bitmask)
+        }
 
         p.setupBoard()
         return p
@@ -58,25 +59,9 @@ func (p *Position)PossibleMoves(piece Piece, index int) []*Move {
 
 func (p *Position)setupBoard() *Position {
         for i, piece := range p.pieces {
-                if piece == 0 {
-                        continue
-                }
-                color := piece.Color()
-                p.sides[color].Set(i)
-
-                switch piece.Type() {
-                case KING:
-                        p.kings[color].Set(i)
-                case QUEEN:
-                        p.queens[color].Set(i)
-                case ROOK:
-                        p.rooks[color].Set(i)
-                case BISHOP:
-                        p.bishops[color].Set(i)
-                case KNIGHT:
-                        p.knights[color].Set(i)
-                case PAWN:
-                        p.pawns[color].Set(i)
+                if piece != 0 {
+                        p.layout[piece].Set(i)
+                        p.sides[piece.Color()].Set(i)
                 }
         }
         p.board = p.sides[0]
