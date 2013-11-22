@@ -5,6 +5,17 @@ import (
         `time`
 )
 
+const (
+	North = iota
+	NorthEast
+	East
+	SouthEast
+	South
+	SouthWest
+	West
+	NorthWest
+)
+
 // Returns row number for the given bit index.
 func Row(n int) int {
 	return n / 8 // n >> 3
@@ -36,4 +47,16 @@ func Abs(n int) int {
 func Random(limit int) int {
         rand.Seed(time.Now().Unix())
         return rand.Intn(limit)
+}
+//
+//   noWe         nort         noEa
+//           +7    +8    +9
+//               \  |  /
+//   west    -1 <-  0 -> +1    east
+//               /  |  \
+//           -9    -8    -7
+//   soWe         sout         soEa
+//
+func Rose(direction int) int {
+	return []int{ 8, 9, 1, -7, -8, -9, -1, 7 }[direction]
 }

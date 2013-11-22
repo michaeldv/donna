@@ -2,7 +2,7 @@ package lape
 
 import (
         `bytes`
-        //`fmt`
+        `fmt`
 )
 
 type Bitmask uint64
@@ -25,24 +25,6 @@ func (b Bitmask) IsSet(position int) bool {
 // Returns true if a bit at given position is clear.
 func (b Bitmask) IsClear(position int) bool {
 	return !b.IsSet(position)
-}
-
-func (b Bitmask) String() string {
-	buffer := bytes.NewBufferString("  a b c d e f g h\n")
-	for row := 7; row >= 0; row-- {
-		buffer.WriteByte('1' + byte(row))
-		for col := 0; col <= 7; col++ {
-			position := row << 3 + col
-			buffer.WriteByte(' ')
-			if b.IsSet(position) {
-				buffer.WriteString("\u2022") // Set
-			} else {
-				buffer.WriteString("\u22C5") // Clear
-			}
-		}
-		buffer.WriteByte('\n')
-	}
-	return buffer.String()
 }
 
 // Sets a bit at given position.
@@ -92,76 +74,74 @@ func (b *Bitmask) Exclude(bitmask Bitmask) {
 }
 
 // ...
-func (b *Bitmask) Trim(index int, piece Piece, sides [2]Bitmask) {
-        row, col := Row(index), Column(index)
-        kind, color := piece.Kind(), piece.Color()
-        same, opposite := sides[color], sides[color^1]
-        if kind == ROOK || kind == QUEEN {
-                b.trimLines(row, col, same, opposite)
-        }
-        if kind == BISHOP || kind == QUEEN {
-                b.trimDiagonals(row, col, same, opposite)
-        }
+func (b *Bitmask) FirstSetFrom(index, direction int) int {
+	rose := Rose(direction)
+
+	for i := index + rose;  i >= 0 && i <= 63;  i += rose {
+		if b.IsSet(i) {
+			return i
+		}
+	}
+	return -1
 }
 
-func (b *Bitmask) trimLines(row, col int, same, opposite Bitmask) {
-        for c, clear := col-1, false;  c >= 0; c-- { // East.
-                this, prev := Index(row, c), Index(row, c+1)
-                if clear || same.IsSet(this) || (col < 7 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
-        for r, clear := row+1, false;  r <= 7; r++ { // North.
-                this, prev := Index(r, col), Index(r-1, col)
-                if clear || same.IsSet(this) || (row > 0 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
-        for c, clear := col+1, false;  c <= 7; c++ { // West.
-                this, prev := Index(row, c), Index(row, c-1)
-                if clear || same.IsSet(this) || (col > 0 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
-        for r, clear := row-1, false;  r >= 0; r-- { // South.
-                this, prev := Index(r, col), Index(r+1, col)
-                if clear || same.IsSet(this) || (row < 7 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
+// ...
+func (b *Bitmask) ClearFrom(index, direction int) *Bitmask {
+	rose := Rose(direction)
+
+	for i := index;  i >= 0 && i <= 63;  i += rose {
+		b.Clear(i)
+	}
+
+	return b
 }
 
-func (b *Bitmask) trimDiagonals(row, col int, same, opposite Bitmask) {
-        for r, c, clear := row-1, col-1, false;  r >= 0 && c >= 0; r, c = r-1, c-1 { // SW.
-                this, prev := Index(r, c), Index(r+1, c+1)
-                if clear || same.IsSet(this) || (row < 7 && col < 7 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
-        for r, c, clear := row+1, col-1, false; r <= 7 && c >= 0; r, c = r+1, c-1 { // NW.
-                this, prev := Index(r, c), Index(r-1, c+1)
-                if clear || same.IsSet(this) || (row > 0 && col < 7 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
-        for r, c, clear := row+1, col+1, false;  r <= 7 && c <= 7; r, c = r+1, c+1 { // NE.
-                this, prev := Index(r, c), Index(r-1, c-1)
-                if clear || same.IsSet(this) || (row > 0 && col > 0 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
-        for r, c, clear := row-1, col+1, false;  r >= 0 && c <= 7; r, c = r-1, c+1 { // SE.
-                this, prev := Index(r, c), Index(r+1, c-1)
-                if clear || same.IsSet(this) || (row < 7 && col > 0 && opposite.IsSet(prev)) {
-                        b.Clear(this)
-                        clear = true
-                }
-        }
+func (b Bitmask) String() string {
+	buffer := bytes.NewBufferString("  a b c d e f g h  ")
+        buffer.WriteString(fmt.Sprintf("0x%016X\n", uint64(b)))
+	for row := 7; row >= 0; row-- {
+		buffer.WriteByte('1' + byte(row))
+		for col := 0; col <= 7; col++ {
+			position := row << 3 + col
+			buffer.WriteByte(' ')
+			if b.IsSet(position) {
+				buffer.WriteString("\u2022") // Set
+			} else {
+				buffer.WriteString("\u22C5") // Clear
+			}
+		}
+		buffer.WriteByte('\n')
+	}
+	return buffer.String()
 }
+
+
+// 0x0123456789ABCDEF
+//   a b c d e f g h
+// [0123456789ABCDEF]
+// 8 X ⋅ ⋅ ⋅ ⋅ ⋅ ⋅ ⋅
+// 7 X X ⋅ ⋅ ⋅ X ⋅ ⋅
+// 6 X ⋅ X ⋅ ⋅ ⋅ X ⋅
+// 5 X X X ⋅ ⋅ X X ⋅
+// 4 X ⋅ ⋅ X ⋅ ⋅ ⋅ X
+// 3 X X ⋅ X ⋅ X ⋅ X
+// 2 X ⋅ X X ⋅ ⋅ X X
+// 1 X X X X ⋅ X X X
+//
+// 7:  1   0   0   0   0   0   0   0
+//     56  57  58  59  60  61  62  63
+// 6:  1   1   0   0   0   1   0   0
+//     48  49  50  51  52  53  54  55
+// 5:  1   0   1   0   0   0   1   0
+//     40  41  42  43  44  45  46  47
+// 4:  1   1   1   0   0   1   1   0
+//     32  33  34  33  35  37  38  39
+// 3:  1   0   0   1   0   0   0   1
+//     24  25  26  27  28  29  30  31
+// 2:  1   1   0   1   0   1   0   1
+//     16  17  18  19  20  21  22  23
+// 1:  1   0   1   1   0   0   1   1
+//     08  09  10  11  12  13  14  15
+// 0:  1   1   1   1   0   1   1   1
+//     00  01  02  03  04  05  06  07
+//

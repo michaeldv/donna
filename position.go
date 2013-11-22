@@ -6,8 +6,7 @@ import(
 
 type Position struct {
         pieces  [64]Piece
-        board   Bitmask
-        sides   [2]Bitmask
+        board   [3]Bitmask // 0: white, 1: black, 2: both
         attacks *Attack
         layout  map[Piece]*Bitmask
 }
@@ -29,7 +28,7 @@ func (p *Position)Initialize(g *Game) *Position {
 func (p *Position)Moves(color int) []*Move {
         var moves []*Move
 
-        for side := p.sides[color]; !side.IsEmpty(); {
+        for side := p.board[color]; !side.IsEmpty(); {
                 index := side.FirstSet()
                 piece := p.pieces[index]
                 moves = append(moves, p.PossibleMoves(index, piece)...)
@@ -43,7 +42,7 @@ func (p *Position)Moves(color int) []*Move {
 func (p *Position)PossibleMoves(index int, piece Piece) []*Move {
         var moves []*Move
 
-        targets := p.attacks.Targets(index, piece, p.sides)
+        targets := p.attacks.Targets(index, piece, p.board)
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
                 moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
@@ -58,11 +57,11 @@ func (p *Position)setupBoard() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
                         p.layout[piece].Set(i)
-                        p.sides[piece.Color()].Set(i)
+                        p.board[piece.Color()].Set(i)
                 }
         }
-        p.board = p.sides[0]
-        p.board.Combine(p.sides[1])
+        p.board[2] = p.board[0]
+        p.board[2].Combine(p.board[1])
 
         return p
 }
