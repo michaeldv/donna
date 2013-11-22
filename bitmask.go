@@ -68,7 +68,7 @@ func (b *Bitmask) FirstSet() int {
 		34, 51, 20, 43, 31, 22, 10, 45,
 		25, 39, 14, 33, 19, 30,  9, 24,
 		13, 18,  8, 12,  7,  6,  5, 63,
-	}[((*b ^ (*b - 1)) * 0x03F79D71B4CB0A89) >> 58]
+	}[((*b ^ (*b-1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
 // Combines two bitmasks using bitwise OR operator.
@@ -89,6 +89,81 @@ func (b *Bitmask) Multiply(bitmask Bitmask) {
 // Excludes bits of one bitmask from another using bitwise XOR operator.
 func (b *Bitmask) Exclude(bitmask Bitmask) {
 	*b ^= (bitmask & *b)
+}
+
+// ...
+func (b *Bitmask) Trim(index int, piece Piece, sides [2]Bitmask) {
+        row, col := Row(index), Column(index)
+        kind, color := piece.Kind(), piece.Color()
+        same, opposite := sides[color], sides[color^1]
+        if kind == ROOK || kind == QUEEN {
+                b.trimLines(row, col, same, opposite)
+        }
+        if kind == BISHOP || kind == QUEEN {
+                b.trimDiagonals(row, col, same, opposite)
+        }
+}
+
+func (b *Bitmask) trimLines(row, col int, same, opposite Bitmask) {
+        for c, clear := col-1, false;  c >= 0; c-- { // East.
+                this, prev := Index(row, c), Index(row, c+1)
+                if clear || same.IsSet(this) || (col < 7 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
+        for r, clear := row+1, false;  r <= 7; r++ { // North.
+                this, prev := Index(r, col), Index(r-1, col)
+                if clear || same.IsSet(this) || (row > 0 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
+        for c, clear := col+1, false;  c <= 7; c++ { // West.
+                this, prev := Index(row, c), Index(row, c-1)
+                if clear || same.IsSet(this) || (col > 0 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
+        for r, clear := row-1, false;  r >= 0; r-- { // South.
+                this, prev := Index(r, col), Index(r+1, col)
+                if clear || same.IsSet(this) || (row < 7 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
+}
+
+func (b *Bitmask) trimDiagonals(row, col int, same, opposite Bitmask) {
+        for r, c, clear := row-1, col-1, false;  r >= 0 && c >= 0; r, c = r-1, c-1 { // SW.
+                this, prev := Index(r, c), Index(r+1, c+1)
+                if clear || same.IsSet(this) || (row < 7 && col < 7 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
+        for r, c, clear := row+1, col-1, false; r <= 7 && c >= 0; r, c = r+1, c-1 { // NW.
+                this, prev := Index(r, c), Index(r-1, c+1)
+                if clear || same.IsSet(this) || (row > 0 && col < 7 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
+        for r, c, clear := row+1, col+1, false;  r <= 7 && c <= 7; r, c = r+1, c+1 { // NE.
+                this, prev := Index(r, c), Index(r-1, c-1)
+                if clear || same.IsSet(this) || (row > 0 && col > 0 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
+        for r, c, clear := row-1, col+1, false;  r >= 0 && c <= 7; r, c = r-1, c+1 { // SE.
+                this, prev := Index(r, c), Index(r+1, c-1)
+                if clear || same.IsSet(this) || (row < 7 && col > 0 && opposite.IsSet(prev)) {
+                        b.Clear(this)
+                        clear = true
+                }
+        }
 }
 
 // Finds out row number of bit position.
