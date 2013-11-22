@@ -8,13 +8,13 @@ type Position struct {
         pieces  [64]Piece
         board   Bitmask
         sides   [2]Bitmask
+        attacks *Attack
         layout  map[Piece]*Bitmask
-        attacks map[Piece][64]Bitmask
 }
 
 func (p *Position)Initialize(g *Game) *Position {
         p.pieces = g.pieces
-        p.attacks = g.attacks.Hash
+        p.attacks = g.attacks
 
         p.layout = make(map[Piece]*Bitmask)
         for piece := Piece(PAWN); piece <= Piece(KING); piece++ {
@@ -32,7 +32,7 @@ func (p *Position)Moves(color int) []*Move {
         for side := p.sides[color]; !side.IsEmpty(); {
                 index := side.FirstSet()
                 piece := p.pieces[index]
-                moves = append(moves, p.PossibleMoves(piece, index)...)
+                moves = append(moves, p.PossibleMoves(index, piece)...)
                 side.Clear(index)
         }
 
@@ -40,27 +40,14 @@ func (p *Position)Moves(color int) []*Move {
         return moves
 }
 
-func (p *Position)PossibleMoves(piece Piece, index int) []*Move {
+func (p *Position)PossibleMoves(index int, piece Piece) []*Move {
         var moves []*Move
 
-        kind, color := piece.Kind(), piece.Color()
-        switch kind {
-        case KNIGHT, BISHOP, ROOK, QUEEN:
-                attacks := p.attacks[Piece(kind)][index]
-                if kind != KNIGHT {
-                        attacks.Trim(index, piece, p.sides)
-                } else {
-                        attacks.Exclude(p.sides[color])
-                }
-                for !attacks.IsEmpty() {
-                        target := attacks.FirstSet()
-                        moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
-                        attacks.Clear(target)
-                }
-        case KING:
-                // Not yet.
-        case PAWN:
-                // Not yet.
+        targets := p.attacks.Targets(index, piece, p.sides)
+        for !targets.IsEmpty() {
+                target := targets.FirstSet()
+                moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
+                targets.Clear(target)
         }
 
         return moves

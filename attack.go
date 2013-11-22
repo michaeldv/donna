@@ -2,16 +2,15 @@ package lape
 
 import ()
 
-type Bitboard struct {
+type Attack struct {
         Knight  [64]Bitmask
         Bishop  [64]Bitmask
         Rook    [64]Bitmask
         Queen   [64]Bitmask
         King    [64]Bitmask
-        Hash    map[Piece][64]Bitmask
 }
 
-func (b *Bitboard)Initialize() *Bitboard {
+func (b *Attack)Initialize() *Attack {
         for i := 0;  i < 64;  i++ {
                 row, col := Row(i), Column(i)
                 for j := 0;  j < 64;  j++ {
@@ -36,12 +35,32 @@ func (b *Bitboard)Initialize() *Bitboard {
                 }
         }
 
-        b.Hash = make(map[Piece][64]Bitmask)
-        b.Hash[KNIGHT] = b.Knight
-        b.Hash[BISHOP] = b.Bishop
-        b.Hash[ROOK] = b.Rook
-        b.Hash[QUEEN] = b.Queen
-        b.Hash[KING] = b.King
-
         return b
+}
+
+func (a *Attack) Targets(index int, piece Piece, sides [2]Bitmask) Bitmask {
+        var bitmask Bitmask
+
+        kind, color := piece.Kind(), piece.Color()
+
+        switch kind {
+        case PAWN:
+                // Not yet.
+        case KNIGHT:
+                bitmask = a.Knight[index]
+                bitmask.Exclude(sides[color])
+        case BISHOP:
+                bitmask = a.Bishop[index]
+                bitmask.Trim(index, piece, sides)
+        case ROOK:
+                bitmask = a.Rook[index]
+                bitmask.Trim(index, piece, sides)
+        case QUEEN:
+                bitmask = a.Queen[index]
+                bitmask.Trim(index, piece, sides)
+        case KING:
+                // Not yet.
+        }
+
+        return bitmask
 }

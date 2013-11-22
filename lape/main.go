@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-        b := new(lape.Bitboard).Initialize()
+        b := new(lape.Attack).Initialize()
         fmt.Printf("Main... %v\n", b)
 
         fmt.Println(b.Rook[0].String())

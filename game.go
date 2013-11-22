@@ -7,14 +7,14 @@ import (
 type Game struct {
 	pieces	[64]Piece
 	players	[2]*Player
-        attacks *Bitboard
+        attacks *Attack
         current int
 }
 
 func (g *Game)Initialize() *Game {
         g.players[0] = new(Player).Initialize(0)
         g.players[1] = new(Player).Initialize(1)
-        g.attacks = new(Bitboard).Initialize()
+        g.attacks = new(Attack).Initialize()
         g.current = 0
 
         return g
