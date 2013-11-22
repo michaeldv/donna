@@ -165,26 +165,3 @@ func (b *Bitmask) trimDiagonals(row, col int, same, opposite Bitmask) {
                 }
         }
 }
-
-// Finds out row number of bit position.
-func Row(position int) int {
-	return position / 8 // position >> 3
-}
-
-// Finds out column number of bit position.
-func Column(position int) int {
-	return position % 8 // position & 7
-}
-
-// Finds out bit position for given row and column.
-func Index(row, column int) int {
-	return (row << 3) + column
-}
-
-func Abs(i int) int {
-        if i >= 0 {
-                return i
-        } else {
-                return -i
-        }
-}
