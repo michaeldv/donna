@@ -10,15 +10,15 @@ type Position struct {
         game      *Game
         pieces    [64]Piece
         board     [3]Bitmask // 0: white, 1: black, 2: both
-        count     map[Piece]int
         layout    map[Piece]*Bitmask
+        count     map[int]int // number of white/black pieces
 }
 
-func (p *Position)Initialize(game *Game, pieces [64]Piece) *Position {
+func (p *Position) Initialize(game *Game, pieces [64]Piece) *Position {
         p.game = game
         p.pieces = pieces
 
-        p.count = make(map[Piece]int)
+        p.count = make(map[int]int)
         p.layout = make(map[Piece]*Bitmask)
         for piece := Piece(PAWN); piece <= Piece(KING); piece++ {
                 p.layout[piece] = new(Bitmask)
@@ -28,7 +28,7 @@ func (p *Position)Initialize(game *Game, pieces [64]Piece) *Position {
         return p.setupBoard()
 }
 
-func (p *Position)ConsiderMove(game *Game, move *Move) *Position {
+func (p *Position) ConsiderMove(game *Game, move *Move) *Position {
         fmt.Printf("ConsiderMove(*game, move: %s) color: %d\n", move, move.Piece.Color())
         pieces := p.pieces
         pieces[move.From] = 0
@@ -37,10 +37,12 @@ func (p *Position)ConsiderMove(game *Game, move *Move) *Position {
         return new(Position).Initialize(game, pieces)
 }
 
-func (p *Position)Score(depth, color int, alpha, beta float64) float64 {
+func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         fmt.Printf("Score(depth: %d, color: %d, alpha: %f, beta: %f)\n", depth, color, alpha, beta)
         if depth == 0 {
-                return 0.1
+                x1, x2, x3 := p.material(color), p.mobility(color), p.aggressiveness(color)
+                fmt.Printf("Score: %f - %f - %f\n", x1, x2, x3)
+                return x1 + x2 + x3
         }
 
         color ^= 1
@@ -56,39 +58,61 @@ func (p *Position)Score(depth, color int, alpha, beta float64) float64 {
 }
 
 // All moves.
-func (p *Position)Moves(color int) []*Move {
-        var moves []*Move
-
+func (p *Position) Moves(color int) (moves []*Move) {
         for side := p.board[color]; !side.IsEmpty(); {
                 index := side.FirstSet()
                 piece := p.pieces[index]
                 moves = append(moves, p.PossibleMoves(index, piece)...)
                 side.Clear(index)
         }
-
+        //p.count[color] = len(moves) TODO
         fmt.Printf("%d candidates for %d: %v\n", len(moves), color, moves)
-        return moves
+
+        return
 }
 
 // All moves for the piece in certain square.
-func (p *Position)PossibleMoves(index int, piece Piece) []*Move {
-        var moves []*Move
-
+func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
+        //color := piece.Color()
         targets := p.game.attacks.Targets(index, piece, p.board)
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
+                // TODO
+                // if p.board[color^1].IsSet(target) { // Target square is occupied by opposite color?
+                //         p.count[color+100]++ // Increment attacks count by white(100) or black(101)
+                // }
                 moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
                 targets.Clear(target)
         }
 
-        return moves
+        return
 }
 
-func (p *Position)setupBoard() *Position {
+func (p *Position) material(color int) float64 {
+        opponent := color^1
+        score := 1000 * (p.count[KING|color] - p.count[KING|opponent]) +
+                9 * (p.count[QUEEN|color] - p.count[QUEEN|opponent]) +
+                5 * (p.count[ROOK|color] - p.count[ROOK|opponent]) +
+                3 * (p.count[BISHOP|color] - p.count[BISHOP|opponent]) +
+                3 * (p.count[KNIGHT|color] - p.count[KNIGHT|opponent]) +
+                1 * (p.count[PAWN|color] - p.count[PAWN|opponent])
+        return float64(score) + 0.1 * float64(p.count[BISHOP|color] - p.count[BISHOP|opponent])
+}
+
+func (p *Position) mobility(color int) float64 {
+        return 0.25 * float64(p.count[color] - p.count[color^1]) // TODO
+}
+
+func (p *Position) aggressiveness(color int) float64 {
+        return 0.2 * float64(p.count[color+100] - p.count[(color^1)+100]) // TODO
+}
+
+func (p *Position) setupBoard() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
                         p.layout[piece].Set(i)
                         p.board[piece.Color()].Set(i)
+                        p.count[int(piece)]++
                 }
         }
         p.board[2] = p.board[0]
@@ -98,7 +122,7 @@ func (p *Position)setupBoard() *Position {
         return p
 }
 
-func (p *Position)String() string {
+func (p *Position) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h\n")
 	for row := 7;  row >= 0;  row-- {
 		buffer.WriteByte('1' + byte(row))
@@ -113,5 +137,6 @@ func (p *Position)String() string {
 		}
 		buffer.WriteByte('\n')
 	}
+        //buffer.WriteString(fmt.Sprintf("%v", p.count))
 	return buffer.String()
 }
