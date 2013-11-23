@@ -2,6 +2,7 @@ package lape
 
 import (
         `bytes`
+	`math`
 )
 
 type Game struct {
@@ -49,11 +50,21 @@ func (g *Game)SetInitialPosition() *Game {
         return g
 }
 
-func (g *Game)MakeMove(depth int) *Move {
-        position := new(Position).Initialize(g)
+func (g *Game)MakeMove(depth int) (best *Move) {
+        position := new(Position).Initialize(g, g.pieces)
         moves := position.Moves(g.current)
+        estimate := float64(-math.MaxInt32)
 
-        return moves[Random(len(moves))]
+	for _, move := range moves {
+		score := position.ConsiderMove(g, move).Score(depth*2-1, g.current, float64(-math.MaxInt32), float64(math.MaxInt32))
+		estimate = math.Max(estimate, score)
+		if best == nil || estimate > score {
+			best = move
+		}
+	}
+
+	best = moves[Random(len(moves))]
+	return
 }
 
 func (g *Game)String() string {
