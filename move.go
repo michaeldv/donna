@@ -46,7 +46,7 @@ func (m *Move)String() string {
                         piece = m.Piece.String()
                 }
 
-                return fmt.Sprintf(`%s%c%d%c%c%d`, piece, col[0], row[0], capture, col[1], row[1])
+                return fmt.Sprintf(`%s %c%d%c%c%d`, piece, col[0], row[0], capture, col[1], row[1])
         } else if m.IsKingSideCastle() {
                 return `0-0`
         } else {

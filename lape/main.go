@@ -45,6 +45,6 @@ func main() {
 
         fmt.Println("...Make Move...\n")
 
-        move := game.MakeMove(2)
+        move := game.Search(2)
         fmt.Printf("Best move: %s\n", move)
 }

@@ -48,6 +48,15 @@ func Random(limit int) int {
         rand.Seed(time.Now().Unix())
         return rand.Intn(limit)
 }
+
+func C(color int) string {
+        if color == 0 {
+                return `white`
+        } else if color == 1 {
+                return `black`
+        }
+        return `Zebra?!`
+}
 //
 //   noWe         nort         noEa
 //           +7    +8    +9

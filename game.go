@@ -2,6 +2,7 @@ package lape
 
 import (
         `bytes`
+        `fmt`
 	`math`
 )
 
@@ -42,25 +43,38 @@ func (g *Game)SetInitialPosition() *Game {
                 g.Set(color * 7, 5, Bishop(color))
                 g.Set(color * 7, 6, Knight(color))
                 g.Set(color * 7, 7, Rook(color))
-                for col := 0; col <= 7; col++ {
+                for col := 1; col <= 7; col++ {
                         g.Set(color * 5 + 1, col, Pawn(color))
                 }
         }
-
+        // g.Set(6, 0, Pawn(0))
+        // 
+        // g.Set(5, 3, Pawn(1))
+        // g.Set(4, 3, Rook(1))
+        // g.Set(3, 3, Pawn(1))
+        // g.Set(4, 4, Pawn(1))
+        // 
+        // g.Set(3, 0, Rook(0))
+        // g.Set(3, 1, Pawn(0))
+        // g.Set(2, 0, Pawn(0))
         return g
 }
 
-func (g *Game)MakeMove(depth int) (best *Move) {
+func (g *Game)Search(depth int) (best *Move) {
         position := new(Position).Initialize(g, g.pieces)
         moves := position.Moves(g.current)
         estimate := float64(-math.MaxInt32)
 
-	for _, move := range moves {
-		score := position.ConsiderMove(g, move).Score(depth*2-1, g.current, float64(-math.MaxInt32), float64(math.MaxInt32))
-		estimate = math.Max(estimate, score)
-		if best == nil || estimate > score {
-			best = move
-		}
+	for i, move := range moves {
+		score := -position.MakeMove(g, move).Score(depth*2-1, g.current, float64(-math.MaxInt32), float64(math.MaxInt32))
+
+                fmt.Printf("  %d/%d: %s for %s, score is %.2f\n", i+1, len(moves), move, C(g.current), score)
+
+                if score >= estimate {
+                        estimate = score
+                        best = move
+                        fmt.Printf("  New best move for %s is %s\n\n", C(g.current), best)
+                }
 	}
 	return
 }

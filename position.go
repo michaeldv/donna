@@ -28,8 +28,8 @@ func (p *Position) Initialize(game *Game, pieces [64]Piece) *Position {
         return p.setupBoard()
 }
 
-func (p *Position) ConsiderMove(game *Game, move *Move) *Position {
-        fmt.Printf("ConsiderMove(*game, move: %s) color: %d\n", move, move.Piece.Color())
+func (p *Position) MakeMove(game *Game, move *Move) *Position {
+        fmt.Printf("Making move %s for %s\n", move, C(move.Piece.Color()))
         pieces := p.pieces
         pieces[move.From] = 0
         pieces[move.To] = move.Piece
@@ -38,22 +38,28 @@ func (p *Position) ConsiderMove(game *Game, move *Move) *Position {
 }
 
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
-        fmt.Printf("Score(depth: %d, color: %d, alpha: %f, beta: %f)\n", depth, color, alpha, beta)
+        //fmt.Printf("Score(depth: %d, color: %d, alpha: %.2f, beta: %.2f)\n", depth, color, alpha, beta)
         if depth == 0 {
                 x1, x2, x3 := p.material(color), p.mobility(color), p.aggressiveness(color)
-                fmt.Printf("Score: %f (mat: %f, mob: %f, agg: %f)\n", x1 + x2 + x3, x1, x2, x3)
-                return x1 + x2 + x3
+                fmt.Printf("Return %s score %.2f (mat: %.2f, mob: %.2f, agg: %.2f)\n", C(color), math.Abs(x1 + x2 + x3), x1, x2, x3)
+                return math.Abs(x1 + x2 + x3)
         }
 
         color ^= 1
-	for _, move := range p.Moves(color) {
-	        score := p.ConsiderMove(p.game, move).Score(depth-1, color, alpha, beta)
+        moves := p.Moves(color)
+	for i, move := range moves {
+	        score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
 		if score >= beta {
-			return beta
+                        fmt.Printf("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
+                        fmt.Printf("  Searched %v\n", moves[:i+1])
+                        fmt.Printf("  Skipping %v\n", moves[i+1:])
+                        fmt.Printf("  Picking %v\n\n", move)
+			return score
 		}
-                alpha = math.Max(alpha, score)
+                if score > alpha {
+                        alpha = score
+                }
 	}
-
 	return alpha
 }
 
@@ -65,7 +71,7 @@ func (p *Position) Moves(color int) (moves []*Move) {
                 moves = append(moves, p.PossibleMoves(index, piece)...)
                 side.Clear(index)
         }
-        fmt.Printf("%d candidates for %d: %v\n", len(moves), color, moves)
+        fmt.Printf("%d candidates for %s: %v\n", len(moves), C(color), moves)
 
         return
 }
@@ -115,8 +121,8 @@ func (p *Position) setupBoard() *Position {
         }
         p.board[2] = p.board[0]
         p.board[2].Combine(p.board[1])
-        p.count[0] = len(p.Moves(0))
-        p.count[1] = len(p.Moves(1))
+        // p.count[0] = len(p.Moves(0))
+        // p.count[1] = len(p.Moves(1))
 
         fmt.Printf("\n%s\n", p)
         return p
