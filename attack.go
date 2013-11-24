@@ -49,18 +49,18 @@ func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) (bitmask Bitm
                 bitmask.Exclude(board[color])
         case BISHOP:
                 bitmask = a.Bishop[index]
-		x1, x2, x3, x4 := a.DiagonalBlockers(index, color^1, board)
-		bitmask.ClearFrom(x1, NorthEast).ClearFrom(x2, SouthEast).ClearFrom(x3, SouthWest).ClearFrom(x4, NorthWest)
+                x1, x2, x3, x4 := a.DiagonalBlockers(index, color^1, board)
+                bitmask.ClearFrom(x1, NorthEast).ClearFrom(x2, SouthEast).ClearFrom(x3, SouthWest).ClearFrom(x4, NorthWest)
         case ROOK:
                 bitmask = a.Rook[index]
-		x1, x2, x3, x4 := a.LineBlockers(index, color^1, board)
-		bitmask.ClearFrom(x1, North).ClearFrom(x2, East).ClearFrom(x3, South).ClearFrom(x4, West)
+                x1, x2, x3, x4 := a.LineBlockers(index, color^1, board)
+                bitmask.ClearFrom(x1, North).ClearFrom(x2, East).ClearFrom(x3, South).ClearFrom(x4, West)
         case QUEEN:
                 bitmask = a.Queen[index]
 		x1, x2, x3, x4 := a.LineBlockers(index, color^1, board)
 		bitmask.ClearFrom(x1, North).ClearFrom(x2, East).ClearFrom(x3, South).ClearFrom(x4, West)
-		x1, x2, x3, x4 = a.DiagonalBlockers(index, color^1, board)
-		bitmask.ClearFrom(x1, NorthEast).ClearFrom(x2, SouthEast).ClearFrom(x3, SouthWest).ClearFrom(x4, NorthWest)
+                x1, x2, x3, x4 = a.DiagonalBlockers(index, color^1, board)
+                bitmask.ClearFrom(x1, NorthEast).ClearFrom(x2, SouthEast).ClearFrom(x3, SouthWest).ClearFrom(x4, NorthWest)
         case KING:
                 // Not yet.
         }
@@ -71,7 +71,7 @@ func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) (bitmask Bitm
 func (a *Attack) LineBlockers(index, opposite int, board [3]Bitmask) (north, east, south, west int) {
 	north = board[2].FirstSetFrom(index, North)
 	if north >= 0 && board[opposite].IsSet(north) {
-		north += Rose(North)
+                north += Rose(North)
 	}
 	east = board[2].FirstSetFrom(index, East)
 	if east >= 0 && board[opposite].IsSet(east) {
@@ -104,7 +104,7 @@ func (a *Attack) DiagonalBlockers(index, opposite int, board [3]Bitmask) (northE
 	}
 	northWest = board[2].FirstSetFrom(index, NorthWest)
 	if northWest >= 0 && board[opposite].IsSet(northWest) {
-		northWest += Rose(West)
+		northWest += Rose(NorthWest)
 	}
 
 	return

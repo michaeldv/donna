@@ -28,13 +28,39 @@ func (b Bitmask) IsClear(position int) bool {
 }
 
 // Sets a bit at given position.
-func (b *Bitmask) Set(position int) {
+func (b *Bitmask) Set(position int) *Bitmask {
 	*b |= 1 << uint(position)
+        return b
 }
 
 // Clears a bit at given position.
-func (b *Bitmask) Clear(position int) {
+func (b *Bitmask) Clear(position int) *Bitmask {
 	*b &= ^(1 << uint(position))
+        return b
+}
+
+// Combines two bitmasks using bitwise OR operator.
+func (b *Bitmask) Combine(bitmask Bitmask) *Bitmask {
+	*b |= bitmask
+        return b
+}
+
+// Intersects two bitmasks using bitwise AND operator.
+func (b *Bitmask) Intersect(bitmask Bitmask) *Bitmask {
+	*b &= bitmask
+        return b
+}
+
+// Mulitplies two bitmasks.
+func (b *Bitmask) Multiply(bitmask Bitmask) *Bitmask {
+	*b *= bitmask
+        return b
+}
+
+// Excludes bits of one bitmask from another using bitwise XOR operator.
+func (b *Bitmask) Exclude(bitmask Bitmask) *Bitmask {
+	*b ^= (bitmask & *b)
+        return b
 }
 
 func (b *Bitmask) FirstSet() int {
@@ -53,47 +79,24 @@ func (b *Bitmask) FirstSet() int {
 	}[((*b ^ (*b-1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
-// Combines two bitmasks using bitwise OR operator.
-func (b *Bitmask) Combine(bitmask Bitmask) {
-	*b |= bitmask
-}
-
-// Intersects two bitmasks using bitwise AND operator.
-func (b *Bitmask) Intersect(bitmask Bitmask) {
-	*b &= bitmask
-}
-
-// Mulitplies two bitmasks.
-func (b *Bitmask) Multiply(bitmask Bitmask) {
-	*b *= bitmask
-}
-
-// Excludes bits of one bitmask from another using bitwise XOR operator.
-func (b *Bitmask) Exclude(bitmask Bitmask) {
-	*b ^= (bitmask & *b)
-}
-
 // ...
 func (b *Bitmask) FirstSetFrom(index, direction int) int {
 	rose := Rose(direction)
-
-	for i := index + rose;  i >= 0 && i <= 63;  i += rose {
-		if b.IsSet(i) {
-			return i
+	for i, j := index, index+rose; Adjacent(i, j); i, j = j, j+rose {
+		if b.IsSet(j) {
+			return j
 		}
 	}
+
 	return -1
 }
 
-// ...
-func (b *Bitmask) ClearFrom(index, direction int) *Bitmask {
+func (b *Bitmask) ClearFrom (blocker, direction int) *Bitmask {
 	rose := Rose(direction)
-
-	for i := index;  i >= 0 && i <= 63;  i += rose {
-		b.Clear(i)
-	}
-
-	return b
+        for i, j := blocker, blocker; Adjacent(i, j); i, j = j, j+rose {
+                b.Clear(j)
+        }
+        return b
 }
 
 func (b Bitmask) String() string {
@@ -135,7 +138,7 @@ func (b Bitmask) String() string {
 // 5:  1   0   1   0   0   0   1   0
 //     40  41  42  43  44  45  46  47
 // 4:  1   1   1   0   0   1   1   0
-//     32  33  34  33  35  37  38  39
+//     32  33  34  35  36  37  38  39
 // 3:  1   0   0   1   0   0   0   1
 //     24  25  26  27  28  29  30  31
 // 2:  1   1   0   1   0   1   0   1

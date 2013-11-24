@@ -62,8 +62,6 @@ func (g *Game)MakeMove(depth int) (best *Move) {
 			best = move
 		}
 	}
-
-	best = moves[Random(len(moves))]
 	return
 }
 

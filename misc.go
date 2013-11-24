@@ -60,3 +60,13 @@ func Random(limit int) int {
 func Rose(direction int) int {
 	return []int{ 8, 9, 1, -7, -8, -9, -1, 7 }[direction]
 }
+
+func Adjacent(index, target int) bool {
+        if target < 0 || target > 63 {
+                return false
+        }
+        row, col := Coordinate(index)
+        x, y := Coordinate(target)
+
+        return Abs(row-x) <= 1 && Abs(col-y) <= 1
+}

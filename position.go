@@ -41,7 +41,7 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         fmt.Printf("Score(depth: %d, color: %d, alpha: %f, beta: %f)\n", depth, color, alpha, beta)
         if depth == 0 {
                 x1, x2, x3 := p.material(color), p.mobility(color), p.aggressiveness(color)
-                fmt.Printf("Score: %f - %f - %f\n", x1, x2, x3)
+                fmt.Printf("Score: %f (mat: %f, mob: %f, agg: %f)\n", x1 + x2 + x3, x1, x2, x3)
                 return x1 + x2 + x3
         }
 
@@ -65,7 +65,6 @@ func (p *Position) Moves(color int) (moves []*Move) {
                 moves = append(moves, p.PossibleMoves(index, piece)...)
                 side.Clear(index)
         }
-        //p.count[color] = len(moves) TODO
         fmt.Printf("%d candidates for %d: %v\n", len(moves), color, moves)
 
         return
@@ -73,14 +72,13 @@ func (p *Position) Moves(color int) (moves []*Move) {
 
 // All moves for the piece in certain square.
 func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
-        //color := piece.Color()
+        color := piece.Color()
         targets := p.game.attacks.Targets(index, piece, p.board)
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
-                // TODO
-                // if p.board[color^1].IsSet(target) { // Target square is occupied by opposite color?
-                //         p.count[color+100]++ // Increment attacks count by white(100) or black(101)
-                // }
+                if p.board[color^1].IsSet(target) { // Target square is occupied by opposite color?
+                        p.count[color+100]++ // Increment attacks count by white(100) or black(101)
+                }
                 moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
                 targets.Clear(target)
         }
@@ -117,6 +115,8 @@ func (p *Position) setupBoard() *Position {
         }
         p.board[2] = p.board[0]
         p.board[2].Combine(p.board[1])
+        p.count[0] = len(p.Moves(0))
+        p.count[1] = len(p.Moves(1))
 
         fmt.Printf("\n%s\n", p)
         return p
