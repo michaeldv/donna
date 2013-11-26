@@ -15,10 +15,10 @@ type Game struct {
 }
 
 func (g *Game)Initialize() *Game {
-        g.players[0] = new(Player).Initialize(0)
-        g.players[1] = new(Player).Initialize(1)
+        g.players[0] = new(Player).Initialize(g, WHITE)
+        g.players[1] = new(Player).Initialize(g, BLACK)
         g.attacks = new(Attack).Initialize()
-        g.current = 0
+        g.current = WHITE
 
         return g
 }
@@ -71,10 +71,10 @@ func (g *Game)Get(row, col int) Piece {
 }
 
 func (g *Game)SetInitialPosition() *Game {
-	return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
-	               `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
+        // return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
+        //                `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 
-	//return g.Setup(`a2,Ra3,b3,a6`, `d4,Rc4,c3,c5`)
+        return g.Setup(`a2,Ra3,b3,a6`, `d4,Rc4,c3,c5`)
 }
 
 func (g *Game)Search(depth int) (best *Move) {

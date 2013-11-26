@@ -3,7 +3,6 @@ package lape
 import(
         `bytes`
         `fmt`
-        `math`
 )
 
 type Position struct {
@@ -40,9 +39,7 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         //fmt.Printf("Score(depth: %d, color: %d, alpha: %.2f, beta: %.2f)\n", depth, color, alpha, beta)
         if depth == 0 {
-                x1, x2, x3 := p.material(color), p.mobility(color), p.aggressiveness(color)
-                fmt.Printf("Return %s score %.2f (mat: %.2f, mob: %.2f, agg: %.2f)\n", C(color), math.Abs(x1 + x2 + x3), x1, x2, x3)
-                return math.Abs(x1 + x2 + x3)
+                return p.Evaluate(color)
         }
 
         color ^= 1
@@ -61,6 +58,10 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
                 }
 	}
 	return alpha
+}
+
+func (p *Position) Evaluate(color int) float64 {
+        return p.game.players[color].brain.Evaluate(p)
 }
 
 // All moves.
@@ -90,25 +91,6 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
         }
 
         return
-}
-
-func (p *Position) material(color int) float64 {
-        opponent := color^1
-        score := 1000 * (p.count[KING|color] - p.count[KING|opponent]) +
-                9 * (p.count[QUEEN|color] - p.count[QUEEN|opponent]) +
-                5 * (p.count[ROOK|color] - p.count[ROOK|opponent]) +
-                3 * (p.count[BISHOP|color] - p.count[BISHOP|opponent]) +
-                3 * (p.count[KNIGHT|color] - p.count[KNIGHT|opponent]) +
-                1 * (p.count[PAWN|color] - p.count[PAWN|opponent])
-        return float64(score) + 0.1 * float64(p.count[BISHOP|color] - p.count[BISHOP|opponent])
-}
-
-func (p *Position) mobility(color int) float64 {
-        return 0.25 * float64(p.count[color] - p.count[color^1]) // TODO
-}
-
-func (p *Position) aggressiveness(color int) float64 {
-        return 0.2 * float64(p.count[color+100] - p.count[(color^1)+100]) // TODO
 }
 
 func (p *Position) setupBoard() *Position {

@@ -6,6 +6,10 @@ import (
 )
 
 const (
+        WHITE = iota
+        BLACK
+)
+const (
 	North = iota
 	NorthEast
 	East
