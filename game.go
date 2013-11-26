@@ -4,6 +4,7 @@ import (
         `bytes`
         `fmt`
 	`math`
+	`regexp`
 )
 
 type Game struct {
@@ -22,6 +23,43 @@ func (g *Game)Initialize() *Game {
         return g
 }
 
+func (g *Game) Setup(white, black string) *Game {
+	re := regexp.MustCompile(`\W+`)
+	whitePieces, blackPieces := re.Split(white, -1), re.Split(black, -1)
+	return g.SetupSide(whitePieces, 0).SetupSide(blackPieces, 1)
+}
+
+func (g *Game) SetupSide(moves []string, color int) *Game {
+	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])`)
+
+	for _, move := range moves {
+		arr := re.FindStringSubmatch(move)
+		if len(arr) == 0 {
+			fmt.Printf("Invalid move %s for %c\n", move, C(color))
+			return g
+		}
+		name, col, row := arr[1], arr[2][0]-'a', arr[3][0]-'1'
+
+		var piece Piece
+		switch name {
+		case `K`:
+			piece = King(color)
+		case `Q`:
+			piece = Queen(color)
+		case `R`:
+			piece = Rook(color)
+		case `B`:
+			piece = Bishop(color)
+		case `N`:
+			piece = Knight(color)
+		default:
+			piece = Pawn(color)
+		}
+		g.Set(int(row), int(col), piece)
+	}
+	return g
+}
+
 func (g *Game)Set(row, col int, piece Piece) *Game {
         g.pieces[Index(row, col)] = piece
 
@@ -33,31 +71,10 @@ func (g *Game)Get(row, col int) Piece {
 }
 
 func (g *Game)SetInitialPosition() *Game {
+	return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
+	               `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 
-        for color := 0;  color < 2; color ++ {
-                g.Set(color * 7, 0, Rook(color))
-                g.Set(color * 7, 1, Knight(color))
-                g.Set(color * 7, 2, Bishop(color))
-                g.Set(color * 7, 3, Queen(color))
-                g.Set(color * 7, 4, King(color))
-                g.Set(color * 7, 5, Bishop(color))
-                g.Set(color * 7, 6, Knight(color))
-                g.Set(color * 7, 7, Rook(color))
-                for col := 1; col <= 7; col++ {
-                        g.Set(color * 5 + 1, col, Pawn(color))
-                }
-        }
-        // g.Set(6, 0, Pawn(0))
-        // 
-        // g.Set(5, 3, Pawn(1))
-        // g.Set(4, 3, Rook(1))
-        // g.Set(3, 3, Pawn(1))
-        // g.Set(4, 4, Pawn(1))
-        // 
-        // g.Set(3, 0, Rook(0))
-        // g.Set(3, 1, Pawn(0))
-        // g.Set(2, 0, Pawn(0))
-        return g
+	//return g.Setup(`a2,Ra3,b3,a6`, `d4,Rc4,c3,c5`)
 }
 
 func (g *Game)Search(depth int) (best *Move) {
