@@ -79,6 +79,18 @@ func (b *Bitmask) FirstSet() int {
 	}[((*b ^ (*b-1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
+// Returns number of bits set.
+func (b *Bitmask) Count() (count int) {
+        if *b != Bitmask(0) {
+                mask := *b                      // int count = 0;
+                for ; mask != Bitmask(0); {     // while (x) {
+                        count++                 //      count++;
+                        mask &= mask -1         //      x &= x - 1; // reset LS1B
+                }                               // }
+        }                                       //
+        return                                  // return count;
+}
+
 // ...
 func (b *Bitmask) FirstSetFrom(index, direction int) int {
 	rose := Rose(direction)

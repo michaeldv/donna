@@ -38,7 +38,8 @@ func (b *Attack)Initialize() *Attack {
         return b
 }
 
-func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) (bitmask Bitmask) {
+func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) *Bitmask {
+        var bitmask Bitmask
         kind, color := piece.Kind(), piece.Color()
 
         switch kind {
@@ -65,7 +66,7 @@ func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) (bitmask Bitm
                 // Not yet.
         }
 
-        return
+        return &bitmask
 }
 
 func (a *Attack) LineBlockers(index, opposite int, board [3]Bitmask) (north, east, south, west int) {

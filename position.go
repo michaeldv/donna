@@ -7,21 +7,21 @@ import(
 
 type Position struct {
         game      *Game
-        pieces    [64]Piece
-        board     [3]Bitmask // 0: white, 1: black, 2: both
-        layout    map[Piece]*Bitmask
-        count     map[int]int // number of white/black pieces
+        pieces    [64]Piece // Position as an array of 64 squares with pieces on them.
+        board     [3]Bitmask // Position as a bitmask: [0] white pieces only, [1] black pieces, and [2] all pieces.
+        count     map[Piece]int // Counts of each piece on the board.
+        outposts  map[Piece]*Bitmask // Bitmasks of each piece on the board.
 }
 
 func (p *Position) Initialize(game *Game, pieces [64]Piece) *Position {
         p.game = game
         p.pieces = pieces
 
-        p.count = make(map[int]int)
-        p.layout = make(map[Piece]*Bitmask)
+        p.count = make(map[Piece]int)
+        p.outposts = make(map[Piece]*Bitmask)
         for piece := Piece(PAWN); piece <= Piece(KING); piece++ {
-                p.layout[piece] = new(Bitmask)
-                p.layout[piece | 1] = new(Bitmask)
+                p.outposts[piece] = new(Bitmask)
+                p.outposts[piece | 1] = new(Bitmask)
         }
 
         return p.setupBoard()
@@ -64,6 +64,11 @@ func (p *Position) Evaluate(color int) float64 {
         return p.game.players[color].brain.Evaluate(p)
 }
 
+// Returns bitmask of attack targets for the piece at the index.
+func (p *Position) Targets(index int) *Bitmask {
+        return p.game.attacks.Targets(index, p.pieces[index], p.board)
+}
+
 // All moves.
 func (p *Position) Moves(color int) (moves []*Move) {
         for side := p.board[color]; !side.IsEmpty(); {
@@ -79,13 +84,9 @@ func (p *Position) Moves(color int) (moves []*Move) {
 
 // All moves for the piece in certain square.
 func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
-        color := piece.Color()
-        targets := p.game.attacks.Targets(index, piece, p.board)
+        targets := p.Targets(index)
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
-                if p.board[color^1].IsSet(target) { // Target square is occupied by opposite color?
-                        p.count[color+100]++ // Increment attacks count by white(100) or black(101)
-                }
                 moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
                 targets.Clear(target)
         }
@@ -96,15 +97,13 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
 func (p *Position) setupBoard() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
-                        p.layout[piece].Set(i)
+                        p.outposts[piece].Set(i)
                         p.board[piece.Color()].Set(i)
-                        p.count[int(piece)]++
+                        p.count[piece]++
                 }
         }
-        p.board[2] = p.board[0]
-        p.board[2].Combine(p.board[1])
-        // p.count[0] = len(p.Moves(0))
-        // p.count[1] = len(p.Moves(1))
+        p.board[2] = p.board[0] // Combined board starts off with white pieces...
+        p.board[2].Combine(p.board[1]) // ...and adds black ones.
 
         fmt.Printf("\n%s\n", p)
         return p
@@ -125,6 +124,5 @@ func (p *Position) String() string {
 		}
 		buffer.WriteByte('\n')
 	}
-        //buffer.WriteString(fmt.Sprintf("%v", p.count))
 	return buffer.String()
 }
