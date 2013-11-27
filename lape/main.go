@@ -33,18 +33,17 @@ func main() {
         fmt.Println("...Initial Position...\n")
         fmt.Println(game.String())
 
-        fmt.Println("...Moves...\n")
-        m := new(lape.Move).Initialize(lape.Index(1,4), lape.Index(3,4), lape.Pawn(0), 0)
-        fmt.Println(m.String())
-        m = new(lape.Move).Initialize(lape.Index(7,6), lape.Index(5,5), lape.Knight(1), 0)
-        fmt.Println(m.String())
-        m = new(lape.Move).Initialize(lape.Index(1,3), lape.Index(3,3), lape.Pawn(0), 0)
-        fmt.Println(m.String())
-        m = new(lape.Move).Initialize(lape.Index(5,5), lape.Index(3,4), lape.Knight(1), lape.Pawn(0))
-        fmt.Println(m.String())
+        // fmt.Println("...Moves...\n")
+        // m := new(lape.Move).Initialize(lape.Index(1,4), lape.Index(3,4), lape.Pawn(0), 0)
+        // fmt.Println(m.String())
+        // m = new(lape.Move).Initialize(lape.Index(7,6), lape.Index(5,5), lape.Knight(1), 0)
+        // fmt.Println(m.String())
+        // m = new(lape.Move).Initialize(lape.Index(1,3), lape.Index(3,3), lape.Pawn(0), 0)
+        // fmt.Println(m.String())
+        // m = new(lape.Move).Initialize(lape.Index(5,5), lape.Index(3,4), lape.Knight(1), lape.Pawn(0))
+        // fmt.Println(m.String())
 
         fmt.Println("...Make Move...\n")
-
         move := game.Search(2)
         fmt.Printf("Best move: %s\n", move)
 }
