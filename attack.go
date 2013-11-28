@@ -72,19 +72,35 @@ func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) *Bitmask {
 func (a *Attack) LineBlockers(index, opposite int, board [3]Bitmask) (north, east, south, west int) {
 	north = board[2].FirstSetFrom(index, North)
 	if north >= 0 && board[opposite].IsSet(north) {
-                north += Rose(North)
+                if Row(north) != 7 {
+                        north += Rose(North)
+                } else {
+                        north = -1
+                }
 	}
 	east = board[2].FirstSetFrom(index, East)
 	if east >= 0 && board[opposite].IsSet(east) {
-		east += Rose(East)
+                if Column(east) != 7 {
+                        east += Rose(East)
+                } else {
+                        east = -1
+                }
 	}
 	south = board[2].FirstSetFrom(index, South)
 	if south >= 0 && board[opposite].IsSet(south) {
-		south += Rose(South)
+                if Row(south) != 0 {
+		        south += Rose(South)
+                } else {
+                        south = -1
+                }
 	}
 	west = board[2].FirstSetFrom(index, West)
 	if west >= 0 && board[opposite].IsSet(west) {
-		west += Rose(West)
+                if Column(west) != 0 {
+		        west += Rose(West)
+                } else {
+                        west = -1
+                }
 	}
 
 	return
@@ -93,19 +109,35 @@ func (a *Attack) LineBlockers(index, opposite int, board [3]Bitmask) (north, eas
 func (a *Attack) DiagonalBlockers(index, opposite int, board [3]Bitmask) (northEast, southEast, southWest, northWest int) {
 	northEast = board[2].FirstSetFrom(index, NorthEast)
 	if northEast >= 0 && board[opposite].IsSet(northEast) {
-		northEast += Rose(NorthEast)
+                if Row(northEast) != 7 && Column(northEast) != 7 {
+		        northEast += Rose(NorthEast)
+                } else {
+                        northEast = -1
+                }
 	}
 	southEast = board[2].FirstSetFrom(index, SouthEast)
 	if southEast >= 0 && board[opposite].IsSet(southEast) {
-		southEast += Rose(SouthEast)
+                if Row(southEast) != 0 && Column(southEast) != 7 {
+		        southEast += Rose(SouthEast)
+                } else {
+                        southEast = -1
+                }
 	}
 	southWest = board[2].FirstSetFrom(index, SouthWest)
 	if southWest >= 0 && board[opposite].IsSet(southWest) {
-		southWest += Rose(SouthWest)
+                if Row(southWest) != 0 && Column(southWest) != 0 {
+		        southWest += Rose(SouthWest)
+                } else {
+		        southWest = -1
+                }
 	}
 	northWest = board[2].FirstSetFrom(index, NorthWest)
 	if northWest >= 0 && board[opposite].IsSet(northWest) {
-		northWest += Rose(NorthWest)
+                if Row(northWest) != 7 && Column(northWest) != 0 {
+		        northWest += Rose(NorthWest)
+                } else {
+		        northWest = -1
+                }
 	}
 
 	return
