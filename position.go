@@ -79,6 +79,7 @@ func (p *Position) Moves(color int) (moves []*Move) {
                 }
         }
         fmt.Printf("%d candidates for %s: %v\n", len(moves), C(color), moves)
+        fmt.Printf("Check to %s king? %v\n", C(color), p.IsCheck(color))
 
         return
 }
@@ -96,7 +97,8 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
 }
 
 func (p *Position) IsCheck(color int) bool {
-        return false
+        king := *p.outposts[King(color)]
+        return king.Intersect(p.attacks[color^1]).IsNotEmpty()
 }
 
 func (p *Position) setupPosition() *Position {

@@ -12,9 +12,8 @@ func (b Bitmask) IsEmpty() bool {
 	return b == Bitmask(0)
 }
 
-// Returns true if all bitmask bits are set.
-func (b Bitmask) IsFull() bool {
-	return b == 0xFFFFFFFFFFFFFFFF
+func (b Bitmask) IsNotEmpty() bool {
+	return b != Bitmask(0)
 }
 
 // Returns true if a bit at given position is set.
