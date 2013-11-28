@@ -13,11 +13,14 @@ type Position struct {
         attacks   [3]Bitmask // [0] all squares attacked by white, [1] by black, [2] by either white or black.
         count     map[Piece]int // Counts of each piece on the board, ex. white pawns: 6, etc.
         outposts  map[Piece]*Bitmask // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
+        check     bool // Is there a check?
+        next      int // Side to make next move.
 }
 
-func (p *Position) Initialize(game *Game, pieces [64]Piece) *Position {
+func (p *Position) Initialize(game *Game, pieces [64]Piece, color int) *Position {
         p.game = game
         p.pieces = pieces
+        p.next = color
 
         p.count = make(map[Piece]int)
         p.outposts = make(map[Piece]*Bitmask)
@@ -35,7 +38,7 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
         pieces[move.From] = 0
         pieces[move.To] = move.Piece
 
-        return new(Position).Initialize(game, pieces)
+        return new(Position).Initialize(game, pieces, move.Piece.Color()^1)
 }
 
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
@@ -79,7 +82,6 @@ func (p *Position) Moves(color int) (moves []*Move) {
                 }
         }
         fmt.Printf("%d candidates for %s: %v\n", len(moves), C(color), moves)
-        fmt.Printf("Check to %s king? %v\n", C(color), p.IsCheck(color))
 
         return
 }
@@ -112,7 +114,6 @@ func (p *Position) setupPosition() *Position {
         p.board[2] = p.board[0] // Combined board starts off with white pieces...
         p.board[2].Combine(p.board[1]) // ...and adds black ones.
 
-        fmt.Printf("\n%s\n", p)
         return p
 }
 
@@ -125,12 +126,19 @@ func (p *Position) setupAttacks() *Position {
         }
         p.attacks[2] = p.attacks[0] // Combined board starts off with white pieces...
         p.attacks[2].Combine(p.attacks[1]) // ...and adds black ones.
+        p.check = p.IsCheck(p.next)
 
+        fmt.Printf("\n%s\n", p)
         return p
 }
 
 func (p *Position) String() string {
-	buffer := bytes.NewBufferString("  a b c d e f g h\n")
+	buffer := bytes.NewBufferString("  a b c d e f g h")
+        if !p.check {
+                buffer.WriteString("\n")
+        } else {
+                buffer.WriteString("  Check to " + C(p.next) + "\n")
+        }
 	for row := 7;  row >= 0;  row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0;  col <= 7; col++ {

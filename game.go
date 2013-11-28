@@ -74,12 +74,12 @@ func (g *Game)SetInitialPosition() *Game {
         // return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
         //                `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 
-	//return g.Setup(`a3,Bb4,a5,c3,e7,Kh2`, `a7,a5,b6,Bc7,Kg8`)
-	return g.Setup(`a2,Ra3,b3,a7,Kg1`, `d4,Rc4,c3,c5,Bb6,Kg8`)
+        return g.Setup(`a3,Bb4,a5,c3,e7,Kh2`, `a7,a5,b6,Bc7,Kg8`)
+        // return g.Setup(`a2,Ra3,b3,a7,Kg1`, `d4,Rc4,c3,c5,Bb6,Kg8`)
 }
 
 func (g *Game)Search(depth int) (best *Move) {
-        position := new(Position).Initialize(g, g.pieces)
+        position := new(Position).Initialize(g, g.pieces, g.current)
         moves := position.Moves(g.current)
         estimate := float64(-math.MaxInt32)
 
