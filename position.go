@@ -91,7 +91,10 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
         targets := p.targets[index]
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
-                moves = append(moves, new(Move).Initialize(index, target, piece, p.pieces[target]))
+                candidate := new(Move).Initialize(index, target, piece, p.pieces[target])
+                if !p.MakeMove(p.game, candidate).IsCheck(piece.Color()) {
+                        moves = append(moves, candidate)
+                }
                 targets.Clear(target)
         }
 
