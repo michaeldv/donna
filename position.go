@@ -9,8 +9,10 @@ type Position struct {
         game      *Game
         pieces    [64]Piece // Position as an array of 64 squares with pieces on them.
         board     [3]Bitmask // Position as a bitmask: [0] white pieces only, [1] black pieces, and [2] all pieces.
-        count     map[Piece]int // Counts of each piece on the board.
-        outposts  map[Piece]*Bitmask // Bitmasks of each piece on the board.
+        attacks   [3]Bitmask // [0] all squares attacked by white, [1] by black, [2] by either white or black.
+        count     map[Piece]int // Counts of each piece on the board, ex. white pawns: 6, etc.
+        outposts  map[Piece]*Bitmask // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
+        targets   map[Piece]*Bitmask // Bitmasks of target attack squares for each piece on the board.
 }
 
 func (p *Position) Initialize(game *Game, pieces [64]Piece) *Position {
@@ -18,13 +20,16 @@ func (p *Position) Initialize(game *Game, pieces [64]Piece) *Position {
         p.pieces = pieces
 
         p.count = make(map[Piece]int)
+        p.targets = make(map[Piece]*Bitmask)
         p.outposts = make(map[Piece]*Bitmask)
         for piece := Piece(PAWN); piece <= Piece(KING); piece++ {
+                p.targets[piece] = new(Bitmask)
+                p.targets[piece | BLACK] = new(Bitmask)
                 p.outposts[piece] = new(Bitmask)
-                p.outposts[piece | 1] = new(Bitmask)
+                p.outposts[piece | BLACK] = new(Bitmask)
         }
 
-        return p.setupBoard()
+        return p.setupPosition().setupAttacks()
 }
 
 func (p *Position) MakeMove(game *Game, move *Move) *Position {
@@ -94,7 +99,11 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
         return
 }
 
-func (p *Position) setupBoard() *Position {
+func (p *Position) IsCheck(color int) bool {
+        return false
+}
+
+func (p *Position) setupPosition() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
                         p.outposts[piece].Set(i)
@@ -106,6 +115,21 @@ func (p *Position) setupBoard() *Position {
         p.board[2].Combine(p.board[1]) // ...and adds black ones.
 
         fmt.Printf("\n%s\n", p)
+        return p
+}
+
+// attacks   [3]Bitmask // [0] all squares attacked by white, [1] by black, [2] by either white or black.
+// targets   map[Piece]*Bitmask // Bitmasks of target attack squares for each piece on the board.
+func (p *Position) setupAttacks() *Position {
+        for i, piece := range p.pieces {
+                if piece != 0 {
+                        p.targets[piece] = p.Targets(i)
+                        p.attacks[piece.Color()].Combine(*p.targets[piece])
+                }
+        }
+        p.attacks[2] = p.attacks[0] // Combined board starts off with white pieces...
+        p.attacks[2].Combine(p.attacks[1]) // ...and adds black ones.
+
         return p
 }
 
