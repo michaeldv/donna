@@ -121,14 +121,26 @@ func (p *Position) setupPosition() *Position {
 }
 
 func (p *Position) setupAttacks() *Position {
+        var king [2]int
         for i, piece := range p.pieces {
                 if piece != 0 {
                         p.targets[i] = *p.Targets(i)
                         p.attacks[piece.Color()].Combine(p.targets[i])
+                        if piece.Kind() == KING {
+                                king[piece.Color()] = i
+                        }
                 }
         }
-        p.attacks[2] = p.attacks[0] // Combined board starts off with white pieces...
-        p.attacks[2].Combine(p.attacks[1]) // ...and adds black ones.
+        // Now that we have attack targets for both kings adjust them to make sure the
+        // kings don't stomp on each other.
+        white_king_targets, black_king_targets := p.targets[king[WHITE]], p.targets[king[BLACK]]
+        p.targets[king[WHITE]].Exclude(black_king_targets)
+        p.targets[king[BLACK]].Exclude(white_king_targets)
+
+        // Combined board starts off with white pieces and adds black ones.
+        p.attacks[2] = p.attacks[0]
+        p.attacks[2].Combine(p.attacks[1])
+
         p.check = p.IsCheck(p.next)
 
         fmt.Printf("\n%s\n", p)

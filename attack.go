@@ -64,7 +64,8 @@ func (a *Attack) Targets(index int, p *Position)*Bitmask {
                 x1, x2, x3, x4 = a.DiagonalBlockers(index, p)
                 bitmask.ClearFrom(x1, NorthEast).ClearFrom(x2, SouthEast).ClearFrom(x3, SouthWest).ClearFrom(x4, NorthWest)
         case KING:
-                //bitmask = a.King[index]
+                bitmask = a.King[index]
+                bitmask.Exclude(p.board[color]) // Exclude all squares occupied by the same color pieces.
         }
 
         return &bitmask

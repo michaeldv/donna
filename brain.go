@@ -2,7 +2,6 @@ package lape
 
 import (
         `fmt`
-        `math`
 )
 
 const CENTER = 0x0000001818000000 // 4 central squares
@@ -20,13 +19,14 @@ func (b *Brain) Initialize(player *Player) *Brain {
         return b
 }
 
-func (b *Brain) Evaluate(p *Position) float64 {
+func (b *Brain) Evaluate(p *Position) (score float64) {
         material := b.materialBalance(p)
         mobility := b.mobilityBalance(p)
         aggression := b.aggressionBalance(p)
         center := b.centerBoost(p)
-        fmt.Printf("Score for %s is %.2f (mat: %.2f, mob: %.2f, agg: %.2f, ctr: %.2f)\n", C(b.color), math.Abs(material + mobility + aggression + center), material, mobility, aggression, center)
-        return math.Abs(material + mobility + aggression + center)
+        score = material + mobility + aggression + center
+        fmt.Printf("Score for %s is %.2f (mat: %.2f, mob: %.2f, agg: %.2f, ctr: %.2f)\n", C(b.color), score, material, mobility, aggression, center)
+        return
 }
 
 func (b *Brain) materialBalance(p *Position) float64 {
