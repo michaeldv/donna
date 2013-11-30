@@ -3,6 +3,7 @@ package lape
 import(
         `bytes`
         `fmt`
+        `math`
 )
 
 type Position struct {
@@ -49,19 +50,27 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
 
         color ^= 1
         moves := p.Moves(color)
-	for i, move := range moves {
-	        score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
-		if score >= beta {
-                        fmt.Printf("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
-                        fmt.Printf("  Searched %v\n", moves[:i+1])
-                        fmt.Printf("  Skipping %v\n", moves[i+1:])
-                        fmt.Printf("  Picking %v\n\n", move)
-			return score
-		}
-                if score > alpha {
-                        alpha = score
+        if len(moves) > 0 {
+                for i, move := range moves {
+                        score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
+                        if score >= beta {
+                                fmt.Printf("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
+                                fmt.Printf("  Searched %v\n", moves[:i+1])
+                                fmt.Printf("  Skipping %v\n", moves[i+1:])
+                                fmt.Printf("  Picking %v\n\n", move)
+                                return score
+                        }
+                        if score > alpha {
+                                alpha = score
+                        }
                 }
-	}
+        } else if p.IsCheck(color) {
+                fmt.Printf("Checkmate for %s...\n", C(color))
+                alpha = float64(math.MaxInt32)
+        } else {
+                fmt.Printf("Stalemate\n") // TODO
+        }
+
 	return alpha
 }
 

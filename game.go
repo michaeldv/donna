@@ -71,6 +71,10 @@ func (g *Game)Get(row, col int) Piece {
 }
 
 func (g *Game)SetInitialPosition() *Game {
+        return g.Setup(`Kh1,Nh6,Qe6`, `Kh8,Rf8,g7,h7`)
+        return g.Setup(`Kg1,Ra1`, `Kg8,f7,g7,h7`)
+
+        return g.Setup(`Kg1,f2,g2,h2`, `Kg8,Ra1`)
         return g.Setup(`Kg1,f3,e2,e3`, `Kh3,Ra1`)
         return g.Setup(`d2,f3,g2,Rf2,Kg1`, `Kg3,Ra1`)
         return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
@@ -85,17 +89,23 @@ func (g *Game)Search(depth int) (best *Move) {
         moves := position.Moves(g.current)
         estimate := float64(-math.MaxInt32)
 
-	for i, move := range moves {
-		score := -position.MakeMove(g, move).Score(depth*2-1, g.current, float64(-math.MaxInt32), float64(math.MaxInt32))
+        if len(moves) > 0 {
+                for i, move := range moves {
+                        score := -position.MakeMove(g, move).Score(depth*2-1, g.current, float64(-math.MaxInt32), float64(math.MaxInt32))
 
-                fmt.Printf("  %d/%d: %s for %s, score is %.2f\n", i+1, len(moves), move, C(g.current), score)
+                        fmt.Printf("  %d/%d: %s for %s, score is %.2f\n", i+1, len(moves), move, C(g.current), score)
 
-                if score >= estimate {
-                        estimate = score
-                        best = move
-                        fmt.Printf("  New best move for %s is %s\n\n", C(g.current), best)
+                        if score >= estimate {
+                                estimate = score
+                                best = move
+                                fmt.Printf("  New best move for %s is %s\n\n", C(g.current), best)
+                        }
                 }
-	}
+        } else if position.IsCheck(g.current) {
+                fmt.Printf("Checkmate for %s\n", C(g.current))
+        } else {
+                fmt.Printf("Stalemate\n") // TODO
+        }
 	return
 }
 
