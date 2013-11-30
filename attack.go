@@ -38,8 +38,9 @@ func (b *Attack)Initialize() *Attack {
         return b
 }
 
-func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) *Bitmask {
+func (a *Attack) Targets(index int, p *Position)*Bitmask {
         var bitmask Bitmask
+        piece := p.pieces[index]
         kind, color := piece.Kind(), piece.Color()
 
         switch kind {
@@ -47,55 +48,57 @@ func (a *Attack) Targets(index int, piece Piece, board [3]Bitmask) *Bitmask {
                 // Not yet.
         case KNIGHT:
                 bitmask = a.Knight[index]
-                bitmask.Exclude(board[color])
+                bitmask.Exclude(p.board[color])
         case BISHOP:
                 bitmask = a.Bishop[index]
-                x1, x2, x3, x4 := a.DiagonalBlockers(index, color^1, board)
+                x1, x2, x3, x4 := a.DiagonalBlockers(index, p)
                 bitmask.ClearFrom(x1, NorthEast).ClearFrom(x2, SouthEast).ClearFrom(x3, SouthWest).ClearFrom(x4, NorthWest)
         case ROOK:
                 bitmask = a.Rook[index]
-                x1, x2, x3, x4 := a.LineBlockers(index, color^1, board)
+                x1, x2, x3, x4 := a.LineBlockers(index, p)
                 bitmask.ClearFrom(x1, North).ClearFrom(x2, East).ClearFrom(x3, South).ClearFrom(x4, West)
         case QUEEN:
                 bitmask = a.Queen[index]
-		x1, x2, x3, x4 := a.LineBlockers(index, color^1, board)
+		x1, x2, x3, x4 := a.LineBlockers(index, p)
 		bitmask.ClearFrom(x1, North).ClearFrom(x2, East).ClearFrom(x3, South).ClearFrom(x4, West)
-                x1, x2, x3, x4 = a.DiagonalBlockers(index, color^1, board)
+                x1, x2, x3, x4 = a.DiagonalBlockers(index, p)
                 bitmask.ClearFrom(x1, NorthEast).ClearFrom(x2, SouthEast).ClearFrom(x3, SouthWest).ClearFrom(x4, NorthWest)
         case KING:
-                // Not yet.
+                //bitmask = a.King[index]
         }
 
         return &bitmask
 }
 
-func (a *Attack) LineBlockers(index, opposite int, board [3]Bitmask) (north, east, south, west int) {
-	north = board[2].FirstSetFrom(index, North)
-	if north >= 0 && board[opposite].IsSet(north) {
+func (a *Attack) LineBlockers(index int, p *Position) (north, east, south, west int) {
+        opposite := p.pieces[index].Color() ^ 1
+
+	north = p.board[2].FirstSetFrom(index, North)
+	if north >= 0 && p.board[opposite].IsSet(north) {
                 if Row(north) != 7 {
                         north += Rose(North)
                 } else {
                         north = -1
                 }
 	}
-	east = board[2].FirstSetFrom(index, East)
-	if east >= 0 && board[opposite].IsSet(east) {
+	east = p.board[2].FirstSetFrom(index, East)
+	if east >= 0 && p.board[opposite].IsSet(east) {
                 if Column(east) != 7 {
                         east += Rose(East)
                 } else {
                         east = -1
                 }
 	}
-	south = board[2].FirstSetFrom(index, South)
-	if south >= 0 && board[opposite].IsSet(south) {
+	south = p.board[2].FirstSetFrom(index, South)
+	if south >= 0 && p.board[opposite].IsSet(south) {
                 if Row(south) != 0 {
 		        south += Rose(South)
                 } else {
                         south = -1
                 }
 	}
-	west = board[2].FirstSetFrom(index, West)
-	if west >= 0 && board[opposite].IsSet(west) {
+	west = p.board[2].FirstSetFrom(index, West)
+	if west >= 0 && p.board[opposite].IsSet(west) {
                 if Column(west) != 0 {
 		        west += Rose(West)
                 } else {
@@ -106,33 +109,35 @@ func (a *Attack) LineBlockers(index, opposite int, board [3]Bitmask) (north, eas
 	return
 }
 
-func (a *Attack) DiagonalBlockers(index, opposite int, board [3]Bitmask) (northEast, southEast, southWest, northWest int) {
-	northEast = board[2].FirstSetFrom(index, NorthEast)
-	if northEast >= 0 && board[opposite].IsSet(northEast) {
+func (a *Attack) DiagonalBlockers(index int, p *Position) (northEast, southEast, southWest, northWest int) {
+        opposite := p.pieces[index].Color() ^ 1
+
+	northEast = p.board[2].FirstSetFrom(index, NorthEast)
+	if northEast >= 0 && p.board[opposite].IsSet(northEast) {
                 if Row(northEast) != 7 && Column(northEast) != 7 {
 		        northEast += Rose(NorthEast)
                 } else {
                         northEast = -1
                 }
 	}
-	southEast = board[2].FirstSetFrom(index, SouthEast)
-	if southEast >= 0 && board[opposite].IsSet(southEast) {
+	southEast = p.board[2].FirstSetFrom(index, SouthEast)
+	if southEast >= 0 && p.board[opposite].IsSet(southEast) {
                 if Row(southEast) != 0 && Column(southEast) != 7 {
 		        southEast += Rose(SouthEast)
                 } else {
                         southEast = -1
                 }
 	}
-	southWest = board[2].FirstSetFrom(index, SouthWest)
-	if southWest >= 0 && board[opposite].IsSet(southWest) {
+	southWest = p.board[2].FirstSetFrom(index, SouthWest)
+	if southWest >= 0 && p.board[opposite].IsSet(southWest) {
                 if Row(southWest) != 0 && Column(southWest) != 0 {
 		        southWest += Rose(SouthWest)
                 } else {
 		        southWest = -1
                 }
 	}
-	northWest = board[2].FirstSetFrom(index, NorthWest)
-	if northWest >= 0 && board[opposite].IsSet(northWest) {
+	northWest = p.board[2].FirstSetFrom(index, NorthWest)
+	if northWest >= 0 && p.board[opposite].IsSet(northWest) {
                 if Row(northWest) != 7 && Column(northWest) != 0 {
 		        northWest += Rose(NorthWest)
                 } else {

@@ -71,7 +71,7 @@ func (p *Position) Evaluate(color int) float64 {
 
 // Returns bitmask of attack targets for the piece at the index.
 func (p *Position) Targets(index int) *Bitmask {
-        return p.game.attacks.Targets(index, p.pieces[index], p.board)
+        return p.game.attacks.Targets(index, p)
 }
 
 // All moves.
