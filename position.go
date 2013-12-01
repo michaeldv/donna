@@ -43,7 +43,8 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
 }
 
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
-        //fmt.Printf("Score(depth: %d, color: %d, alpha: %.2f, beta: %.2f)\n", depth, color, alpha, beta)
+        fmt.Printf("Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, C(color), alpha, beta)
+
         if depth == 0 {
                 return p.Evaluate(color)
         }
@@ -53,6 +54,8 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         if len(moves) > 0 {
                 for i, move := range moves {
                         score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
+                        fmt.Printf("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(color), depth, score, alpha, beta)
+                        //if score >= beta || math.Abs(score) == math.Abs(float64(math.MinInt32)) {
                         if score >= beta {
                                 fmt.Printf("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
                                 fmt.Printf("  Searched %v\n", moves[:i+1])
@@ -65,12 +68,12 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
                         }
                 }
         } else if p.IsCheck(color) {
-                fmt.Printf("Checkmate for %s...\n", C(color))
-                alpha = float64(math.MaxInt32)
+                return float64(math.MinInt32) // <-- Checkmate value.
         } else {
                 fmt.Printf("Stalemate\n") // TODO
         }
 
+        fmt.Printf("End of Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, C(color), alpha, beta, alpha)
 	return alpha
 }
 
@@ -91,6 +94,10 @@ func (p *Position) Moves(color int) (moves []*Move) {
                 }
         }
         fmt.Printf("%d candidates for %s: %v\n", len(moves), C(color), moves)
+        if len(moves) > 1 {
+                moves = p.Reorder(moves)
+                fmt.Printf("%d candidates for %s (reordered): %v\n", len(moves), C(color), moves)
+        }
 
         return
 }
@@ -108,6 +115,22 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
         }
 
         return
+}
+
+func (p *Position) Reorder(moves []*Move) []*Move {
+        var checks, captures, remaining []*Move
+
+        for _, move := range moves {
+                if p.MakeMove(p.game, move).IsCheck(move.Piece.Color()^1) {
+                        checks = append(checks, move)
+                } else if move.Captured != 0 {
+                        captures = append(captures, move)
+                } else {
+                        remaining = append(remaining, move)
+                }
+        }
+
+        return append(append(checks, captures...), remaining...)
 }
 
 func (p *Position) IsCheck(color int) bool {
@@ -152,7 +175,7 @@ func (p *Position) setupAttacks() *Position {
 
         p.check = p.IsCheck(p.next)
 
-        fmt.Printf("\n%s\n", p)
+        //fmt.Printf("\n%s\n", p)
         return p
 }
 
