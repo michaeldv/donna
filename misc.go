@@ -20,6 +20,13 @@ const (
 	NorthWest
 )
 
+type Settings struct {
+        Log   bool // Enable logging.
+        Fancy bool // Represent pieces as UTF-8 characters.
+}
+
+var Setting Settings
+
 // Returns row number for the given bit index.
 func Row(n int) int {
 	return n / 8 // n >> 3
