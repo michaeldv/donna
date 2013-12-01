@@ -77,7 +77,7 @@ func (g *Game)Get(row, col int) Piece {
 }
 
 func (g *Game)SetInitialPosition() *Game {
-        return g.Setup(`Kg1,Qh1,Bh8`, `Kg8,Rf8,f7,g6,h7`)
+        return g.Setup(`Kg1,Qh1,Bh8,g2`, `Kg8,Rf8,f7,g6,h7`)
         return g.Setup(`Kh1,Ra7,Rc7,Ba8`, `Kh8`)
         return g.Setup(`Kh1,h2,g2,Qh4,Bf6,g5,g4,d4`, `Kg8,Rf8,f7,g6,h7,c8`)
         return g.Setup(`Kh1,g2,h2,Nh6,Qe6`, `Kh8,Rf8,g7,h7`)

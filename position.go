@@ -49,6 +49,15 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         }
 
         color ^= 1
+
+        // Null move pruning.
+        if !p.IsCheck(color) {
+                val := -p.Score(depth - 1, color^1, -beta, -beta + 100)
+                if val >= beta {
+                        return beta
+                }
+        }
+
         moves := p.Moves(color)
         if len(moves) > 0 {
                 for i, move := range moves {
