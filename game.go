@@ -77,29 +77,8 @@ func (g *Game)Get(row, col int) Piece {
 }
 
 func (g *Game)SetInitialPosition() *Game {
-        // http://chessproblem.ru/index.php?kind=2&f_ot=0&f_do=8&lev=0
-        return g.Setup(`Qc2,Nc5,Kf4`, `Kd4`) // Nb7
-        return g.Setup(`Qf6,Kf8`, `Kh7,Nf5`) // Qg5
-        return g.Setup(`Qf7,Nf3,Kf2`, `Kg4`) // Qf6
-        return g.Setup(`Qc2,Kc3,Ra4`, `Kb5`) // Qg6
-        return g.Setup(`Kb4,Nc1,Qg7`, `Kb1`) // TODO: Qc3 stalemate vs. Kc3+-
-        return g.Setup(`Ke5,Qc1,Rf3,Bg2`, `Ke2,Nd5,Nb1`) // Rd3
-        return g.Setup(`Qa8,Bf7,Ng2,Kf1`, `Kg4`) // Qb8
-        return g.Setup(`Bb1,Rd3,Ke5`, `Kh7`) // Kf1
-
-        return g.Setup(`Kg1,Qh1,Bh8,g2`, `Kg8,Rf8,f7,g6,h7`)
-        return g.Setup(`Kh1,Ra7,Rc7,Ba8`, `Kh8`)
-        return g.Setup(`Kh1,h2,g2,Qh4,Bf6,g5,g4,d4`, `Kg8,Rf8,f7,g6,h7,c8`)
-        return g.Setup(`Kh1,g2,h2,Nh6,Qe6`, `Kh8,Rf8,g7,h7`)
-        return g.Setup(`Kh1,Ra6,Rb5`, `Kh7`)
-        return g.Setup(`Kh1,Ra1`, `Kg8,f7,g7,h7`)
-
-        return g.Setup(`Kg1,f2,g2,h2`, `Kg8,Ra1`)
-        return g.Setup(`Kg1,f3,e2,e3`, `Kh3,Ra1`)
-        return g.Setup(`d2,f3,g2,Rf2,Kg1`, `Kg3,Ra1`)
-        return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`, `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
-        return g.Setup(`a3,Bb4,a5,c3,e7,Kh2`, `a7,a5,b6,Bc7,Kg8`)
-        return g.Setup(`a2,Ra3,b3,a7,Kg1`, `d4,Rc4,c3,c5,Bb6,Kg8`)
+        return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
+                       `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 }
 
 func (g *Game)Search(depth int) (best *Move) {
