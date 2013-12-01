@@ -3,7 +3,6 @@ package lape
 import(
         `bytes`
         `fmt`
-        `math`
 )
 
 type Position struct {
@@ -55,7 +54,6 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
                 for i, move := range moves {
                         score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
                         fmt.Printf("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(color), depth, score, alpha, beta)
-                        //if score >= beta || math.Abs(score) == math.Abs(float64(math.MinInt32)) {
                         if score >= beta {
                                 fmt.Printf("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
                                 fmt.Printf("  Searched %v\n", moves[:i+1])
@@ -68,7 +66,7 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
                         }
                 }
         } else if p.IsCheck(color) {
-                return float64(math.MinInt32) // <-- Checkmate value.
+                return MATE // <-- Checkmate value.
         } else {
                 fmt.Printf("Stalemate\n") // TODO
         }
