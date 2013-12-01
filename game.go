@@ -77,6 +77,16 @@ func (g *Game)Get(row, col int) Piece {
 }
 
 func (g *Game)SetInitialPosition() *Game {
+        // http://chessproblem.ru/index.php?kind=2&f_ot=0&f_do=8&lev=0
+        return g.Setup(`Qc2,Nc5,Kf4`, `Kd4`) // Nb7
+        return g.Setup(`Qf6,Kf8`, `Kh7,Nf5`) // Qg5
+        return g.Setup(`Qf7,Nf3,Kf2`, `Kg4`) // Qf6
+        return g.Setup(`Qc2,Kc3,Ra4`, `Kb5`) // Qg6
+        return g.Setup(`Kb4,Nc1,Qg7`, `Kb1`) // TODO: Qc3 stalemate vs. Kc3+-
+        return g.Setup(`Ke5,Qc1,Rf3,Bg2`, `Ke2,Nd5,Nb1`) // Rd3
+        return g.Setup(`Qa8,Bf7,Ng2,Kf1`, `Kg4`) // Qb8
+        return g.Setup(`Bb1,Rd3,Ke5`, `Kh7`) // Kf1
+
         return g.Setup(`Kg1,Qh1,Bh8,g2`, `Kg8,Rf8,f7,g6,h7`)
         return g.Setup(`Kh1,Ra7,Rc7,Ba8`, `Kh8`)
         return g.Setup(`Kh1,h2,g2,Qh4,Bf6,g5,g4,d4`, `Kg8,Rf8,f7,g6,h7,c8`)
