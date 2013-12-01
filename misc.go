@@ -1,6 +1,7 @@
 package lape
 
 import (
+        `fmt`
         `math/rand`
         `time`
 )
@@ -20,12 +21,12 @@ const (
 	NorthWest
 )
 
-type Settings struct {
+type Globals struct {
         Log   bool // Enable logging.
         Fancy bool // Represent pieces as UTF-8 characters.
 }
 
-var Setting Settings
+var Settings Globals
 
 // Returns row number for the given bit index.
 func Row(n int) int {
@@ -89,4 +90,16 @@ func Adjacent(index, target int) bool {
         x, y := Coordinate(target)
 
         return Abs(row-x) <= 1 && Abs(col-y) <= 1
+}
+
+func Lop(args ...interface{}) {
+        if Settings.Log {
+                fmt.Println(args...)
+        }
+}
+
+func Log(format string, args ...interface{}) {
+        if Settings.Log {
+                fmt.Printf(format, args...)
+        }
 }

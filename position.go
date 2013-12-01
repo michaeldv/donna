@@ -2,7 +2,6 @@ package lape
 
 import(
         `bytes`
-        `fmt`
 )
 
 type Position struct {
@@ -33,7 +32,7 @@ func (p *Position) Initialize(game *Game, pieces [64]Piece, color int) *Position
 }
 
 func (p *Position) MakeMove(game *Game, move *Move) *Position {
-        fmt.Printf("Making move %s for %s\n", move, C(move.Piece.Color()))
+        Log("Making move %s for %s\n", move, C(move.Piece.Color()))
         pieces := p.pieces
         pieces[move.From] = 0
         pieces[move.To] = move.Piece
@@ -42,7 +41,7 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
 }
 
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
-        fmt.Printf("Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, C(color), alpha, beta)
+        Log("Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, C(color), alpha, beta)
 
         if depth == 0 {
                 return p.Evaluate(color)
@@ -62,12 +61,12 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         if len(moves) > 0 {
                 for i, move := range moves {
                         score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
-                        fmt.Printf("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(color), depth, score, alpha, beta)
+                        Log("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(color), depth, score, alpha, beta)
                         if score >= beta {
-                                fmt.Printf("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
-                                fmt.Printf("  Searched %v\n", moves[:i+1])
-                                fmt.Printf("  Skipping %v\n", moves[i+1:])
-                                fmt.Printf("  Picking %v\n\n", move)
+                                Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
+                                Log("  Searched %v\n", moves[:i+1])
+                                Log("  Skipping %v\n", moves[i+1:])
+                                Log("  Picking %v\n\n", move)
                                 return score
                         }
                         if score > alpha {
@@ -77,10 +76,10 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         } else if p.IsCheck(color) {
                 return MATE // <-- Checkmate value.
         } else {
-                fmt.Printf("Stalemate\n") // TODO
+                Lop("Stalemate") // TODO
         }
 
-        fmt.Printf("End of Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, C(color), alpha, beta, alpha)
+        Log("End of Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, C(color), alpha, beta, alpha)
 	return alpha
 }
 
@@ -100,10 +99,10 @@ func (p *Position) Moves(color int) (moves []*Move) {
                         moves = append(moves, p.PossibleMoves(i, piece)...)
                 }
         }
-        fmt.Printf("%d candidates for %s: %v\n", len(moves), C(color), moves)
+        Log("%d candidates for %s: %v\n", len(moves), C(color), moves)
         if len(moves) > 1 {
                 moves = p.Reorder(moves)
-                fmt.Printf("%d candidates for %s (reordered): %v\n", len(moves), C(color), moves)
+                Log("%d candidates for %s (reordered): %v\n", len(moves), C(color), moves)
         }
 
         return
@@ -182,7 +181,7 @@ func (p *Position) setupAttacks() *Position {
 
         p.check = p.IsCheck(p.next)
 
-        //fmt.Printf("\n%s\n", p)
+        //Log("\n%s\n", p)
         return p
 }
 

@@ -89,20 +89,20 @@ func (g *Game)Search(depth int) (best *Move) {
         if len(moves) > 0 {
                 for i, move := range moves {
                         score := -position.MakeMove(g, move).Score(depth*2-1, g.current, MIN, MAX)
-                        fmt.Printf("  %d/%d: %s for %s, score is %.2f\n", i+1, len(moves), move, C(g.current), score)
+                        Log("  %d/%d: %s for %s, score is %.2f\n", i+1, len(moves), move, C(g.current), score)
                         if score >= estimate {
                                 if -score == MATE { // Just pick the move if it mates.
                                         return move
                                 }
                                 estimate = score
                                 best = move
-                                fmt.Printf("  New best move for %s is %s\n\n", C(g.current), best)
+                                Log("  New best move for %s is %s\n\n", C(g.current), best)
                         }
                 }
         } else if position.IsCheck(g.current) {
-                fmt.Printf("Checkmate for %s\n", C(g.current))
+                Log("Checkmate for %s\n", C(g.current))
         } else {
-                fmt.Printf("Stalemate\n") // TODO
+                Lop("Stalemate") // TODO
         }
 	return
 }

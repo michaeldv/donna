@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-        lape.Setting.Log = true
-        lape.Setting.Fancy = true
+        lape.Settings.Log = true
+        lape.Settings.Fancy = true
         fmt.Printf("Main...\n")
 
         // fmt.Println(b.Rook[0].String())
