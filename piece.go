@@ -79,31 +79,48 @@ func (p Piece)IsPawn() bool {
 }
 
 func (p Piece)String() string {
-        switch p {
-        case KING:
-                return "\u2654"
-        case KING | 1:
-                return "\u265A"
-        case QUEEN:
-                return "\u2655"
-        case QUEEN | 1:
-                return "\u265B"
-        case ROOK:
-                return "\u2656"
-        case ROOK | 1:
-                return "\u265C"
-        case BISHOP:
-                return "\u2657"
-        case BISHOP | 1:
-                return "\u265D"
-        case KNIGHT:
-                return "\u2658"
-        case KNIGHT | 1:
-                return "\u265E"
-        case PAWN:
-                return "\u2659"
-        case PAWN | 1:
-                return "\u265F"
+        if Settings.Fancy {
+                switch p {
+                case King(WHITE):
+                        return "\u2654"
+                case King(BLACK):
+                        return "\u265A"
+                case Queen(WHITE):
+                        return "\u2655"
+                case Queen(BLACK):
+                        return "\u265B"
+                case Rook(WHITE):
+                        return "\u2656"
+                case Rook(BLACK):
+                        return "\u265C"
+                case Bishop(WHITE):
+                        return "\u2657"
+                case Bishop(BLACK):
+                        return "\u265D"
+                case Knight(WHITE):
+                        return "\u2658"
+                case Knight(BLACK):
+                        return "\u265E"
+                case Pawn(WHITE):
+                        return "\u2659"
+                case Pawn(BLACK):
+                        return "\u265F"
+                }
+        } else {
+                switch(p.Kind()) {
+                case KING:
+                        return "K"
+                case QUEEN:
+                        return "Q"
+                case ROOK:
+                        return "R"
+                case BISHOP:
+                        return "B"
+                case KNIGHT:
+                        return "N"
+                case PAWN:
+                        return ""
+                }
         }
-        return "\u22C5"
+        return "?"
 }
