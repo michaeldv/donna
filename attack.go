@@ -8,37 +8,48 @@ type Attack struct {
         Rook    [64]Bitmask
         Queen   [64]Bitmask
         King    [64]Bitmask
+        Pawn    [2][64]Bitmask
 }
 
-func (b *Attack)Initialize() *Attack {
+func (a *Attack)Initialize() *Attack {
         for i := 0;  i < 64;  i++ {
-                row, col := Row(i), Column(i)
+                row, col := Coordinate(i)
                 for j := 0;  j < 64;  j++ {
-                        r, c := Row(j), Column(j)
+                        r, c := Coordinate(j)
                         if r == row && c == col {
                                 continue
                         }
                         if c == col || r == row {
-                                b.Rook[i].Set(Index(r, c))
-                                b.Queen[i].Set(Index(r, c))
+                                a.Rook[i].Set(Index(r, c))
+                                a.Queen[i].Set(Index(r, c))
                         }
                         if (Abs(r - row) == 2 && Abs(c - col) == 1) || (Abs(r - row) == 1 && Abs(c - col) == 2) {
-                                b.Knight[i].Set(Index(r, c))
+                                a.Knight[i].Set(Index(r, c))
                         }
                         if Abs(r - row) == Abs(c - col) {
-                                b.Bishop[i].Set(Index(r, c))
-                                b.Queen[i].Set(Index(r, c))
+                                a.Bishop[i].Set(Index(r, c))
+                                a.Queen[i].Set(Index(r, c))
                         }
                         if Abs(r - row) <= 1 && Abs(c - col) <= 1 {
-                                b.King[i].Set(Index(r, c))
+                                a.King[i].Set(Index(r, c))
+                        }
+                }
+                if row >= 1 && row <= 7 {
+                        if col > 0 {
+                                a.Pawn[WHITE][i].Set(Index(row+1,col-1))
+                                a.Pawn[BLACK][i].Set(Index(row-1,col-1))
+                        }
+                        if col < 7 {
+                                a.Pawn[WHITE][i].Set(Index(row+1,col+1))
+                                a.Pawn[BLACK][i].Set(Index(row-1,col-1))
                         }
                 }
         }
 
-        return b
+        return a
 }
 
-func (a *Attack) Targets(index int, p *Position)*Bitmask {
+func (a *Attack) Targets(index int, p *Position) *Bitmask {
         var bitmask Bitmask
         piece := p.pieces[index]
         kind, color := piece.Kind(), piece.Color()
