@@ -92,6 +92,37 @@ func Adjacent(index, target int) bool {
         return Abs(row-x) <= 1 && Abs(col-y) <= 1
 }
 
+// Returns index of the edge square following certain direction.
+func Edge(index, direction int) (edge int) {
+	if index < 0 || index > 63 {
+		return -1
+	}
+
+	switch direction {
+	case North:
+		edge = (index % 8) + 56
+	case East:
+		edge = (Row(index) + 1) * 8 - 1
+	case South:
+		edge = index % 8
+	case West:
+		edge = Row(index) * 8
+	case NorthEast:
+		return NORTH_EAST_EDGE[index]
+	case SouthEast:
+		return SOUTH_EAST_EDGE[index]
+	case SouthWest:
+		return SOUTH_WEST_EDGE[index]
+	case NorthWest:
+		return NORTH_WEST_EDGE[index]
+	}
+
+	if index == edge {
+		edge = -1
+	}
+	return
+}
+
 func Lop(args ...interface{}) {
         if Settings.Log {
                 fmt.Println(args...)
