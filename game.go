@@ -41,7 +41,7 @@ func (g *Game) SetupSide(moves []string, color int) *Game {
 	for _, move := range moves {
 		arr := re.FindStringSubmatch(move)
 		if len(arr) == 0 {
-			fmt.Printf("Invalid move %s for %c\n", move, C(color))
+			fmt.Printf("Invalid move '%s' for %s\n", move, C(color))
 			return g
 		}
 		name, col, row := arr[1], arr[2][0]-'a', arr[3][0]-'1'

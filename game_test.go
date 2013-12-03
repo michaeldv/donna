@@ -2,50 +2,41 @@ package lape
 
 import (`testing`)
 
-func expect(t *testing.T, move *Move, answer string) {
-        right := move.String()
-        if answer != right {
-                t.Error(`Expected: ` + answer + `, got: ` + right)
-        } else {
-                t.Log(right)
-        }
-}
-
-func Test01(t *testing.T) {
+func TestGame01(t *testing.T) {
         Settings.Log = false
         Settings.Fancy = false
         move := new(Game).Initialize().Setup(`Qc2,Nc5,Kf4`, `Kd4`).Search(2)
-        expect(t, move, `Nc5-b7`)
+        expect(t, move.String(), `Nc5-b7`)
 }
 
-func Test02(t *testing.T) {
+func TestGame02(t *testing.T) {
         move := new(Game).Initialize().Setup(`Qf6,Kf8`, `Kh7,Nf5`).Search(2)
-        expect(t, move, `Qf6-g5`)
+        expect(t, move.String(), `Qf6-g5`)
 }
 
-func Test03(t *testing.T) {
+func TestGame03(t *testing.T) {
         move := new(Game).Initialize().Setup(`Qf7,Nf3,Kf2`, `Kg4`).Search(2)
-        expect(t, move, `Qf7-f6`)
+        expect(t, move.String(), `Qf7-f6`)
 }
 
-func Test04(t *testing.T) {
+func TestGame04(t *testing.T) {
         move := new(Game).Initialize().Setup(`Qc2,Kc3,Ra4`, `Kb5`).Search(2)
-        expect(t, move, `Qc2-g6`)
+        expect(t, move.String(), `Qc2-g6`)
 }
 
-func Test05(t *testing.T) {
+func TestGame05(t *testing.T) {
         move := new(Game).Initialize().Setup(`Ke5,Qc1,Rf3,Bg2`, `Ke2,Nd5,Nb1`).Search(2)
-        expect(t, move, `Rf3-d3`)
+        expect(t, move.String(), `Rf3-d3`)
 }
 
-func Test06(t *testing.T) {
+func TestGame06(t *testing.T) {
         move := new(Game).Initialize().Setup(`Qa8,Bf7,Ng2,Kf1`, `Kg4`).Search(2)
-        expect(t, move, `Qa8-b8`)
+        expect(t, move.String(), `Qa8-b8`)
 }
 
-func Test07(t *testing.T) {
+func TestGame07(t *testing.T) {
         move := new(Game).Initialize().Setup(`Bb1,Rd3,Ke5`, `Kh7`).Search(2)
-        expect(t, move, `Ke5-f6`)
+        expect(t, move.String(), `Ke5-f6`)
 }
 
 // game.Setup(`Kb4,Nc1,Qg7`, `Kb1`) // TODO: Qc3 stalemate vs. Kc3+-

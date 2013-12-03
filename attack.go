@@ -56,7 +56,26 @@ func (a *Attack) Targets(index int, p *Position) *Bitmask {
 
         switch kind {
         case PAWN:
-                // Not yet.
+                bitmask = a.Pawn[color][index] & p.board[color^1]
+		// If the square in front of the pawn is empty then add it as possible
+		// target.
+		//
+		// If the pawn is in its initial position and two squares in front of
+		// the pawn are empty then add the second square as possible target.
+		row := Row(index)
+		if color == WHITE {
+			if p.board[2].IsClear(index + 8) {
+				bitmask.Set(index + 8)
+				if row == 1 && p.board[2].IsClear(index + 16) {
+					bitmask.Set(index + 16)
+				}
+			}
+		} else if p.board[2].IsClear(index - 8) {
+			bitmask.Set(index - 8)
+			if row == 6 && p.board[2].IsClear(index - 16) {
+				bitmask.Set(index - 16)
+			}
+		}
         case KNIGHT:
                 bitmask = a.Knight[index]
                 bitmask.Exclude(p.board[color])
