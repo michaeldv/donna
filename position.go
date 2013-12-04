@@ -37,44 +37,29 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
         Log("Making move %s for %s\n", move, C(move.Piece.Color()))
         color := move.Piece.Color()
         pieces := p.pieces
+        enpassant := Bitmask(0)
+
         pieces[move.From] = 0
         pieces[move.To] = move.Piece
 
-        position := new(Position).Initialize(game, pieces, color^1, p.enpassant)
-
         // Check if we need to update en-passant bitmask.
         if move.IsTwoSquarePawnAdvance() {
-                row, col := Coordinate(move.From)
                 if color == WHITE {
-                        row++
+                        enpassant.Set(move.From + 8)
                 } else {
-                        row--
-                }
-                position.enpassant.Set(Index(row, col))
-
-                // Add en-passant square targets for adjacent pawns of opposite color.
-                if Column(move.To) > 0 && position.pieces[move.To-1] == Pawn(color^1) {
-                        position.targets[move.To-1] |= position.enpassant
-                }
-                if Column(move.To) < 7 && position.pieces[move.To+1] == Pawn(color^1) {
-                        position.targets[move.To+1] |= position.enpassant
+                        enpassant.Set(move.From - 8)
                 }
         } else {
-                if move.Piece.IsPawn() && Bitmask(1 << uint(move.To)) == position.enpassant { // Take out the en-passant pawn.
-                        pawn := move.To - 8
-                        if color == BLACK {
-                                pawn = move.To + 8
+                if move.Piece.IsPawn() && Bitmask(1 << uint(move.To)) == p.enpassant { // Take out the en-passant pawn.
+                        if color == WHITE {
+                                pieces[move.To - 8] = Piece(0)
+                        } else {
+                                pieces[move.To + 8] = Piece(0)
                         }
-                        position.pieces[pawn] = Piece(0)                // Remove the pawn from list of pieces.
-                        position.targets[pawn] = Bitmask(0)             // Remove its attack targets.
-                        position.board[color^1].Clear(pawn)             // Ditto for the opposite color bitmask.
-                        position.board[2].Clear(pawn)                   // Ditto for both colors bitmask.
-                        position.outposts[Pawn(color^1)].Clear(pawn)    // Ditto for the opposite color pawns bitmask
-                        position.count[Pawn(color^1)]--                 // Adjust the count of opposite color pawns.
                 }
-                position.enpassant = Bitmask(0)
         }
-        return position
+
+        return new(Position).Initialize(game, pieces, color^1, enpassant)
 }
 
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
@@ -114,6 +99,7 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
                 return MATE // <-- Checkmate value.
         } else {
                 Lop("Stalemate") // TODO
+                alpha = 0.0
         }
 
         Log("End of Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, C(color), alpha, beta, alpha)

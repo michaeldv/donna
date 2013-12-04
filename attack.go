@@ -64,25 +64,27 @@ func (a *Attack) Targets(index int, p *Position) *Bitmask {
 		// the pawn are empty then add the second square as possible target.
 		row := Row(index)
 		if color == WHITE {
-			if p.board[2].IsClear(index + 8) {
+			if p.board[2].IsClear(index + 8) { // Can white pawn move up one square?
 				bitmask.Set(index + 8)
-				if row == 1 && p.board[2].IsClear(index + 16) {
+				if row == 1 && p.board[2].IsClear(index + 16) { // How about two squares?
 					bitmask.Set(index + 16)
 				}
 			}
-		} else if p.board[2].IsClear(index - 8) {
+		} else if p.board[2].IsClear(index - 8) { // Can white pawn move up one square?
 			bitmask.Set(index - 8)
-			if row == 6 && p.board[2].IsClear(index - 16) {
+			if row == 6 && p.board[2].IsClear(index - 16) { // How about two squares?
 				bitmask.Set(index - 16)
 			}
 		}
-                // if p.enpassant != Bitmask(0) {
-                //         pass := p.enpassant.FirstSet()
-                //         if (color == WHITE && (pass == index+7 || pass == index+9)) || // Up/left or up/right a square.
-                //            (color == BLACK && (pass == index-9 || pass == index-7)) {  // Down/left or down/right a square.
-                //                 bitmask |= p.enpassant
-                //         }
-                // }
+                // If the last move set the en-passant square and it is diagonally adjacent
+                // to the current pawn, then add en-passant to the pawn's attack targets.
+                if p.enpassant != Bitmask(0) {
+                        target := p.enpassant.FirstSet()
+                        if (color == WHITE && (target == index+7 || target == index+9)) || // Up/left or up/right a square.
+                           (color == BLACK && (target == index-9 || target == index-7)) {  // Down/left or down/right a square.
+                                bitmask |= p.enpassant
+                        }
+                }
         case KNIGHT:
                 bitmask = a.Knight[index]
                 bitmask.Exclude(p.board[color])

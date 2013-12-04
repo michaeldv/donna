@@ -68,20 +68,20 @@ func TestGame110(t *testing.T) { // EN-PASSANT
         expect(t, move.String(), `Kd5-e4`)
 }
 
-// func TestGame120(t *testing.T) { // EN-PASSANT, STALEMATE
-//         move := new(Game).Initialize().Setup(`Kc6,Rh4,Bb5,a3,c2,d3`, `Ka5,c5,d4,h5`).Search(2)
-//         expect(t, move.String(), `c2-c4`)
-// }
-
-func TestGame130(t *testing.T) { // EN-PASSANT
+func TestGame120(t *testing.T) { // EN-PASSANT
         move := new(Game).Initialize().Setup(`Ke7,Rf8,Ba3,Bc2,e5,g5`, `Kg7,c3,h7`).Search(2)
         expect(t, move.String(), `Ba3-c1`)
 }
 
-// func TestGame???(t *testing.T) { // TODO: stalemate after Qg7-c3
-//         move := new(Game).Initialize().Setup(`Kb4,Qg7,Nc1`, `Kb1`).Search(2)
-//         expect(t, move.String(), `Kb4-c3`)
-// }
+func TestGame130(t *testing.T) { // EN-PASSANT, STALEMATE
+        move := new(Game).Initialize().Setup(`Kc6,Rh4,Bb5,a3,c2,d3`, `Ka5,c5,d4,h5`).Search(2)
+        expect(t, move.String(), `c2-c4`)
+}
+
+func TestGame140(t *testing.T) { // TODO: stalemate after Qg7-c3
+        move := new(Game).Initialize().Setup(`Kb4,Qg7,Nc1`, `Kb1`).Search(2)
+        expect(t, move.String(), `Kb4-c3`)
+}
 //
 // func TestGame???(t *testing.T) { // TODO: stalemate (both Qa6 and Qb6 have 32767.00 score)
 //         move := new(Game).Initialize().Setup(`Kf1,Qh6,Nd2,Nf2`, `Kc1,c2,c3`).Search(2)
