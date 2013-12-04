@@ -76,6 +76,13 @@ func (a *Attack) Targets(index int, p *Position) *Bitmask {
 				bitmask.Set(index - 16)
 			}
 		}
+                // if p.enpassant != Bitmask(0) {
+                //         pass := p.enpassant.FirstSet()
+                //         if (color == WHITE && (pass == index+7 || pass == index+9)) || // Up/left or up/right a square.
+                //            (color == BLACK && (pass == index-9 || pass == index-7)) {  // Down/left or down/right a square.
+                //                 bitmask |= p.enpassant
+                //         }
+                // }
         case KNIGHT:
                 bitmask = a.Knight[index]
                 bitmask.Exclude(p.board[color])

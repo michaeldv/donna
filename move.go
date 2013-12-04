@@ -32,6 +32,11 @@ func (m *Move)IsCastle() bool {
         return m.IsKingSideCastle() || m.IsQueenSideCastle()
 }
 
+func (m *Move)IsTwoSquarePawnAdvance() bool {
+        rowFrom, rowTo := Row(m.From), Row(m.To)
+        return m.Piece.IsPawn() && ((m.Piece.IsWhite() && rowFrom == 1 && rowTo == 3) || (m.Piece.IsBlack() && rowFrom == 6 && rowTo == 4))
+}
+
 func (m *Move)String() string {
         if !m.IsCastle() {
                 col := [2]int{ Column(m.From) + 'a', Column(m.To) + 'a' }

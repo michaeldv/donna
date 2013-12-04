@@ -82,7 +82,7 @@ func (g *Game)InitialPosition() *Game {
 }
 
 func (g *Game)Search(depth int) (best *Move) {
-        position := new(Position).Initialize(g, g.pieces, g.current)
+        position := new(Position).Initialize(g, g.pieces, g.current, Bitmask(0))
         moves := position.Moves(g.current)
         estimate := MIN
 
