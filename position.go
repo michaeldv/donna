@@ -30,7 +30,7 @@ func (p *Position) Initialize(game *Game, pieces [64]Piece, color int, enpassant
                 p.outposts[piece | BLACK] = new(Bitmask)
         }
 
-        return p.setupPosition().setupAttacks()
+        return p.setupPieces().setupAttacks()
 }
 
 func (p *Position) MakeMove(game *Game, move *Move) *Position {
@@ -50,7 +50,7 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
                         enpassant.Set(move.From - 8)
                 }
         } else {
-                if move.Piece.IsPawn() && Bitmask(1 << uint(move.To)) == p.enpassant { // Take out the en-passant pawn.
+                if move.IsCrossing(p.enpassant) { // Take out the en-passant pawn.
                         if color == WHITE {
                                 pieces[move.To - 8] = Piece(0)
                         } else {
@@ -98,7 +98,7 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         } else if p.IsCheck(color) {
                 return MATE // <-- Checkmate value.
         } else {
-                Lop("Stalemate") // TODO
+                Lop("Stalemate")
                 alpha = 0.0
         }
 
@@ -167,7 +167,7 @@ func (p *Position) IsCheck(color int) bool {
         return king.Intersect(p.attacks[color^1]).IsNotEmpty()
 }
 
-func (p *Position) setupPosition() *Position {
+func (p *Position) setupPieces() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
                         p.outposts[piece].Set(i)
@@ -187,7 +187,7 @@ func (p *Position) setupAttacks() *Position {
                 if piece != 0 {
                         p.targets[i] = *p.Targets(i)
                         p.attacks[piece.Color()].Combine(p.targets[i])
-                        if piece.Kind() == KING {
+                        if piece.IsKing() {
                                 king[piece.Color()] = i
                         }
                 }
