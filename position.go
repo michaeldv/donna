@@ -17,20 +17,22 @@ type Position struct {
         next      int // Side to make next move.
 }
 
-func (p *Position) Initialize(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
-        p.game = game
-        p.pieces = pieces
-        p.next = color
-        p.enpassant = enpassant
+func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
+        position := new(Position)
 
-        p.count = make(map[Piece]int)
-        p.outposts = make(map[Piece]*Bitmask)
+        position.game = game
+        position.pieces = pieces
+        position.next = color
+        position.enpassant = enpassant
+
+        position.count = make(map[Piece]int)
+        position.outposts = make(map[Piece]*Bitmask)
         for piece := Piece(PAWN); piece <= Piece(KING); piece++ {
-                p.outposts[piece] = new(Bitmask)
-                p.outposts[piece | BLACK] = new(Bitmask)
+                position.outposts[piece] = new(Bitmask)
+                position.outposts[piece | BLACK] = new(Bitmask)
         }
 
-        return p.setupPieces().setupAttacks()
+        return position.setupPieces().setupAttacks()
 }
 
 func (p *Position) MakeMove(game *Game, move *Move) *Position {
@@ -59,7 +61,7 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
                 }
         }
 
-        return new(Position).Initialize(game, pieces, color^1, enpassant)
+        return NewPosition(game, pieces, color^1, enpassant)
 }
 
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
@@ -136,7 +138,7 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
         targets := p.targets[index]
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
-                candidate := new(Move).Initialize(index, target, piece, p.pieces[target])
+                candidate := NewMove(index, target, piece, p.pieces[target])
                 if !p.MakeMove(p.game, candidate).IsCheck(piece.Color()) {
                         moves = append(moves, candidate)
                 }

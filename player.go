@@ -8,20 +8,22 @@ type Player struct {
         Can000  bool   // Can castle queen's side?
 }
 
-func (p *Player)Initialize(game *Game, color int) *Player {
-        p.game = game
-        p.brain = new(Brain).Initialize(p)
-        p.Color = color
-        p.Can00 = true
-        p.Can000 = true
+func NewPlayer(game *Game, color int) *Player {
+        player := new(Player)
 
-        return p
+        player.game = game
+        player.brain = NewBrain(player)
+        player.Color = color
+        player.Can00 = true
+        player.Can000 = true
+
+        return player
 }
 
 func (p *Player) IsWhite() bool {
-	return p.Color == 0
+	return p.Color == WHITE
 }
 
 func (p *Player) IsBlack() bool {
-	return p.Color != 0
+	return p.Color == BLACK
 }

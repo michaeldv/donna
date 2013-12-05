@@ -10,11 +10,13 @@ type Brain struct {
         color  int
 }
 
-func (b *Brain) Initialize(player *Player) *Brain {
-        b.player = player
-        b.color = player.Color
+func NewBrain(player *Player) *Brain {
+        brain := new(Brain)
 
-        return b
+        brain.player = player
+        brain.color = player.Color
+
+        return brain
 }
 
 func (b *Brain) Evaluate(p *Position) (score float64) {

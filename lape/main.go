@@ -30,18 +30,18 @@ func main() {
         // fmt.Println(b.King[9].String())
         // fmt.Println(b.King[63].String())
 
-        game := new(lape.Game).Initialize().InitialPosition()
+        game := lape.NewGame().InitialPosition()
         // fmt.Println("...Initial Position...\n")
         // fmt.Println(game.String())
 
         // fmt.Println("...Moves...\n")
-        // m := new(lape.Move).Initialize(lape.Index(1,4), lape.Index(3,4), lape.Pawn(0), 0)
+        // m := lape.NewMove(lape.Index(1,4), lape.Index(3,4), lape.Pawn(0), 0)
         // fmt.Println(m.String())
-        // m = new(lape.Move).Initialize(lape.Index(7,6), lape.Index(5,5), lape.Knight(1), 0)
+        // m = lape.NewMove(lape.Index(7,6), lape.Index(5,5), lape.Knight(1), 0)
         // fmt.Println(m.String())
-        // m = new(lape.Move).Initialize(lape.Index(1,3), lape.Index(3,3), lape.Pawn(0), 0)
+        // m = lape.NewMove(lape.Index(1,3), lape.Index(3,3), lape.Pawn(0), 0)
         // fmt.Println(m.String())
-        // m = new(lape.Move).Initialize(lape.Index(5,5), lape.Index(3,4), lape.Knight(1), lape.Pawn(0))
+        // m = lape.NewMove(lape.Index(5,5), lape.Index(3,4), lape.Knight(1), lape.Pawn(0))
         // fmt.Println(m.String())
 
         // http://chessproblem.ru/index.php?kind=2&f_ot=0&f_do=8&lev=0

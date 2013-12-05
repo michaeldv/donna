@@ -11,13 +11,15 @@ type Move struct {
         Captured Piece
 }
 
-func (m *Move)Initialize(from, to int, moved, captured Piece) *Move {
-        m.From = from
-        m.To = to
-        m.Piece = moved
-        m.Captured = captured
+func NewMove(from, to int, moved, captured Piece) *Move {
+        move := new(Move)
 
-        return m
+        move.From = from
+        move.To = to
+        move.Piece = moved
+        move.Captured = captured
+
+        return move
 }
 
 func (m *Move) IsKingSideCastle() bool {

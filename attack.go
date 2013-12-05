@@ -11,7 +11,9 @@ type Attack struct {
         Pawn    [2][64]Bitmask
 }
 
-func (a *Attack)Initialize() *Attack {
+func NewAttack() *Attack {
+        attack := new(Attack)
+
         for i := 0;  i < 64;  i++ {
                 row, col := Coordinate(i)
                 for j := 0;  j < 64;  j++ {
@@ -20,33 +22,33 @@ func (a *Attack)Initialize() *Attack {
                                 continue
                         }
                         if c == col || r == row {
-                                a.Rook[i].Set(Index(r, c))
-                                a.Queen[i].Set(Index(r, c))
+                                attack.Rook[i].Set(Index(r, c))
+                                attack.Queen[i].Set(Index(r, c))
                         }
                         if (Abs(r - row) == 2 && Abs(c - col) == 1) || (Abs(r - row) == 1 && Abs(c - col) == 2) {
-                                a.Knight[i].Set(Index(r, c))
+                                attack.Knight[i].Set(Index(r, c))
                         }
                         if Abs(r - row) == Abs(c - col) {
-                                a.Bishop[i].Set(Index(r, c))
-                                a.Queen[i].Set(Index(r, c))
+                                attack.Bishop[i].Set(Index(r, c))
+                                attack.Queen[i].Set(Index(r, c))
                         }
                         if Abs(r - row) <= 1 && Abs(c - col) <= 1 {
-                                a.King[i].Set(Index(r, c))
+                                attack.King[i].Set(Index(r, c))
                         }
                 }
                 if row >= 1 && row <= 7 {
                         if col > 0 {
-                                a.Pawn[WHITE][i].Set(Index(row+1,col-1))
-                                a.Pawn[BLACK][i].Set(Index(row-1,col-1))
+                                attack.Pawn[WHITE][i].Set(Index(row+1,col-1))
+                                attack.Pawn[BLACK][i].Set(Index(row-1,col-1))
                         }
                         if col < 7 {
-                                a.Pawn[WHITE][i].Set(Index(row+1,col+1))
-                                a.Pawn[BLACK][i].Set(Index(row-1,col-1))
+                                attack.Pawn[WHITE][i].Set(Index(row+1,col+1))
+                                attack.Pawn[BLACK][i].Set(Index(row-1,col-1))
                         }
                 }
         }
 
-        return a
+        return attack
 }
 
 func (a *Attack) Targets(index int, p *Position) *Bitmask {

@@ -20,13 +20,14 @@ type Game struct {
         current int
 }
 
-func (g *Game)Initialize() *Game {
-        g.players[0] = new(Player).Initialize(g, WHITE)
-        g.players[1] = new(Player).Initialize(g, BLACK)
-        g.attacks = new(Attack).Initialize()
-        g.current = WHITE
+func NewGame() *Game {
+        game := new(Game)
+        game.players[0] = NewPlayer(game, WHITE)
+        game.players[1] = NewPlayer(game, BLACK)
+        game.attacks = NewAttack()
+        game.current = WHITE
 
-        return g
+        return game
 }
 
 func (g *Game) Setup(white, black string) *Game {
@@ -82,7 +83,7 @@ func (g *Game)InitialPosition() *Game {
 }
 
 func (g *Game)Search(depth int) (best *Move) {
-        position := new(Position).Initialize(g, g.pieces, g.current, Bitmask(0))
+        position := NewPosition(g, g.pieces, g.current, Bitmask(0))
         moves := position.Moves(g.current)
         estimate := MIN
 
