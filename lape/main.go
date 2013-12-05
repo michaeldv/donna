@@ -35,13 +35,13 @@ func main() {
         // fmt.Println(game.String())
 
         // fmt.Println("...Moves...\n")
-        // m := lape.NewMove(lape.Index(1,4), lape.Index(3,4), lape.Pawn(0), 0)
+        // m := lape.NewMove(lape.D2, lape.D4, lape.Pawn(lape.WHITE), 0)
         // fmt.Println(m.String())
-        // m = lape.NewMove(lape.Index(7,6), lape.Index(5,5), lape.Knight(1), 0)
+        // m = lape.NewMove(lape.G8, lape.F6, lape.Knight(lape.BLACK), 0)
         // fmt.Println(m.String())
-        // m = lape.NewMove(lape.Index(1,3), lape.Index(3,3), lape.Pawn(0), 0)
+        // m = lape.NewMove(lape.E2, lape.E4, lape.Pawn(lape.WHITE), 0)
         // fmt.Println(m.String())
-        // m = lape.NewMove(lape.Index(5,5), lape.Index(3,4), lape.Knight(1), lape.Pawn(0))
+        // m = lape.NewMove(lape.F6, lape.E4, lape.Knight(lape.BLACK), lape.Pawn(lape.WHITE))
         // fmt.Println(m.String())
 
         // http://chessproblem.ru/index.php?kind=2&f_ot=0&f_do=8&lev=0
