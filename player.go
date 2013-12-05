@@ -1,4 +1,4 @@
-package lape
+package donna
 
 type Player struct {
         game    *Game  // The game we're playing.

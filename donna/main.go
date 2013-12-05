@@ -1,13 +1,13 @@
 package main
 
 import (
-        `github.com/michaeldv/lape`
+        `github.com/michaeldv/donna`
         `fmt`
 )
 
 func main() {
-        lape.Settings.Log = true
-        lape.Settings.Fancy = true
+        donna.Settings.Log = true
+        donna.Settings.Fancy = true
         fmt.Printf("Main...\n")
 
         // fmt.Println(b.Rook[0].String())
@@ -30,18 +30,18 @@ func main() {
         // fmt.Println(b.King[9].String())
         // fmt.Println(b.King[63].String())
 
-        game := lape.NewGame().InitialPosition()
+        game := donna.NewGame().InitialPosition()
         // fmt.Println("...Initial Position...\n")
         // fmt.Println(game.String())
 
         // fmt.Println("...Moves...\n")
-        // m := lape.NewMove(lape.D2, lape.D4, lape.Pawn(lape.WHITE), 0)
+        // m := donna.NewMove(donna.D2, donna.D4, donna.Pawn(donna.WHITE), 0)
         // fmt.Println(m.String())
-        // m = lape.NewMove(lape.G8, lape.F6, lape.Knight(lape.BLACK), 0)
+        // m = donna.NewMove(donna.G8, donna.F6, donna.Knight(donna.BLACK), 0)
         // fmt.Println(m.String())
-        // m = lape.NewMove(lape.E2, lape.E4, lape.Pawn(lape.WHITE), 0)
+        // m = donna.NewMove(donna.E2, donna.E4, donna.Pawn(donna.WHITE), 0)
         // fmt.Println(m.String())
-        // m = lape.NewMove(lape.F6, lape.E4, lape.Knight(lape.BLACK), lape.Pawn(lape.WHITE))
+        // m = donna.NewMove(donna.F6, donna.E4, donna.Knight(donna.BLACK), donna.Pawn(donna.WHITE))
         // fmt.Println(m.String())
 
         // http://chessproblem.ru/index.php?kind=2&f_ot=0&f_do=8&lev=0
