@@ -108,15 +108,34 @@ func TestGame190(t *testing.T) { // Pawn promotion
         expect(t, move.String(), `c7-c8N`)
 }
 
-// game.Setup(`Kg1,Qh1,Bh8,g2`, `Kg8,Rf8,f7,g6,h7`)
-// game.Setup(`Kh1,Ra7,Rc7,Ba8`, `Kh8`)
-// game.Setup(`Kh1,h2,g2,Qh4,Bf6,g5,g4,d4`, `Kg8,Rf8,f7,g6,h7,c8`)
-// game.Setup(`Kh1,g2,h2,Nh6,Qe6`, `Kh8,Rf8,g7,h7`)
-// game.Setup(`Kh1,Ra6,Rb5`, `Kh7`)
-// game.Setup(`Kh1,Ra1`, `Kg8,f7,g7,h7`)
-//
-// game.Setup(`Kg1,f2,g2,h2`, `Kg8,Ra1`)
-// game.Setup(`Kg1,f3,e2,e3`, `Kh3,Ra1`)
-// game.Setup(`d2,f3,g2,Rf2,Kg1`, `Kg3,Ra1`)
-// game.Setup(`a3,Bb4,a5,c3,e7,Kh2`, `a7,a5,b6,Bc7,Kg8`)
-// game.Setup(`a2,Ra3,b3,a7,Kg1`, `d4,Rc4,c3,c5,Bb6,Kg8`)
+// Mate in 3
+
+func TestGame200(t *testing.T) {
+        move := NewGame().Setup(`Kf8,Re7,Nd5`, `Kh8,Bh5`).Search(3)
+        expect(t, move.String(), `Re7-g7`)
+}
+
+func TestGame210(t *testing.T) {
+        move := NewGame().Setup(`Kf8,Bf7,Nf3,e5`, `Kh8,e6,h7`).Search(3)
+        expect(t, move.String(), `Bf7-g8`)
+}
+
+func TestGame220(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Kf3,h7`, `Kh1,h3`).Search(3)
+        expect(t, move.String(), `h7-h8R`)
+}
+
+func TestGame230(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Kd8,c7,e4,f7`, `Ke6,e5`).Search(3)
+        expect(t, move.String(), `f7-f8R`)
+}
+
+func TestGame240(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Kh3,f7,g7`, `Kh6`).Search(3)
+        expect(t, move.String(), `g7-g8Q`)
+}
+
+func TestGame250(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Ke4,c7,d6,e7,f6,g7`, `Ke6`).Search(3)
+        expect(t, move.String(), `e7-e8B`)
+}

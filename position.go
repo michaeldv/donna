@@ -74,12 +74,12 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         color ^= 1
 
         // Null move pruning.
-        if !p.IsCheck(color) {
-                val := -p.Score(depth - 1, color^1, -beta, -beta + 100)
-                if val >= beta {
-                        return beta
-                }
-        }
+        // if !p.IsCheck(color) {
+        //         val := -p.Score(depth - 1, color^1, -beta, -beta + 100)
+        //         if val >= beta {
+        //                 return beta
+        //         }
+        // }
 
         moves := p.Moves(color)
         if len(moves) > 0 {
@@ -165,11 +165,13 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
 }
 
 func (p *Position) Reorder(moves []*Move) []*Move {
-        var checks, captures, remaining []*Move
+        var checks, promotions, captures, remaining []*Move
 
         for _, move := range moves {
                 if p.MakeMove(p.game, move).IsCheck(move.Piece.Color()^1) {
                         checks = append(checks, move)
+                } else if move.Promoted != 0 {
+                        promotions = append(promotions, move)
                 } else if move.Captured != 0 {
                         captures = append(captures, move)
                 } else {
@@ -177,7 +179,7 @@ func (p *Position) Reorder(moves []*Move) []*Move {
                 }
         }
 
-        return append(append(checks, captures...), remaining...)
+        return append(append(append(checks, promotions...), captures...), remaining...)
 }
 
 func (p *Position) IsCheck(color int) bool {
