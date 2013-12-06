@@ -14,7 +14,7 @@ type Position struct {
         count     map[Piece]int // Counts of each piece on the board, ex. white pawns: 6, etc.
         outposts  map[Piece]*Bitmask // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         check     bool // Is there a check?
-        next      int // Side to make next move.
+        color     int // Side to make next move.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
@@ -22,7 +22,7 @@ func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Po
 
         position.game = game
         position.pieces = pieces
-        position.next = color
+        position.color = color
         position.enpassant = enpassant
 
         position.count = make(map[Piece]int)
@@ -81,7 +81,7 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         //         }
         // }
 
-        moves := p.Moves(color)
+        moves := p.Moves()
         if len(moves) > 0 {
                 for i, move := range moves {
                         score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
@@ -118,17 +118,16 @@ func (p *Position) Targets(index int) *Bitmask {
 }
 
 // All moves.
-func (p *Position) Moves(color int) (moves []*Move) {
+func (p *Position) Moves() (moves []*Move) {
         for i, piece := range p.pieces {
-                if piece != 0 && piece.Color() == color {
+                if piece != 0 && piece.Color() == p.color {
                         moves = append(moves, p.PossibleMoves(i, piece)...)
                 }
         }
-        Log("%d candidates for %s: %v\n", len(moves), C(color), moves)
         if len(moves) > 1 {
                 moves = p.Reorder(moves)
-                Log("%d candidates for %s (reordered): %v\n", len(moves), C(color), moves)
         }
+        Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
 
         return
 }
@@ -222,7 +221,7 @@ func (p *Position) setupAttacks() *Position {
         p.attacks[2] = p.attacks[0]
         p.attacks[2].Combine(p.attacks[1])
 
-        p.check = p.IsCheck(p.next)
+        p.check = p.IsCheck(p.color)
 
         //Log("\n%s\n", p)
         return p
@@ -237,7 +236,7 @@ func (p *Position) String() string {
         if !p.check {
                 buffer.WriteString("\n")
         } else {
-                buffer.WriteString("  Check to " + C(p.next) + "\n")
+                buffer.WriteString("  Check to " + C(p.color) + "\n")
         }
 	for row := 7;  row >= 0;  row-- {
 		buffer.WriteByte('1' + byte(row))
