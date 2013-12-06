@@ -35,9 +35,7 @@ func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Po
         return position.setupPieces().setupAttacks()
 }
 
-func (p *Position) MakeMove(game *Game, move *Move) *Position {
-        Log("Making move %s for %s\n", move, C(move.Piece.Color()))
-        color := move.Piece.Color()
+func (p *Position) MakeMove(move *Move) *Position {
         pieces := p.pieces
         enpassant := Bitmask(0)
 
@@ -46,13 +44,13 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
 
         // Check if we need to update en-passant bitmask.
         if move.IsTwoSquarePawnAdvance() {
-                if color == WHITE {
+                if p.color == WHITE {
                         enpassant.Set(move.From + 8)
                 } else {
                         enpassant.Set(move.From - 8)
                 }
         } else if move.IsCrossing(p.enpassant) { // Take out the en-passant pawn.
-                if color == WHITE {
+                if p.color == WHITE {
                         pieces[move.To - 8] = Piece(NONE)
                 } else {
                         pieces[move.To + 8] = Piece(NONE)
@@ -61,7 +59,7 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
                 pieces[move.To] = move.Promoted
         }
 
-        return NewPosition(game, pieces, color^1, enpassant)
+        return NewPosition(p.game, pieces, p.color^1, enpassant)
 }
 
 func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
@@ -84,7 +82,8 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         moves := p.Moves()
         if len(moves) > 0 {
                 for i, move := range moves {
-                        score := -p.MakeMove(p.game, move).Score(depth-1, color, -beta, -alpha)
+                        Log("Making move %s for %s\n", move, C(move.Piece.Color()))
+                        score := -p.MakeMove(move).Score(depth-1, color, -beta, -alpha)
                         Log("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(color), depth, score, alpha, beta)
                         if score >= beta {
                                 Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
@@ -147,13 +146,13 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
                 //
                 if !p.isPawnPromotion(piece, target) {
                         candidate := NewMove(index, target, piece, capture)
-                        if !p.MakeMove(p.game, candidate).IsCheck(color) {
+                        if !p.MakeMove(candidate).IsCheck(color) {
                                 moves = append(moves, candidate)
                         }
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
                                 candidate := NewMove(index, target, piece, capture).Promote(name)
-                                if !p.MakeMove(p.game, candidate).IsCheck(color) {
+                                if !p.MakeMove(candidate).IsCheck(color) {
                                         moves = append(moves, candidate)
                                 }
                         }
@@ -167,7 +166,7 @@ func (p *Position) Reorder(moves []*Move) []*Move {
         var checks, promotions, captures, remaining []*Move
 
         for _, move := range moves {
-                if p.MakeMove(p.game, move).IsCheck(move.Piece.Color()^1) {
+                if p.MakeMove(move).IsCheck(move.Piece.Color()^1) {
                         checks = append(checks, move)
                 } else if move.Promoted != 0 {
                         promotions = append(promotions, move)

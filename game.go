@@ -89,7 +89,8 @@ func (g *Game)Search(depth int) (best *Move) {
 
         if len(moves) > 0 {
                 for i, move := range moves {
-                        score := -position.MakeMove(g, move).Score(depth*2-1, g.current, MIN, MAX)
+                        Log("Making move %s for %s\n", move, C(move.Piece.Color()))
+                        score := -position.MakeMove(move).Score(depth*2-1, g.current, MIN, MAX)
                         Log("  %d/%d: %s for %s, score is %.2f\n", i+1, len(moves), move, C(g.current), score)
                         if score >= estimate {
                                 if -score == MATE { // Just pick the move if it mates.
