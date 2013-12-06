@@ -5,6 +5,7 @@ import ()
 type Piece uint8
 
 const (
+        NONE   = iota
         PAWN   = 1 << 2
         KNIGHT = 1 << 3
         BISHOP = 1 << 4
@@ -79,48 +80,44 @@ func (p Piece)IsPawn() bool {
 }
 
 func (p Piece)String() string {
-        if Settings.Fancy {
-                switch p {
-                case King(WHITE):
-                        return "\u2654"
-                case King(BLACK):
-                        return "\u265A"
-                case Queen(WHITE):
-                        return "\u2655"
-                case Queen(BLACK):
-                        return "\u265B"
-                case Rook(WHITE):
-                        return "\u2656"
-                case Rook(BLACK):
-                        return "\u265C"
-                case Bishop(WHITE):
-                        return "\u2657"
-                case Bishop(BLACK):
-                        return "\u265D"
-                case Knight(WHITE):
-                        return "\u2658"
-                case Knight(BLACK):
-                        return "\u265E"
-                case Pawn(WHITE):
-                        return "\u2659"
-                case Pawn(BLACK):
-                        return "\u265F"
+        color := p.Color()
+        switch(p.Kind()) {
+        case KING:
+                if Settings.Fancy {
+                        return []string{"\u2654", "\u265A"}[color]
+                } else {
+                        return []string{`K`, `k`}[color]
                 }
-        } else {
-                switch(p.Kind()) {
-                case KING:
-                        return "K"
-                case QUEEN:
-                        return "Q"
-                case ROOK:
-                        return "R"
-                case BISHOP:
-                        return "B"
-                case KNIGHT:
-                        return "N"
-                case PAWN:
-                        return ""
+        case QUEEN:
+                if Settings.Fancy {
+                        return []string{"\u2655", "\u265B"}[color]
+                } else {
+                        return []string{`Q`, `q`}[color]
                 }
+        case ROOK:
+                if Settings.Fancy {
+                        return []string{"\u2656", "\u265C"}[color]
+                } else {
+                        return []string{`R`, `r`}[color]
+                }
+        case BISHOP:
+                if Settings.Fancy {
+                        return []string{"\u2657", "\u265D"}[color]
+                } else {
+                        return []string{`B`, `b`}[color]
+                }
+        case KNIGHT:
+                if Settings.Fancy {
+                        return []string{"\u2658", "\u265E"}[color]
+                } else {
+                        return []string{`N`, `n`}[color]
+                }
+        // case PAWN:
+        //         if Settings.Fancy {
+        //                 return []string{"\u2659", "\u265F"}[color]
+        //         } else {
+        //                 return []string{`P`, `p`}[color]
+        //         }
         }
-        return "?"
+        return ``
 }

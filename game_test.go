@@ -63,31 +63,50 @@ func TestGame100(t *testing.T) {
         expect(t, move.String(), `b3-b4`)
 }
 
-func TestGame110(t *testing.T) { // EN-PASSANT
+// func TestGame110(t *testing.T) {
+//         move := NewGame().Setup(`Kf1,Qh6,Nd2,Nf2`, `Kc1,c2,c3`).Search(2)
+//         expect(t, move.String(), `Qh6-a6`)
+// }
+
+func TestGame120(t *testing.T) { // En-passant
         move := NewGame().Setup(`Kd5,Qc8,c5,e5,g6`, `Ke7,d7`).Search(2)
         expect(t, move.String(), `Kd5-e4`)
 }
 
-func TestGame120(t *testing.T) { // EN-PASSANT
+func TestGame130(t *testing.T) { // En-passant
         move := NewGame().Setup(`Ke7,Rf8,Ba3,Bc2,e5,g5`, `Kg7,c3,h7`).Search(2)
         expect(t, move.String(), `Ba3-c1`)
 }
 
-func TestGame130(t *testing.T) { // EN-PASSANT, STALEMATE
+func TestGame140(t *testing.T) { // En-passant, stalemate
         move := NewGame().Setup(`Kc6,Rh4,Bb5,a3,c2,d3`, `Ka5,c5,d4,h5`).Search(2)
         expect(t, move.String(), `c2-c4`)
 }
 
-func TestGame140(t *testing.T) { // TODO: stalemate after Qg7-c3
+func TestGame150(t *testing.T) { // Stalemate after Qg7-c3
         move := NewGame().Setup(`Kb4,Qg7,Nc1`, `Kb1`).Search(2)
         expect(t, move.String(), `Kb4-c3`)
 }
-//
-// func TestGame???(t *testing.T) { // TODO: stalemate (both Qa6 and Qb6 have 32767.00 score)
-//         move := NewGame().Setup(`Kf1,Qh6,Nd2,Nf2`, `Kc1,c2,c3`).Search(2)
-//         expect(t, move.String(), `Qh6-a6`)
-// }
-//
+
+func TestGame160(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Ka8,Qc4,b7`, `Ka5`).Search(2)
+        expect(t, move.String(), `b7-b8B`)
+}
+
+func TestGame170(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Kf8,Rc6,Be4,Nd7,c7`, `Ke6,d6`).Search(2)
+        expect(t, move.String(), `c7-c8R`)
+}
+
+func TestGame180(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Kc6,c7`, `Ka7`).Search(2)
+        expect(t, move.String(), `c7-c8R`)
+}
+
+func TestGame190(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Kc4,a7,c7`, `Ka5`).Search(2)
+        expect(t, move.String(), `c7-c8N`)
+}
 
 // game.Setup(`Kg1,Qh1,Bh8,g2`, `Kg8,Rf8,f7,g6,h7`)
 // game.Setup(`Kh1,Ra7,Rc7,Ba8`, `Kh8`)

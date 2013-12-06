@@ -51,14 +51,14 @@ func (p *Position) MakeMove(game *Game, move *Move) *Position {
                 } else {
                         enpassant.Set(move.From - 8)
                 }
-        } else {
-                if move.IsCrossing(p.enpassant) { // Take out the en-passant pawn.
-                        if color == WHITE {
-                                pieces[move.To - 8] = Piece(0)
-                        } else {
-                                pieces[move.To + 8] = Piece(0)
-                        }
+        } else if move.IsCrossing(p.enpassant) { // Take out the en-passant pawn.
+                if color == WHITE {
+                        pieces[move.To - 8] = Piece(NONE)
+                } else {
+                        pieces[move.To + 8] = Piece(NONE)
                 }
+        } else if move.Promoted != Piece(NONE) { // Replace pawn with the promoted piece.
+                pieces[move.To] = move.Promoted
         }
 
         return NewPosition(game, pieces, color^1, enpassant)
@@ -135,16 +135,32 @@ func (p *Position) Moves(color int) (moves []*Move) {
 
 // All moves for the piece in certain square.
 func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
+        color := piece.Color()
         targets := p.targets[index]
+
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
-                candidate := NewMove(index, target, piece, p.pieces[target])
-                if !p.MakeMove(p.game, candidate).IsCheck(piece.Color()) {
-                        moves = append(moves, candidate)
+                capture := p.pieces[target]
+                //
+                // For regular moves each target square represents one possible
+                // move. For pawn promotion, however, we have to generate four
+                // possible moves, one for each promoted piece.
+                //
+                if !p.isPawnPromotion(piece, target) {
+                        candidate := NewMove(index, target, piece, capture)
+                        if !p.MakeMove(p.game, candidate).IsCheck(color) {
+                                moves = append(moves, candidate)
+                        }
+                } else {
+                        for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
+                                candidate := NewMove(index, target, piece, capture).Promote(name)
+                                if !p.MakeMove(p.game, candidate).IsCheck(color) {
+                                        moves = append(moves, candidate)
+                                }
+                        }
                 }
                 targets.Clear(target)
         }
-
         return
 }
 
@@ -208,6 +224,10 @@ func (p *Position) setupAttacks() *Position {
 
         //Log("\n%s\n", p)
         return p
+}
+
+func (p *Position) isPawnPromotion(piece Piece, target int) bool {
+        return piece.IsPawn() && ((piece.IsWhite() && target >= A8) || (piece.IsBlack() && target <= H1))
 }
 
 func (p *Position) String() string {

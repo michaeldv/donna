@@ -9,6 +9,7 @@ type Move struct {
         To       int
         Piece    Piece
         Captured Piece
+        Promoted Piece
 }
 
 func NewMove(from, to int, moved, captured Piece) *Move {
@@ -20,6 +21,12 @@ func NewMove(from, to int, moved, captured Piece) *Move {
         move.Captured = captured
 
         return move
+}
+
+func (m *Move) Promote(kind int) *Move {
+        m.Promoted = Piece(kind | m.Piece.Color())
+
+        return m
 }
 
 func (m *Move) IsKingSideCastle() bool {
@@ -52,15 +59,13 @@ func (m *Move) String() string {
                 if m.Captured != 0 {
                         capture = 'x'
                 }
-                piece := ``
-                if !m.Piece.IsPawn() {
-                        piece = m.Piece.String()
-                }
-                format := `%s %c%d%c%c%d` // More readable with extra space.
+                piece, promoted := m.Piece.String(), m.Promoted.String()
+
+                format := `%s %c%d%c%c%d%s` // Fancy notation is more readable with extra space.
                 if !Settings.Fancy {
-                        format = `%s%c%d%c%c%d`
+                        format = `%s%c%d%c%c%d%s`
                 }
-                return fmt.Sprintf(format, piece, col[0], row[0], capture, col[1], row[1])
+                return fmt.Sprintf(format, piece, col[0], row[0], capture, col[1], row[1], promoted)
         } else if m.IsKingSideCastle() {
                 return `0-0`
         } else {
