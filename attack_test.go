@@ -32,3 +32,10 @@ func TestAttack030(t *testing.T) {
 
         expect(t, fmt.Sprintf("%v", moves), `[a2xb3 g2xf3 g2xh3 e4xf5 a2-a3 a2-a4 g2-g3 g2-g4 e4-e5]`)
 }
+
+func TestAttack040(t *testing.T) {
+        game := NewGame().Setup(`Kf1,Nd2`, `Kc1,c2,c3`)
+        moves := NewPosition(game, game.pieces, BLACK, Bitmask(0)).Moves(BLACK)
+
+        expect(t, fmt.Sprintf("%v", moves), `[kc1xd2 c3xd2 kc1-d1 kc1-b2]`)
+}

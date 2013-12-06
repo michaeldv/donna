@@ -63,10 +63,10 @@ func TestGame100(t *testing.T) {
         expect(t, move.String(), `b3-b4`)
 }
 
-// func TestGame110(t *testing.T) {
-//         move := NewGame().Setup(`Kf1,Qh6,Nd2,Nf2`, `Kc1,c2,c3`).Search(2)
-//         expect(t, move.String(), `Qh6-a6`)
-// }
+func TestGame110(t *testing.T) {
+        move := NewGame().Setup(`Kf1,Qh6,Nd2,Nf2`, `Kc1,c2,c3`).Search(2)
+        expect(t, move.String(), `Qh6-a6`)
+}
 
 func TestGame120(t *testing.T) { // En-passant
         move := NewGame().Setup(`Kd5,Qc8,c5,e5,g6`, `Ke7,d7`).Search(2)

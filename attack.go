@@ -43,7 +43,7 @@ func NewAttack() *Attack {
                         }
                         if col < 7 {
                                 attack.Pawn[WHITE][i].Set(Index(row+1,col+1))
-                                attack.Pawn[BLACK][i].Set(Index(row-1,col-1))
+                                attack.Pawn[BLACK][i].Set(Index(row-1,col+1))
                         }
                 }
         }
