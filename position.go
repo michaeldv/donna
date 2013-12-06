@@ -62,18 +62,16 @@ func (p *Position) MakeMove(move *Move) *Position {
         return NewPosition(p.game, pieces, p.color^1, enpassant)
 }
 
-func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
-        Log("Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, C(color), alpha, beta)
+func (p *Position) Score(depth int, alpha, beta float64) float64 {
+        Log("Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, C(p.color), alpha, beta)
 
         if depth == 0 {
-                return p.Evaluate(color)
+                return p.Evaluate(p.color)
         }
 
-        color ^= 1
-
         // Null move pruning.
-        // if !p.IsCheck(color) {
-        //         val := -p.Score(depth - 1, color^1, -beta, -beta + 100)
+        // if !p.IsCheck(p.color) {
+        //         val := -p.Score(depth - 1, -beta, -beta + 100)
         //         if val >= beta {
         //                 return beta
         //         }
@@ -83,10 +81,10 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
         if len(moves) > 0 {
                 for i, move := range moves {
                         Log("Making move %s for %s\n", move, C(move.Piece.Color()))
-                        score := -p.MakeMove(move).Score(depth-1, color, -beta, -alpha)
-                        Log("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(color), depth, score, alpha, beta)
+                        score := -p.MakeMove(move).Score(depth-1, -beta, -alpha)
+                        Log("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
                         if score >= beta {
-                                Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(color))
+                                Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(p.color))
                                 Log("  Searched %v\n", moves[:i+1])
                                 Log("  Skipping %v\n", moves[i+1:])
                                 Log("  Picking %v\n\n", move)
@@ -96,14 +94,14 @@ func (p *Position) Score(depth, color int, alpha, beta float64) float64 {
                                 alpha = score
                         }
                 }
-        } else if p.IsCheck(color) {
+        } else if p.IsCheck(p.color) {
                 return MATE // <-- Checkmate value.
         } else {
                 Lop("Stalemate")
                 alpha = 0.0
         }
 
-        Log("End of Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, C(color), alpha, beta, alpha)
+        Log("End of Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, C(p.color), alpha, beta, alpha)
 	return alpha
 }
 
