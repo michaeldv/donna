@@ -3,16 +3,12 @@ package donna
 import (
         `bytes`
         `fmt`
-	`math`
-	`regexp`
+        `math`
+        `regexp`
+        `time`
 )
 
-const (
-        CHECKMATE = float64(math.MaxInt16)
-        MIN = float64(-math.MaxInt16)
-        MAX = float64(math.MaxInt16)
-        MATE = float64(math.MinInt32/10)
-)
+const CHECKMATE = float64(math.MaxInt16)
 
 type Game struct {
 	pieces	[64]Piece
@@ -81,10 +77,13 @@ func (g *Game) InitialPosition() *Game {
 }
 
 func (g *Game) Think(maxDepth int) *Move {
-        fmt.Println(`Depth     Nodes     Score     Best`)
-        for i := 1; i <= maxDepth; i++ {
-                score := g.Analyze(i)
-                fmt.Printf("  %d      %6d   %7.1f     %v\n", i, g.nodes, score, best[0][0 : bestlen[0]])
+        fmt.Println(`Depth     Nodes     Nodes/s     Score     Best`)
+        for depth := 1; depth <= maxDepth; depth++ {
+                g.nodes = 0
+                start := time.Now()
+                score := g.Analyze(depth)
+                fmt.Printf("  %d      %6d     %7.1f   %7.1f     %v\n",
+                        depth, g.nodes, float64(g.nodes)/time.Since(start).Seconds(), score, best[0][0 : bestlen[0]])
         }
         fmt.Printf("Best move: %s\n", best[0][0])
         return best[0][0]
