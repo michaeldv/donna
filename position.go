@@ -4,6 +4,9 @@ import(
         `bytes`
 )
 
+var best [8][8]*Move // Assuming max depth = 4 which makes it 8 plies.
+var bestlen [8]int
+
 type Position struct {
         game      *Game
         pieces    [64]Piece // Position as an array of 64 squares with pieces on them.
@@ -62,26 +65,20 @@ func (p *Position) MakeMove(move *Move) *Position {
         return NewPosition(p.game, pieces, p.color^1, enpassant)
 }
 
-func (p *Position) Score(depth int, alpha, beta float64) float64 {
-        Log("Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, C(p.color), alpha, beta)
+func (p *Position) AlphaBeta(depth, ply int, alpha, beta float64) float64 {
+        Log("\nAlphaBeta(depth: %d/%d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, ply, C(p.color), alpha, beta)
+        bestlen[ply] = ply
 
         if depth == 0 {
                 return p.Evaluate(p.color)
         }
 
-        // Null move pruning.
-        // if !p.IsCheck(p.color) {
-        //         val := -p.Score(depth - 1, -beta, -beta + 100)
-        //         if val >= beta {
-        //                 return beta
-        //         }
-        // }
-
         moves := p.Moves()
         if len(moves) > 0 {
                 for i, move := range moves {
                         Log("Making move %s for %s\n", move, C(move.Piece.Color()))
-                        score := -p.MakeMove(move).Score(depth-1, -beta, -alpha)
+                        p.game.nodes++
+                        score := -p.MakeMove(move).AlphaBeta(depth - 1, ply + 1, -beta, -alpha)
                         Log("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
                         if score >= beta {
                                 Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(p.color))
@@ -92,16 +89,18 @@ func (p *Position) Score(depth int, alpha, beta float64) float64 {
                         }
                         if score > alpha {
                                 alpha = score
+                                p.saveBest(ply, move)
                         }
                 }
         } else if p.IsCheck(p.color) {
-                return MATE // <-- Checkmate value.
+                Lop("Checkmate")
+                return -CHECKMATE + float64(ply)
         } else {
                 Lop("Stalemate")
                 alpha = 0.0
         }
 
-        Log("End of Score(depth: %d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, C(p.color), alpha, beta, alpha)
+        Log("End of AlphaBeta(depth: %d/%d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, ply, C(p.color), alpha, beta, alpha)
 	return alpha
 }
 
@@ -222,6 +221,14 @@ func (p *Position) setupAttacks() *Position {
 
         //Log("\n%s\n", p)
         return p
+}
+
+func (p *Position) saveBest(ply int, move *Move) {
+        best[ply][ply] = move
+        for i := ply + 1; i < bestlen[ply + 1]; i++ {
+                best[ply][i] = best[ply + 1][i]
+        }
+        bestlen[ply] = bestlen[ply + 1]
 }
 
 func (p *Position) isPawnPromotion(piece Piece, target int) bool {

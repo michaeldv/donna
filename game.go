@@ -8,6 +8,7 @@ import (
 )
 
 const (
+        CHECKMATE = float64(math.MaxInt16)
         MIN = float64(-math.MaxInt16)
         MAX = float64(math.MaxInt16)
         MATE = float64(math.MinInt32/10)
@@ -18,6 +19,7 @@ type Game struct {
 	players	[2]*Player
         attacks *Attack
         current int
+        nodes   int
 }
 
 func NewGame() *Game {
@@ -67,46 +69,35 @@ func (g *Game) SetupSide(moves []string, color int) *Game {
 	return g
 }
 
-func (g *Game)Set(row, col int, piece Piece) *Game {
+func (g *Game) Set(row, col int, piece Piece) *Game {
         g.pieces[Index(row, col)] = piece
 
         return g
 }
 
-func (g *Game)Get(row, col int) Piece {
-        return g.pieces[Index(row, col)]
-}
-
-func (g *Game)InitialPosition() *Game {
+func (g *Game) InitialPosition() *Game {
         return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
                        `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 }
 
-func (g *Game)Search(depth int) (best *Move) {
-        position := NewPosition(g, g.pieces, g.current, Bitmask(0))
-        moves := position.Moves()
-        estimate := MIN
-
-        if len(moves) > 0 {
-                for i, move := range moves {
-                        Log("Making move %s for %s\n", move, C(move.Piece.Color()))
-                        score := -position.MakeMove(move).Score(depth*2-1, MIN, MAX)
-                        Log("  %d/%d: %s for %s, score is %.2f\n", i+1, len(moves), move, C(g.current), score)
-                        if score >= estimate {
-                                if -score == MATE { // Just pick the move if it mates.
-                                        return move
-                                }
-                                estimate = score
-                                best = move
-                                Log("  New best move for %s is %s\n\n", C(g.current), best)
-                        }
-                }
-        } else if position.IsCheck(g.current) {
-                Log("Checkmate for %s\n", C(g.current))
-        } else {
-                Lop("Stalemate") // TODO
+func (g *Game) Think(maxDepth int) *Move {
+        fmt.Println(`Depth     Nodes     Score     Best`)
+        for i := 1; i <= maxDepth; i++ {
+                score := g.Analyze(i)
+                fmt.Printf("  %d      %6d   %7.1f     %v\n", i, g.nodes, score, best[0][0 : bestlen[0]])
         }
-	return
+        fmt.Printf("Best move: %s\n", best[0][0])
+        return best[0][0]
+}
+
+func (g *Game) Analyze(depth int) float64 {
+        position := NewPosition(g, g.pieces, g.current, Bitmask(0))
+        return position.AlphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
+}
+
+func (g *Game) Search(depth int) *Move {
+        g.Analyze(depth)
+        return best[0][0]
 }
 
 func (g *Game)String() string {
