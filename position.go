@@ -92,7 +92,7 @@ func (p *Position) AlphaBeta(depth, ply int, alpha, beta float64) float64 {
                                 p.saveBest(ply, move)
                         }
                 }
-        } else if p.IsCheck(p.color) {
+        } else if p.check {
                 Lop("Checkmate")
                 return -CHECKMATE + float64(ply)
         } else {
@@ -130,7 +130,6 @@ func (p *Position) Moves() (moves []*Move) {
 
 // All moves for the piece in certain square.
 func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
-        color := piece.Color()
         targets := p.targets[index]
 
         for !targets.IsEmpty() {
@@ -143,13 +142,13 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
                 //
                 if !p.isPawnPromotion(piece, target) {
                         candidate := NewMove(index, target, piece, capture)
-                        if !p.MakeMove(candidate).IsCheck(color) {
+                        if !p.MakeMove(candidate).IsCheck(p.color) {
                                 moves = append(moves, candidate)
                         }
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
                                 candidate := NewMove(index, target, piece, capture).Promote(name)
-                                if !p.MakeMove(candidate).IsCheck(color) {
+                                if !p.MakeMove(candidate).IsCheck(p.color) {
                                         moves = append(moves, candidate)
                                 }
                         }
@@ -163,7 +162,7 @@ func (p *Position) Reorder(moves []*Move) []*Move {
         var checks, promotions, captures, remaining []*Move
 
         for _, move := range moves {
-                if p.MakeMove(move).IsCheck(move.Piece.Color()^1) {
+                if p.MakeMove(move).check {
                         checks = append(checks, move)
                 } else if move.Promoted != 0 {
                         promotions = append(promotions, move)
@@ -217,7 +216,7 @@ func (p *Position) setupAttacks() *Position {
         p.attacks[2] = p.attacks[0]
         p.attacks[2].Combine(p.attacks[1])
 
-        p.check = p.IsCheck(p.color)
+        p.check = p.IsCheck(p.color) // Check to the other side?
 
         //Log("\n%s\n", p)
         return p
