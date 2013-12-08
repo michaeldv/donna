@@ -82,7 +82,7 @@ func (g *Game) Think(maxDepth int) *Move {
                 g.nodes = 0
                 start := time.Now()
                 score := g.Analyze(depth)
-                fmt.Printf("  %d      %6d     %7.1f   %7.1f     %v\n",
+                fmt.Printf("  %d      %6d    %8.1f   %7.1f     %v\n",
                         depth, g.nodes, float64(g.nodes)/time.Since(start).Seconds(), score, best[0][0 : bestlen[0]])
         }
         fmt.Printf("Best move: %s\n", best[0][0])

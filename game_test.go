@@ -139,3 +139,10 @@ func TestGame250(t *testing.T) { // Pawn promotion
         move := NewGame().Setup(`Ke4,c7,d6,e7,f6,g7`, `Ke6`).Search(3)
         expect(t, move.String(), `e7-e8B`)
 }
+
+// Mate in 4
+
+func TestGame260(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Kf6,Nf8,Nh6`, `Kh8,f7,h7`).Search(4)
+        expect(t, move.String(), `Nf8-e6`)
+}

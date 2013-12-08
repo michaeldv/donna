@@ -4,8 +4,8 @@ import(
         `bytes`
 )
 
-var best [8][8]*Move // Assuming max depth = 4 which makes it 8 plies.
-var bestlen [8]int
+var best [16][16]*Move // Assuming max depth = 4 which makes it 8 plies.
+var bestlen [16]int
 
 type Position struct {
         game      *Game
