@@ -6,14 +6,13 @@ type Piece uint8
 
 const (
         NONE   = iota
-        PAWN   = 1 << 2
-        KNIGHT = 1 << 3
-        BISHOP = 1 << 4
-        ROOK   = 1 << 5
-        QUEEN  = 1 << 6
-        KING   = 1 << 7
+        PAWN   = 2 << 1
+        KNIGHT = 3 << 1
+        BISHOP = 4 << 1
+        ROOK   = 5 << 1
+        QUEEN  = 6 << 1
+        KING   = 7 << 1
 )
-
 
 func King(color int) Piece {
         return Piece(color | KING)

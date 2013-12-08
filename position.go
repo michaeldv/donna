@@ -13,9 +13,9 @@ type Position struct {
         targets   [64]Bitmask // Attack targets for each piece on the board.
         board     [3]Bitmask // Position as a bitmask: [0] white pieces only, [1] black pieces, and [2] all pieces.
         attacks   [3]Bitmask // [0] all squares attacked by white, [1] by black, [2] by either white or black.
+        outposts  [16]Bitmask // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
+        count     [16]int // Counts of each piece on the board, ex. white pawns: 6, etc.
         enpassant Bitmask // En-passant opportunity caused by previous move.
-        count     map[Piece]int // Counts of each piece on the board, ex. white pawns: 6, etc.
-        outposts  map[Piece]*Bitmask // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         check     bool // Is there a check?
         color     int // Side to make next move.
 }
@@ -27,9 +27,6 @@ func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Po
         position.pieces = pieces
         position.color = color
         position.enpassant = enpassant
-
-        position.count = make(map[Piece]int)
-        position.outposts = make(map[Piece]*Bitmask)
 
         return position.setupPieces().setupAttacks()
 }
@@ -173,20 +170,14 @@ func (p *Position) Reorder(moves []*Move) []*Move {
 }
 
 func (p *Position) IsCheck(color int) bool {
-        king := p.outposts[King(color)] // Check if the king is on the board.
-        if king != nil {
-                return (*king).Intersect(p.attacks[color^1]).IsNotEmpty()
-        }
-        return false
-
+        king := p.outposts[King(color)]
+        return king.Intersect(p.attacks[color^1]).IsNotEmpty()
 }
 
 func (p *Position) setupPieces() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
-                        if p.outposts[piece] == nil {
-                                p.outposts[piece] = new(Bitmask).Set(i)
-                        }
+                        p.outposts[piece] = *new(Bitmask).Set(i)
                         p.board[piece.Color()].Set(i)
                         p.count[piece]++
                 }
