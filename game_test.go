@@ -110,10 +110,10 @@ func TestGame190(t *testing.T) { // Pawn promotion
 
 // Mate in 3
 
-// func TestGame200(t *testing.T) { // Takes a long time
-//         move := NewGame().Setup(`Kf8,Re7,Nd5`, `Kh8,Bh5`).Search(3)
-//         expect(t, move.String(), `Re7-g7`)
-// }
+func TestGame200(t *testing.T) {
+        move := NewGame().Setup(`Kf8,Re7,Nd5`, `Kh8,Bh5`).Search(3)
+        expect(t, move.String(), `Re7-g7`)
+}
 
 func TestGame210(t *testing.T) {
         move := NewGame().Setup(`Kf8,Bf7,Nf3,e5`, `Kh8,e6,h7`).Search(3)
@@ -135,7 +135,7 @@ func TestGame240(t *testing.T) { // Pawn promotion
         expect(t, move.String(), `g7-g8Q`)
 }
 
-// func TestGame250(t *testing.T) { // Pawn promotion (takes a long time)
-//         move := NewGame().Setup(`Ke4,c7,d6,e7,f6,g7`, `Ke6`).Search(3)
-//         expect(t, move.String(), `e7-e8B`)
-// }
+func TestGame250(t *testing.T) { // Pawn promotion
+        move := NewGame().Setup(`Ke4,c7,d6,e7,f6,g7`, `Ke6`).Search(3)
+        expect(t, move.String(), `e7-e8B`)
+}

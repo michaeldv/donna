@@ -30,10 +30,6 @@ func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Po
 
         position.count = make(map[Piece]int)
         position.outposts = make(map[Piece]*Bitmask)
-        for piece := Piece(PAWN); piece <= Piece(KING); piece++ {
-                position.outposts[piece] = new(Bitmask)
-                position.outposts[piece | BLACK] = new(Bitmask)
-        }
 
         return position.setupPieces().setupAttacks()
 }
@@ -177,14 +173,20 @@ func (p *Position) Reorder(moves []*Move) []*Move {
 }
 
 func (p *Position) IsCheck(color int) bool {
-        king := *p.outposts[King(color)]
-        return king.Intersect(p.attacks[color^1]).IsNotEmpty()
+        king := p.outposts[King(color)] // Check if the king is on the board.
+        if king != nil {
+                return (*king).Intersect(p.attacks[color^1]).IsNotEmpty()
+        }
+        return false
+
 }
 
 func (p *Position) setupPieces() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
-                        p.outposts[piece].Set(i)
+                        if p.outposts[piece] == nil {
+                                p.outposts[piece] = new(Bitmask).Set(i)
+                        }
                         p.board[piece.Color()].Set(i)
                         p.count[piece]++
                 }
