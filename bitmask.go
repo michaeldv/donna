@@ -4,6 +4,15 @@ import (
         `bytes`
         `fmt`
 )
+
+type Bitmask uint64
+
+const (
+        CASTLE_KING_WHITE  = Bitmask((1 << E1) | (1 << F1) | (1 << G1))
+        CASTLE_KING_BLACK  = Bitmask((1 << E8) | (1 << F8) | (1 << G8))
+        CASTLE_QUEEN_WHITE = Bitmask((1 << E1) | (1 << D1) | (1 << C1))
+        CASTLE_QUEEN_BLACK = Bitmask((1 << E8) | (1 << D8) | (1 << C8))
+)
 var (
 	DE_BRUJIN = [64]int{
 		 0, 47,  1, 56, 48, 27,  2, 60,
@@ -56,8 +65,6 @@ var (
                 -1, -1, -1, -1, -1, -1, -1, -1,
         }
 )
-
-type Bitmask uint64
 
 // Returns true if all bitmask bits are clear.
 func (b Bitmask) IsEmpty() bool {

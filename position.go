@@ -148,6 +148,10 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
                 }
                 targets.Clear(target)
         }
+        if castle := p.tryCastle(); castle != nil {
+                moves = append(moves, castle)
+        }
+
         return
 }
 
@@ -225,6 +229,61 @@ func (p *Position) saveBest(ply int, move *Move) {
 
 func (p *Position) isPawnPromotion(piece Piece, target int) bool {
         return piece.IsPawn() && ((piece.IsWhite() && target >= A8) || (piece.IsBlack() && target <= H1))
+}
+
+func (p *Position) tryCastle() (castle *Move) {
+        if p.isKingSideCastleAllowed() {
+                if p.color == WHITE {
+                        castle = NewMove(E1, G1, King(WHITE), 0)
+                } else {
+                        castle = NewMove(E8, G8, King(BLACK), 0)
+                }
+        } else if p.isQueenSideCastleAllowed() {
+                if p.color == WHITE {
+                        castle = NewMove(E1, C1, King(WHITE), 0)
+                } else {
+                        castle = NewMove(E8, C8, King(BLACK), 0)
+                }
+        }
+        return
+}
+
+func (p *Position) isKingSideCastleAllowed() bool {
+        white, black := CASTLE_KING_WHITE, CASTLE_KING_BLACK
+
+        return p.game.players[p.color].Can00 &&
+               ((p.color == WHITE &&
+                       p.pieces[E1] == King(WHITE) &&
+                       p.pieces[F1] == 0 &&
+                       p.pieces[G1] == 0 &&
+                       p.pieces[H1] == Rook(WHITE) &&
+                       white.Intersect(p.attacks[BLACK]).IsEmpty()) ||
+                (p.color == BLACK &&
+                       p.pieces[E8] == King(BLACK) &&
+                       p.pieces[F8] == 0 &&
+                       p.pieces[G8] == 0 &&
+                       p.pieces[H8] == Rook(BLACK) &&
+                       black.Intersect(p.attacks[WHITE]).IsEmpty()))
+}
+
+func (p *Position) isQueenSideCastleAllowed() bool {
+        white, black := CASTLE_QUEEN_WHITE, CASTLE_QUEEN_BLACK
+
+        return p.game.players[p.color].Can000 &&
+               ((p.color == WHITE &&
+                       p.pieces[E1] == King(WHITE) &&
+                       p.pieces[D1] == 0 &&
+                       p.pieces[C1] == 0 &&
+                       p.pieces[B1] == 0 &&
+                       p.pieces[A1] == Rook(WHITE) &&
+                       white.Intersect(p.attacks[BLACK]).IsEmpty()) ||
+                (p.color == BLACK &&
+                       p.pieces[E8] == King(BLACK) &&
+                       p.pieces[D8] == 0 &&
+                       p.pieces[C8] == 0 &&
+                       p.pieces[B8] == 0 &&
+                       p.pieces[A8] == Rook(BLACK) &&
+                       black.Intersect(p.attacks[WHITE]).IsEmpty()))
 }
 
 func (p *Position) String() string {
