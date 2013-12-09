@@ -110,12 +110,12 @@ func TestGame190(t *testing.T) { // Pawn promotion
 
 func TestGame195(t *testing.T) { // King-side castle
         move := NewGame().Setup(`Ke1,Rf1,Rh1`, `Ka1`).Search(2)
-        expect(t, move.String(), `Rf2`)
+        expect(t, move.String(), `Rf1-f2`)
 }
 
 func TestGame196(t *testing.T) { // Queen-side castle
-        move := NewGame().Setup(`Ke1,Ra1,Rb1`, `Kh1`).Search(2)
-        expect(t, move.String(), `Rb2`)
+        move := NewGame().Setup(`Ke1,Ra1,Rb1`, `Kg1`).Search(2)
+        expect(t, move.String(), `Rb1-b2`)
 }
 
 

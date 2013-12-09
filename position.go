@@ -51,6 +51,17 @@ func (p *Position) MakeMove(move *Move) *Position {
                 } else {
                         pieces[move.To + 8] = Piece(NONE)
                 }
+        } else if move.IsCastle() {
+                switch move.To {
+                case G1:
+                        pieces[H1], pieces[F1] = 0, Rook(WHITE)
+                case C1:
+                        pieces[A1], pieces[D1] = 0, Rook(WHITE)
+                case G8:
+                        pieces[H8], pieces[F8] = 0, Rook(BLACK)
+                case C8:
+                        pieces[A8], pieces[D8] = 0, Rook(BLACK)
+                }
         } else if move.Promoted != Piece(NONE) { // Replace pawn with the promoted piece.
                 pieces[move.To] = move.Promoted
         }
