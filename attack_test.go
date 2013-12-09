@@ -1,12 +1,15 @@
 package donna
 
-import (`testing`; `fmt`)
+import (`testing`; `fmt`; `runtime`; `strings`)
 
 func expect(t *testing.T, actual, expected string) {
+        _, file, line, _ := runtime.Caller(1)           // Get the calling file path and line number.
+        file = file[strings.LastIndex(file, `/`) + 1:]  // Keep file name only.
+
         if expected != actual {
-                t.Error(`Expected: ` + expected + `, got: ` + actual)
+                t.Errorf("\r\t%s line %d\n%s", file, line, `Expected: ` + expected + "\n  Actual: " + actual)
         } else {
-                t.Log(actual)
+                t.Logf("\r\t%s line %d: %s", file, line, actual)
         }
 }
 
