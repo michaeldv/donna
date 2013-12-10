@@ -6,12 +6,12 @@ type Piece uint8
 
 const (
         NONE   = iota
-        PAWN   = 2 << 1
-        KNIGHT = 3 << 1
-        BISHOP = 4 << 1
-        ROOK   = 5 << 1
-        QUEEN  = 6 << 1
-        KING   = 7 << 1
+        PAWN   = 1 << 1
+        KNIGHT = 2 << 1
+        BISHOP = 3 << 1
+        ROOK   = 4 << 1
+        QUEEN  = 5 << 1
+        KING   = 6 << 1
 )
 
 func King(color int) Piece {
@@ -36,6 +36,12 @@ func Knight(color int) Piece {
 
 func Pawn(color int) Piece {
         return Piece(color | PAWN)
+}
+
+// return Piece - 1 when color is White(0)
+//        Piece - 3 when color is Black(1)
+func (p Piece) Polyglot() int {
+        return int(p) - 1 - 2 * p.Color()
 }
 
 func (p Piece)Color() int {
