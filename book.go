@@ -25,7 +25,7 @@ func NewBook(fileName string) *Book {
         return book
 }
 
-func (b *Book) PickMove(position *Position) {//}(move *Move) {
+func (b *Book) PickMove(position *Position) (move *Move) {
         entries := b.lookup(position)
 
         for i, entry := range entries {
@@ -37,6 +37,13 @@ func (b *Book) PickMove(position *Position) {//}(move *Move) {
                 fmt.Printf("%016b: to c/r: %d/%d from c/r %d/%d promo %d\n",
                         entry.Move, entry.toCol(), entry.toRow(), entry.fromCol(), entry.fromRow(), entry.promoted())
         }
+
+        if len(entries) == 0 {
+                // TODO: set the "useless" flag after a few misses.
+                return nil
+        }
+
+        return b.move(position, entries[Random(len(entries))])
 }
 
 func (b *Book) lookup(position *Position) (entries []Entry) {
@@ -56,7 +63,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
                         return entries // <-- Nothing was found.
                 }
 
-                middle := (first + last) / 2
+                middle = (first + last) / 2
 
                 if _, err := file.Seek(middle * 16, 0); err == nil {
                         binary.Read(file, binary.BigEndian, &entry)
@@ -76,8 +83,8 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
         // Go up and down from the current spot to pick up remaining book
         // entries with the same polyglot hash key.
         //
-        for offset := middle + 1; ; offset++ {
-                if _, err := file.Seek(offset * 16, 1); err == nil {
+        for offset := int64(0); ; offset += 16 {
+                if _, err := file.Seek(offset, 1); err == nil {
                         binary.Read(file, binary.BigEndian, &entry)
                         if key == entry.Key {
                                 entries = append(entries, entry)
@@ -86,8 +93,12 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
                 }
                 break
         }
-        for offset := middle - 1; ; offset-- {
-                if _, err := file.Seek(offset * 16, 1); err == nil {
+        //
+        // Go back to the middle and proceed backwards in 16-byte increments.
+        //
+        file.Seek(middle * 16, 0)
+        for offset := int64(-16); ; offset -= 32 {
+                if _, err := file.Seek(offset, 1); err == nil {
                         binary.Read(file, binary.BigEndian, &entry)
                         if key == entry.Key {
                                 entries = append(entries, entry)
@@ -95,6 +106,30 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
                         }
                 }
                 break
+        }
+        return
+}
+
+func (b *Book) move(p *Position, entry Entry) (move *Move) {
+        from := Index(entry.fromRow(), entry.fromCol())
+        to   := Index(entry.toRow(), entry.toCol())
+        //
+        // Check if this is a castle move. In Polyglot they are represented
+        // as e1-h1, e1-a1, e8-h8, and e8-a8.
+        //
+        if from == E1 && to == H1 {
+                to = G1
+        } else if from == E1 && to == A1 {
+                to = C1
+        } else if from == E8 && to == H8 {
+                to = G8
+        } else if from == E8 && to == A8 {
+                to = C8
+        }
+
+        move = NewMove(from, to, p.pieces[from], p.pieces[to])
+        if promo := entry.promoted(); promo != 0 {
+                move.Promote(promo)
         }
         return
 }
@@ -130,24 +165,33 @@ func (b *Book) polyglot(position *Position) (key uint64) {
 	return
 }
 
-func (e *Entry) toCol() uint16 {
-        return e.Move & 7
+func (e *Entry) toCol() int {
+        return int(e.Move & 7)
 }
 
-func (e *Entry) toRow() uint16 {
-        return (e.Move >> 3) & 7
+func (e *Entry) toRow() int {
+        return int((e.Move >> 3) & 7)
 }
 
-func (e *Entry) fromCol() uint16 {
-        return (e.Move >> 6) & 7
+func (e *Entry) fromCol() int {
+        return int((e.Move >> 6) & 7)
 }
 
-func (e *Entry) fromRow() uint16 {
-        return (e.Move >> 9) & 7
+func (e *Entry) fromRow() int {
+        return int((e.Move >> 9) & 7)
 }
 
-func (e *Entry) promoted() uint16 {
-        return (e.Move >> 12) & 7
+// Poluglot encodes "promotion piece" as follows:
+//   knight  1 => 4
+//   bishop  2 => 6
+//   rook    3 => 8
+//   queen   4 => 10
+func (e *Entry) promoted() int {
+        piece := int((e.Move >> 12) & 7)
+        if piece == 0 {
+                return piece
+        }
+        return piece * 2 + 2
 }
 
 var polyglotRandom = [...]uint64{

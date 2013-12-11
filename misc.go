@@ -67,6 +67,8 @@ func Abs(n int) int {
         return n
 }
 
+// Returns, as an integer, a non-negative pseudo-random number
+// in [0, limit) range. It panics if limit <= 0.
 func Random(limit int) int {
         rand.Seed(time.Now().Unix())
         return rand.Intn(limit)
