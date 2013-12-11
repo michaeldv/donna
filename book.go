@@ -83,23 +83,23 @@ func (b *Book) polyglot(position *Position) (key uint64) {
 }
 
 func (e *Entry) toCol() uint16 {
-        return (e.Move & (1<<0 | 1<<1 | 1<<2))
+        return e.Move & 7
 }
 
 func (e *Entry) toRow() uint16 {
-        return (e.Move & (1<<3 | 1<<4 | 1<<5)) >> 3
+        return (e.Move >> 3) & 7
 }
 
 func (e *Entry) fromCol() uint16 {
-        return (e.Move & (1<<6 | 1<<7 | 1<<8)) >> 6
+        return (e.Move >> 6) & 7
 }
 
 func (e *Entry) fromRow() uint16 {
-        return (e.Move & (1<<9 | 1<<10 | 1<<11)) >> 9
+        return (e.Move >> 9) & 7
 }
 
 func (e *Entry) promoted() uint16 {
-        return (e.Move & (1<<12 | 1<<13 | 1<<14)) >> 12
+        return (e.Move >> 12) & 7
 }
 
 var polyglotRandom = [...]uint64{
