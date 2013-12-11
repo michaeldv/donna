@@ -4,6 +4,7 @@ import (`encoding/binary`; `os`; `fmt`)
 
 type Book struct {
         fileName  string
+        entries   int64
 }
 
 type Entry struct {
@@ -17,11 +18,30 @@ func NewBook(fileName string) *Book {
         book := new(Book)
 
         book.fileName = fileName
+        if fi, err := os.Stat(book.fileName); err == nil {
+                book.entries = fi.Size() / 16
+        }
 
         return book
 }
 
-func (b *Book) Lookup(position *Position) {
+func (b *Book) PickMove(position *Position) {//}(move *Move) {
+        entries := b.lookup(position)
+
+        for i, entry := range entries {
+                fmt.Printf(" move: %d\n", i+1)
+                fmt.Printf("  key: 0x%016X\n", entry.Key)
+                fmt.Printf(" move: 0x%04X\n", entry.Move)
+                fmt.Printf("score: 0x%04X\n", entry.Score)
+                fmt.Printf("learn: 0x%08X\n", entry.Learn)
+                fmt.Printf("%016b: to c/r: %d/%d from c/r %d/%d promo %d\n",
+                        entry.Move, entry.toCol(), entry.toRow(), entry.fromCol(), entry.fromRow(), entry.promoted())
+        }
+}
+
+func (b *Book) lookup(position *Position) (entries []Entry) {
+        var entry Entry
+
 	file, err := os.Open(b.fileName)
 	if err != nil {
 		panic(err)
@@ -29,26 +49,54 @@ func (b *Book) Lookup(position *Position) {
 	defer file.Close()
 
         key := b.polyglot(position)
-        var entry Entry
+        first, middle, last := int64(0), int64(0), b.entries
 
-        for i := 0; ; i++ {
-        	if err := binary.Read(file, binary.BigEndian, &entry); err != nil {
-                        fmt.Printf("Scanned %d entries\n", i)
-        		os.Exit(1)
-        	}
-                if entry.Key == key {
-                        fmt.Printf("  key: 0x%016X\n", entry.Key)
-                        fmt.Printf(" move: 0x%04X\n", entry.Move)
-                        fmt.Printf("score: 0x%04X\n", entry.Score)
-                        fmt.Printf("learn: 0x%08X\n", entry.Learn)
-                        fmt.Printf("%016b: to c/r: %d/%d from c/r %d/%d promo %d\n",
-                                entry.Move, entry.toCol(), entry.toRow(), entry.fromCol(), entry.fromRow(), entry.promoted())
+        for {
+                if last - first <= 1 {
+                        return entries // <-- Nothing was found.
                 }
 
-        	if _, err := file.Seek(16, 1); err != nil {
-        		panic(err)
-        	}
+                middle := (first + last) / 2
+
+                if _, err := file.Seek(middle * 16, 0); err == nil {
+                        binary.Read(file, binary.BigEndian, &entry)
+                        if key == entry.Key {
+                                entries = append(entries, entry)
+                                break // <-- Found it!
+                        } else if key < entry.Key {
+                                last = middle
+                        } else {
+                                first = middle
+                        }
+                } else {
+                        return entries // <-- Nothing was found.
+                }
         }
+        //
+        // Go up and down from the current spot to pick up remaining book
+        // entries with the same polyglot hash key.
+        //
+        for offset := middle + 1; ; offset++ {
+                if _, err := file.Seek(offset * 16, 1); err == nil {
+                        binary.Read(file, binary.BigEndian, &entry)
+                        if key == entry.Key {
+                                entries = append(entries, entry)
+                                continue
+                        }
+                }
+                break
+        }
+        for offset := middle - 1; ; offset-- {
+                if _, err := file.Seek(offset * 16, 1); err == nil {
+                        binary.Read(file, binary.BigEndian, &entry)
+                        if key == entry.Key {
+                                entries = append(entries, entry)
+                                continue
+                        }
+                }
+                break
+        }
+        return
 }
 
 func (b *Book) polyglot(position *Position) (key uint64) {
