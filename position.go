@@ -112,9 +112,9 @@ func (p *Position) Evaluate(color int) float64 {
         return p.game.players[color].brain.Evaluate(p)
 }
 
-// Returns bitmask of attack targets for the piece at the index.
-func (p *Position) Targets(index int) *Bitmask {
-        return p.game.attacks.Targets(index, p)
+// Returns bitmask of attack targets for the piece at the square.
+func (p *Position) Targets(square int) *Bitmask {
+        return p.game.attacks.Targets(square, p)
 }
 
 // All moves.
@@ -133,8 +133,8 @@ func (p *Position) Moves() (moves []*Move) {
 }
 
 // All moves for the piece in certain square.
-func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
-        targets := p.targets[index]
+func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
+        targets := p.targets[square]
 
         for !targets.IsEmpty() {
                 target := targets.FirstSet()
@@ -145,13 +145,13 @@ func (p *Position) PossibleMoves(index int, piece Piece) (moves []*Move) {
                 // possible moves, one for each promoted piece.
                 //
                 if !p.isPawnPromotion(piece, target) {
-                        candidate := NewMove(index, target, piece, capture)
+                        candidate := NewMove(square, target, piece, capture)
                         if !p.MakeMove(candidate).IsCheck(p.color) {
                                 moves = append(moves, candidate)
                         }
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                candidate := NewMove(index, target, piece, capture).Promote(name)
+                                candidate := NewMove(square, target, piece, capture).Promote(name)
                                 if !p.MakeMove(candidate).IsCheck(p.color) {
                                         moves = append(moves, candidate)
                                 }
@@ -307,9 +307,9 @@ func (p *Position) String() string {
 	for row := 7;  row >= 0;  row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0;  col <= 7; col++ {
-			index := Index(row, col)
+			square := Square(row, col)
 			buffer.WriteByte(' ')
-			if piece := p.pieces[index]; piece != 0 {
+			if piece := p.pieces[square]; piece != 0 {
 				buffer.WriteString(piece.String())
 			} else {
 				buffer.WriteString("\u22C5")

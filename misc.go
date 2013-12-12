@@ -45,17 +45,17 @@ func Row(n int) int {
 }
 
 // Returns column number for the given bit index.
-func Column(n int) int {
+func Col(n int) int {
 	return n % 8 // n & 7
 }
 
 // Returns row and column numbers for the given bit index.
 func Coordinate(n int) (int, int) {
-        return Row(n), Column(n)
+        return Row(n), Col(n)
 }
 
 // Returns n for the given the given row/column coordinate.
-func Index(row, column int) int {
+func Square(row, column int) int {
 	return (row << 3) + column
 }
 
@@ -95,45 +95,14 @@ func Rose(direction int) int {
 	return []int{ 8, 9, 1, -7, -8, -9, -1, 7 }[direction]
 }
 
-func Adjacent(index, target int) bool {
+func Adjacent(square, target int) bool {
         if target < 0 || target > 63 {
                 return false
         }
-        row, col := Coordinate(index)
+        row, col := Coordinate(square)
         x, y := Coordinate(target)
 
         return Abs(row-x) <= 1 && Abs(col-y) <= 1
-}
-
-// Returns index of the edge square following certain direction.
-func Edge(index, direction int) (edge int) {
-	if index < 0 || index > 63 {
-		return -1
-	}
-
-	switch direction {
-	case North:
-		edge = (index % 8) + 56
-	case East:
-		edge = (Row(index) + 1) * 8 - 1
-	case South:
-		edge = index % 8
-	case West:
-		edge = Row(index) * 8
-	case NorthEast:
-		return NORTH_EAST_EDGE[index]
-	case SouthEast:
-		return SOUTH_EAST_EDGE[index]
-	case SouthWest:
-		return SOUTH_WEST_EDGE[index]
-	case NorthWest:
-		return NORTH_WEST_EDGE[index]
-	}
-
-	if index == edge {
-		edge = -1
-	}
-	return
 }
 
 func Lop(args ...interface{}) {

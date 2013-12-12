@@ -38,12 +38,12 @@ func NewAttack() *Attack {
                 }
                 if row >= 1 && row <= 7 {
                         if col > 0 {
-                                attack.Pawn[WHITE][i].Set(Index(row+1,col-1))
-                                attack.Pawn[BLACK][i].Set(Index(row-1,col-1))
+                                attack.Pawn[WHITE][i].Set(Square(row+1, col-1))
+                                attack.Pawn[BLACK][i].Set(Square(row-1, col-1))
                         }
                         if col < 7 {
-                                attack.Pawn[WHITE][i].Set(Index(row+1,col+1))
-                                attack.Pawn[BLACK][i].Set(Index(row-1,col+1))
+                                attack.Pawn[WHITE][i].Set(Square(row+1, col+1))
+                                attack.Pawn[BLACK][i].Set(Square(row-1, col+1))
                         }
                 }
         }
@@ -129,7 +129,7 @@ func (a *Attack) LineBlockers(square int, p *Position) (north, east, south, west
 	}
 	east = p.board[2].FirstSetFrom(square, East)
 	if east >= 0 && p.board[opposite].IsSet(east) {
-                if Column(east) != 7 {
+                if Col(east) != 7 {
                         east += Rose(East)
                 } else {
                         east = -1
@@ -145,7 +145,7 @@ func (a *Attack) LineBlockers(square int, p *Position) (north, east, south, west
 	}
 	west = p.board[2].FirstSetFrom(square, West)
 	if west >= 0 && p.board[opposite].IsSet(west) {
-                if Column(west) != 0 {
+                if Col(west) != 0 {
 		        west += Rose(West)
                 } else {
                         west = -1
@@ -160,7 +160,7 @@ func (a *Attack) DiagonalBlockers(square int, p *Position) (northEast, southEast
 
 	northEast = p.board[2].FirstSetFrom(square, NorthEast)
 	if northEast >= 0 && p.board[opposite].IsSet(northEast) {
-                if Row(northEast) != 7 && Column(northEast) != 7 {
+                if Row(northEast) != 7 && Col(northEast) != 7 {
 		        northEast += Rose(NorthEast)
                 } else {
                         northEast = -1
@@ -168,7 +168,7 @@ func (a *Attack) DiagonalBlockers(square int, p *Position) (northEast, southEast
 	}
 	southEast = p.board[2].FirstSetFrom(square, SouthEast)
 	if southEast >= 0 && p.board[opposite].IsSet(southEast) {
-                if Row(southEast) != 0 && Column(southEast) != 7 {
+                if Row(southEast) != 0 && Col(southEast) != 7 {
 		        southEast += Rose(SouthEast)
                 } else {
                         southEast = -1
@@ -176,7 +176,7 @@ func (a *Attack) DiagonalBlockers(square int, p *Position) (northEast, southEast
 	}
 	southWest = p.board[2].FirstSetFrom(square, SouthWest)
 	if southWest >= 0 && p.board[opposite].IsSet(southWest) {
-                if Row(southWest) != 0 && Column(southWest) != 0 {
+                if Row(southWest) != 0 && Col(southWest) != 0 {
 		        southWest += Rose(SouthWest)
                 } else {
 		        southWest = -1
@@ -184,7 +184,7 @@ func (a *Attack) DiagonalBlockers(square int, p *Position) (northEast, southEast
 	}
 	northWest = p.board[2].FirstSetFrom(square, NorthWest)
 	if northWest >= 0 && p.board[opposite].IsSet(northWest) {
-                if Row(northWest) != 7 && Column(northWest) != 0 {
+                if Row(northWest) != 7 && Col(northWest) != 0 {
 		        northWest += Rose(NorthWest)
                 } else {
 		        northWest = -1

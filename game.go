@@ -66,7 +66,7 @@ func (g *Game) SetupSide(moves []string, color int) *Game {
 }
 
 func (g *Game) Set(row, col int, piece Piece) *Game {
-        g.pieces[Index(row, col)] = piece
+        g.pieces[Square(row, col)] = piece
 
         return g
 }
@@ -104,9 +104,9 @@ func (g *Game)String() string {
 	for row := 7;  row >= 0;  row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0;  col <= 7; col++ {
-			index := Index(row, col)
+			square := Square(row, col)
 			buffer.WriteByte(' ')
-			if piece := g.pieces[index]; piece != 0 {
+			if piece := g.pieces[square]; piece != 0 {
 				buffer.WriteString(piece.String())
 			} else {
 				buffer.WriteString("\u22C5")

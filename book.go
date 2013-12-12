@@ -111,8 +111,8 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 }
 
 func (b *Book) move(p *Position, entry Entry) (move *Move) {
-        from := Index(entry.fromRow(), entry.fromCol())
-        to   := Index(entry.toRow(), entry.toCol())
+        from := Square(entry.fromRow(), entry.fromCol())
+        to   := Square(entry.toRow(), entry.toCol())
         //
         // Check if this is a castle move. In Polyglot they are represented
         // as e1-h1, e1-a1, e8-h8, and e8-a8.
@@ -155,7 +155,7 @@ func (b *Book) polyglot(position *Position) (key uint64) {
 	}
 
         if position.enpassant.IsNotEmpty() {
-                col := Column(position.enpassant.FirstSet())
+                col := Col(position.enpassant.FirstSet())
                 key ^= polyglotRandom[772 + col]
         }
 	if position.color == WHITE {

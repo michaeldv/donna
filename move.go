@@ -52,7 +52,7 @@ func (m *Move) IsCrossing(enpassant Bitmask) bool {
 
 func (m *Move) String() string {
         if !m.IsCastle() {
-                col := [2]int{ Column(m.From) + 'a', Column(m.To) + 'a' }
+                col := [2]int{ Col(m.From) + 'a', Col(m.To) + 'a' }
                 row := [2]int{ Row(m.From) + 1, Row(m.To) + 1 }
 
                 capture := '-'

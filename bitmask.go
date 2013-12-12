@@ -24,46 +24,6 @@ var (
 		25, 39, 14, 33, 19, 30,  9, 24,
 		13, 18,  8, 12,  7,  6,  5, 63,
         }
-	NORTH_EAST_EDGE = [64]int{
-	        63, 55, 47, 39, 31, 23, 15, -1,
-                62, 63, 55, 47, 39, 31, 23, -1,
-                61, 62, 63, 55, 47, 39, 31, -1,
-                60, 61, 62, 63, 55, 47, 39, -1,
-                59, 60, 61, 62, 63, 55, 47, -1,
-                58, 59, 60, 61, 62, 63, 55, -1,
-                57, 58, 59, 60, 61, 62, 63, -1,
-                -1, -1, -1, -1, -1, -1, -1, -1,
-	}
-	SOUTH_EAST_EDGE = [64]int{
-                -1, -1, -1, -1, -1, -1, -1, -1,
-                 1,  2,  3,  4,  5,  6,  7, -1,
-                 2,  3,  4,  5,  6,  7, 15, -1,
-                 3,  4,  5,  6,  7, 15, 23, -1,
-                 4,  5,  6,  7, 15, 23, 31, -1,
-                 5,  6,  7, 15, 23, 31, 39, -1,
-                 6,  7, 15, 23, 31, 39, 47, -1,
-                 7, 15, 23, 31, 39, 47, 55, -1,
-        }
-	SOUTH_WEST_EDGE = [64]int{
-                -1, -1, -1, -1, -1, -1, -1, -1,
-                -1,  0,  1,  2,  3,  4,  5,  6,
-                -1,  8,  0,  1,  2,  3,  4,  5,
-                -1, 16,  8,  0,  1,  2,  3,  4,
-                -1, 24, 16,  8,  0,  1,  2,  3,
-                -1, 32, 24, 16,  8,  0,  1,  2,
-                -1, 40, 32, 24, 16,  8,  0,  1,
-                -1, 48, 40, 32, 24, 16,  8,  0,
-        }
-	NORTH_WEST_EDGE = [64]int{
-                -1,  8, 16, 24, 32, 40, 48, 56,
-                -1, 16, 24, 32, 40, 48, 56, 57,
-                -1, 24, 32, 40, 48, 56, 57, 58,
-                -1, 32, 40, 48, 56, 57, 58, 59,
-                -1, 40, 48, 56, 57, 58, 59, 60,
-                -1, 48, 56, 57, 58, 59, 60, 61,
-                -1, 56, 57, 58, 59, 60, 61, 62,
-                -1, -1, -1, -1, -1, -1, -1, -1,
-        }
 )
 
 // Returns true if all bitmask bits are clear.
@@ -109,12 +69,6 @@ func (b *Bitmask) Intersect(bitmask Bitmask) *Bitmask {
         return b
 }
 
-// Mulitplies two bitmasks.
-func (b *Bitmask) Multiply(bitmask Bitmask) *Bitmask {
-	*b *= bitmask
-        return b
-}
-
 // Excludes bits of one bitmask from another using bitwise XOR operator.
 func (b *Bitmask) Exclude(bitmask Bitmask) *Bitmask {
 	*b ^= (bitmask & *b)
@@ -141,9 +95,9 @@ func (b *Bitmask) Count() (count int) {
 }
 
 // ...
-func (b *Bitmask) FirstSetFrom(index, direction int) int {
+func (b *Bitmask) FirstSetFrom(square, direction int) int {
 	rose := Rose(direction)
-	for i, j := index, index+rose; Adjacent(i, j); i, j = j, j+rose {
+	for i, j := square, square+rose; Adjacent(i, j); i, j = j, j+rose {
 		if b.IsSet(j) {
 			return j
 		}
