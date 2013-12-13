@@ -7,24 +7,10 @@ import (
 
 type Bitmask uint64
 
-const (
-        CASTLE_KING_WHITE  = Bitmask((1 << E1) | (1 << F1) | (1 << G1))
-        CASTLE_KING_BLACK  = Bitmask((1 << E8) | (1 << F8) | (1 << G8))
-        CASTLE_QUEEN_WHITE = Bitmask((1 << E1) | (1 << D1) | (1 << C1))
-        CASTLE_QUEEN_BLACK = Bitmask((1 << E8) | (1 << D8) | (1 << C8))
-)
-var (
-	DE_BRUJIN = [64]int{
-		 0, 47,  1, 56, 48, 27,  2, 60,
-		57, 49, 41, 37, 28, 16,  3, 61,
-		54, 58, 35, 52, 50, 42, 21, 44,
-		38, 32, 29, 23, 17, 11,  4, 62,
-		46, 55, 26, 59, 40, 36, 15, 53,
-		34, 51, 20, 43, 31, 22, 10, 45,
-		25, 39, 14, 33, 19, 30,  9, 24,
-		13, 18,  8, 12,  7,  6,  5, 63,
-        }
-)
+// Creates a bitmask by shifting bit to the given offset.
+func Shift(offset int) Bitmask {
+	return Bitmask(1 << uint(offset))
+}
 
 // Returns true if all bitmask bits are clear.
 func (b Bitmask) IsEmpty() bool {
@@ -79,7 +65,7 @@ func (b *Bitmask) FirstSet() int {
         if *b == Bitmask(0) {
                 return -1
         }
-	return DE_BRUJIN[((*b ^ (*b-1)) * 0x03F79D71B4CB0A89) >> 58]
+	return deBrujin[((*b ^ (*b-1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
 // Returns number of bits set.
@@ -92,26 +78,6 @@ func (b *Bitmask) Count() (count int) {
                 }                               // }
         }                                       //
         return                                  // return count;
-}
-
-// ...
-func (b *Bitmask) FirstSetFrom(square, direction int) int {
-	rose := Rose(direction)
-	for i, j := square, square+rose; Adjacent(i, j); i, j = j, j+rose {
-		if b.IsSet(j) {
-			return j
-		}
-	}
-
-	return -1
-}
-
-func (b *Bitmask) ClearFrom (blocker, direction int) *Bitmask {
-	rose := Rose(direction)
-        for i, j := blocker, blocker; Adjacent(i, j); i, j = j, j+rose {
-                b.Clear(j)
-        }
-        return b
 }
 
 func (b Bitmask) String() string {

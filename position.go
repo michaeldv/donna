@@ -9,15 +9,15 @@ var bestlen [16]int
 
 type Position struct {
         game      *Game
-        pieces    [64]Piece // Position as an array of 64 squares with pieces on them.
-        targets   [64]Bitmask // Attack targets for each piece on the board.
-        board     [3]Bitmask // Position as a bitmask: [0] white pieces only, [1] black pieces, and [2] all pieces.
-        attacks   [3]Bitmask // [0] all squares attacked by white, [1] by black, [2] by either white or black.
-        outposts  [16]Bitmask // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
-        count     [16]int // Counts of each piece on the board, ex. white pawns: 6, etc.
-        enpassant Bitmask // En-passant opportunity caused by previous move.
-        check     bool // Is there a check?
-        color     int // Side to make next move.
+        pieces    [64]Piece     // Array of 64 squares with pieces on them.
+        targets   [64]Bitmask   // Attack targets for each piece on the board.
+        board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
+        attacks   [3]Bitmask    // [0] all squares attacked by white, [1] by black, [2] either white or black.
+        outposts  [16]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
+        count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
+        enpassant Bitmask       // En-passant opportunity caused by previous move.
+        check     bool          // Is our king under attack?
+        color     int           // Side to make next move.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
@@ -29,6 +29,52 @@ func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Po
         position.enpassant = enpassant
 
         return position.setupPieces().setupAttacks()
+}
+
+func (p *Position) setupPieces() *Position {
+        for i, piece := range p.pieces {
+                if piece != 0 {
+                        p.outposts[piece] = *new(Bitmask).Set(i)
+                        p.board[piece.Color()].Set(i)
+                        p.count[piece]++
+                }
+        }
+        p.board[2] = p.board[0]         // Combined board starts off with white pieces...
+        p.board[2].Combine(p.board[1])  // ...and adds black ones.
+
+        return p
+}
+
+func (p *Position) setupAttacks() *Position {
+        var king [2]int
+        for i, piece := range p.pieces {
+                if piece != 0 {
+                        p.targets[i] = *p.Targets(i)
+                        p.attacks[piece.Color()].Combine(p.targets[i])
+                        if piece.IsKing() {
+                                king[piece.Color()] = i
+                        }
+                }
+        }
+        //
+        // Now that we have attack targets for both kings adjust them to make sure the
+        // kings don't stomp on each other.
+        //
+        white_king_targets, black_king_targets := p.targets[king[WHITE]], p.targets[king[BLACK]]
+        p.targets[king[WHITE]].Exclude(black_king_targets)
+        p.targets[king[BLACK]].Exclude(white_king_targets)
+        //
+        // Combined board starts off with white pieces and adds black ones.
+        //
+        p.attacks[2] = p.attacks[0]
+        p.attacks[2].Combine(p.attacks[1])
+        //
+        // Is our king being attacked?
+        //
+        p.check = p.isCheck(p.color)
+
+        //Log("\n%s\n", p)
+        return p
 }
 
 func (p *Position) MakeMove(move *Move) *Position {
@@ -62,7 +108,7 @@ func (p *Position) MakeMove(move *Move) *Position {
                 case C8:
                         pieces[A8], pieces[D8] = 0, Rook(BLACK)
                 }
-        } else if move.Promoted != Piece(NONE) { // Replace pawn with the promoted piece.
+        } else if move.Promoted != 0 { // Replace pawn with the promoted piece.
                 pieces[move.To] = move.Promoted
         }
 
@@ -112,11 +158,6 @@ func (p *Position) Evaluate(color int) float64 {
         return p.game.players[color].brain.Evaluate(p)
 }
 
-// Returns bitmask of attack targets for the piece at the square.
-func (p *Position) Targets(square int) *Bitmask {
-        return p.game.attacks.Targets(square, p)
-}
-
 // All moves.
 func (p *Position) Moves() (moves []*Move) {
         for i, piece := range p.pieces {
@@ -146,13 +187,13 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
                 //
                 if !p.isPawnPromotion(piece, target) {
                         candidate := NewMove(square, target, piece, capture)
-                        if !p.MakeMove(candidate).IsCheck(p.color) {
+                        if !p.MakeMove(candidate).isCheck(p.color) {
                                 moves = append(moves, candidate)
                         }
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
                                 candidate := NewMove(square, target, piece, capture).Promote(name)
-                                if !p.MakeMove(candidate).IsCheck(p.color) {
+                                if !p.MakeMove(candidate).isCheck(p.color) {
                                         moves = append(moves, candidate)
                                 }
                         }
@@ -184,51 +225,11 @@ func (p *Position) Reorder(moves []*Move) []*Move {
         return append(append(append(checks, promotions...), captures...), remaining...)
 }
 
-func (p *Position) IsCheck(color int) bool {
+func (p *Position) isCheck(color int) bool {
         king := p.outposts[King(color)]
         return king.Intersect(p.attacks[color^1]).IsNotEmpty()
 }
 
-func (p *Position) setupPieces() *Position {
-        for i, piece := range p.pieces {
-                if piece != 0 {
-                        p.outposts[piece] = *new(Bitmask).Set(i)
-                        p.board[piece.Color()].Set(i)
-                        p.count[piece]++
-                }
-        }
-        p.board[2] = p.board[0] // Combined board starts off with white pieces...
-        p.board[2].Combine(p.board[1]) // ...and adds black ones.
-
-        return p
-}
-
-func (p *Position) setupAttacks() *Position {
-        var king [2]int
-        for i, piece := range p.pieces {
-                if piece != 0 {
-                        p.targets[i] = *p.Targets(i)
-                        p.attacks[piece.Color()].Combine(p.targets[i])
-                        if piece.IsKing() {
-                                king[piece.Color()] = i
-                        }
-                }
-        }
-        // Now that we have attack targets for both kings adjust them to make sure the
-        // kings don't stomp on each other.
-        white_king_targets, black_king_targets := p.targets[king[WHITE]], p.targets[king[BLACK]]
-        p.targets[king[WHITE]].Exclude(black_king_targets)
-        p.targets[king[BLACK]].Exclude(white_king_targets)
-
-        // Combined board starts off with white pieces and adds black ones.
-        p.attacks[2] = p.attacks[0]
-        p.attacks[2].Combine(p.attacks[1])
-
-        p.check = p.IsCheck(p.color) // Check to the other side?
-
-        //Log("\n%s\n", p)
-        return p
-}
 
 func (p *Position) saveBest(ply int, move *Move) {
         best[ply][ply] = move

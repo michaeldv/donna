@@ -13,7 +13,6 @@ const CHECKMATE = float64(math.MaxInt16)
 type Game struct {
 	pieces	[64]Piece
 	players	[2]*Player
-        attacks *Attack
         current int
         nodes   int
 }
@@ -22,7 +21,6 @@ func NewGame() *Game {
         game := new(Game)
         game.players[0] = NewPlayer(game, WHITE)
         game.players[1] = NewPlayer(game, BLACK)
-        game.attacks = NewAttack()
         game.current = WHITE
 
         return game
@@ -82,7 +80,7 @@ func (g *Game) Think(maxDepth int) *Move {
                 g.nodes = 0
                 start := time.Now()
                 score := g.Analyze(depth)
-                fmt.Printf("  %d      %6d    %8.1f   %7.1f     %v\n",
+                fmt.Printf("  %d     %7d    %8.1f   %7.1f     %v\n",
                         depth, g.nodes, float64(g.nodes)/time.Since(start).Seconds(), score, best[0][0 : bestlen[0]])
         }
         fmt.Printf("Best move: %s\n", best[0][0])

@@ -10,16 +10,7 @@ const (
         WHITE = iota
         BLACK
 )
-const (
-	North = iota
-	NorthEast
-	East
-	SouthEast
-	South
-	SouthWest
-	West
-	NorthWest
-)
+
 const (
 	A1 = iota
 	    B1; C1; D1; E1; F1; G1; H1
@@ -30,6 +21,13 @@ const (
 	A6; B6; C6; D6; E6; F6; G6; H6
 	A7; B7; C7; D7; E7; F7; G7; H7
 	A8; B8; C8; D8; E8; F8; G8; H8
+)
+
+const (
+        CASTLE_KING_WHITE  = Bitmask((1 << E1) | (1 << F1) | (1 << G1))
+        CASTLE_KING_BLACK  = Bitmask((1 << E8) | (1 << F8) | (1 << G8))
+        CASTLE_QUEEN_WHITE = Bitmask((1 << E1) | (1 << D1) | (1 << C1))
+        CASTLE_QUEEN_BLACK = Bitmask((1 << E8) | (1 << D8) | (1 << C8))
 )
 
 type Globals struct {
@@ -93,16 +91,6 @@ func C(color int) string {
 //
 func Rose(direction int) int {
 	return []int{ 8, 9, 1, -7, -8, -9, -1, 7 }[direction]
-}
-
-func Adjacent(square, target int) bool {
-        if target < 0 || target > 63 {
-                return false
-        }
-        row, col := Coordinate(square)
-        x, y := Coordinate(target)
-
-        return Abs(row-x) <= 1 && Abs(col-y) <= 1
 }
 
 func Lop(args ...interface{}) {
