@@ -123,6 +123,13 @@ func (p *Position) AlphaBeta(depth, ply int, alpha, beta float64) float64 {
                 return p.Evaluate(p.color)
         }
 
+	// Checkmate pruning.
+	if CHECKMATE - float64(ply) <= alpha {
+		return alpha
+	} else if -CHECKMATE + float64(ply) >= beta {
+		return beta
+	}
+
         moves := p.Moves()
         if len(moves) > 0 {
                 for i, move := range moves {
