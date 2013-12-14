@@ -117,12 +117,12 @@ func (p Piece)String() string {
                 } else {
                         return []string{`N`, `n`}[color]
                 }
-        // case PAWN:
-        //         if Settings.Fancy {
-        //                 return []string{"\u2659", "\u265F"}[color]
-        //         } else {
-        //                 return []string{`P`, `p`}[color]
-        //         }
+        case PAWN:
+                if Settings.Fancy {
+                        return []string{"\u2659", "\u265F"}[color]
+                } else {
+                        return []string{`P`, `p`}[color]
+                }
         }
         return ``
 }

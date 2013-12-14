@@ -74,12 +74,12 @@ func (g *Game) InitialPosition() *Game {
                        `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 }
 
-func (g *Game) Think(maxDepth int) *Move {
+func (g *Game) Think(maxDepth int, position *Position) *Move {
         fmt.Println(`Depth     Nodes     Nodes/s     Score     Best`)
         for depth := 1; depth <= maxDepth; depth++ {
                 g.nodes = 0
                 start := time.Now()
-                score := g.Analyze(depth)
+                score := g.Analyze(depth, position)
                 fmt.Printf("  %d     %7d    %8.1f   %7.1f     %v\n",
                         depth, g.nodes, float64(g.nodes)/time.Since(start).Seconds(), score, best[0][0 : bestlen[0]])
         }
@@ -87,13 +87,19 @@ func (g *Game) Think(maxDepth int) *Move {
         return best[0][0]
 }
 
-func (g *Game) Analyze(depth int) float64 {
-        position := NewPosition(g, g.pieces, g.current, Bitmask(0))
+func (g *Game) Analyze(depth int, position *Position) float64 {
+        if position == nil {
+                position = NewPosition(g, g.pieces, g.current, Bitmask(0))
+        }
         return position.AlphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
 }
 
+func (g *Game) Start() *Position {
+        return NewPosition(g, g.pieces, g.current, Bitmask(0))
+}
+
 func (g *Game) Search(depth int) *Move {
-        g.Analyze(depth)
+        g.Analyze(depth, nil)
         return best[0][0]
 }
 

@@ -23,6 +23,11 @@ func NewMove(from, to int, moved, captured Piece) *Move {
         return move
 }
 
+func NewMoveFromString(e2e4 string) (move *Move) {
+        move = &Move{ F1, C4, Bishop(WHITE), 0, 0 } // Stub.
+        return
+}
+
 func (m *Move) Promote(kind int) *Move {
         m.Promoted = Piece(kind | m.Piece.Color())
 
@@ -51,6 +56,7 @@ func (m *Move) IsCrossing(enpassant Bitmask) bool {
 }
 
 func (m *Move) String() string {
+
         if !m.IsCastle() {
                 col := [2]int{ Col(m.From) + 'a', Col(m.To) + 'a' }
                 row := [2]int{ Row(m.From) + 1, Row(m.To) + 1 }
@@ -60,12 +66,18 @@ func (m *Move) String() string {
                         capture = 'x'
                 }
                 piece, promoted := m.Piece.String(), m.Promoted.String()
+                format := `%c%d%c%c%d%s`
 
-                format := `%s %c%d%c%c%d%s` // Fancy notation is more readable with extra space.
-                if !Settings.Fancy {
-                        format = `%s%c%d%c%c%d%s`
+                if m.Piece.IsPawn() { // Skip piece name if it's a pawn.
+                        return fmt.Sprintf(format, col[0], row[0], capture, col[1], row[1], promoted)
+                } else {
+                        if Settings.Fancy { // Fancy notation is more readable with extra space.
+                                format = `%s ` + format
+                        } else {
+                                format = `%s` + format
+                        }
+                        return fmt.Sprintf(format, piece, col[0], row[0], capture, col[1], row[1], promoted)
                 }
-                return fmt.Sprintf(format, piece, col[0], row[0], capture, col[1], row[1], promoted)
         } else if m.IsKingSideCastle() {
                 return `0-0`
         } else {
