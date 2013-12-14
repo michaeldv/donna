@@ -19,7 +19,7 @@ func NewBrain(player *Player) *Brain {
         return brain
 }
 
-func (b *Brain) Evaluate(p *Position) (score float64) {
+func (b *Brain) Evaluate(p *Position) (score int) {
         material := b.materialBalance(p)
         mobility := b.mobilityBalance(p)
         aggression := b.aggressionBalance(p)
@@ -29,35 +29,43 @@ func (b *Brain) Evaluate(p *Position) (score float64) {
         return
 }
 
-func (b *Brain) materialBalance(p *Position) float64 {
+func (b *Brain) materialBalance(p *Position) int {
         opposite := b.color^1
 
         score := 1000 * (p.count[King(b.color)] - p.count[King(opposite)]) +
-                    9 * (p.count[Queen(b.color)] - p.count[Queen(opposite)]) +
-                    5 * (p.count[Rook(b.color)] - p.count[Rook(opposite)]) +
-                    3 * (p.count[Bishop(b.color)] - p.count[Bishop(opposite)]) +
-                    3 * (p.count[Knight(b.color)] - p.count[Knight(opposite)]) +
-                    1 * (p.count[Pawn(b.color)] - p.count[Pawn(opposite)])
+                  900 * (p.count[Queen(b.color)] - p.count[Queen(opposite)]) +
+                  500 * (p.count[Rook(b.color)] - p.count[Rook(opposite)]) +
+                  305 * (p.count[Bishop(b.color)] - p.count[Bishop(opposite)]) +
+                  300 * (p.count[Knight(b.color)] - p.count[Knight(opposite)]) +
+                  100 * (p.count[Pawn(b.color)] - p.count[Pawn(opposite)])
 
-        return float64(score) + 0.1 * float64(p.count[Bishop(b.color)] - p.count[Bishop(opposite)])
+        return score
 }
 
-func (b *Brain) mobilityBalance(p *Position) float64 {
-        return 0.25 * float64(b.movesAvailable(p, b.color) - b.movesAvailable(p, b.color^1))
+func (b *Brain) mobilityBalance(p *Position) (score int) {
+        score = b.movesAvailable(p, b.color) - b.movesAvailable(p, b.color^1)
+        if score != 0 {
+                score += 25 * (score / Abs(score))
+        }
+        return
 }
 
-func (b *Brain) aggressionBalance(p *Position) float64 {
-        return 0.20 * float64(b.attacksAvailable(p, b.color) - b.attacksAvailable(p, b.color^1))
+func (b *Brain) aggressionBalance(p *Position) (score int) {
+        score = b.attacksAvailable(p, b.color) - b.attacksAvailable(p, b.color^1)
+        if score != 0 {
+                score += 20 * (score / Abs(score))
+        }
+        return
 }
 
 // How many attacks for the central squares?
-func (b *Brain) centerBoost(p *Position) (center float64) {
+func (b *Brain) centerBoost(p *Position) (center int) {
         for i, piece := range p.pieces {
                 if piece != 0 && piece.Color() == b.color {
                         targets := p.targets[i]
                         sq12 := targets.Intersect(EXTENDED_CENTER).Count()
                         sq04 := targets.Intersect(CENTER).Count()
-                        center += 0.05 * float64(sq12 - sq04) + 0.3 * float64(sq04)
+                        center += 5 * (sq12 - sq04) + 3 * sq04
                 }
         }
         return

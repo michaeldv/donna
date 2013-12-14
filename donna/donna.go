@@ -32,7 +32,6 @@ func Repl() {
                                         position = position.MakeMove(move)
                                         fmt.Printf(`%s`, position)
                                         best := game.Think(3, position)
-                                        fmt.Printf("Computer plays %s\n", best)
                                         // move = donna.NewMoveFromString(move)
                                         // position = position.MakeMove(move)
                                         // fmt.Printf("%s", position)

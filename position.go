@@ -115,8 +115,8 @@ func (p *Position) MakeMove(move *Move) *Position {
         return NewPosition(p.game, pieces, p.color^1, enpassant)
 }
 
-func (p *Position) AlphaBeta(depth, ply int, alpha, beta float64) float64 {
-        Log("\nAlphaBeta(depth: %d/%d, color: %s, alpha: %.2f, beta: %.2f)\n", depth, ply, C(p.color), alpha, beta)
+func (p *Position) AlphaBeta(depth, ply int, alpha, beta int) int {
+        Log("\nAlphaBeta(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         bestlen[ply] = ply
 
         if depth == 0 {
@@ -124,9 +124,9 @@ func (p *Position) AlphaBeta(depth, ply int, alpha, beta float64) float64 {
         }
 
 	// Checkmate pruning.
-	if CHECKMATE - float64(ply) <= alpha {
+	if CHECKMATE - ply <= alpha {
 		return alpha
-	} else if -CHECKMATE + float64(ply) >= beta {
+	} else if -CHECKMATE + ply >= beta {
 		return beta
 	}
 
@@ -136,7 +136,7 @@ func (p *Position) AlphaBeta(depth, ply int, alpha, beta float64) float64 {
                         Log("Making move %s for %s\n", move, C(move.Piece.Color()))
                         p.game.nodes++
                         score := -p.MakeMove(move).AlphaBeta(depth - 1, ply + 1, -beta, -alpha)
-                        Log("Move %d/%d: %s (%d): score: %.2f, alpha: %.2f, beta: %.2f\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
+                        Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
                         if score >= beta {
                                 Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(p.color))
                                 Log("  Searched %v\n", moves[:i+1])
@@ -151,17 +151,17 @@ func (p *Position) AlphaBeta(depth, ply int, alpha, beta float64) float64 {
                 }
         } else if p.check {
                 Lop("Checkmate")
-                return -CHECKMATE + float64(ply)
+                return -CHECKMATE + ply
         } else {
                 Lop("Stalemate")
                 alpha = 0.0
         }
 
-        Log("End of AlphaBeta(depth: %d/%d, color: %s, alpha: %.2f, beta: %.2f) => %.2f\n", depth, ply, C(p.color), alpha, beta, alpha)
+        Log("End of AlphaBeta(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
 	return alpha
 }
 
-func (p *Position) Evaluate(color int) float64 {
+func (p *Position) Evaluate(color int) int {
         return p.game.players[color].brain.Evaluate(p)
 }
 

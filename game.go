@@ -8,7 +8,7 @@ import (
         `time`
 )
 
-const CHECKMATE = float64(math.MaxInt16)
+const CHECKMATE = math.MaxInt16
 
 type Game struct {
 	pieces	[64]Piece
@@ -80,14 +80,14 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
                 g.nodes = 0
                 start := time.Now()
                 score := g.Analyze(depth, position)
-                fmt.Printf("  %d     %7d    %8.1f   %7.1f     %v\n",
+                fmt.Printf("  %d     %7d    %8.1f     %5d     %v\n",
                         depth, g.nodes, float64(g.nodes)/time.Since(start).Seconds(), score, best[0][0 : bestlen[0]])
         }
         fmt.Printf("Best move: %s\n", best[0][0])
         return best[0][0]
 }
 
-func (g *Game) Analyze(depth int, position *Position) float64 {
+func (g *Game) Analyze(depth int, position *Position) int {
         if position == nil {
                 position = NewPosition(g, g.pieces, g.current, Bitmask(0))
         }
