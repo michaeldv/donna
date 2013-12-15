@@ -15,8 +15,11 @@ type Score struct {
 }
 
 type Brain struct {
-        player *Player
-        color  int
+        player      *Player
+        color       int
+        stage       int
+        endgame     int
+        middlegame  int
 }
 
 func NewBrain(player *Player) *Brain {
@@ -26,6 +29,41 @@ func NewBrain(player *Player) *Brain {
         brain.color = player.Color
 
         return brain
+}
+
+func (b *Brain) EvaluateEx(p *Position) (score int) {
+        b.determineGameStage(p)
+        b.analyzePawnStructure(p)
+        b.analyzeCoordination(p)
+        b.analyzePassedPawns(p)
+        b.analyzeKingSafety(p)
+
+        score = (b.middlegame * b.stage + b.endgame * (256 - b.stage)) / 256
+        if b.color == BLACK {
+                score = -score
+        }
+        return
+}
+
+// Determine game stage by counting how many pieces are present on the board.
+func (b *Brain) determineGameStage(p *Position) {
+        b.stage  =  2 * (p.count[Pawn(WHITE)]   + p.count[Pawn(BLACK)])
+        b.stage +=  6 * (p.count[Knight(WHITE)] + p.count[Knight(BLACK)])
+        b.stage += 12 * (p.count[Bishop(WHITE)] + p.count[Bishop(BLACK)])
+        b.stage += 16 * (p.count[Rook(WHITE)]   + p.count[Rook(BLACK)])
+        b.stage += 32 * (p.count[Queen(WHITE)]  + p.count[Queen(BLACK)])
+}
+
+func (b *Brain) analyzePawnStructure(p *Position) {
+}
+
+func (b *Brain) analyzeCoordination(p *Position) {
+}
+
+func (b *Brain) analyzePassedPawns(p *Position) {
+}
+
+func (b *Brain) analyzeKingSafety(p *Position) {
 }
 
 func (b *Brain) Evaluate(p *Position) (score int) {
