@@ -9,6 +9,11 @@ import ()
 const CENTER = 0x0000001818000000 // 4 central squares
 const EXTENDED_CENTER = 0x00003C3C3C3C0000 // 12 central squares
 
+type Score struct {
+	middlegame int
+	endgame    int
+}
+
 type Brain struct {
         player *Player
         color  int
@@ -29,7 +34,7 @@ func (b *Brain) Evaluate(p *Position) (score int) {
         aggression := b.aggressionBalance(p)
         center := b.centerBoost(p)
         score = material + mobility + aggression + center
-        Log("Score for %s is %.2f (mat: %.2f, mob: %.2f, agg: %.2f, ctr: %.2f)\n", C(b.color), score, material, mobility, aggression, center)
+        Log("Score for %s is %d (mat: %d, mob: %d, agg: %d, ctr: %d)\n", C(b.color), score, material, mobility, aggression, center)
         return
 }
 

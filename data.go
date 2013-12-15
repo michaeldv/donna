@@ -82,6 +82,23 @@ var flip = [64]int{
          0,  1,  2,  3,  4,  5,  6,  7, // H1 - H8
 }
 
+var (
+        pricePawn      = Score{  100,  100 }
+        priceKnight    = Score{  350,  330 }
+        priceBishop    = Score{  350,  360 }
+        priceRook      = Score{  525,  550 }
+        priceQueen     = Score{ 1000, 1000 }
+        pawnDoubled    = Score{  -10,  -25 }
+        pawnIsolated   = Score{  -15,  -25 }
+        pawnPassed     = Score{    5,   25 }
+        bishopPair     = Score{   25,   65 }
+        rookMobility   = Score{    5,   10 }
+        rookBehindPawn = Score{    5,   15 }
+        rookOn7th      = Score{   10,    5 }
+        rookOnOpen     = Score{    2,    2 }
+        rookOnSemiOpen = Score{    1,    1 }
+)
+
 var polyglotRandom = [...]uint64{
 	0x9D39247E33776D41, 0x2AF7398005AAA5C7, 0x44DB015024623547, 0x9C15F73E62A76AE2,
 	0x75834465489C0C89, 0x3290AC3A203001BF, 0x0FBBAD1F61042279, 0xE83A908FF2FB60CA,
