@@ -83,11 +83,11 @@ var flip = [64]int{
 }
 
 var (
-        pricePawn      = Score{  100,  100 }
-        priceKnight    = Score{  350,  330 }
-        priceBishop    = Score{  350,  360 }
-        priceRook      = Score{  525,  550 }
-        priceQueen     = Score{ 1000, 1000 }
+        valuePawn      = Score{  100,  100 }
+        valueKnight    = Score{  350,  330 }
+        valueBishop    = Score{  350,  360 }
+        valueRook      = Score{  525,  550 }
+        valueQueen     = Score{ 1000, 1000 }
         pawnDoubled    = Score{  -10,  -25 }
         pawnIsolated   = Score{  -15,  -25 }
         pawnPassed     = Score{    5,   25 }

@@ -188,7 +188,7 @@ func (p *Position) Moves() (moves []*Move) {
 func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
-        for !targets.IsEmpty() {
+        for targets.IsNotEmpty() {
                 target := targets.FirstSet()
                 capture := p.pieces[target]
                 //
