@@ -124,7 +124,7 @@ func (p *Position) AlphaBeta(depth, ply int, alpha, beta int) int {
         bestlen[ply] = ply
 
         if depth == 0 {
-                return p.Evaluate(p.color)
+                return p.Evaluate()
         }
 
 	// Checkmate pruning.
@@ -163,10 +163,6 @@ func (p *Position) AlphaBeta(depth, ply int, alpha, beta int) int {
 
         Log("End of AlphaBeta(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
 	return alpha
-}
-
-func (p *Position) Evaluate(color int) int {
-        return p.game.players[color].brain.Evaluate(p)
 }
 
 // All moves.
