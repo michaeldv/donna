@@ -97,8 +97,8 @@ var (
         rookOn7th      = Score{   10,    5 }
         rookOnOpen     = Score{    2,    2 }
         rookOnSemiOpen = Score{    1,    1 }
-        movesAvailable = Score{   25,   30 }
-        attackForce    = Score{   25,   20 }
+        movesAvailable = Score{    5,   10 }
+        attackForce    = Score{    5,   10 }
 )
 
 var polyglotRandom = [...]uint64{

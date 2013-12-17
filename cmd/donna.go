@@ -23,8 +23,8 @@ func repl() {
                 case `help`:
                         fmt.Println(`help: not implemented yet.`)
                 case `new`:
-                        game = donna.NewGame().Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bb5,Nf3,Rh1,a2,b2,c2,d2,e4,f2,g2,h2`,
-                                                     `Ra8,Nc6,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a6,b7,c7,d7,e5,f7,g7,h7`)
+                        game = donna.NewGame().Setup(`Ra1,Nb1,Bd2,Qd1,Ke1,Bf1,Nf3,Rh1,a2,b2,c4,d4,e2,f2,g2,h2`,
+                                                     `Ra8,Nb8,Bc8,Qe7,Ke8,Bb4,Nf6,Rh8,a7,b7,c7,d7,e6,f7,g7,h7`)
                         position = game.Start()
                         fmt.Printf(`%s`, position)
                 case `play`:

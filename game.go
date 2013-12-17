@@ -95,7 +95,7 @@ func (g *Game) Analyze(depth int, position *Position) int {
         if position == nil {
                 position = NewPosition(g, g.pieces, g.current, Bitmask(0))
         }
-        return position.AlphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
+        return position.alphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
 }
 
 func (g *Game) Start() *Position {
