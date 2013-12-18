@@ -13,8 +13,8 @@ type Score struct {
 
 type Evaluator struct {
         stage     int
-        endgame   int
         midgame   int
+        endgame   int
         position  *Position
 }
 
@@ -67,6 +67,7 @@ func (e *Evaluator) analyzeMaterial() {
 
 func (e *Evaluator) analyzeCoordination() {
         var moves, attacks [2]int
+        var bonus [2]Score
 
         for square, piece := range e.position.pieces {
                 if piece == 0 {
@@ -74,9 +75,13 @@ func (e *Evaluator) analyzeCoordination() {
                 }
                 color := piece.Color()
 
-                // Mobility and agressivness.
+                // Mobility: how many moves are available to squares not attacked by
+                // the opponent?
                 targets := e.position.targets[square]
-                moves[color] += targets.Count()
+                moves[color] += targets.Intersect(e.position.attacks[color^1]).Count()
+
+                // Agressivness: how many opponent's pieces are being attacked?
+                targets = e.position.targets[square]
                 attacks[color] += targets.Intersect(e.position.board[color^1]).Count()
 
                 // Piece/square adjustments.
@@ -85,33 +90,35 @@ func (e *Evaluator) analyzeCoordination() {
                 }
                 switch piece.Kind() {
                 case PAWN:
-                        e.midgame += bonusPawn[square]
-                        e.endgame += bonusPawn[square]
+                        bonus[color].midgame += bonusPawn[square]
+                        bonus[color].endgame += bonusPawn[square]
                 case KNIGHT:
-                        e.midgame += bonusKnight[square]
-                        e.endgame += bonusKnight[square]
+                        bonus[color].midgame += bonusKnight[square]
+                        bonus[color].endgame += bonusKnight[square]
                 case BISHOP:
-                        e.midgame += bonusBishop[square]
-                        e.endgame += bonusBishop[square]
+                        bonus[color].midgame += bonusBishop[square]
+                        bonus[color].endgame += bonusBishop[square]
                 // case ROOK:
                 //         bonus = bonusRook[square]
                 // case QUEEN:
                 //         bonus = bonusQueen[square]
                 case KING:
-                        e.midgame += bonusKing[square]
-                        e.endgame += bonusKingEndgame[square]
+                        bonus[color].midgame += bonusKing[square]
+                        bonus[color].endgame += bonusKingEndgame[square]
                 }
         }
-        mobility := moves[e.position.color] - moves[e.position.color^1]
-        if mobility != 0 {
-                e.midgame += movesAvailable.midgame * mobility / Abs(mobility)
-                e.endgame += movesAvailable.endgame * mobility / Abs(mobility)
-        }
-        aggression := attacks[e.position.color] - attacks[e.position.color^1]
-        if aggression != 0 {
-                e.midgame += attackForce.midgame * aggression / Abs(aggression)
-                e.endgame += attackForce.endgame * aggression / Abs(aggression)
-        }
+
+        color, opposite := e.position.color, e.position.color^1
+        e.midgame += bonus[color].midgame - bonus[opposite].midgame
+        e.endgame += bonus[color].endgame - bonus[opposite].endgame
+
+        mobility := moves[color] - moves[opposite]
+        e.midgame += mobility * movesAvailable.midgame
+        e.endgame += mobility * movesAvailable.endgame
+
+        aggression := attacks[color] - attacks[opposite]
+        e.midgame += aggression * attackForce.midgame
+        e.endgame += aggression * attackForce.endgame
 }
 
 func (e *Evaluator) analyzePawnStructure() {
