@@ -20,8 +20,9 @@ type Position struct {
         outposts  [16]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
         enpassant Bitmask       // En-passant opportunity caused by previous move.
-        check     bool          // Is our king under attack?
         color     int           // Side to make next move.
+        inCheck   bool          // Is our king under attack?
+        lastMove  *Move         // Last move that led to this position.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
@@ -75,13 +76,13 @@ func (p *Position) setupAttacks() *Position {
         //
         // Is our king being attacked?
         //
-        p.check = p.isCheck(p.color)
+        p.inCheck = p.isCheck(p.color)
 
         //Log("\n%s\n", p)
         return p
 }
 
-func (p *Position) MakeMove(move *Move) *Position {
+func (p *Position) MakeMove(move *Move) (position *Position) {
         pieces := p.pieces
         enpassant := Bitmask(0)
 
@@ -116,7 +117,9 @@ func (p *Position) MakeMove(move *Move) *Position {
                 pieces[move.To] = move.Promoted
         }
 
-        return NewPosition(p.game, pieces, p.color^1, enpassant)
+        position = NewPosition(p.game, pieces, p.color^1, enpassant)
+        position.lastMove = move
+        return
 }
 
 func (p *Position) isCheck(color int) bool {
@@ -194,7 +197,7 @@ func (p *Position) isQueenSideCastleAllowed() bool {
 
 func (p *Position) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h")
-        if !p.check {
+        if !p.inCheck {
                 buffer.WriteString("\n")
         } else {
                 buffer.WriteString("  Check to " + C(p.color) + "\n")

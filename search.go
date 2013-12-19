@@ -9,7 +9,7 @@ import()
 func (p *Position) alphaBeta(depth, ply int, alpha, beta int) int {
         Log("\nalphaBeta(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         if depth == 0 {
-                if !p.check {
+                if !p.inCheck {
                         return p.quietAlphaBeta(depth, ply, alpha, beta)
                 }
                 return p.Evaluate()
@@ -23,30 +23,29 @@ func (p *Position) alphaBeta(depth, ply int, alpha, beta int) int {
 		return beta
 	}
 
-        moves := p.Moves()
+        positions := p.Moves()
         nodes := p.game.nodes
-        for i, move := range moves {
-                if position := p.MakeMove(move); !position.isCheck(p.color) {
-                        Log("Making move %s for %s\n", move, C(move.Piece.Color()))
+        for i, position := range positions {
+                if !position.isCheck(p.color) {
                         p.game.nodes++
                         score := -position.alphaBeta(depth - 1, ply + 1, -beta, -alpha)
-                        Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
+                        Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(positions), C(p.color), depth, score, alpha, beta)
                         if score >= beta {
-                                Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(p.color))
-                                Log("  Searched %v\n", moves[:i+1])
-                                Log("  Skipping %v\n", moves[i+1:])
-                                Log("  Picking %v\n\n", move)
+                                Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(positions), C(p.color))
+                                Log("  Searched %v\n", positions[:i+1])
+                                Log("  Skipping %v\n", positions[i+1:])
+                                Log("  Picking %v\n\n", position)
                                 return score
                         }
                         if score > alpha {
                                 alpha = score
-                                p.saveBest(ply, move)
+                                p.saveBest(ply, position.lastMove)
                         }
                 }
         }
 
         if nodes == p.game.nodes { // No moves were available.
-                if p.check {
+                if p.inCheck {
                         Lop("Checkmate")
                         return -CHECKMATE + ply
                 } else {

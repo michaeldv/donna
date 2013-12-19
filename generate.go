@@ -7,20 +7,21 @@ package donna
 import()
 
 // All moves.
-func (p *Position) Moves() (moves []*Move) {
+func (p *Position) Moves() (positions []*Position) {
+        var moves []*Move
         for i, piece := range p.pieces {
                 if piece != 0 && piece.Color() == p.color {
                         moves = append(moves, p.PossibleMoves(i, piece)...)
                 }
         }
-        if len(moves) > 1 {
-                moves = p.Reorder(moves)
-        }
+
+        positions = p.Reorder(moves)
         Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
 
         return
 }
 
+// TODO: refactor to return positions.
 func (p *Position) Captures() (moves []*Move) {
         for i, piece := range p.pieces {
                 if piece != 0 && piece.Color() == p.color {
@@ -84,18 +85,19 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
         return
 }
 
-func (p *Position) Reorder(moves []*Move) []*Move {
-        var checks, promotions, captures, remaining []*Move
+func (p *Position) Reorder(moves []*Move) []*Position {
+        var checks, promotions, captures, remaining []*Position
 
         for _, move := range moves {
-                if p.MakeMove(move).check {
-                        checks = append(checks, move)
+                position := p.MakeMove(move)
+                if position.inCheck {
+                        checks = append(checks, position)
                 } else if move.Promoted != 0 {
-                        promotions = append(promotions, move)
+                        promotions = append(promotions, position)
                 } else if move.Captured != 0 {
-                        captures = append(captures, move)
+                        captures = append(captures, position)
                 } else {
-                        remaining = append(remaining, move)
+                        remaining = append(remaining, position)
                 }
         }
 
