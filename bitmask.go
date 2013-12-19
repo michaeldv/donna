@@ -18,16 +18,16 @@ func Shift(offset int) Bitmask {
 
 // Returns true if all bitmask bits are clear.
 func (b Bitmask) IsEmpty() bool {
-	return b == Bitmask(0)
+	return b == 0
 }
 
 func (b Bitmask) IsNotEmpty() bool {
-	return b != Bitmask(0)
+	return b != 0
 }
 
 // Returns true if a bit at given position is set.
 func (b Bitmask) IsSet(position int) bool {
-	return b & (1 << uint(position)) != Bitmask(0)
+	return b & (1 << uint(position)) != 0
 }
 
 // Returns true if a bit at given position is clear.
@@ -66,7 +66,7 @@ func (b *Bitmask) Exclude(bitmask Bitmask) *Bitmask {
 }
 
 func (b *Bitmask) FirstSet() int {
-        if *b == Bitmask(0) {
+        if *b == 0 {
                 return -1
         }
 	return deBrujin[((*b ^ (*b-1)) * 0x03F79D71B4CB0A89) >> 58]
@@ -74,9 +74,9 @@ func (b *Bitmask) FirstSet() int {
 
 // Returns number of bits set.
 func (b *Bitmask) Count() (count int) {
-        if *b != Bitmask(0) {
+        if *b != 0 {
                 mask := *b                      // int count = 0;
-                for ; mask != Bitmask(0); {     // while (x) {
+                for ; mask != 0; {              // while (x) {
                         count++                 //      count++;
                         mask &= mask -1         //      x &= x - 1; // reset LS1B
                 }                               // }

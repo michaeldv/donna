@@ -14,7 +14,6 @@ func (p *Position) alphaBeta(depth, ply int, alpha, beta int) int {
                 }
                 return p.Evaluate()
         }
-        bestlen[ply] = ply
 
 	// Checkmate pruning.
 	if CHECKMATE - ply <= alpha {

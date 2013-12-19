@@ -130,10 +130,11 @@ func (p *Position) isCheck(color int) bool {
 
 func (p *Position) saveBest(ply int, move *Move) {
         best[ply][ply] = move
+        bestlen[ply] = ply + 1
         for i := ply + 1; i < bestlen[ply + 1]; i++ {
                 best[ply][i] = best[ply + 1][i]
+                bestlen[ply]++
         }
-        bestlen[ply] = bestlen[ply + 1]
 }
 
 func (p *Position) isPawnPromotion(piece Piece, target int) bool {

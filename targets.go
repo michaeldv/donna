@@ -37,7 +37,7 @@ func (p *Position) Targets(square int) *Bitmask {
                 // If the last move set the en-passant square and it is diagonally adjacent
                 // to the current pawn, then add en-passant to the pawn's attack targets.
                 //
-                if p.enpassant != Bitmask(0) {
+                if p.enpassant != 0 {
                         target := p.enpassant.FirstSet()
                         if (color == WHITE && (target == square+7 || target == square+9)) || // Up/left or up/right a square.
                            (color == BLACK && (target == square-9 || target == square-7)) {  // Down/left or down/right a square.

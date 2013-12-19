@@ -79,6 +79,10 @@ func (g *Game) InitialPosition() *Game {
 }
 
 func (g *Game) Think(maxDepth int, position *Position) *Move {
+        if position == nil {
+                position = NewPosition(g, g.pieces, g.current, 0)
+        }
+        fmt.Printf("%s", position)
         fmt.Println(`Depth     Nodes     Nodes/s     Score     Best`)
         for depth := 1; depth <= maxDepth; depth++ {
                 g.nodes = 0
@@ -92,18 +96,15 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
 }
 
 func (g *Game) Analyze(depth int, position *Position) int {
-        if position == nil {
-                position = NewPosition(g, g.pieces, g.current, Bitmask(0))
-        }
         return position.alphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
 }
 
 func (g *Game) Start() *Position {
-        return NewPosition(g, g.pieces, g.current, Bitmask(0))
+        return NewPosition(g, g.pieces, g.current, 0)
 }
 
 func (g *Game) Search(depth int) *Move {
-        g.Analyze(depth, nil)
+        g.Analyze(depth, NewPosition(g, g.pieces, g.current, 0))
         return best[0][0]
 }
 

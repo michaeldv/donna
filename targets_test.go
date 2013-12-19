@@ -10,7 +10,7 @@ func TestTargets010(t *testing.T) {
         Settings.Log = false
         Settings.Fancy = false
         game := NewGame().Setup(`a2,b3,c4,d2,e6,f5,g4,h3`, `Kg8`)
-        positions := NewPosition(game, game.pieces, WHITE, Bitmask(0)).Moves()
+        positions := NewPosition(game, game.pieces, WHITE, 0).Moves()
 
         var moves []*Move
         for _,p := range positions {
@@ -21,7 +21,7 @@ func TestTargets010(t *testing.T) {
 
 func TestTargets020(t *testing.T) {
         game := NewGame().Setup(`a2,b3,c4,d2,e6,f5,g4,h3`, `a3,b4,c5,e7,f6,g5,h4,Kg8`)
-        positions := NewPosition(game, game.pieces, WHITE, Bitmask(0)).Moves()
+        positions := NewPosition(game, game.pieces, WHITE, 0).Moves()
 
         var moves []*Move
         for _,p := range positions {
@@ -32,7 +32,7 @@ func TestTargets020(t *testing.T) {
 
 func TestTargets030(t *testing.T) {
         game := NewGame().Setup(`a2,e4,g2`, `b3,f5,f3,h3,Kg8`)
-        positions := NewPosition(game, game.pieces, WHITE, Bitmask(0)).Moves()
+        positions := NewPosition(game, game.pieces, WHITE, 0).Moves()
 
         var moves []*Move
         for _,p := range positions {
@@ -43,7 +43,7 @@ func TestTargets030(t *testing.T) {
 
 func TestTargets040(t *testing.T) {
         game := NewGame().Setup(`Kf1,Nd2`, `Kc1,c2,c3`)
-        positions := NewPosition(game, game.pieces, BLACK, Bitmask(0)).Moves()
+        positions := NewPosition(game, game.pieces, BLACK, 0).Moves()
 
         var moves []*Move
         for _,p := range positions {
