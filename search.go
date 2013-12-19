@@ -24,11 +24,12 @@ func (p *Position) alphaBeta(depth, ply int, alpha, beta int) int {
 	}
 
         moves := p.Moves()
-        if len(moves) > 0 {
-                for i, move := range moves {
+        nodes := p.game.nodes
+        for i, move := range moves {
+                if position := p.MakeMove(move); !position.isCheck(p.color) {
                         Log("Making move %s for %s\n", move, C(move.Piece.Color()))
                         p.game.nodes++
-                        score := -p.MakeMove(move).alphaBeta(depth - 1, ply + 1, -beta, -alpha)
+                        score := -position.alphaBeta(depth - 1, ply + 1, -beta, -alpha)
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
                         if score >= beta {
                                 Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(p.color))
@@ -42,12 +43,16 @@ func (p *Position) alphaBeta(depth, ply int, alpha, beta int) int {
                                 p.saveBest(ply, move)
                         }
                 }
-        } else if p.check {
-                Lop("Checkmate")
-                return -CHECKMATE + ply
-        } else {
-                Lop("Stalemate")
-                alpha = 0.0
+        }
+
+        if nodes == p.game.nodes { // No moves were available.
+                if p.check {
+                        Lop("Checkmate")
+                        return -CHECKMATE + ply
+                } else {
+                        Lop("Stalemate")
+                        alpha = 0.0
+                }
         }
 
         Log("End of AlphaBeta(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
@@ -68,20 +73,22 @@ func (p *Position) quietAlphaBeta(depth, ply int, alpha, beta int) int {
 
         moves := p.Captures()
         for i, move := range moves {
-                Log("Making capture %s for %s\n", move, C(move.Piece.Color()))
-                p.game.nodes++
-                score = -p.MakeMove(move).quietAlphaBeta(depth - 1, ply + 1, -beta, -alpha)
-                Log("Capture %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
-                if score >= beta {
-                        Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(p.color))
-                        Log("  Searched %v\n", moves[:i+1])
-                        Log("  Skipping %v\n", moves[i+1:])
-                        Log("  Picking %v\n\n", move)
-                        return score
-                }
-                if score > alpha {
-                        alpha = score
-                        p.saveBest(ply, move)
+                if position := p.MakeMove(move); !position.isCheck(p.color) {
+                        Log("Making capture %s for %s\n", move, C(move.Piece.Color()))
+                        p.game.nodes++
+                        score = -position.MakeMove(move).quietAlphaBeta(depth - 1, ply + 1, -beta, -alpha)
+                        Log("Capture %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
+                        if score >= beta {
+                                Log("\n  Done at depth %d after move %d out of %d for %s\n", depth, i+1, len(moves), C(p.color))
+                                Log("  Searched %v\n", moves[:i+1])
+                                Log("  Skipping %v\n", moves[i+1:])
+                                Log("  Picking %v\n\n", move)
+                                return score
+                        }
+                        if score > alpha {
+                                alpha = score
+                                p.saveBest(ply, move)
+                        }
                 }
         }
 

@@ -33,5 +33,6 @@ func TestTargets040(t *testing.T) {
         game := NewGame().Setup(`Kf1,Nd2`, `Kc1,c2,c3`)
         moves := NewPosition(game, game.pieces, BLACK, Bitmask(0)).Moves()
 
-        expect(t, fmt.Sprintf("%v", moves), `[kc1xd2 c3xd2 kc1-d1 kc1-b2]`)
+        // Possible moves includes illegal move that causes a check.
+        expect(t, fmt.Sprintf("%v", moves), `[kc1xd2 c3xd2 kc1-b1 kc1-d1 kc1-b2]`)
 }

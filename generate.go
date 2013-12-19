@@ -32,7 +32,8 @@ func (p *Position) Captures() (moves []*Move) {
         return
 }
 
-// All moves for the piece in certain square.
+// All moves for the piece in certain square. This might include illegal
+// moves that cause check to the king.
 func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
@@ -45,16 +46,11 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
                 // possible moves, one for each promoted piece.
                 //
                 if !p.isPawnPromotion(piece, target) {
-                        candidate := NewMove(square, target, piece, capture)
-                        if !p.MakeMove(candidate).isCheck(p.color) {
-                                moves = append(moves, candidate)
-                        }
+                        moves = append(moves, NewMove(square, target, piece, capture))
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
                                 candidate := NewMove(square, target, piece, capture).Promote(name)
-                                if !p.MakeMove(candidate).isCheck(p.color) {
-                                        moves = append(moves, candidate)
-                                }
+                                moves = append(moves, candidate)
                         }
                 }
                 targets.Clear(target)
@@ -65,7 +61,8 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
         return
 }
 
-// All capture moves for the piece in certain square.
+// All capture moves for the piece in certain square. This might include
+// illegal moves that cause check to the king.
 func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
@@ -74,16 +71,11 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
                 capture := p.pieces[target]
                 if capture != 0  {
                         if !p.isPawnPromotion(piece, target) {
-                                candidate := NewMove(square, target, piece, capture)
-                                if !p.MakeMove(candidate).isCheck(p.color) {
-                                        moves = append(moves, candidate)
-                                }
+                                moves = append(moves, NewMove(square, target, piece, capture))
                         } else {
                                 for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
                                         candidate := NewMove(square, target, piece, capture).Promote(name)
-                                        if !p.MakeMove(candidate).isCheck(p.color) {
-                                                moves = append(moves, candidate)
-                                        }
+                                        moves = append(moves, candidate)
                                 }
                         }
                 }
