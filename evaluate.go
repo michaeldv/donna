@@ -90,21 +90,23 @@ func (e *Evaluator) analyzeCoordination() {
                 }
                 switch piece.Kind() {
                 case PAWN:
-                        bonus[color].midgame += bonusPawn[square]
-                        bonus[color].endgame += bonusPawn[square]
+                        bonus[color].midgame += bonusPawn[0][square]
+                        bonus[color].endgame += bonusPawn[1][square]
                 case KNIGHT:
-                        bonus[color].midgame += bonusKnight[square]
-                        bonus[color].endgame += bonusKnight[square]
+                        bonus[color].midgame += bonusKnight[0][square]
+                        bonus[color].endgame += bonusKnight[1][square]
                 case BISHOP:
-                        bonus[color].midgame += bonusBishop[square]
-                        bonus[color].endgame += bonusBishop[square]
-                // case ROOK:
-                //         bonus = bonusRook[square]
-                // case QUEEN:
-                //         bonus = bonusQueen[square]
+                        bonus[color].midgame += bonusBishop[0][square]
+                        bonus[color].endgame += bonusBishop[1][square]
+                case ROOK:
+                        bonus[color].midgame += bonusRook[0][square]
+                        bonus[color].endgame += bonusRook[1][square]
+                case QUEEN:
+                        bonus[color].midgame += bonusQueen[0][square]
+                        bonus[color].endgame += bonusQueen[1][square]
                 case KING:
-                        bonus[color].midgame += bonusKing[square]
-                        bonus[color].endgame += bonusKingEndgame[square]
+                        bonus[color].midgame += bonusKing[0][square]
+                        bonus[color].endgame += bonusKing[1][square]
                 }
         }
 

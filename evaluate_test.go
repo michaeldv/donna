@@ -18,7 +18,7 @@ func TestEvaluate010(t *testing.T) { // After 1. e2-e4
                                 `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
         position := NewPosition(game, game.pieces, WHITE, 0)
         score := position.Evaluate()
-        expect(t, fmt.Sprintf(`%d`, score), `43`)
+        expect(t, fmt.Sprintf(`%d`, score), `5`)
 }
 
 func TestEvaluate020(t *testing.T) { // After 1. e2-e4 e7-e5
@@ -34,7 +34,7 @@ func TestEvaluate030(t *testing.T) { // After 1. e2-e4 e7-e5 2. Ng1-f3
                                 `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e5,f7,g7,h7`)
         position := NewPosition(game, game.pieces, WHITE, 0)
         score := position.Evaluate()
-        expect(t, fmt.Sprintf(`%d`, score), `40`)
+        expect(t, fmt.Sprintf(`%d`, score), `55`)
 }
 
 func TestEvaluate040(t *testing.T) { // After 1. e2-e4 e7-e5 2. Ng1-f3 Nb8-c6
