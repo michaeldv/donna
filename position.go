@@ -22,7 +22,6 @@ type Position struct {
         enpassant Bitmask       // En-passant opportunity caused by previous move.
         color     int           // Side to make next move.
         inCheck   bool          // Is our king under attack?
-        lastMove  *Move         // Last move that led to this position.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
@@ -82,7 +81,7 @@ func (p *Position) setupAttacks() *Position {
         return p
 }
 
-func (p *Position) MakeMove(move *Move) (position *Position) {
+func (p *Position) MakeMove(move *Move) *Position {
         pieces := p.pieces
         enpassant := Bitmask(0)
 
@@ -117,9 +116,7 @@ func (p *Position) MakeMove(move *Move) (position *Position) {
                 pieces[move.To] = move.Promoted
         }
 
-        position = NewPosition(p.game, pieces, p.color^1, enpassant)
-        position.lastMove = move
-        return
+        return NewPosition(p.game, pieces, p.color^1, enpassant)
 }
 
 func (p *Position) isCheck(color int) bool {
