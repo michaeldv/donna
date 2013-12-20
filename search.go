@@ -9,9 +9,9 @@ import()
 func (p *Position) alphaBeta(depth, ply int, alpha, beta int) int {
         Log("\nalphaBeta(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         if depth == 0 {
-                if !p.inCheck {
-                        return p.quietAlphaBeta(depth, ply, alpha, beta)
-                }
+                // if !p.inCheck {
+                //         return p.quietAlphaBeta(depth, ply, alpha, beta)
+                // }
                 return p.Evaluate()
         }
 

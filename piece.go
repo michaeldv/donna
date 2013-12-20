@@ -42,6 +42,43 @@ func Pawn(color int) Piece {
         return Piece(color | PAWN)
 }
 
+// Returns intrinsic piece value for the middlegame and
+// the endgame.
+func (p Piece) value() (int, int) {
+	switch p.Kind() {
+        case PAWN:
+                return valuePawn.midgame, valuePawn.endgame
+        case KNIGHT:
+                return valueKnight.midgame, valueKnight.endgame
+        case BISHOP:
+                return valueBishop.midgame, valueBishop.endgame
+        case ROOK:
+                return valueRook.midgame, valueRook.endgame
+        case QUEEN:
+                return valueQueen.midgame, valueQueen.endgame
+        }
+        return 0, 0
+}
+
+// Returns bonus points for a piece at the given square.
+func (p Piece) bonus(square int) (int, int) {
+	switch p.Kind() {
+        case PAWN:
+                return bonusPawn[0][square], bonusPawn[1][square]
+        case KNIGHT:
+                return bonusKnight[0][square], bonusKnight[1][square]
+        case BISHOP:
+                return bonusBishop[0][square], bonusBishop[1][square]
+        case ROOK:
+                return bonusRook[0][square], bonusRook[1][square]
+        case QUEEN:
+                return bonusQueen[0][square], bonusQueen[1][square]
+        case KING:
+                return bonusKing[0][square], bonusKing[1][square]
+        }
+        return 0, 0
+}
+
 // return Piece - 1 when color is White(0)
 //        Piece - 3 when color is Black(1)
 func (p Piece) Polyglot() int {

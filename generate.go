@@ -4,7 +4,7 @@
 
 package donna
 
-import()
+import(`sort`)
 
 // All moves.
 func (p *Position) Moves() (moves []*Move) {
@@ -13,8 +13,7 @@ func (p *Position) Moves() (moves []*Move) {
                         moves = append(moves, p.PossibleMoves(i, piece)...)
                 }
         }
-
-        if len(moves) > 0 {
+        if len(moves) > 1 {
 		moves = p.Reorder(moves)
         }
         Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
@@ -22,7 +21,6 @@ func (p *Position) Moves() (moves []*Move) {
         return
 }
 
-// TODO: refactor to return positions.
 func (p *Position) Captures() (moves []*Move) {
         for i, piece := range p.pieces {
                 if piece != 0 && piece.Color() == p.color {
@@ -98,6 +96,15 @@ func (p *Position) Reorder(moves []*Move) []*Move {
                         remaining = append(remaining, move)
                 }
         }
-
+        sort.Sort(byScore{remaining, p})
         return append(append(append(captures, promotions...), remaining...))
 }
+
+// Sorting moves by their relative score based on piece/square.
+type byScore struct {
+        moves     []*Move
+        position  *Position
+}
+func (her byScore) Len() int           { return len(her.moves)}
+func (her byScore) Swap(i, j int)      { her.moves[i], her.moves[j] = her.moves[j], her.moves[i] }
+func (her byScore) Less(i, j int) bool { return her.moves[i].score(her.position) > her.moves[j].score(her.position) }

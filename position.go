@@ -21,6 +21,7 @@ type Position struct {
         count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
         enpassant Bitmask       // En-passant opportunity caused by previous move.
         color     int           // Side to make next move.
+        stage     int           // Game stage (256 in the initial position).
         inCheck   bool          // Is our king under attack?
 }
 
@@ -43,9 +44,19 @@ func (p *Position) setupPieces() *Position {
                         p.count[piece]++
                 }
         }
-        p.board[2] = p.board[0]         // Combined board starts off with white pieces...
-        p.board[2].Combine(p.board[1])  // ...and adds black ones.
-
+        //
+        // Combined board starts off with white pieces and adds black ones.
+        //
+        p.board[2] = p.board[WHITE]
+        p.board[2].Combine(p.board[BLACK])
+        //
+        // Determine game stage.
+        //
+        p.stage = 2 * (p.count[Pawn(WHITE)]   + p.count[Pawn(BLACK)])   +
+                  6 * (p.count[Knight(WHITE)] + p.count[Knight(BLACK)]) +
+                 12 * (p.count[Bishop(WHITE)] + p.count[Bishop(BLACK)]) +
+                 16 * (p.count[Rook(WHITE)]   + p.count[Rook(BLACK)])   +
+                 44 * (p.count[Queen(WHITE)]  + p.count[Queen(BLACK)])
         return p
 }
 

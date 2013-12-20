@@ -32,6 +32,39 @@ func NewMoveFromString(e2e4 string) (move *Move) {
         return
 }
 
+func (m *Move) score(position *Position) int {
+	var square, midgame, endgame int
+
+	if m.Piece.IsBlack() {
+		square = m.To
+	} else {
+		square = flip[m.To]
+	}
+
+	switch m.Piece.Kind() {
+        case PAWN:
+                midgame += bonusPawn[0][square]
+                endgame += bonusPawn[1][square]
+        case KNIGHT:
+                midgame += bonusKnight[0][square]
+                endgame += bonusKnight[1][square]
+        case BISHOP:
+                midgame += bonusBishop[0][square]
+                endgame += bonusBishop[1][square]
+        case ROOK:
+                midgame += bonusRook[0][square]
+                endgame += bonusRook[1][square]
+        case QUEEN:
+                midgame += bonusQueen[0][square]
+                endgame += bonusQueen[1][square]
+        case KING:
+                midgame += bonusKing[0][square]
+                endgame += bonusKing[1][square]
+        }
+
+	return (midgame * position.stage + endgame * (256 - position.stage)) / 256
+}
+
 func (m *Move) Promote(kind int) *Move {
         m.Promoted = Piece(kind | m.Piece.Color())
 
