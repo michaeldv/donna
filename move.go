@@ -6,6 +6,7 @@ package donna
 
 import (
         `fmt`
+        `regexp`
 )
 
 type Move struct {
@@ -27,9 +28,48 @@ func NewMove(from, to int, moved, captured Piece) *Move {
         return move
 }
 
-func NewMoveFromString(e2e4 string) (move *Move) {
-        move = &Move{ F1, C4, Bishop(WHITE), 0, 0 } // Stub.
-        return
+func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
+	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])-?([a-h])([1-8])[QRBN]?`)
+	arr := re.FindStringSubmatch(e2e4)
+
+	if len(arr) > 0 {
+		piece   := arr[1]
+		from    := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
+                to      := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
+		capture := p.pieces[to]
+
+		switch piece {
+		case `K`:
+			move = NewMove(from, to, King(p.color), capture)
+		case `Q`:
+			move = NewMove(from, to, Queen(p.color), capture)
+		case `R`:
+			move = NewMove(from, to, Rook(p.color), capture)
+		case `B`:
+			move = NewMove(from, to, Bishop(p.color), capture)
+		case `N`:
+			move = NewMove(from, to, Knight(p.color), capture)
+		default:
+			move = NewMove(from, to, Pawn(p.color), capture)
+		}
+                if (p.pieces[from] != move.Piece) || (p.targets[from] & Shift(to) == 0) {
+                        move = nil
+                }
+	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
+                from := p.outposts[King(p.color)].FirstSet()
+                to := G1
+                if e2e4 == `0-0-0` {
+                        to = C1
+                }
+                if p.color == BLACK {
+                        to += 56
+                }
+                move = NewMove(from, to, King(p.color), 0)
+                if !move.IsCastle() {
+                        move = nil
+                }
+	}
+	return
 }
 
 func (m *Move) score(position *Position) int {
@@ -72,11 +112,11 @@ func (m *Move) Promote(kind int) *Move {
 }
 
 func (m *Move) IsKingSideCastle() bool {
-        return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == 4 && m.To == 6) || (m.Piece.IsBlack() && m.From == 60 && m.To == 62))
+        return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == E1 && m.To == G1) || (m.Piece.IsBlack() && m.From == E8 && m.To == G8))
 }
 
 func (m *Move) IsQueenSideCastle() bool {
-        return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == 4 && m.To == 2) || (m.Piece.IsBlack() && m.From == 60 && m.To == 58))
+        return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == E1 && m.To == C1) || (m.Piece.IsBlack() && m.From == E8 && m.To == C8))
 }
 
 func (m *Move) IsCastle() bool {

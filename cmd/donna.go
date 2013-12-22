@@ -11,10 +11,11 @@ import (
 
 func repl() {
         var game *donna.Game
+        var move *donna.Move
         var position *donna.Position
 
         for command := ``; ; command = `` {
-                fmt.Print(`Donna> `)
+                fmt.Print(`donna> `)
                 fmt.Scanf(`%s`, &command)
                 switch command {
                 case ``:
@@ -23,27 +24,31 @@ func repl() {
                 case `help`:
                         fmt.Println(`help: not implemented yet.`)
                 case `new`:
-                        game = donna.NewGame().Setup(`Ra1,Nb1,Bd2,Qd1,Ke1,Bf1,Nf3,Rh1,a2,b2,c4,d4,e2,f2,g2,h2`,
-                                                     `Ra8,Nb8,Bc8,Qe7,Ke8,Bb4,Nf6,Rh8,a7,b7,c7,d7,e6,f7,g7,h7`)
+                        game = donna.NewGame().InitialPosition()
                         position = game.Start()
-                        fmt.Printf(`%s`, position)
-                case `play`:
-                        game.Think(3, position)
+                        fmt.Printf("%s\n", position)
+                case `go`:
+                        if game == nil || position == nil {
+                                game = donna.NewGame().InitialPosition()
+                                position = game.Start()
+                        }
+                        move = game.Think(3, position)
+                        position = position.MakeMove(move)
+                        fmt.Printf("%s\n", position)
                 default:
-                        if position != nil {
-                                move := donna.NewMoveFromString(command)
-                                if move != nil {
-                                        position = position.MakeMove(move)
-                                        fmt.Printf(`%s`, position)
-                                        game.Think(3, position)
-                                        // move = donna.NewMoveFromString(move)
-                                        // position = position.MakeMove(move)
-                                        // fmt.Printf("%s", position)
-                                } else {
-                                        fmt.Printf("%s appears to be an invalid move.\n")
-                                }
+                        if game == nil || position == nil {
+                                game = donna.NewGame().InitialPosition()
+                                position = game.Start()
+                        }
+                        move = donna.NewMoveFromString(command, position)
+                        if move != nil {
+                                position = position.MakeMove(move)
+                                fmt.Printf("%s\n", position)
+                                move = game.Think(3, position)
+                                position = position.MakeMove(move)
+                                fmt.Printf("%s\n", position)
                         } else {
-                                fmt.Println(`Please start a new game first.`)
+                                fmt.Printf("%s appears to be an invalid move.\n")
                         }
                 }
         }
