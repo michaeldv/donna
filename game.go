@@ -79,10 +79,17 @@ func (g *Game) InitialPosition() *Game {
 }
 
 func (g *Game) Think(maxDepth int, position *Position) *Move {
+        book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
         if position == nil {
-                position = NewPosition(g, g.pieces, g.current, 0)
+                position = g.Start()
         }
-        fmt.Printf("%s", position)
+        move := book.PickMove(position)
+        if move != nil {
+                fmt.Printf("Book move: %s\n", move)
+                return move
+        }
+
+        // fmt.Printf("%s", position)
         fmt.Println(`Depth     Nodes     Nodes/s     Score     Best`)
         for depth := 1; depth <= maxDepth; depth++ {
                 g.nodes = 0

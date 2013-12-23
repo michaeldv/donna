@@ -48,7 +48,7 @@ func repl() {
                                 position = position.MakeMove(move)
                                 fmt.Printf("%s\n", position)
                         } else {
-                                fmt.Printf("%s appears to be an invalid move.\n")
+                                fmt.Printf("%s appears to be an invalid move.\n", command)
                         }
                 }
         }

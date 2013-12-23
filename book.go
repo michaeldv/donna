@@ -158,10 +158,12 @@ func (b *Book) polyglot(position *Position) (key uint64) {
                 key ^= polyglotRandom[771]
 	}
 
-        if position.enpassant.IsNotEmpty() {
-                col := Col(position.enpassant.FirstSet())
-                key ^= polyglotRandom[772 + col]
-        }
+        // TODO: 1. e2-e4 sets enpassant on e3 which causes invalid polyglot key.
+        // if position.enpassant.IsNotEmpty() {
+        //         col := Col(position.enpassant.FirstSet())
+        //         key ^= polyglotRandom[772 + col]
+        // }
+
 	if position.color == WHITE {
                 key ^= polyglotRandom[780]
 	}
