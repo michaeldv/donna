@@ -65,7 +65,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                         to += 56
                 }
                 move = NewMove(from, to, King(p.color), 0)
-                if !move.IsCastle() {
+                if !move.isCastle() {
                         move = nil
                 }
 	}
@@ -111,30 +111,30 @@ func (m *Move) Promote(kind int) *Move {
         return m
 }
 
-func (m *Move) IsKingSideCastle() bool {
+func (m *Move) isKingSideCastle() bool {
         return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == E1 && m.To == G1) || (m.Piece.IsBlack() && m.From == E8 && m.To == G8))
 }
 
-func (m *Move) IsQueenSideCastle() bool {
+func (m *Move) isQueenSideCastle() bool {
         return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == E1 && m.To == C1) || (m.Piece.IsBlack() && m.From == E8 && m.To == C8))
 }
 
-func (m *Move) IsCastle() bool {
-        return m.IsKingSideCastle() || m.IsQueenSideCastle()
+func (m *Move) isCastle() bool {
+        return m.isKingSideCastle() || m.isQueenSideCastle()
 }
 
-func (m *Move) IsTwoSquarePawnAdvance() bool {
+func (m *Move) isTwoSquarePawnAdvance() bool {
         rowFrom, rowTo := Row(m.From), Row(m.To)
         return m.Piece.IsPawn() && ((m.Piece.IsWhite() && rowFrom == 1 && rowTo == 3) || (m.Piece.IsBlack() && rowFrom == 6 && rowTo == 4))
 }
 
-func (m *Move) IsCrossing(enpassant Bitmask) bool {
+func (m *Move) isCrossing(enpassant Bitmask) bool {
         return m.Piece.IsPawn() && Bitmask(1 << uint(m.To)) == enpassant
 }
 
 func (m *Move) String() string {
 
-        if !m.IsCastle() {
+        if !m.isCastle() {
                 col := [2]int{ Col(m.From) + 'a', Col(m.To) + 'a' }
                 row := [2]int{ Row(m.From) + 1, Row(m.To) + 1 }
 
@@ -155,7 +155,7 @@ func (m *Move) String() string {
                         }
                         return fmt.Sprintf(format, piece, col[0], row[0], capture, col[1], row[1], promoted)
                 }
-        } else if m.IsKingSideCastle() {
+        } else if m.isKingSideCastle() {
                 return `0-0`
         } else {
                 return `0-0-0`

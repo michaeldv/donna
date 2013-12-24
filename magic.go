@@ -52,7 +52,7 @@ func init() {
                 }
 
                 // Knights and Kings.
-                for i := A1;  i <= H8;  i++ {
+                for i := A1; i <= H8; i++ {
                         if i == square || Abs(i - square) > 17 {
                                 continue
                         }
@@ -61,9 +61,15 @@ func init() {
                         if (Abs(r - row) == 2 && Abs(c - col) == 1) || (Abs(r - row) == 1 && Abs(c - col) == 2) {
                                 knightMoves[square].Set(i)
                         }
+
                         if Abs(r - row) <= 1 && Abs(c - col) <= 1 {
                                 kingMoves[square].Set(i)
                         }
+                }
+                if square == E1 {
+                        kingMoves[square].Set(C1).Set(G1)
+                } else if square == E8 {
+                        kingMoves[square].Set(C8).Set(G8)
                 }
 	}
 }

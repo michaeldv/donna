@@ -100,19 +100,19 @@ func (p *Position) MakeMove(move *Move) *Position {
         pieces[move.To] = move.Piece
 
         // Check if we need to update en-passant bitmask.
-        if move.IsTwoSquarePawnAdvance() {
+        if move.isTwoSquarePawnAdvance() {
                 if p.color == WHITE {
                         enpassant.Set(move.From + 8)
                 } else {
                         enpassant.Set(move.From - 8)
                 }
-        } else if move.IsCrossing(p.enpassant) { // Take out the en-passant pawn.
+        } else if move.isCrossing(p.enpassant) { // Take out the en-passant pawn.
                 if p.color == WHITE {
                         pieces[move.To - 8] = Piece(NONE)
                 } else {
                         pieces[move.To + 8] = Piece(NONE)
                 }
-        } else if move.IsCastle() {
+        } else if move.isCastle() {
                 switch move.To {
                 case G1:
                         pieces[H1], pieces[F1] = 0, Rook(WHITE)
