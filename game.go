@@ -83,7 +83,7 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
         if position == nil {
                 position = g.Start()
         }
-        move := book.PickMove(position)
+        move := book.pickMove(position)
         if move != nil {
                 fmt.Printf("Book move: %s\n", move)
                 return move

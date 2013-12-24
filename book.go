@@ -4,7 +4,7 @@
 
 package donna
 
-import (`encoding/binary`; `os`; `fmt`)
+import (`encoding/binary`; `os`)
 
 type Book struct {
         fileName  string
@@ -29,22 +29,10 @@ func NewBook(fileName string) *Book {
         return book
 }
 
-func (b *Book) PickMove(position *Position) (move *Move) {
+func (b *Book) pickMove(position *Position) (move *Move) {
         entries := b.lookup(position)
-
-        for i, entry := range entries {
-                fmt.Printf(" move: %d\n", i+1)
-                fmt.Printf("  key: 0x%016X\n", entry.Key)
-                fmt.Printf(" move: 0x%04X\n", entry.Move)
-                fmt.Printf("score: 0x%04X\n", entry.Score)
-                fmt.Printf("learn: 0x%08X\n", entry.Learn)
-                fmt.Printf("%016b: to c/r: %d/%d from c/r %d/%d promo %d\n",
-                        entry.Move, entry.toCol(), entry.toRow(), entry.fromCol(), entry.fromRow(), entry.promoted())
-        }
-
         if len(entries) == 0 {
-                // TODO: set the "useless" flag after a few misses.
-                return nil
+                return nil // TODO: set the "useless book" flag after a few misses.
         }
 
         return b.move(position, entries[Random(len(entries))])
@@ -53,63 +41,39 @@ func (b *Book) PickMove(position *Position) (move *Move) {
 func (b *Book) lookup(position *Position) (entries []Entry) {
         var entry Entry
 
-	file, err := os.Open(b.fileName)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
+        file, err := os.Open(b.fileName)
+        if err != nil {
+                return
+        }
+        defer file.Close()
 
         key := b.polyglot(position)
-        first, middle, last := int64(0), int64(0), b.entries
-
-        for {
-                if last - first <= 1 {
-                        return entries // <-- Nothing was found.
-                }
-
-                middle = (first + last) / 2
-
-                if _, err := file.Seek(middle * 16, 0); err == nil {
-                        binary.Read(file, binary.BigEndian, &entry)
-                        if key == entry.Key {
-                                entries = append(entries, entry)
-                                break // <-- Found it!
-                        } else if key < entry.Key {
-                                last = middle
-                        } else {
-                                first = middle
-                        }
+        //
+        // Since book entries are ordered by the polyglot key use binary
+        // search to find *first* book entry that matches the position.
+        //
+        first, current, last := int64(-1), int64(0), b.entries
+        for ; first < last; {
+                current = (first + last) / 2
+                file.Seek(current * 16, 0)
+                binary.Read(file, binary.BigEndian, &entry)
+                if key <= entry.Key {
+                        last = current
                 } else {
-                        return entries // <-- Nothing was found.
+                        first = current + 1
                 }
         }
         //
-        // Go up and down from the current spot to pick up remaining book
-        // entries with the same polyglot hash key.
+        // Read all book entries for the given position.
         //
-        for offset := int64(0); ; offset += 16 {
-                if _, err := file.Seek(offset, 1); err == nil {
-                        binary.Read(file, binary.BigEndian, &entry)
-                        if key == entry.Key {
-                                entries = append(entries, entry)
-                                continue
-                        }
+        file.Seek(first * 16, 0)
+        for ;; {
+                binary.Read(file, binary.BigEndian, &entry)
+                if key != entry.Key {
+                        break
+                } else {
+                        entries = append(entries, entry)
                 }
-                break
-        }
-        //
-        // Go back to the middle and proceed backwards in 16-byte increments.
-        //
-        file.Seek(middle * 16, 0)
-        for offset := int64(-16); ; offset -= 32 {
-                if _, err := file.Seek(offset, 1); err == nil {
-                        binary.Read(file, binary.BigEndian, &entry)
-                        if key == entry.Key {
-                                entries = append(entries, entry)
-                                continue
-                        }
-                }
-                break
         }
         return
 }
@@ -187,7 +151,7 @@ func (e *Entry) fromRow() int {
         return int((e.Move >> 9) & 7)
 }
 
-// Poluglot encodes "promotion piece" as follows:
+// Polyglot encodes "promotion piece" as follows:
 //   knight  1 => 4
 //   bishop  2 => 6
 //   rook    3 => 8
