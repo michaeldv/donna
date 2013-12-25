@@ -36,3 +36,29 @@ func expect(t *testing.T, actual, expected interface{}) {
         }
 }
 
+func contains(t *testing.T, actual interface{}, expected string) {
+        containsMatcher(t, fmt.Sprintf(`%v`, actual), expected, true)
+}
+
+func doesNotContain(t *testing.T, actual interface{}, expected string) {
+        containsMatcher(t, fmt.Sprintf(`%v`, actual), expected, false)
+}
+
+func containsMatcher(t *testing.T, actual, expected string, match bool) {
+        var passed bool
+
+        _, file, line, _ := runtime.Caller(2)
+        file = file[strings.LastIndex(file, `/`) + 1:]
+
+        if match {
+                passed = (actual == expected)
+        } else {
+                passed = (actual != expected)
+        }
+
+        if passed {
+                t.Logf("\r\t\x1B[32m%s line %d: %s\x1B[0m", file, line, actual)
+        } else {
+                t.Errorf("\r\t\x1B[31m%s line %d\nContains: %s\n  Actual: %s\x1B[0m", file, line, expected, actual)
+        }
+}
