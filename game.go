@@ -19,6 +19,7 @@ type Game struct {
 	players	[2]*Player
         current int
         nodes   int
+        qnodes  int
 }
 
 func NewGame() *Game {
@@ -90,13 +91,15 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
         }
 
         // fmt.Printf("%s", position)
-        fmt.Println(`Depth     Nodes     Nodes/s     Score     Best`)
+        fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
+        //fmt.Println(`Depth   Nodes     QNodes      Nodes/s     Score     Best`)
         for depth := 1; depth <= maxDepth; depth++ {
-                g.nodes = 0
+                g.nodes, g.qnodes = 0, 0
                 start := time.Now()
                 score := g.Analyze(depth, position)
-                fmt.Printf("  %d     %7d    %8.1f     %5d     %v\n",
-                        depth, g.nodes, float64(g.nodes)/time.Since(start).Seconds(), score, best[0][0 : bestlen[0]])
+                finish := time.Since(start).Seconds()
+                fmt.Printf(" %d %02d:%02d    %8d    %8d    %8.1f   %5d   %v\n",
+                        depth, int(finish)/60, int(finish)%60, g.nodes, g.qnodes, float64(g.nodes+g.qnodes)/finish, score, best[0][0 : bestlen[0]])
         }
         fmt.Printf("Best move: %s\n", best[0][0])
         return best[0][0]

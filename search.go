@@ -79,11 +79,11 @@ func (p *Position) quietAlphaBeta(depth, ply int, alpha, beta int) int {
         if p.inCheck {
                 bestScore = -CHECKMATE
                 moves := p.Moves() // TODO: check evasions only.
-                nodes := p.game.nodes
+                qnodes := p.game.qnodes
                 for i, move := range moves {
                         if position := p.MakeMove(move); !position.isCheck(p.color) {
                                 Log("Evasion %s for %s\n", move, C(move.Piece.Color()))
-                                p.game.nodes++
+                                p.game.qnodes++
 
                                 score = -position.quietAlphaBeta(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                                 if alpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
@@ -107,7 +107,7 @@ func (p *Position) quietAlphaBeta(depth, ply int, alpha, beta int) int {
                                 quietBeta = quietAlpha + 1
                         }
                 }
-                if nodes == p.game.nodes {
+                if qnodes == p.game.qnodes {
                         bestlen[ply] = ply
                         return -CHECKMATE + ply
                 }
@@ -127,7 +127,7 @@ func (p *Position) quietAlphaBeta(depth, ply int, alpha, beta int) int {
                 for i, move := range moves {
                         if position := p.MakeMove(move); !position.isCheck(p.color) {
                                 Log("Capture %s for %s\n", move, C(move.Piece.Color()))
-                                p.game.nodes++
+                                p.game.qnodes++
 
                                 score = -position.quietAlphaBeta(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                                 if quietAlpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
