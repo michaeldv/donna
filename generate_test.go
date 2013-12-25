@@ -1,6 +1,6 @@
 package donna
 
-import (`testing`; `fmt`)
+import (`testing`; `fmt`; `strings`)
 
 func TestGenerate000(t *testing.T) {
         game := NewGame().InitialPosition()
@@ -32,4 +32,59 @@ func TestGenerate030(t *testing.T) {
         moves := game.Start().Moves()
 
         expect(t, fmt.Sprintf("%v", moves), `[a2xb3 g2xf3 g2xh3 e4xf5 a2-a4 a2-a3 g2-g4 g2-g3 e4-e5]`)
+}
+
+// Should not include castles when rook has moved.
+func TestGenerate040(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rf1,g2`, `Ke8`)
+        moves := fmt.Sprintf(`%v`, game.Start().Moves())
+
+        expect(t, fmt.Sprintf(`%v`, strings.Contains(moves, `0-0`)), `false`)
+}
+
+func TestGenerate050(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rb1,b2`, `Ke8`)
+        moves := fmt.Sprintf(`%v`, game.Start().Moves())
+
+        expect(t, fmt.Sprintf(`%v`, strings.Contains(moves, `0-0`)), `false`)
+}
+
+// Should not include castles when king has moved.
+func TestGenerate060(t *testing.T) {
+        game := NewGame().Setup(`Kf1,Ra1,a2,Rh1,h2`, `Ke8`)
+        moves := fmt.Sprintf(`%v`, game.Start().Moves())
+
+        expect(t, fmt.Sprintf(`%v`, strings.Contains(moves, `0-0`)), `false`)
+}
+
+// Should not include castles when rooks are not there.
+func TestGenerate070(t *testing.T) {
+        game := NewGame().Setup(`Ke1`, `Ke8`)
+        moves := fmt.Sprintf(`%v`, game.Start().Moves())
+
+        expect(t, fmt.Sprintf(`%v`, strings.Contains(moves, `0-0`)), `false`)
+}
+
+// Should not include castles when king is in check.
+func TestGenerate080(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Ra1,Rf1`, `Ke8,Re7`)
+        moves := fmt.Sprintf(`%v`, game.Start().Moves())
+
+        expect(t, fmt.Sprintf(`%v`, strings.Contains(moves, `0-0`)), `false`)
+}
+
+// Should not include castles when target square is a capture.
+func TestGenerate090(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Ra1,Rf1`, `Ke8,Nc1,Ng1`)
+        moves := fmt.Sprintf(`%v`, game.Start().Moves())
+
+        expect(t, fmt.Sprintf(`%v`, strings.Contains(moves, `0-0`)), `false`)
+}
+
+// Should not include castles when king is to jump over attacked square.
+func TestGenerate100(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Ra1,Rf1`, `Ke8,Bc4,Bf4`)
+        moves := fmt.Sprintf(`%v`, game.Start().Moves())
+
+        expect(t, fmt.Sprintf(`%v`, strings.Contains(moves, `0-0`)), `false`)
 }

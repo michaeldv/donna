@@ -46,7 +46,10 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
                 // possible moves, one for each promoted piece.
                 //
                 if !p.isPawnPromotion(piece, target) {
-                        moves = append(moves, NewMove(square, target, piece, capture))
+                        move := NewMove(square, target, piece, capture)
+                        if !p.isInvalidCastle(move) {
+                                moves = append(moves, move)
+                        }
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
                                 candidate := NewMove(square, target, piece, capture).Promote(name)
@@ -54,9 +57,6 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
                         }
                 }
                 targets.Clear(target)
-        }
-        if castle := p.tryCastle(); castle != nil {
-                moves = append(moves, castle)
         }
         return
 }

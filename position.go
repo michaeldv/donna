@@ -149,21 +149,8 @@ func (p *Position) isPawnPromotion(piece Piece, target int) bool {
         return piece.IsPawn() && ((piece.IsWhite() && target >= A8) || (piece.IsBlack() && target <= H1))
 }
 
-func (p *Position) tryCastle() (castle *Move) {
-        if p.isKingSideCastleAllowed() {
-                if p.color == WHITE {
-                        castle = NewMove(E1, G1, King(WHITE), 0)
-                } else {
-                        castle = NewMove(E8, G8, King(BLACK), 0)
-                }
-        } else if p.isQueenSideCastleAllowed() {
-                if p.color == WHITE {
-                        castle = NewMove(E1, C1, King(WHITE), 0)
-                } else {
-                        castle = NewMove(E8, C8, King(BLACK), 0)
-                }
-        }
-        return
+func (p *Position) isInvalidCastle(move *Move) bool {
+        return move.isCastle() && !p.isKingSideCastleAllowed() && !p.isQueenSideCastleAllowed()
 }
 
 func (p *Position) isKingSideCastleAllowed() bool {
