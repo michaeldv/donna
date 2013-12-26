@@ -23,6 +23,8 @@ type Position struct {
         color     int           // Side to make next move.
         stage     int           // Game stage (256 in the initial position).
         inCheck   bool          // Is our king under attack?
+        can00     [2]bool       // Is king-side castle allowed?
+        can000    [2]bool       // Is queen-side castle allowed?
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
@@ -32,6 +34,10 @@ func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Po
         position.pieces = pieces
         position.color = color
         position.enpassant = enpassant
+        position.can00[WHITE] = true
+        position.can00[BLACK] = true
+        position.can000[WHITE] = true
+        position.can000[BLACK] = true
 
         return position.setupPieces().setupAttacks()
 }
@@ -156,7 +162,7 @@ func (p *Position) isInvalidCastle(move *Move) bool {
 func (p *Position) isKingSideCastleAllowed() bool {
         white, black := CASTLE_KING_WHITE, CASTLE_KING_BLACK
 
-        return p.game.players[p.color].Can00 &&
+        return p.can00[p.color] &&
                ((p.color == WHITE &&
                        p.pieces[E1] == King(WHITE) &&
                        p.pieces[F1] == 0 &&
@@ -174,7 +180,7 @@ func (p *Position) isKingSideCastleAllowed() bool {
 func (p *Position) isQueenSideCastleAllowed() bool {
         white, black := CASTLE_QUEEN_WHITE, CASTLE_QUEEN_BLACK
 
-        return p.game.players[p.color].Can000 &&
+        return p.can000[p.color] &&
                ((p.color == WHITE &&
                        p.pieces[E1] == King(WHITE) &&
                        p.pieces[D1] == 0 &&

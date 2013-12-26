@@ -109,16 +109,16 @@ func (b *Book) polyglot(position *Position) (key uint64) {
                 }
         }
 
-	if position.game.players[WHITE].Can00 {
+	if position.can00[WHITE] {
                 key ^= polyglotRandom[768]
 	}
-	if position.game.players[WHITE].Can000 {
+	if position.can000[WHITE] {
                 key ^= polyglotRandom[769]
 	}
-	if position.game.players[BLACK].Can00 {
+	if position.can00[BLACK] {
                 key ^= polyglotRandom[770]
 	}
-	if position.game.players[BLACK].Can000 {
+	if position.can000[BLACK] {
                 key ^= polyglotRandom[771]
 	}
 

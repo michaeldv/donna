@@ -16,7 +16,6 @@ const CHECKMATE = math.MaxInt16
 
 type Game struct {
 	pieces	[64]Piece
-	players	[2]*Player
         current int
         nodes   int
         qnodes  int
@@ -24,8 +23,6 @@ type Game struct {
 
 func NewGame() *Game {
         game := new(Game)
-        game.players[0] = NewPlayer(game, WHITE)
-        game.players[1] = NewPlayer(game, BLACK)
         game.current = WHITE
 
         return game
