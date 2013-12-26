@@ -9,14 +9,14 @@ import (`testing`)
 func TestPosition010(t *testing.T) {
         game := NewGame().Setup(`Ke1,e2`, `Kg8,d7`)
         initial := game.Start()
-        expect(t, uint64(initial.enpassant), uint64(0x0000000000000000))
+        expect(t, initial.enpassant, 0)
 
         position := initial.MakeMove(NewMove(E2, E4, Pawn(WHITE), Piece(0)))
-        expect(t, uint64(position.enpassant), uint64(0x0000000000100000))
+        expect(t, position.enpassant, E3)
 
         initial.color = BLACK
         position = initial.MakeMove(NewMove(D7, D5, Pawn(BLACK), Piece(0)))
-        expect(t, uint64(position.enpassant), uint64(0x0000080000000000))
+        expect(t, position.enpassant, D6)
 }
 
 func TestPosition020(t *testing.T) {

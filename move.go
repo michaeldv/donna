@@ -128,8 +128,8 @@ func (m *Move) isTwoSquarePawnAdvance() bool {
         return m.Piece.IsPawn() && ((m.Piece.IsWhite() && rowFrom == 1 && rowTo == 3) || (m.Piece.IsBlack() && rowFrom == 6 && rowTo == 4))
 }
 
-func (m *Move) isCrossing(enpassant Bitmask) bool {
-        return m.Piece.IsPawn() && Bitmask(1 << uint(m.To)) == enpassant
+func (m *Move) isCrossing(enpassant int) bool {
+        return m.Piece.IsPawn() && (m.To == enpassant)
 }
 
 func (m *Move) String() string {

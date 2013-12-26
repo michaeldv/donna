@@ -19,7 +19,7 @@ type Position struct {
         attacks   [3]Bitmask    // [0] all squares attacked by white, [1] by black, [2] either white or black.
         outposts  [16]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
-        enpassant Bitmask       // En-passant opportunity caused by previous move.
+        enpassant int           // En-passant square caused by previous move.
         color     int           // Side to make next move.
         stage     int           // Game stage (256 in the initial position).
         inCheck   bool          // Is our king under attack?
@@ -27,7 +27,7 @@ type Position struct {
         can000    [2]bool       // Is queen-side castle allowed?
 }
 
-func NewPosition(game *Game, pieces [64]Piece, color int, enpassant Bitmask) *Position {
+func NewPosition(game *Game, pieces [64]Piece, color, enpassant int) *Position {
         position := new(Position)
 
         position.game = game
@@ -100,7 +100,7 @@ func (p *Position) setupAttacks() *Position {
 
 func (p *Position) MakeMove(move *Move) *Position {
         pieces := p.pieces
-        enpassant := Bitmask(0)
+        enpassant := 0
 
         pieces[move.From] = 0
         pieces[move.To] = move.Piece
@@ -108,9 +108,9 @@ func (p *Position) MakeMove(move *Move) *Position {
         // Check if we need to update en-passant bitmask.
         if move.isTwoSquarePawnAdvance() {
                 if p.color == WHITE {
-                        enpassant.Set(move.From + 8)
+                        enpassant = move.From + 8
                 } else {
-                        enpassant.Set(move.From - 8)
+                        enpassant = move.From - 8
                 }
         } else if move.isCrossing(p.enpassant) { // Take out the en-passant pawn.
                 if p.color == WHITE {
