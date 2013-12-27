@@ -69,7 +69,7 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
         for targets.IsNotEmpty() {
                 target := targets.FirstSet()
                 capture := p.pieces[target]
-                if capture != 0  {
+                if capture != 0 {
                         if !p.isPawnPromotion(piece, target) {
                                 moves = append(moves, NewMove(square, target, piece, capture))
                         } else {
@@ -78,6 +78,8 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
                                         moves = append(moves, candidate)
                                 }
                         }
+                } else if target == p.enpassant {
+                        moves = append(moves, NewMove(square, target, piece, Pawn(p.color^1)))
                 }
                 targets.Clear(target)
         }

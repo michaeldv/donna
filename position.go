@@ -45,7 +45,7 @@ func NewPosition(game *Game, pieces [64]Piece, color, enpassant int) *Position {
 func (p *Position) setupPieces() *Position {
         for i, piece := range p.pieces {
                 if piece != 0 {
-                        p.outposts[piece] = *new(Bitmask).Set(i)
+                        p.outposts[piece].Set(i)
                         p.board[piece.Color()].Set(i)
                         p.count[piece]++
                 }
@@ -105,18 +105,17 @@ func (p *Position) MakeMove(move *Move) *Position {
         pieces[move.From] = 0
         pieces[move.To] = move.Piece
 
-        // Check if we need to update en-passant bitmask.
-        if move.isTwoSquarePawnAdvance() {
+        if move.isEnpassant(p.outposts[Pawn(p.color^1)]) {
                 if p.color == WHITE {
                         enpassant = move.From + 8
                 } else {
                         enpassant = move.From - 8
                 }
-        } else if move.isCrossing(p.enpassant) { // Take out the en-passant pawn.
+        } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
                 if p.color == WHITE {
-                        pieces[move.To - 8] = Piece(NONE)
+                        pieces[move.To - 8] = 0
                 } else {
-                        pieces[move.To + 8] = Piece(NONE)
+                        pieces[move.To + 8] = 0
                 }
         } else if move.isCastle() {
                 switch move.To {

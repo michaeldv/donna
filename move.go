@@ -123,13 +123,24 @@ func (m *Move) isCastle() bool {
         return m.isKingSideCastle() || m.isQueenSideCastle()
 }
 
-func (m *Move) isTwoSquarePawnAdvance() bool {
-        rowFrom, rowTo := Row(m.From), Row(m.To)
-        return m.Piece.IsPawn() && ((m.Piece.IsWhite() && rowFrom == 1 && rowTo == 3) || (m.Piece.IsBlack() && rowFrom == 6 && rowTo == 4))
+func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
+        color := m.Piece.Color()
+
+        if m.Piece.IsPawn() && Row(m.From) == [2]int{1,6}[color] && Row(m.To) == [2]int{3,4}[color] {
+                switch col := Col(m.To); col {
+                case 0:
+                        return opponentPawns.IsSet(m.To + 1)
+                case 7:
+                        return opponentPawns.IsSet(m.To - 1)
+                default:
+                        return opponentPawns.IsSet(m.To + 1) || opponentPawns.IsSet(m.To - 1)
+                }
+        }
+        return false
 }
 
-func (m *Move) isCrossing(enpassant int) bool {
-        return m.Piece.IsPawn() && (m.To == enpassant)
+func (m *Move) isEnpassantCapture(enpassant int) bool {
+        return m.Piece.IsPawn() && m.To == enpassant
 }
 
 func (m *Move) String() string {

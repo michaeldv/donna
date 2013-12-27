@@ -11,12 +11,17 @@ func TestPosition010(t *testing.T) {
         initial := game.Start()
         expect(t, initial.enpassant, 0)
 
-        position := initial.MakeMove(NewMove(E2, E4, Pawn(WHITE), Piece(0)))
-        expect(t, position.enpassant, E3)
+        position := initial.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
+        expect(t, position.enpassant, 0)
 
-        initial.color = BLACK
-        position = initial.MakeMove(NewMove(D7, D5, Pawn(BLACK), Piece(0)))
-        expect(t, position.enpassant, D6)
+        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
+        expect(t, position.enpassant, 0)
+
+        position = position.MakeMove(NewMove(E4, E5, Pawn(WHITE), 0))
+        expect(t, position.enpassant, 0)
+
+        position = position.MakeMove(NewMove(F7, F5, Pawn(BLACK), 0))
+        expect(t, position.enpassant, F6)
 }
 
 func TestPosition020(t *testing.T) {
