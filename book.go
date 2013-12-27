@@ -121,13 +121,10 @@ func (b *Book) polyglot(position *Position) (key uint64) {
 	if position.can000[BLACK] {
                 key ^= polyglotRandom[771]
 	}
-
-        // TODO: 1. e2-e4 sets enpassant on e3 which causes invalid polyglot key.
-        // if position.enpassant != 0 {
-        //         col := Col(position.enpassant)
-        //         key ^= polyglotRandom[772 + col]
-        // }
-
+        if position.enpassant != 0 {
+                col := Col(position.enpassant)
+                key ^= polyglotRandom[772 + col]
+        }
 	if position.color == WHITE {
                 key ^= polyglotRandom[780]
 	}
