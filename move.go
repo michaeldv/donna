@@ -73,9 +73,14 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 }
 
 func (m *Move) score(position *Position) int {
-	var midgame, endgame int
+	var square, midgame, endgame int
 
-        square := flip[m.To]
+	if m.Piece.IsBlack() {
+		square = m.To
+	} else {
+		square = flip[m.To]
+	}
+
 	switch m.Piece.Kind() {
         case PAWN:
                 midgame += bonusPawn[0][square]

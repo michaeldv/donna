@@ -62,7 +62,10 @@ func (e *Evaluator) analyzeCoordination() {
                 attacks[color] += targets.Intersect(e.position.board[color^1]).Count()
 
                 // Calculate bonus or penalty for a piece being at the given square.
-                midgame, endgame := piece.bonus(flip[square])
+                if color == WHITE {
+                        square = flip[square]
+                }
+                midgame, endgame := piece.bonus(square)
                 bonus[color].midgame += midgame
                 bonus[color].endgame += endgame
         }
