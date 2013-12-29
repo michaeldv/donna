@@ -100,6 +100,22 @@ func (m *Move) score(position *Position) int {
 	return (midgame * position.stage + endgame * (256 - position.stage)) / 256
 }
 
+// PxQ, NxQ, BxQ, RxQ, QxQ, KxQ => where => QUEEN  = 5 << 1 // 10
+// PxR, NxR, BxR, RxR, QxR, KxR             ROOK   = 4 << 1 // 8
+// PxB, NxB, BxB, RxB, QxB, KxB             BISHOP = 3 << 1 // 6
+// PxN, NxN, BxN, RxN, QxN, KxN             KNIGHT = 2 << 1 // 4
+// PxP, NxP, BxP, RxP, QxP, KxP             PAWN   = 1 << 1 // 2
+func (m *Move) value() int {
+        if m.Captured == 0 || m.Captured.Kind() == KING {
+                return 0
+        }
+
+        victim := (QUEEN - m.Captured.Kind()) / PAWN
+        attacker := m.Piece.Kind() / PAWN - 1
+
+        return victimAttacker[victim][attacker]
+}
+
 func (m *Move) Promote(kind int) *Move {
         m.Promoted = Piece(kind | m.Piece.Color())
 

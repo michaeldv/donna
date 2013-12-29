@@ -13,9 +13,7 @@ func (p *Position) Moves() (moves []*Move) {
                         moves = append(moves, p.PossibleMoves(i, piece)...)
                 }
         }
-        if len(moves) > 1 {
-		moves = p.Reorder(moves)
-        }
+        moves = p.Reorder(moves)
         Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
 
         return
@@ -27,6 +25,7 @@ func (p *Position) Captures() (moves []*Move) {
                         moves = append(moves, p.PossibleCaptures(i, piece)...)
                 }
         }
+        sort.Sort(byValue{moves})
         Log("%d capture candidates for %s: %v\n", len(moves), C(p.color), moves)
 
         return
@@ -78,7 +77,7 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
                                         moves = append(moves, candidate)
                                 }
                         }
-                } else if target == p.enpassant {
+                } else if p.enpassant != 0 && target == p.enpassant {
                         moves = append(moves, NewMove(square, target, piece, Pawn(p.color^1)))
                 }
                 targets.Clear(target)
@@ -98,6 +97,7 @@ func (p *Position) Reorder(moves []*Move) []*Move {
                         remaining = append(remaining, move)
                 }
         }
+        sort.Sort(byValue{captures})
         sort.Sort(byScore{remaining, p})
         return append(append(append(captures, promotions...), remaining...))
 }
@@ -110,3 +110,11 @@ type byScore struct {
 func (her byScore) Len() int           { return len(her.moves)}
 func (her byScore) Swap(i, j int)      { her.moves[i], her.moves[j] = her.moves[j], her.moves[i] }
 func (her byScore) Less(i, j int) bool { return her.moves[i].score(her.position) > her.moves[j].score(her.position) }
+
+// Sorting captures by least valuable attacker/most valueable victim (LVA/MVV).
+type byValue struct {
+        moves     []*Move
+}
+func (her byValue) Len() int           { return len(her.moves)}
+func (her byValue) Swap(i, j int)      { her.moves[i], her.moves[j] = her.moves[j], her.moves[i] }
+func (her byValue) Less(i, j int) bool { return her.moves[i].value() > her.moves[j].value() }

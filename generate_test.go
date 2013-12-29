@@ -88,3 +88,39 @@ func TestGenerate100(t *testing.T) {
 
         doesNotContain(t, moves, `0-0`)
 }
+
+// LVA/MVV capture ordering.
+func TestGenerate110(t *testing.T) {
+        game := NewGame().Setup(`Kd4,e4,Nf4,Bc4,Ra5,Qh5`, `Kd8,Qd5`)
+        captures := game.Start().Captures()
+
+        expect(t, captures, `[e4xd5 Nf4xd5 Bc4xd5 Ra5xd5 Qh5xd5 Kd4xd5]`)
+}
+
+func TestGenerate120(t *testing.T) {
+        game := NewGame().Setup(`Kd4,e4,Nf4,Bc4,Ra5,Qh5`, `Kd8,Qd5,Rf5`)
+        captures := game.Start().Captures()
+
+        expect(t, captures, `[e4xd5 Nf4xd5 Bc4xd5 Ra5xd5 Kd4xd5 e4xf5 Qh5xf5]`)
+}
+
+func TestGenerate130(t *testing.T) {
+        game := NewGame().Setup(`Kd4,e4,Nf4,Bc4,Ra5,Qh5`, `Kd8,Qd5,Rf5,Bg6`)
+        captures := game.Start().Captures()
+
+        expect(t, captures, `[e4xd5 Nf4xd5 Bc4xd5 Ra5xd5 Kd4xd5 e4xf5 Qh5xf5 Nf4xg6 Qh5xg6]`)
+}
+
+func TestGenerate140(t *testing.T) {
+        game := NewGame().Setup(`Kd4,e4,Nf4,Bc4,Ra5,Qh5`, `Kd8,Qd5,Rf5,Bg6,Nh3`)
+        captures := game.Start().Captures()
+
+        expect(t, captures, `[e4xd5 Nf4xd5 Bc4xd5 Ra5xd5 Kd4xd5 e4xf5 Qh5xf5 Nf4xg6 Qh5xg6 Nf4xh3 Qh5xh3]`)
+}
+
+func TestGenerate150(t *testing.T) {
+        game := NewGame().Setup(`Kd4,e4,Nf4,Bc4,Ra5,Qh5`, `Kd8,Qd5,Rf5,Bg6,Nh3,e2`)
+        captures := game.Start().Captures()
+
+        expect(t, captures, `[e4xd5 Nf4xd5 Bc4xd5 Ra5xd5 Kd4xd5 e4xf5 Qh5xf5 Nf4xg6 Qh5xg6 Nf4xh3 Qh5xh3 Nf4xe2 Bc4xe2 Qh5xe2]`)
+}
