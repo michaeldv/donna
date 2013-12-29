@@ -78,6 +78,15 @@ func (e *Evaluator) analyzeCoordination() {
         aggression := attacks[color] - attacks[opposite]
         e.midgame += aggression * attackForce.midgame
         e.endgame += aggression * attackForce.endgame
+
+        if bishops := e.position.count[Bishop(color)]; bishops >= 2 {
+                e.midgame += bishopPair.midgame
+                e.endgame += bishopPair.endgame
+        }
+        if bishops := e.position.count[Bishop(opposite)]; bishops >= 2 {
+                e.midgame -= bishopPair.midgame
+                e.endgame -= bishopPair.endgame
+        }
 }
 
 func (e *Evaluator) analyzePawnStructure() {
