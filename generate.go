@@ -46,7 +46,7 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
                 //
                 if !p.isPawnPromotion(piece, target) {
                         move := NewMove(square, target, piece, capture)
-                        if !p.isInvalidCastle(move) {
+                        if move.isValid(p) {
                                 moves = append(moves, move)
                         }
                 } else {

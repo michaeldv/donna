@@ -112,3 +112,20 @@ func TestPosition070(t *testing.T) { // Missing rooks.
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 }
+
+func TestPosition080(t *testing.T) { // Rooks on wrong squares.
+        p := NewGame().Setup(`Ke1,Rb1`, `Ke8`).Start()
+
+        expect(t, p.isKingSideCastleAllowed(), false)
+        expect(t, p.isQueenSideCastleAllowed(), false)
+
+        p = NewGame().Setup(`Ke1,Rb1,Rh1`, `Ke8`).Start()
+
+        expect(t, p.isKingSideCastleAllowed(), true)
+        expect(t, p.isQueenSideCastleAllowed(), false)
+
+        p = NewGame().Setup(`Ke1,Ra1,Rf1`, `Ke8`).Start()
+
+        expect(t, p.isKingSideCastleAllowed(), false)
+        expect(t, p.isQueenSideCastleAllowed(), true)
+}

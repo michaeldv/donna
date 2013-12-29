@@ -30,7 +30,7 @@ func expect(t *testing.T, actual, expected interface{}) {
         }
 
         if passed {
-                t.Logf("\r\t\x1B[32m%s line %d: %s\x1B[0m", file, line, actual)
+                t.Logf("\r\t\x1B[32m%s line %d: %v\x1B[0m", file, line, actual)
         } else {
                 t.Errorf("\r\t\x1B[31m%s line %d\nExpected: %v\n  Actual: %v\x1B[0m", file, line, expected, actual)
         }
@@ -57,7 +57,7 @@ func containsMatcher(t *testing.T, actual, expected string, match bool) {
         }
 
         if passed {
-                t.Logf("\r\t\x1B[32m%s line %d: %s\x1B[0m", file, line, actual)
+                t.Logf("\r\t\x1B[32m%s line %d: %v\x1B[0m", file, line, actual)
         } else {
                 t.Errorf("\r\t\x1B[31m%s line %d\nContains: %s\n  Actual: %s\x1B[0m", file, line, expected, actual)
         }

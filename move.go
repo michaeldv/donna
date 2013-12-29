@@ -122,6 +122,13 @@ func (m *Move) Promote(kind int) *Move {
         return m
 }
 
+func (m *Move) isValid(p *Position) bool {
+        if (m.isKingSideCastle() && !p.isKingSideCastleAllowed()) || (m.isQueenSideCastle() && !p.isQueenSideCastleAllowed()) {
+                return false
+        }
+        return true
+}
+
 func (m *Move) isKingSideCastle() bool {
         return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == E1 && m.To == G1) || (m.Piece.IsBlack() && m.From == E8 && m.To == G8))
 }
