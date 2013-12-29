@@ -37,14 +37,13 @@ func TestPosition020(t *testing.T) {
 // Castle tests.
 
 func TestPosition030(t *testing.T) { // Everything is OK.
-        game := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`)
-        p := game.Start()
+        p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`).Start() // White to move.
 
         expect(t, p.isKingSideCastleAllowed(), true)
         expect(t, p.isQueenSideCastleAllowed(), true)
 
-        game = NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`)
-        p = NewPosition(game, game.pieces, BLACK, 0)
+        p = NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`).Start()  // White to move.
+        p = NewPosition(p, p.pieces, 0)                    // Black to move to move.
 
         expect(t, p.isKingSideCastleAllowed(), true)
         expect(t, p.isQueenSideCastleAllowed(), true)
@@ -52,68 +51,63 @@ func TestPosition030(t *testing.T) { // Everything is OK.
 
 
 func TestPosition040(t *testing.T) { // King checked.
-        game := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bg3`)
-        p := game.Start()
+        p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bg3`).Start()
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 
-        game = NewGame().Setup(`Ke1,Bg6`, `Ke8,Ra8,Rh8`)
-        p = NewPosition(game, game.pieces, BLACK, 0)
+        p = NewGame().Setup(`Ke1,Bg6`, `Ke8,Ra8,Rh8`).Start()
+        p = NewPosition(p, p.pieces, 0)
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 }
 
 func TestPosition050(t *testing.T) { // Attacked square.
-        game := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bb3,Bh3`)
-        p := game.Start()
+        p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bb3,Bh3`).Start()
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 
-        game = NewGame().Setup(`Ke1,Bb6,Bh6`, `Ke8,Ra8,Rh8`)
-        p = NewPosition(game, game.pieces, BLACK, 0)
+        p = NewGame().Setup(`Ke1,Bb6,Bh6`, `Ke8,Ra8,Rh8`).Start()
+        p = NewPosition(p, p.pieces, 0)
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 }
 
 func TestPosition060(t *testing.T) { // Wrong square.
-        game := NewGame().Setup(`Ke1,Ra8,Rh8`, `Ke5`)
-        p := game.Start()
+        p := NewGame().Setup(`Ke1,Ra8,Rh8`, `Ke5`).Start()
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 
-        game = NewGame().Setup(`Ke2,Ra1,Rh1`, `Ke8`)
-        p = game.Start()
+        p = NewGame().Setup(`Ke2,Ra1,Rh1`, `Ke8`).Start()
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 
-        game = NewGame().Setup(`Ke4`, `Ke8,Ra1,Rh1`)
-        p = NewPosition(game, game.pieces, BLACK, 0)
+        p = NewGame().Setup(`Ke4`, `Ke8,Ra1,Rh1`).Start()
+        p = NewPosition(p, p.pieces, 0)
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 
-        game = NewGame().Setup(`Ke4`, `Ke7,Ra8,Rh8`)
-        p = NewPosition(game, game.pieces, BLACK, 0)
+        p = NewGame().Setup(`Ke4`, `Ke7,Ra8,Rh8`).Start()
+        p = NewPosition(p, p.pieces, 0)
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 }
 
 func TestPosition070(t *testing.T) { // Missing rooks.
-        game := NewGame().Setup(`Ke1`, `Ke8`)
-        p := game.Start()
+        p := NewGame().Setup(`Ke1`, `Ke8`).Start()
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 
-        game = NewGame().Setup(`Ke1`, `Ke8`)
-        p = NewPosition(game, game.pieces, BLACK, 0)
+        p = NewGame().Setup(`Ke1`, `Ke8`).Start()
+        p = NewPosition(p, p.pieces, 0)
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)

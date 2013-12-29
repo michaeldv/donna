@@ -27,19 +27,30 @@ type Position struct {
         can000    [2]bool       // Is queen-side castle allowed?
 }
 
-func NewPosition(game *Game, pieces [64]Piece, color, enpassant int) *Position {
-        position := new(Position)
+func NewPosition(position interface{}, pieces [64]Piece, enpassant int) *Position {
+        p := new(Position)
+        p.pieces = pieces
+        p.enpassant = enpassant
 
-        position.game = game
-        position.pieces = pieces
-        position.color = color
-        position.enpassant = enpassant
-        position.can00[WHITE] = true
-        position.can00[BLACK] = true
-        position.can000[WHITE] = true
-        position.can000[BLACK] = true
+        switch position.(type) {
+        case *Game:
+                p.game = position.(*Game)
+                p.color = p.game.current
+                p.can00[WHITE]  = p.pieces[E1] == King(WHITE) && p.pieces[H1] == Rook(WHITE)
+                p.can00[BLACK]  = p.pieces[E8] == King(BLACK) && p.pieces[H8] == Rook(BLACK)
+                p.can000[WHITE] = p.pieces[E1] == King(WHITE) && p.pieces[A1] == Rook(WHITE)
+                p.can000[BLACK] = p.pieces[E8] == King(BLACK) && p.pieces[A8] == Rook(BLACK)
+        case *Position:
+                asserted := position.(*Position)
+                p.game = asserted.game
+                p.color = asserted.color^1
+                p.can00[WHITE]  = asserted.can00[WHITE]  && p.pieces[E1] == King(WHITE) && p.pieces[H1] == Rook(WHITE)
+                p.can00[BLACK]  = asserted.can00[BLACK]  && p.pieces[E8] == King(BLACK) && p.pieces[H8] == Rook(BLACK)
+                p.can000[WHITE] = asserted.can000[WHITE] && p.pieces[E1] == King(WHITE) && p.pieces[A1] == Rook(WHITE)
+                p.can000[BLACK] = asserted.can000[BLACK] && p.pieces[E8] == King(BLACK) && p.pieces[A8] == Rook(BLACK)
+        }
 
-        return position.setupPieces().setupAttacks()
+        return p.setupPieces().setupAttacks()
 }
 
 func (p *Position) setupPieces() *Position {
@@ -132,7 +143,7 @@ func (p *Position) MakeMove(move *Move) *Position {
                 pieces[move.To] = move.Promoted
         }
 
-        return NewPosition(p.game, pieces, p.color^1, enpassant)
+        return NewPosition(p, pieces, enpassant)
 }
 
 func (p *Position) isCheck(color int) bool {
