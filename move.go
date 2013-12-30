@@ -42,7 +42,7 @@ func NewMove(p *Position, from, to int) *Move {
 func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])-?([a-h])([1-8])[QRBN]?`)
 	arr := re.FindStringSubmatch(e2e4)
-
+        fmt.Printf("%v\n", arr)
 	if len(arr) > 0 {
 		name := arr[1]
 		from := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
