@@ -40,25 +40,26 @@ func NewMove(p *Position, from, to int) *Move {
 }
 
 func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
-	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])-?([a-h])([1-8])[QRBN]?`)
+	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
 	arr := re.FindStringSubmatch(e2e4)
-        fmt.Printf("%v\n", arr)
-	if len(arr) > 0 {
-		name := arr[1]
-		from := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
-                to   := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
 
-                var piece Piece
+	if len(arr) > 0 {
+		name  := arr[1]
+		from  := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
+		to    := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
+		promo := arr[6]
+
+		var piece Piece
 		switch name {
-		case `K`:
+		case `K`, `k`:
 			piece = King(p.color)
-		case `Q`:
+		case `Q`, `q`:
 			piece = Queen(p.color)
-		case `R`:
+		case `R`, `r`:
 			piece = Rook(p.color)
-		case `B`:
+		case `B`, `b`:
 			piece = Bishop(p.color)
-		case `N`:
+		case `N`, `n`:
 			piece = Knight(p.color)
 		default:
 			piece = Pawn(p.color)
@@ -67,6 +68,20 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                         move = nil
                 } else {
                         move = NewMove(p, from, to)
+                        if len(promo) > 0 {
+                                switch promo {
+                                case `Q`, `q`:
+                                        move.promote(QUEEN)
+                                case `R`, `r`:
+                                        move.promote(ROOK)
+                                case `B`, `b`:
+                                        move.promote(BISHOP)
+                                case `N`, `n`:
+                                        move.promote(KNIGHT)
+                                default:
+                                        move = nil
+                                }
+                        }
                 }
 	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
                 from := p.outposts[King(p.color)].FirstSet()
