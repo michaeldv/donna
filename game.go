@@ -95,15 +95,16 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
                 start := time.Now()
                 score := g.Analyze(depth, position)
                 finish := time.Since(start).Seconds()
-                fmt.Printf(" %d %02d:%02d    %8d    %8d    %8.1f   %5d   %v\n",
-                        depth, int(finish)/60, int(finish)%60, g.nodes, g.qnodes, float64(g.nodes+g.qnodes)/finish, score, best[0][0 : bestlen[0]])
+                fmt.Printf(" %d %02d:%02d    %8d    %8d    %8.1f   %5s   %v\n",
+                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes, float64(g.nodes + g.qnodes) / finish, score, best[0][0 : bestlen[0]])
         }
         fmt.Printf("Best move: %s\n", best[0][0])
         return best[0][0]
 }
 
-func (g *Game) Analyze(depth int, position *Position) int {
-        return position.alphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
+func (g *Game) Analyze(depth int, position *Position) string {
+        score := position.alphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
+        return fmt.Sprintf(`%.2f`, float64(score) / 100.0)
 }
 
 func (g *Game) Start() *Position {
