@@ -113,23 +113,23 @@ func (p *Position) MakeMove(move *Move) *Position {
         pieces := p.pieces
         enpassant := 0
 
-        pieces[move.From] = 0
-        pieces[move.To] = move.Piece
+        pieces[move.from] = 0
+        pieces[move.to] = move.piece
 
         if move.isEnpassant(p.outposts[Pawn(p.color^1)]) {
                 if p.color == WHITE {
-                        enpassant = move.From + 8
+                        enpassant = move.from + 8
                 } else {
-                        enpassant = move.From - 8
+                        enpassant = move.from - 8
                 }
         } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
                 if p.color == WHITE {
-                        pieces[move.To - 8] = 0
+                        pieces[move.to - 8] = 0
                 } else {
-                        pieces[move.To + 8] = 0
+                        pieces[move.to + 8] = 0
                 }
         } else if move.isCastle() {
-                switch move.To {
+                switch move.to {
                 case G1:
                         pieces[H1], pieces[F1] = 0, Rook(WHITE)
                 case C1:
@@ -139,8 +139,8 @@ func (p *Position) MakeMove(move *Move) *Position {
                 case C8:
                         pieces[A8], pieces[D8] = 0, Rook(BLACK)
                 }
-        } else if move.Promoted != 0 { // Replace pawn with the promoted piece.
-                pieces[move.To] = move.Promoted
+        } else if move.promoted != 0 { // Replace pawn with the promoted piece.
+                pieces[move.to] = move.promoted
         }
 
         return NewPosition(p, pieces, enpassant)

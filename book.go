@@ -95,9 +95,9 @@ func (b *Book) move(p *Position, entry Entry) (move *Move) {
                 to = C8
         }
 
-        move = NewMove(from, to, p.pieces[from], p.pieces[to])
+        move = NewMove(p, from, to)
         if promo := entry.promoted(); promo != 0 {
-                move.Promote(promo)
+                move.promote(promo)
         }
         return
 }

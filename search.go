@@ -82,7 +82,7 @@ func (p *Position) quietAlphaBeta(depth, ply int, alpha, beta int) int {
                 qnodes := p.game.qnodes
                 for i, move := range moves {
                         if position := p.MakeMove(move); !position.isCheck(p.color) {
-                                Log("Evasion %s for %s\n", move, C(move.Piece.Color()))
+                                Log("Evasion %s for %s\n", move, C(move.piece.Color()))
                                 p.game.qnodes++
 
                                 score = -position.quietAlphaBeta(depth - 1, ply + 1, -quietBeta, -quietAlpha)
@@ -126,7 +126,7 @@ func (p *Position) quietAlphaBeta(depth, ply int, alpha, beta int) int {
                 moves := p.Captures() // TODO: sorted captures followed by quiet checks.
                 for i, move := range moves {
                         if position := p.MakeMove(move); !position.isCheck(p.color) {
-                                Log("Capture %s for %s\n", move, C(move.Piece.Color()))
+                                Log("Capture %s for %s\n", move, C(move.piece.Color()))
                                 p.game.qnodes++
 
                                 score = -position.quietAlphaBeta(depth - 1, ply + 1, -quietBeta, -quietAlpha)

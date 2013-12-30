@@ -10,20 +10,31 @@ import (
 )
 
 type Move struct {
-        From     int
-        To       int
-        Piece    Piece
-        Captured Piece
-        Promoted Piece
+        from     int
+        to       int
+        score    int
+        piece    Piece
+        captured Piece
+        promoted Piece
 }
 
-func NewMove(from, to int, moved, captured Piece) *Move {
+func NewMove(p *Position, from, to int) *Move {
         move := new(Move)
 
-        move.From = from
-        move.To = to
-        move.Piece = moved
-        move.Captured = captured
+        move.from = from
+        move.to = to
+        move.piece = p.pieces[from]
+        move.captured = p.pieces[to]
+
+        if p.enpassant != 0 && to == p.enpassant {
+                move.captured = Pawn(p.color^1)
+        }
+
+        if move.captured == 0 {
+                move.score = move.calculateScore(p)
+        } else {
+                move.score = move.calculateValue()
+        }
 
         return move
 }
@@ -33,27 +44,29 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 	arr := re.FindStringSubmatch(e2e4)
 
 	if len(arr) > 0 {
-		piece   := arr[1]
-		from    := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
-                to      := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
-		capture := p.pieces[to]
+		name := arr[1]
+		from := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
+                to   := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
 
-		switch piece {
+                var piece Piece
+		switch name {
 		case `K`:
-			move = NewMove(from, to, King(p.color), capture)
+			piece = King(p.color)
 		case `Q`:
-			move = NewMove(from, to, Queen(p.color), capture)
+			piece = Queen(p.color)
 		case `R`:
-			move = NewMove(from, to, Rook(p.color), capture)
+			piece = Rook(p.color)
 		case `B`:
-			move = NewMove(from, to, Bishop(p.color), capture)
+			piece = Bishop(p.color)
 		case `N`:
-			move = NewMove(from, to, Knight(p.color), capture)
+			piece = Knight(p.color)
 		default:
-			move = NewMove(from, to, Pawn(p.color), capture)
+			piece = Pawn(p.color)
 		}
-                if (p.pieces[from] != move.Piece) || (p.targets[from] & Shift(to) == 0) {
+                if (p.pieces[from] != piece) || (p.targets[from] & Shift(to) == 0) {
                         move = nil
+                } else {
+                        move = NewMove(p, from, to)
                 }
 	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
                 from := p.outposts[King(p.color)].FirstSet()
@@ -64,7 +77,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                 if p.color == BLACK {
                         to += 56
                 }
-                move = NewMove(from, to, King(p.color), 0)
+                move = NewMove(p, from, to)
                 if !move.isCastle() {
                         move = nil
                 }
@@ -72,11 +85,17 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 	return
 }
 
-func (m *Move) score(position *Position) int {
-	var midgame, endgame int
-	square := flip[m.Piece.Color()][m.To]
+func (m *Move) promote(kind int) *Move {
+        m.promoted = Piece(kind | m.piece.Color())
 
-	switch m.Piece.Kind() {
+        return m
+}
+
+func (m *Move) calculateScore(position *Position) int {
+	var midgame, endgame int
+	square := flip[m.piece.Color()][m.to]
+
+	switch m.piece.Kind() {
         case PAWN:
                 midgame += bonusPawn[0][square]
                 endgame += bonusPawn[1][square]
@@ -105,21 +124,15 @@ func (m *Move) score(position *Position) int {
 // PxB, NxB, BxB, RxB, QxB, KxB             BISHOP = 3 << 1 // 6
 // PxN, NxN, BxN, RxN, QxN, KxN             KNIGHT = 2 << 1 // 4
 // PxP, NxP, BxP, RxP, QxP, KxP             PAWN   = 1 << 1 // 2
-func (m *Move) value() int {
-        if m.Captured == 0 || m.Captured.Kind() == KING {
+func (m *Move) calculateValue() int {
+        if m.captured == 0 || m.captured.Kind() == KING {
                 return 0
         }
 
-        victim := (QUEEN - m.Captured.Kind()) / PAWN
-        attacker := m.Piece.Kind() / PAWN - 1
+        victim := (QUEEN - m.captured.Kind()) / PAWN
+        attacker := m.piece.Kind() / PAWN - 1
 
         return victimAttacker[victim][attacker]
-}
-
-func (m *Move) Promote(kind int) *Move {
-        m.Promoted = Piece(kind | m.Piece.Color())
-
-        return m
 }
 
 func (m *Move) isValid(p *Position) bool {
@@ -130,11 +143,11 @@ func (m *Move) isValid(p *Position) bool {
 }
 
 func (m *Move) isKingSideCastle() bool {
-        return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == E1 && m.To == G1) || (m.Piece.IsBlack() && m.From == E8 && m.To == G8))
+        return m.piece.IsKing() && ((m.piece.IsWhite() && m.from == E1 && m.to == G1) || (m.piece.IsBlack() && m.from == E8 && m.to == G8))
 }
 
 func (m *Move) isQueenSideCastle() bool {
-        return m.Piece.IsKing() && ((m.Piece.IsWhite() && m.From == E1 && m.To == C1) || (m.Piece.IsBlack() && m.From == E8 && m.To == C8))
+        return m.piece.IsKing() && ((m.piece.IsWhite() && m.from == E1 && m.to == C1) || (m.piece.IsBlack() && m.from == E8 && m.to == C8))
 }
 
 func (m *Move) isCastle() bool {
@@ -142,39 +155,39 @@ func (m *Move) isCastle() bool {
 }
 
 func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
-        color := m.Piece.Color()
+        color := m.piece.Color()
 
-        if m.Piece.IsPawn() && Row(m.From) == [2]int{1,6}[color] && Row(m.To) == [2]int{3,4}[color] {
-                switch col := Col(m.To); col {
+        if m.piece.IsPawn() && Row(m.from) == [2]int{1,6}[color] && Row(m.to) == [2]int{3,4}[color] {
+                switch col := Col(m.to); col {
                 case 0:
-                        return opponentPawns.IsSet(m.To + 1)
+                        return opponentPawns.IsSet(m.to + 1)
                 case 7:
-                        return opponentPawns.IsSet(m.To - 1)
+                        return opponentPawns.IsSet(m.to - 1)
                 default:
-                        return opponentPawns.IsSet(m.To + 1) || opponentPawns.IsSet(m.To - 1)
+                        return opponentPawns.IsSet(m.to + 1) || opponentPawns.IsSet(m.to - 1)
                 }
         }
         return false
 }
 
 func (m *Move) isEnpassantCapture(enpassant int) bool {
-        return m.Piece.IsPawn() && m.To == enpassant
+        return m.piece.IsPawn() && m.to == enpassant
 }
 
 func (m *Move) String() string {
 
         if !m.isCastle() {
-                col := [2]int{ Col(m.From) + 'a', Col(m.To) + 'a' }
-                row := [2]int{ Row(m.From) + 1, Row(m.To) + 1 }
+                col := [2]int{ Col(m.from) + 'a', Col(m.to) + 'a' }
+                row := [2]int{ Row(m.from) + 1, Row(m.to) + 1 }
 
                 capture := '-'
-                if m.Captured != 0 {
+                if m.captured != 0 {
                         capture = 'x'
                 }
-                piece, promoted := m.Piece.String(), m.Promoted.String()
+                piece, promoted := m.piece.String(), m.promoted.String()
                 format := `%c%d%c%c%d%s`
 
-                if m.Piece.IsPawn() { // Skip piece name if it's a pawn.
+                if m.piece.IsPawn() { // Skip piece name if it's a pawn.
                         return fmt.Sprintf(format, col[0], row[0], capture, col[1], row[1], promoted)
                 } else {
                         if Settings.Fancy { // Fancy notation is more readable with extra space.

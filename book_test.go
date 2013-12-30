@@ -16,7 +16,7 @@ func TestBook000(t *testing.T) {
 
 func TestBook010(t *testing.T) { // 1. e4
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
+        position = position.MakeMove(NewMove(position, E2, E4))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x823C9B50FD114196))
@@ -24,8 +24,8 @@ func TestBook010(t *testing.T) { // 1. e4
 
 func TestBook020(t *testing.T) { // 1. e4 d5
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
+        position = position.MakeMove(NewMove(position, E2, E4))
+        position = position.MakeMove(NewMove(position, D7, D5))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x0756B94461C50FB0))
@@ -33,9 +33,9 @@ func TestBook020(t *testing.T) { // 1. e4 d5
 
 func TestBook030(t *testing.T) { // 1. e4 d5 2. e5
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(E4, E5, Pawn(WHITE), 0))
+        position = position.MakeMove(NewMove(position, E2, E4))
+        position = position.MakeMove(NewMove(position, D7, D5))
+        position = position.MakeMove(NewMove(position, E4, E5))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x662FAFB965DB29D4))
@@ -43,10 +43,10 @@ func TestBook030(t *testing.T) { // 1. e4 d5 2. e5
 
 func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(E4, E5, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(F7, F5, Pawn(BLACK), 0))
+        position = position.MakeMove(NewMove(position, E2, E4))
+        position = position.MakeMove(NewMove(position, D7, D5))
+        position = position.MakeMove(NewMove(position, E4, E5))
+        position = position.MakeMove(NewMove(position, F7, F5))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x22A48B5A8E47FF78))
@@ -55,11 +55,11 @@ func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 
 func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(E4, E5, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(F7, F5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(E1, E2, King(WHITE), 0))
+        position = position.MakeMove(NewMove(position, E2, E4))
+        position = position.MakeMove(NewMove(position, D7, D5))
+        position = position.MakeMove(NewMove(position, E4, E5))
+        position = position.MakeMove(NewMove(position, F7, F5))
+        position = position.MakeMove(NewMove(position, E1, E2))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x652A607CA3F242C1))
@@ -67,12 +67,12 @@ func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Cas
 
 func TestBook060(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(E4, E5, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(F7, F5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(E1, E2, King(WHITE), 0))
-        position = position.MakeMove(NewMove(E8, F7, King(BLACK), 0))
+        position = position.MakeMove(NewMove(position, E2, E4))
+        position = position.MakeMove(NewMove(position, D7, D5))
+        position = position.MakeMove(NewMove(position, E4, E5))
+        position = position.MakeMove(NewMove(position, F7, F5))
+        position = position.MakeMove(NewMove(position, E1, E2))
+        position = position.MakeMove(NewMove(position, E8, F7))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x00FDD303C946BDD9))
@@ -80,11 +80,11 @@ func TestBook060(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black
 
 func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpassant
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(A2, A4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(B7, B5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(H2, H4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(B5, B4, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(C2, C4, Pawn(WHITE), 0))
+        position = position.MakeMove(NewMove(position, A2, A4))
+        position = position.MakeMove(NewMove(position, B7, B5))
+        position = position.MakeMove(NewMove(position, H2, H4))
+        position = position.MakeMove(NewMove(position, B5, B4))
+        position = position.MakeMove(NewMove(position, C2, C4))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x3C8123EA7B067637))
@@ -93,13 +93,13 @@ func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpass
 
 func TestBook080(t *testing.T) { // TODO: 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(A2, A4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(B7, B5, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(H2, H4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(B5, B4, Pawn(BLACK), 0))
-        position = position.MakeMove(NewMove(C2, C4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(B4, C3, Pawn(BLACK), Pawn(WHITE)))
-        position = position.MakeMove(NewMove(A1, A3, Rook(WHITE), 0))
+        position = position.MakeMove(NewMove(position, A2, A4))
+        position = position.MakeMove(NewMove(position, B7, B5))
+        position = position.MakeMove(NewMove(position, H2, H4))
+        position = position.MakeMove(NewMove(position, B5, B4))
+        position = position.MakeMove(NewMove(position, C2, C4))
+        position = position.MakeMove(NewMove(position, B4, C3))
+        position = position.MakeMove(NewMove(position, A1, A3))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x5C3F9B829B279560))
@@ -108,8 +108,8 @@ func TestBook080(t *testing.T) { // TODO: 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc
 
 func TestBook100(t *testing.T) { // 1. e4 e5
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(E7, E5, Pawn(BLACK), 0))
+        position = position.MakeMove(NewMove(position, E2, E4))
+        position = position.MakeMove(NewMove(position, E7, E5))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x0844931A6EF4B9A0))
@@ -117,8 +117,8 @@ func TestBook100(t *testing.T) { // 1. e4 e5
 
 func TestBook110(t *testing.T) { // 1. d4 d5
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(D2, D4, Pawn(WHITE), 0))
-        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
+        position = position.MakeMove(NewMove(position, D2, D4))
+        position = position.MakeMove(NewMove(position, D7, D5))
 
         book := NewBook(``)
         expect(t, book.polyglot(position), uint64(0x06649BA69B8C9FF8))

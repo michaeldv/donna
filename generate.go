@@ -25,7 +25,7 @@ func (p *Position) Captures() (moves []*Move) {
                         moves = append(moves, p.PossibleCaptures(i, piece)...)
                 }
         }
-        sort.Sort(byValue{moves})
+        sort.Sort(byScore{moves})
         Log("%d capture candidates for %s: %v\n", len(moves), C(p.color), moves)
 
         return
@@ -38,20 +38,19 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
 
         for targets.IsNotEmpty() {
                 target := targets.FirstSet()
-                capture := p.pieces[target]
                 //
                 // For regular moves each target square represents one possible
                 // move. For pawn promotion, however, we have to generate four
                 // possible moves, one for each promoted piece.
                 //
                 if !p.isPawnPromotion(piece, target) {
-                        move := NewMove(square, target, piece, capture)
+                        move := NewMove(p, square, target)
                         if move.isValid(p) {
                                 moves = append(moves, move)
                         }
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                candidate := NewMove(square, target, piece, capture).Promote(name)
+                                candidate := NewMove(p, square, target).promote(name)
                                 moves = append(moves, candidate)
                         }
                 }
@@ -70,15 +69,15 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
                 capture := p.pieces[target]
                 if capture != 0 {
                         if !p.isPawnPromotion(piece, target) {
-                                moves = append(moves, NewMove(square, target, piece, capture))
+                                moves = append(moves, NewMove(p, square, target))
                         } else {
                                 for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                        candidate := NewMove(square, target, piece, capture).Promote(name)
+                                        candidate := NewMove(p, square, target).promote(name)
                                         moves = append(moves, candidate)
                                 }
                         }
                 } else if p.enpassant != 0 && target == p.enpassant {
-                        moves = append(moves, NewMove(square, target, piece, Pawn(p.color^1)))
+                        moves = append(moves, NewMove(p, square, target))
                 }
                 targets.Clear(target)
         }
@@ -89,32 +88,24 @@ func (p *Position) Reorder(moves []*Move) []*Move {
         var captures, promotions, remaining []*Move
 
         for _, move := range moves {
-                if move.Captured != 0 {
+                if move.captured != 0 {
                         captures = append(captures, move)
-                } else if move.Promoted != 0 {
+                } else if move.promoted != 0 {
                         promotions = append(promotions, move)
                 } else {
                         remaining = append(remaining, move)
                 }
         }
-        sort.Sort(byValue{captures})
-        sort.Sort(byScore{remaining, p})
+        sort.Sort(byScore{captures})
+        sort.Sort(byScore{remaining})
         return append(append(append(captures, promotions...), remaining...))
 }
 
-// Sorting moves by their relative score based on piece/square.
+// Sorting moves by their relative score based on piece/square for regular moves
+// or least valuaeable attacker/most valueable victim for captures.
 type byScore struct {
         moves     []*Move
-        position  *Position
 }
 func (her byScore) Len() int           { return len(her.moves)}
 func (her byScore) Swap(i, j int)      { her.moves[i], her.moves[j] = her.moves[j], her.moves[i] }
-func (her byScore) Less(i, j int) bool { return her.moves[i].score(her.position) > her.moves[j].score(her.position) }
-
-// Sorting captures by least valuable attacker/most valueable victim (LVA/MVV).
-type byValue struct {
-        moves     []*Move
-}
-func (her byValue) Len() int           { return len(her.moves)}
-func (her byValue) Swap(i, j int)      { her.moves[i], her.moves[j] = her.moves[j], her.moves[i] }
-func (her byValue) Less(i, j int) bool { return her.moves[i].value() > her.moves[j].value() }
+func (her byScore) Less(i, j int) bool { return her.moves[i].score > her.moves[j].score }

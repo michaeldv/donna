@@ -7,21 +7,20 @@ package donna
 import (`testing`)
 
 func TestPosition010(t *testing.T) {
-        game := NewGame().Setup(`Ke1,e2`, `Kg8,d7`)
-        initial := game.Start()
-        expect(t, initial.enpassant, 0)
+        p := NewGame().Setup(`Ke1,e2`, `Kg8,d7,f7`).Start()
+        expect(t, p.enpassant, 0)
 
-        position := initial.MakeMove(NewMove(E2, E4, Pawn(WHITE), 0))
-        expect(t, position.enpassant, 0)
+        p = p.MakeMove(NewMove(p, E2, E4))
+        expect(t, p.enpassant, 0)
 
-        position = position.MakeMove(NewMove(D7, D5, Pawn(BLACK), 0))
-        expect(t, position.enpassant, 0)
+        p = p.MakeMove(NewMove(p, D7, D5))
+        expect(t, p.enpassant, 0)
 
-        position = position.MakeMove(NewMove(E4, E5, Pawn(WHITE), 0))
-        expect(t, position.enpassant, 0)
+        p = p.MakeMove(NewMove(p, E4, E5))
+        expect(t, p.enpassant, 0)
 
-        position = position.MakeMove(NewMove(F7, F5, Pawn(BLACK), 0))
-        expect(t, position.enpassant, F6)
+        p = p.MakeMove(NewMove(p, F7, F5))
+        expect(t, p.enpassant, F6)
 }
 
 func TestPosition020(t *testing.T) {
