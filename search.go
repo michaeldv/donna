@@ -24,7 +24,7 @@ func (p *Position) alphaBeta(depth, ply int, alpha, beta int) int {
 		return beta
 	}
 
-        moves := p.Moves()
+        moves := p.Moves(ply)
         nodes := p.game.nodes
         for i, move := range moves {
                 if position := p.MakeMove(move); !position.isCheck(p.color) {
@@ -78,7 +78,7 @@ func (p *Position) quietAlphaBeta(depth, ply int, alpha, beta int) int {
 
         if p.inCheck {
                 bestScore = -CHECKMATE
-                moves := p.Moves() // TODO: check evasions only.
+                moves := p.Moves(ply) // TODO: check evasions only.
                 qnodes := p.game.qnodes
                 for i, move := range moves {
                         if position := p.MakeMove(move); !position.isCheck(p.color) {

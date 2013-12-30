@@ -7,15 +7,14 @@ package donna
 import(`sort`)
 
 // All moves.
-func (p *Position) Moves() (moves []*Move) {
+func (p *Position) Moves(ply int) (moves []*Move) {
         for i, piece := range p.pieces {
                 if piece != 0 && piece.Color() == p.color {
                         moves = append(moves, p.PossibleMoves(i, piece)...)
                 }
         }
-        moves = p.Reorder(moves)
+        moves = p.Reorder(moves, best[0][ply])
         Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
-
         return
 }
 
@@ -84,11 +83,13 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
         return
 }
 
-func (p *Position) Reorder(moves []*Move) []*Move {
-        var captures, promotions, remaining []*Move
+func (p *Position) Reorder(moves []*Move, bestMove *Move) []*Move {
+        var principal, captures, promotions, remaining []*Move
 
         for _, move := range moves {
-                if move.captured != 0 {
+                if bestMove != nil && len(principal) == 0 && move.is(bestMove) {
+                        principal = append(principal, move)
+                } else if move.captured != 0 {
                         captures = append(captures, move)
                 } else if move.promoted != 0 {
                         promotions = append(promotions, move)
@@ -98,7 +99,7 @@ func (p *Position) Reorder(moves []*Move) []*Move {
         }
         sort.Sort(byScore{captures})
         sort.Sort(byScore{remaining})
-        return append(append(append(captures, promotions...), remaining...))
+        return append(append(append(append(principal, captures...), promotions...), remaining...))
 }
 
 // Sorting moves by their relative score based on piece/square for regular moves

@@ -106,6 +106,14 @@ func (m *Move) promote(kind int) *Move {
         return m
 }
 
+func (m *Move) is(move *Move) bool {
+        return m.from == move.from  &&
+                 m.to == move.to    &&
+              m.piece == move.piece &&
+           m.captured == m.captured &&
+           m.promoted == m.promoted
+}
+
 func (m *Move) calculateScore(position *Position) int {
 	var midgame, endgame int
 	square := flip[m.piece.Color()][m.to]
