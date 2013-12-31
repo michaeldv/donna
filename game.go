@@ -103,7 +103,7 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
 }
 
 func (g *Game) Analyze(depth int, position *Position) string {
-        score := position.alphaBeta(depth*2, 0, -CHECKMATE, CHECKMATE)
+        score := position.search(depth*2, 0, -CHECKMATE, CHECKMATE)
         if position.color == BLACK {
                 score = -score
         }
