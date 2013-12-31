@@ -54,10 +54,10 @@ func NewPosition(position interface{}, pieces [64]Piece, enpassant int) *Positio
 }
 
 func (p *Position) setupPieces() *Position {
-        for i, piece := range p.pieces {
+        for square, piece := range p.pieces {
                 if piece != 0 {
-                        p.outposts[piece].Set(i)
-                        p.board[piece.Color()].Set(i)
+                        p.outposts[piece].Set(square)
+                        p.board[piece.Color()].Set(square)
                         p.count[piece]++
                 }
         }
@@ -78,13 +78,13 @@ func (p *Position) setupPieces() *Position {
 }
 
 func (p *Position) setupAttacks() *Position {
-        var king [2]int
-        for i, piece := range p.pieces {
+        var kingSquare [2]int
+        for square, piece := range p.pieces {
                 if piece != 0 {
-                        p.targets[i] = *p.Targets(i)
-                        p.attacks[piece.Color()].Combine(p.targets[i])
+                        p.targets[square] = *p.Targets(square)
+                        p.attacks[piece.Color()].Combine(p.targets[square])
                         if piece.IsKing() {
-                                king[piece.Color()] = i
+                                kingSquare[piece.Color()] = square
                         }
                 }
         }
@@ -92,14 +92,14 @@ func (p *Position) setupAttacks() *Position {
         // Now that we have attack targets for both kings adjust them to make sure the
         // kings don't stomp on each other.
         //
-        white_king_targets, black_king_targets := p.targets[king[WHITE]], p.targets[king[BLACK]]
-        p.targets[king[WHITE]].Exclude(black_king_targets)
-        p.targets[king[BLACK]].Exclude(white_king_targets)
+        whiteKingTargets, blackKingTargets := p.targets[kingSquare[WHITE]], p.targets[kingSquare[BLACK]]
+        p.targets[kingSquare[WHITE]].Exclude(blackKingTargets)
+        p.targets[kingSquare[BLACK]].Exclude(whiteKingTargets)
         //
         // Combined board starts off with white pieces and adds black ones.
         //
-        p.attacks[2] = p.attacks[0]
-        p.attacks[2].Combine(p.attacks[1])
+        p.attacks[2] = p.attacks[WHITE]
+        p.attacks[2].Combine(p.attacks[BLACK])
         //
         // Is our king being attacked?
         //
