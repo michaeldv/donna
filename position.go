@@ -79,22 +79,25 @@ func (p *Position) setupPieces() *Position {
 
 func (p *Position) setupAttacks() *Position {
         var kingSquare [2]int
-        for square, piece := range p.pieces {
-                if piece != 0 {
-                        p.targets[square] = *p.Targets(square)
-                        p.attacks[piece.Color()].Combine(p.targets[square])
-                        if piece.IsKing() {
-                                kingSquare[piece.Color()] = square
-                        }
+
+        board := p.board[2]
+        for board.IsNotEmpty() {
+                square := board.FirstSet()
+                piece := p.pieces[square]
+                p.targets[square] = *p.Targets(square)
+                p.attacks[piece.Color()].Combine(p.targets[square])
+                if piece.IsKing() {
+                        kingSquare[piece.Color()] = square
                 }
+                board.Clear(square)
         }
         //
         // Now that we have attack targets for both kings adjust them to make sure the
         // kings don't stomp on each other.
         //
-        whiteKingTargets, blackKingTargets := p.targets[kingSquare[WHITE]], p.targets[kingSquare[BLACK]]
-        p.targets[kingSquare[WHITE]].Exclude(blackKingTargets)
-        p.targets[kingSquare[BLACK]].Exclude(whiteKingTargets)
+        kingTargets := [2]Bitmask{ p.targets[kingSquare[WHITE]], p.targets[kingSquare[BLACK]] }
+        p.targets[kingSquare[WHITE]].Exclude(kingTargets[BLACK])
+        p.targets[kingSquare[BLACK]].Exclude(kingTargets[WHITE])
         //
         // Combined board starts off with white pieces and adds black ones.
         //
