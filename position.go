@@ -84,7 +84,7 @@ func (p *Position) setupAttacks() *Position {
         for board.IsNotEmpty() {
                 square := board.FirstSet()
                 piece := p.pieces[square]
-                p.targets[square] = *p.Targets(square)
+                p.targets[square] = p.Targets(square)
                 p.attacks[piece.Color()].Combine(p.targets[square])
                 if piece.IsKing() {
                         kingSquare[piece.Color()] = square
@@ -119,33 +119,37 @@ func (p *Position) MakeMove(move *Move) *Position {
         pieces[move.from] = 0
         pieces[move.to] = move.piece
 
-        if move.isEnpassant(p.outposts[Pawn(p.color^1)]) {
-                if p.color == WHITE {
-                        enpassant = move.from + 8
-                } else {
-                        enpassant = move.from - 8
+        switch move.piece.Kind() {
+        case PAWN:
+                if move.isEnpassant(p.outposts[Pawn(p.color^1)]) {
+                        if p.color == WHITE {
+                                enpassant = move.from + 8
+                        } else {
+                                enpassant = move.from - 8
+                        }
+                } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
+                        if p.color == WHITE {
+                                pieces[move.to - 8] = 0
+                        } else {
+                                pieces[move.to + 8] = 0
+                        }
+                } else if move.promoted != 0 { // Replace pawn with the promoted piece.
+                        pieces[move.to] = move.promoted
                 }
-        } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
-                if p.color == WHITE {
-                        pieces[move.to - 8] = 0
-                } else {
-                        pieces[move.to + 8] = 0
+        case KING:
+                if move.isCastle() {
+                        switch move.to {
+                        case G1:
+                                pieces[H1], pieces[F1] = 0, Rook(WHITE)
+                        case C1:
+                                pieces[A1], pieces[D1] = 0, Rook(WHITE)
+                        case G8:
+                                pieces[H8], pieces[F8] = 0, Rook(BLACK)
+                        case C8:
+                                pieces[A8], pieces[D8] = 0, Rook(BLACK)
+                        }
                 }
-        } else if move.isCastle() {
-                switch move.to {
-                case G1:
-                        pieces[H1], pieces[F1] = 0, Rook(WHITE)
-                case C1:
-                        pieces[A1], pieces[D1] = 0, Rook(WHITE)
-                case G8:
-                        pieces[H8], pieces[F8] = 0, Rook(BLACK)
-                case C8:
-                        pieces[A8], pieces[D8] = 0, Rook(BLACK)
-                }
-        } else if move.promoted != 0 { // Replace pawn with the promoted piece.
-                pieces[move.to] = move.promoted
         }
-
         return NewPosition(p, pieces, enpassant)
 }
 

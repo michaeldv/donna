@@ -4,8 +4,7 @@
 
 package donna
 
-func (p *Position) Targets(square int) *Bitmask {
-        var bitmask Bitmask
+func (p *Position) Targets(square int) (bitmask Bitmask) {
         piece := p.pieces[square]
         kind, color := piece.Kind(), piece.Color()
 
@@ -71,5 +70,5 @@ func (p *Position) Targets(square int) *Bitmask {
                 }
         }
 
-        return &bitmask
+        return bitmask
 }
