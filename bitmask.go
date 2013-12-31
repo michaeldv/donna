@@ -73,15 +73,12 @@ func (b *Bitmask) FirstSet() int {
 }
 
 // Returns number of bits set.
-func (b *Bitmask) Count() (count int) {
-        if *b != 0 {
-                mask := *b                      // int count = 0;
-                for ; mask != 0; {              // while (x) {
-                        count++                 //      count++;
-                        mask &= mask -1         //      x &= x - 1; // reset LS1B
-                }                               // }
-        }                                       //
-        return                                  // return count;
+func (b *Bitmask) Count() int {
+        mask := *b
+        mask -= (mask >> 1) & 0x5555555555555555
+        mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
+        mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
+        return int((mask * 0x0101010101010101) >> 56)
 }
 
 func (b Bitmask) String() string {
