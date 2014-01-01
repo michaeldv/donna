@@ -76,21 +76,31 @@ func (p *Position) setupAttacks() *Position {
         }
         //
         // Now that we have attack targets for both kings adjust them to make sure the
-        // kings don't stomp on each other.
+        // kings don't stomp on each other. Also, combine attacks bitmask and set the
+        // flag is the king is being attacked.
         //
-        kingTargets := [2]Bitmask{ p.targets[kingSquare[WHITE]], p.targets[kingSquare[BLACK]] }
-        p.targets[kingSquare[WHITE]].Exclude(kingTargets[BLACK])
-        p.targets[kingSquare[BLACK]].Exclude(kingTargets[WHITE])
-        //
-        // Combined board starts off with white pieces and adds black ones.
-        //
+        p.updateKingTargets(kingSquare)
         p.attacks[2] = p.attacks[WHITE] | p.attacks[BLACK]
-        //
-        // Is our king being attacked?
-        //
         p.inCheck = p.isCheck(p.color)
 
-        //Log("\n%s\n", p)
+        return p
+}
+
+func (p *Position) updateKingTargets(kingSquare [2]int) *Position {
+        p.targets[kingSquare[WHITE]].Exclude(p.targets[kingSquare[BLACK]])
+        p.targets[kingSquare[BLACK]].Exclude(p.targets[kingSquare[WHITE]])
+        //
+        // Add castle jump targets if castles are allowed.
+        //
+        if kingSquare[p.color] == initialKingSquare[p.color] {
+                if p.isKingSideCastleAllowed(p.color) {
+                        p.targets[kingSquare[p.color]].Set(kingSquare[p.color] + 2)
+                }
+                if p.isQueenSideCastleAllowed(p.color) {
+                        p.targets[kingSquare[p.color]].Set(kingSquare[p.color] - 2)
+                }
+        }
+
         return p
 }
 
@@ -98,14 +108,14 @@ func (p *Position) clone() *Position {
         position := new(Position)
 
         position.game = p.game
-        position.color = p.color^1
+        position.color = p.color
+        position.board = p.board
+        position.pieces = p.pieces
+        position.outposts = p.outposts
+        position.count = p.count
         position.can00 = p.can00
         position.can000 = p.can000
-        position.outposts = p.outposts
-        position.board = p.board
-        position.count = p.count
         position.enpassant = 0
-        position.pieces = p.pieces
 
         return position
 }
@@ -127,9 +137,16 @@ func (p *Position) put(move *Move) *Position {
         if move.promoted != 0 {
                 piece = move.promoted
         }
+
         p.pieces[move.to] = piece
-        p.board[move.piece.Color()].Set(move.to)
+        p.board[p.color].Set(move.to)
         p.outposts[piece].Set(move.to)
+
+        if move.captured != 0 {
+                p.board[p.color^1].Clear(move.to)
+                p.outposts[move.captured].Clear(move.to)
+                p.count[move.captured]--
+        }
         return p
 }
 
@@ -159,11 +176,20 @@ func (p *Position) MakeMove(move *Move) *Position {
         } else {
                 if kind == PAWN {
                         if move.isEnpassant(p.outposts[Pawn(color^1)]) {
+                                //
+                                // Mark the en-passant square.
+                                //
                                 position.enpassant = move.from + eight[color]
-                        } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
+                        } else if move.isEnpassantCapture(p.enpassant) {
+                                //
+                                // Take out the en-passant pawn and decrement opponent's pawn count.
+                                //
                                 position.lift(NewMove(position, move.to + eight[color^1], move.to + eight[color^1]))
                                 position.count[Pawn(color^1)]--
-                        } else if move.promoted != 0 { // Replace pawn with the promoted piece.
+                        } else if move.promoted != 0 {
+                                //
+                                // Replace a pawn on 8th rank with the promoted piece.
+                                //
                                 position.put(move)
                                 position.count[Pawn(color)]--
                                 position.count[move.promoted]++
@@ -178,12 +204,8 @@ func (p *Position) MakeMove(move *Move) *Position {
                         position.can000[color] = position.pieces[rookSquare[color]] == Rook(color)
                 }
         }
-        if move.captured != 0 {
-                position.board[color^1].Clear(move.to)
-                position.outposts[move.captured].Clear(move.to)
-                position.count[move.captured]--
-        }
 
+        position.color ^= 1 // <-- Switch side to move.
         return position.computeStage().setupAttacks()
 }
 
@@ -191,7 +213,6 @@ func (p *Position) isCheck(color int) bool {
         king := p.outposts[King(color)]
         return king.Intersect(p.attacks[color^1]).IsNotEmpty()
 }
-
 
 func (p *Position) saveBest(ply int, move *Move) {
         best[ply][ply] = move
@@ -206,24 +227,18 @@ func (p *Position) isPawnPromotion(piece Piece, target int) bool {
         return piece.IsPawn() && ((piece.IsWhite() && target >= A8) || (piece.IsBlack() && target <= H1))
 }
 
-func (p *Position) isKingSideCastleAllowed() bool {
-        if p.color == WHITE {
-                return p.can00[WHITE] && p.pieces[F1] == 0 && p.pieces[G1] == 0 &&
-                       CASTLE_KING_WHITE & p.attacks[BLACK] == 0
-        } else {
-                return p.can00[BLACK] && p.pieces[F8] == 0 && p.pieces[G8] == 0 &&
-                       CASTLE_KING_BLACK & p.attacks[WHITE] == 0
+func (p *Position) isKingSideCastleAllowed(color int) bool {
+        if color == WHITE {
+                return p.can00[WHITE] && p.pieces[F1] == 0 && p.pieces[G1] == 0 && CASTLE_KING_WHITE & p.attacks[BLACK] == 0
         }
+        return p.can00[BLACK] && p.pieces[F8] == 0 && p.pieces[G8] == 0 && CASTLE_KING_BLACK & p.attacks[WHITE] == 0
 }
 
-func (p *Position) isQueenSideCastleAllowed() bool {
+func (p *Position) isQueenSideCastleAllowed(color int) bool {
         if p.color == WHITE {
-                return p.can000[WHITE] && p.pieces[D1] == 0 && p.pieces[C1] == 0 && p.pieces[B1] == 0 &&
-                       CASTLE_QUEEN_WHITE & p.attacks[BLACK] == 0
-        } else {
-                return p.can000[BLACK] && p.pieces[D8] == 0 && p.pieces[C8] == 0 && p.pieces[B8] == 0 &&
-                       CASTLE_QUEEN_BLACK & p.attacks[WHITE] == 0
+                return p.can000[WHITE] && p.pieces[D1] == 0 && p.pieces[C1] == 0 && p.pieces[B1] == 0 && CASTLE_QUEEN_WHITE & p.attacks[BLACK] == 0
         }
+        return p.can000[BLACK] && p.pieces[D8] == 0 && p.pieces[C8] == 0 && p.pieces[B8] == 0 && CASTLE_QUEEN_BLACK & p.attacks[WHITE] == 0
 }
 
 func (p *Position) String() string {

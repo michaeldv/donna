@@ -7,12 +7,44 @@ import (`testing`)
 //
 // See http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
 //
-// Targets of white king on E1 include G1 and C1.
+// Targets of white king on E1 include G1 and C1 if castles are allowed.
 func TestTargets010(t *testing.T) {
-        game := NewGame().Setup(`Ke1`, `Ke8`)
+        game := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`)
         position := game.Start()
 
         expect(t, uint64(position.targets[E1]), uint64(0x000000000000386C))
+}
+
+// Targets of white king on E1 *do not* include G1 and C1 if castles *are not* allowed.
+func TestTargets011(t *testing.T) {
+        game := NewGame().Setup(`Ke1`, `Ke8`)
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E1]), uint64(0x0000000000003828))
+}
+
+// No G1 target (white bishop block).
+func TestTargets012(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rh1,Bf1`, `Ke8`)
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E1]), uint64(0x0000000000003808))
+}
+
+// No G1 target (F1 under attack).
+func TestTargets013(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rh1`, `Ke8,Rf8`)
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E1]), uint64(0x0000000000003828))
+}
+
+// No C1 target (D1 under attack)
+func TestTargets014(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Ra1`, `Ke8,Rd8`)
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E1]), uint64(0x0000000000003828))
 }
 
 // Targets of black king on E1 *do not* include G1 and C1.
@@ -24,13 +56,22 @@ func TestTargets015(t *testing.T) {
         expect(t, uint64(position.targets[E1]), uint64(0x0000000000003828))
 }
 
-// Targets of black king on E8 include G8 and C8.
+// Targets of black king on E8 include G8 and C8 if castles are allowed.
 func TestTargets020(t *testing.T) {
-        game := NewGame().Setup(`Ke1`, `Ke8`)
+        game := NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`)
         game.current = BLACK
         position := game.Start()
 
         expect(t, uint64(position.targets[E8]), uint64(0x6C38000000000000))
+}
+
+// Targets of black king on E8 *do not* include G8 and C8 if castles *are not* allowed.
+func TestTargets021(t *testing.T) {
+        game := NewGame().Setup(`Ke1`, `Ke8`)
+        game.current = BLACK
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E8]), uint64(0x2838000000000000))
 }
 
 // Targets of white king on E8 *do not* include G8 and C8.

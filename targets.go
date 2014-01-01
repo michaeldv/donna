@@ -57,17 +57,8 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
                 magic = ((rookMagic[square].mask & p.board[2]) * rookMagic[square].magic) >> 52
                 bitmask.Combine(rookMagicMoves[square][magic] & ^p.board[color])
         case KING:
-                //
-                // For the king we exclude all squares occupied by the same color pieces
-                // and suppress castle jumps for white king on E8 and black king on E1.
-                //
                 bitmask = kingMoves[square]
                 bitmask.Exclude(p.board[color])
-                if color == WHITE && square == E8 {
-                        bitmask.Clear(C8).Clear(G8)
-                } else if color == BLACK && square == E1 {
-                        bitmask.Clear(C1).Clear(G1)
-                }
         }
 
         return bitmask

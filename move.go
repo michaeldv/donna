@@ -158,13 +158,6 @@ func (m *Move) calculateValue() int {
         return victimAttacker[victim][attacker]
 }
 
-func (m *Move) isValid(p *Position) bool {
-        if (m.isKingSideCastle() && !p.isKingSideCastleAllowed()) || (m.isQueenSideCastle() && !p.isQueenSideCastleAllowed()) {
-                return false
-        }
-        return true
-}
-
 func (m *Move) isKingSideCastle() bool {
         return m.piece.IsKing() && ((m.piece.IsWhite() && m.from == E1 && m.to == G1) || (m.piece.IsBlack() && m.from == E8 && m.to == G8))
 }

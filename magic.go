@@ -66,11 +66,6 @@ func init() {
                                 kingMoves[square].Set(i)
                         }
                 }
-                if square == E1 {
-                        kingMoves[square].Set(C1).Set(G1)
-                } else if square == E8 {
-                        kingMoves[square].Set(C8).Set(G8)
-                }
 	}
 }
 

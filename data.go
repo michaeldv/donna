@@ -180,6 +180,8 @@ var maskIsolatedFile = [8]uint64{
 	0x2828282828282828, 0x5050505050505050, 0xA0A0A0A0A0A0A0A0, 0x4040404040404040,
 }
 
+var initialKingSquare = [2]int{ E1, E8 }
+
 var (
         valuePawn      = Score{  100,  100 }
         valueKnight    = Score{  350,  330 }

@@ -43,10 +43,7 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
                 // possible moves, one for each promoted piece.
                 //
                 if !p.isPawnPromotion(piece, target) {
-                        move := NewMove(p, square, target)
-                        if move.isValid(p) {
-                                moves = append(moves, move)
-                        }
+                        moves = append(moves, NewMove(p, square, target))
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
                                 candidate := NewMove(p, square, target).promote(name)
