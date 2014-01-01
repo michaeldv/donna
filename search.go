@@ -24,6 +24,16 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 		return beta
 	}
 
+        // Null move pruning. TODO: skip it if we're following principal variation.
+        if !p.inCheck && p.board[p.color].Count() > 5 && p.Evaluate() >= beta {
+		p.color ^= 1
+		score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
+		p.color ^= 1
+		if score >= beta {
+			return score
+		}
+        }
+
         moves := p.Moves(ply)
         nodes := p.game.nodes
         for i, move := range moves {
@@ -59,7 +69,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
         Log("\nquiescence(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
 
-        if depth < -3 {
+        if ply > 14 {
                 return p.Evaluate()
         }
 
