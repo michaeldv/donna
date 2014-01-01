@@ -4,9 +4,7 @@
 
 package donna
 
-import(
-        `bytes`
-)
+import(`bytes`)
 
 var best [16][16]*Move // Assuming max depth = 4 which makes it 8 plies.
 var bestlen [16]int
@@ -37,7 +35,7 @@ func NewPosition(game *Game, pieces [64]Piece) *Position {
         p.can000[WHITE] = p.pieces[E1] == King(WHITE) && p.pieces[A1] == Rook(WHITE)
         p.can000[BLACK] = p.pieces[E8] == King(BLACK) && p.pieces[A8] == Rook(BLACK)
 
-        return p.setupPieces().setupAttacks()
+        return p.setupPieces().computeStage().setupAttacks()
 }
 
 func (p *Position) setupPieces() *Position {
@@ -48,13 +46,12 @@ func (p *Position) setupPieces() *Position {
                         p.count[piece]++
                 }
         }
-        //
-        // Combined board starts off with white pieces and adds black ones.
-        //
+        return p
+}
+
+func (p *Position) computeStage() *Position {
         p.board[2] = p.board[WHITE] | p.board[BLACK]
-        //
-        // Determine game stage.
-        //
+
         p.stage = 2 * (p.count[Pawn(WHITE)]   + p.count[Pawn(BLACK)])   +
                   6 * (p.count[Knight(WHITE)] + p.count[Knight(BLACK)]) +
                  12 * (p.count[Bishop(WHITE)] + p.count[Bishop(BLACK)]) +
@@ -97,9 +94,9 @@ func (p *Position) setupAttacks() *Position {
         return p
 }
 
-func (p *Position) MakeMove(move *Move) (position *Position) {
-        color := move.piece.Color()
-        position = new(Position)
+func (p *Position) clone() *Position {
+        position := new(Position)
+
         position.game = p.game
         position.color = p.color^1
         position.can00 = p.can00
@@ -108,85 +105,77 @@ func (p *Position) MakeMove(move *Move) (position *Position) {
         position.board = p.board
         position.count = p.count
         position.enpassant = 0
-
         position.pieces = p.pieces
-        position.pieces[move.from] = 0
-        position.pieces[move.to] = move.piece
-        position.board[color].Clear(move.from)
-        position.board[color].Set(move.to)
-        position.outposts[move.piece].Clear(move.from)
-        position.outposts[move.piece].Set(move.to)
+
+        return position
+}
+
+func (p *Position) lift(move *Move) *Position {
+        color := p.color
+        if move.piece != 0 {
+                color = move.piece.Color()
+        }
+
+        p.pieces[move.from] = 0
+        p.board[color].Clear(move.from)
+        p.outposts[move.piece].Clear(move.from)
+        return p
+}
+
+func (p *Position) put(move *Move) *Position {
+        piece := move.piece
+        if move.promoted != 0 {
+                piece = move.promoted
+        }
+        p.pieces[move.to] = piece
+        p.board[move.piece.Color()].Set(move.to)
+        p.outposts[piece].Set(move.to)
+        return p
+}
+
+func (p *Position) make(move *Move) *Position {
+        return p.lift(move).put(move)
+}
+
+func (p *Position) MakeMove(move *Move) *Position {
+        eight := [2]int{ 8, -8 }
+        color := move.piece.Color()
+        position := p.clone().make(move)
 
         if kind := move.piece.Kind(); kind == KING {
                 if move.isCastle() {
                         switch move.to {
                         case G1:
-                                position.pieces[H1], position.pieces[F1] = 0, Rook(WHITE)
-                                position.board[WHITE].Clear(H1)
-                                position.board[WHITE].Set(F1)
-                                position.outposts[Rook(WHITE)].Clear(H1)
-                                position.outposts[Rook(WHITE)].Set(F1)
+                                position.make(NewMove(position, H1, F1))
                         case C1:
-                                position.pieces[A1], position.pieces[D1] = 0, Rook(WHITE)
-                                position.board[WHITE].Clear(A1)
-                                position.board[WHITE].Set(D1)
-                                position.outposts[Rook(WHITE)].Clear(A1)
-                                position.outposts[Rook(WHITE)].Set(D1)
+                                position.make(NewMove(position, A1, D1))
                         case G8:
-                                position.pieces[H8], position.pieces[F8] = 0, Rook(BLACK)
-                                position.board[BLACK].Clear(H8)
-                                position.board[BLACK].Set(F8)
-                                position.outposts[Rook(BLACK)].Clear(H8)
-                                position.outposts[Rook(BLACK)].Set(F8)
+                                position.make(NewMove(position, H8, F8))
                         case C8:
-                                position.pieces[A8], position.pieces[D8] = 0, Rook(BLACK)
-                                position.board[BLACK].Clear(A8)
-                                position.board[BLACK].Set(D8)
-                                position.outposts[Rook(BLACK)].Clear(A8)
-                                position.outposts[Rook(BLACK)].Set(D8)
+                                position.make(NewMove(position, A8, D8))
                         }
                 }
                 position.can00[color], position.can000[color] = false, false
         } else {
                 if kind == PAWN {
                         if move.isEnpassant(p.outposts[Pawn(color^1)]) {
-                                if color == WHITE {
-                                        position.enpassant = move.from + 8
-                                } else {
-                                        position.enpassant = move.from - 8
-                                }
+                                position.enpassant = move.from + eight[color]
                         } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
+                                position.lift(NewMove(position, move.to + eight[color^1], move.to + eight[color^1]))
                                 position.count[Pawn(color^1)]--
-                                if color == WHITE {
-                                        position.pieces[move.to - 8] = 0
-                                        position.board[color^1].Clear(move.to - 8)
-                                        position.outposts[Pawn(color^1)].Clear(move.to - 8)
-                                } else {
-                                        position.pieces[move.to + 8] = 0
-                                        position.board[color^1].Clear(move.to + 8)
-                                        position.outposts[Pawn(color^1)].Clear(move.to + 8)
-                                }
                         } else if move.promoted != 0 { // Replace pawn with the promoted piece.
-                                position.pieces[move.to] = move.promoted
-                                position.board[color].Set(move.to)
-                                position.outposts[move.promoted].Set(move.to)
+                                position.put(move)
                                 position.count[Pawn(color)]--
                                 position.count[move.promoted]++
                         }
                 }
-                if position.can00[p.color] {
-                        if p.color == WHITE {
-                                position.can00[WHITE] = position.pieces[H1] == Rook(WHITE) //&& position.pieces[E1] == King(WHITE)
-                        } else {
-                                position.can00[BLACK] = position.pieces[H8] == Rook(BLACK) //&& position.pieces[E8] == King(BLACK)
-                        }
+                if position.can00[color] {
+                        rookSquare := [2]int{ H1, H8 }
+                        position.can00[color] = position.pieces[rookSquare[color]] == Rook(color)
                 }
-                if position.can000[p.color] {
-                        if p.color == WHITE {
-                                position.can000[WHITE] = position.pieces[A1] == Rook(WHITE) //&& position.pieces[E1] == King(WHITE)
-                        } else {
-                                position.can000[BLACK] = position.pieces[A8] == Rook(BLACK) //&& position.pieces[E8] == King(BLACK)
-                        }
+                if position.can000[color] {
+                        rookSquare := [2]int{ A1, A8 }
+                        position.can000[color] = position.pieces[rookSquare[color]] == Rook(color)
                 }
         }
         if move.captured != 0 {
@@ -195,15 +184,7 @@ func (p *Position) MakeMove(move *Move) (position *Position) {
                 position.count[move.captured]--
         }
 
-        position.board[2] = position.board[WHITE] | position.board[BLACK]
-        p.stage = 2 * (p.count[Pawn(WHITE)]   + p.count[Pawn(BLACK)])   +
-                  6 * (p.count[Knight(WHITE)] + p.count[Knight(BLACK)]) +
-                 12 * (p.count[Bishop(WHITE)] + p.count[Bishop(BLACK)]) +
-                 16 * (p.count[Rook(WHITE)]   + p.count[Rook(BLACK)])   +
-                 44 * (p.count[Queen(WHITE)]  + p.count[Queen(BLACK)])
-
-        position.setupAttacks()
-        return
+        return position.computeStage().setupAttacks()
 }
 
 func (p *Position) isCheck(color int) bool {
