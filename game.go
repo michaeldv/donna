@@ -111,11 +111,11 @@ func (g *Game) Analyze(depth int, position *Position) string {
 }
 
 func (g *Game) Start() *Position {
-        return NewPosition(g, g.pieces, 0)
+        return NewPosition(g, g.pieces)
 }
 
 func (g *Game) Search(depth int) *Move {
-        g.Analyze(depth, NewPosition(g, g.pieces, 0))
+        g.Analyze(depth, NewPosition(g, g.pieces))
         return best[0][0]
 }
 

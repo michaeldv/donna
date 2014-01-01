@@ -42,7 +42,7 @@ func TestPosition030(t *testing.T) { // Everything is OK.
         expect(t, p.isQueenSideCastleAllowed(), true)
 
         p = NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`).Start()  // White to move.
-        p = NewPosition(p, p.pieces, 0)                    // Black to move to move.
+        p.color ^= 1                                       // Black to move.
 
         expect(t, p.isKingSideCastleAllowed(), true)
         expect(t, p.isQueenSideCastleAllowed(), true)
@@ -56,7 +56,7 @@ func TestPosition040(t *testing.T) { // King checked.
         expect(t, p.isQueenSideCastleAllowed(), false)
 
         p = NewGame().Setup(`Ke1,Bg6`, `Ke8,Ra8,Rh8`).Start()
-        p = NewPosition(p, p.pieces, 0)
+        p.color ^= 1
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
@@ -69,7 +69,7 @@ func TestPosition050(t *testing.T) { // Attacked square.
         expect(t, p.isQueenSideCastleAllowed(), false)
 
         p = NewGame().Setup(`Ke1,Bb6,Bh6`, `Ke8,Ra8,Rh8`).Start()
-        p = NewPosition(p, p.pieces, 0)
+        p.color ^= 1
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
@@ -87,13 +87,13 @@ func TestPosition060(t *testing.T) { // Wrong square.
         expect(t, p.isQueenSideCastleAllowed(), false)
 
         p = NewGame().Setup(`Ke4`, `Ke8,Ra1,Rh1`).Start()
-        p = NewPosition(p, p.pieces, 0)
+        p.color ^= 1
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
 
         p = NewGame().Setup(`Ke4`, `Ke7,Ra8,Rh8`).Start()
-        p = NewPosition(p, p.pieces, 0)
+        p.color ^= 1
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)
@@ -106,7 +106,7 @@ func TestPosition070(t *testing.T) { // Missing rooks.
         expect(t, p.isQueenSideCastleAllowed(), false)
 
         p = NewGame().Setup(`Ke1`, `Ke8`).Start()
-        p = NewPosition(p, p.pieces, 0)
+        p.color ^= 1
 
         expect(t, p.isKingSideCastleAllowed(), false)
         expect(t, p.isQueenSideCastleAllowed(), false)

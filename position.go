@@ -27,28 +27,15 @@ type Position struct {
         can000    [2]bool       // Is queen-side castle allowed?
 }
 
-func NewPosition(position interface{}, pieces [64]Piece, enpassant int) *Position {
+func NewPosition(game *Game, pieces [64]Piece) *Position {
         p := new(Position)
+        p.game = game
+        p.color = p.game.current
         p.pieces = pieces
-        p.enpassant = enpassant
-
-        switch position.(type) {
-        case *Game:
-                p.game = position.(*Game)
-                p.color = p.game.current
-                p.can00[WHITE]  = p.pieces[E1] == King(WHITE) && p.pieces[H1] == Rook(WHITE)
-                p.can00[BLACK]  = p.pieces[E8] == King(BLACK) && p.pieces[H8] == Rook(BLACK)
-                p.can000[WHITE] = p.pieces[E1] == King(WHITE) && p.pieces[A1] == Rook(WHITE)
-                p.can000[BLACK] = p.pieces[E8] == King(BLACK) && p.pieces[A8] == Rook(BLACK)
-        case *Position:
-                asserted := position.(*Position)
-                p.game = asserted.game
-                p.color = asserted.color^1
-                p.can00[WHITE]  = asserted.can00[WHITE]  && p.pieces[E1] == King(WHITE) && p.pieces[H1] == Rook(WHITE)
-                p.can00[BLACK]  = asserted.can00[BLACK]  && p.pieces[E8] == King(BLACK) && p.pieces[H8] == Rook(BLACK)
-                p.can000[WHITE] = asserted.can000[WHITE] && p.pieces[E1] == King(WHITE) && p.pieces[A1] == Rook(WHITE)
-                p.can000[BLACK] = asserted.can000[BLACK] && p.pieces[E8] == King(BLACK) && p.pieces[A8] == Rook(BLACK)
-        }
+        p.can00[WHITE]  = p.pieces[E1] == King(WHITE) && p.pieces[H1] == Rook(WHITE)
+        p.can00[BLACK]  = p.pieces[E8] == King(BLACK) && p.pieces[H8] == Rook(BLACK)
+        p.can000[WHITE] = p.pieces[E1] == King(WHITE) && p.pieces[A1] == Rook(WHITE)
+        p.can000[BLACK] = p.pieces[E8] == King(BLACK) && p.pieces[A8] == Rook(BLACK)
 
         return p.setupPieces().setupAttacks()
 }
@@ -64,8 +51,7 @@ func (p *Position) setupPieces() *Position {
         //
         // Combined board starts off with white pieces and adds black ones.
         //
-        p.board[2] = p.board[WHITE]
-        p.board[2].Combine(p.board[BLACK])
+        p.board[2] = p.board[WHITE] | p.board[BLACK]
         //
         // Determine game stage.
         //
@@ -101,8 +87,7 @@ func (p *Position) setupAttacks() *Position {
         //
         // Combined board starts off with white pieces and adds black ones.
         //
-        p.attacks[2] = p.attacks[WHITE]
-        p.attacks[2].Combine(p.attacks[BLACK])
+        p.attacks[2] = p.attacks[WHITE] | p.attacks[BLACK]
         //
         // Is our king being attacked?
         //
@@ -112,45 +97,113 @@ func (p *Position) setupAttacks() *Position {
         return p
 }
 
-func (p *Position) MakeMove(move *Move) *Position {
-        pieces := p.pieces
-        enpassant := 0
+func (p *Position) MakeMove(move *Move) (position *Position) {
+        color := move.piece.Color()
+        position = new(Position)
+        position.game = p.game
+        position.color = p.color^1
+        position.can00 = p.can00
+        position.can000 = p.can000
+        position.outposts = p.outposts
+        position.board = p.board
+        position.count = p.count
+        position.enpassant = 0
 
-        pieces[move.from] = 0
-        pieces[move.to] = move.piece
+        position.pieces = p.pieces
+        position.pieces[move.from] = 0
+        position.pieces[move.to] = move.piece
+        position.board[color].Clear(move.from)
+        position.board[color].Set(move.to)
+        position.outposts[move.piece].Clear(move.from)
+        position.outposts[move.piece].Set(move.to)
 
-        switch move.piece.Kind() {
-        case PAWN:
-                if move.isEnpassant(p.outposts[Pawn(p.color^1)]) {
-                        if p.color == WHITE {
-                                enpassant = move.from + 8
-                        } else {
-                                enpassant = move.from - 8
-                        }
-                } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
-                        if p.color == WHITE {
-                                pieces[move.to - 8] = 0
-                        } else {
-                                pieces[move.to + 8] = 0
-                        }
-                } else if move.promoted != 0 { // Replace pawn with the promoted piece.
-                        pieces[move.to] = move.promoted
-                }
-        case KING:
+        if kind := move.piece.Kind(); kind == KING {
                 if move.isCastle() {
                         switch move.to {
                         case G1:
-                                pieces[H1], pieces[F1] = 0, Rook(WHITE)
+                                position.pieces[H1], position.pieces[F1] = 0, Rook(WHITE)
+                                position.board[WHITE].Clear(H1)
+                                position.board[WHITE].Set(F1)
+                                position.outposts[Rook(WHITE)].Clear(H1)
+                                position.outposts[Rook(WHITE)].Set(F1)
                         case C1:
-                                pieces[A1], pieces[D1] = 0, Rook(WHITE)
+                                position.pieces[A1], position.pieces[D1] = 0, Rook(WHITE)
+                                position.board[WHITE].Clear(A1)
+                                position.board[WHITE].Set(D1)
+                                position.outposts[Rook(WHITE)].Clear(A1)
+                                position.outposts[Rook(WHITE)].Set(D1)
                         case G8:
-                                pieces[H8], pieces[F8] = 0, Rook(BLACK)
+                                position.pieces[H8], position.pieces[F8] = 0, Rook(BLACK)
+                                position.board[BLACK].Clear(H8)
+                                position.board[BLACK].Set(F8)
+                                position.outposts[Rook(BLACK)].Clear(H8)
+                                position.outposts[Rook(BLACK)].Set(F8)
                         case C8:
-                                pieces[A8], pieces[D8] = 0, Rook(BLACK)
+                                position.pieces[A8], position.pieces[D8] = 0, Rook(BLACK)
+                                position.board[BLACK].Clear(A8)
+                                position.board[BLACK].Set(D8)
+                                position.outposts[Rook(BLACK)].Clear(A8)
+                                position.outposts[Rook(BLACK)].Set(D8)
+                        }
+                }
+                position.can00[color], position.can000[color] = false, false
+        } else {
+                if kind == PAWN {
+                        if move.isEnpassant(p.outposts[Pawn(color^1)]) {
+                                if color == WHITE {
+                                        position.enpassant = move.from + 8
+                                } else {
+                                        position.enpassant = move.from - 8
+                                }
+                        } else if move.isEnpassantCapture(p.enpassant) { // Take out the en-passant pawn.
+                                position.count[Pawn(color^1)]--
+                                if color == WHITE {
+                                        position.pieces[move.to - 8] = 0
+                                        position.board[color^1].Clear(move.to - 8)
+                                        position.outposts[Pawn(color^1)].Clear(move.to - 8)
+                                } else {
+                                        position.pieces[move.to + 8] = 0
+                                        position.board[color^1].Clear(move.to + 8)
+                                        position.outposts[Pawn(color^1)].Clear(move.to + 8)
+                                }
+                        } else if move.promoted != 0 { // Replace pawn with the promoted piece.
+                                position.pieces[move.to] = move.promoted
+                                position.board[color].Set(move.to)
+                                position.outposts[move.promoted].Set(move.to)
+                                position.count[Pawn(color)]--
+                                position.count[move.promoted]++
+                        }
+                }
+                if position.can00[p.color] {
+                        if p.color == WHITE {
+                                position.can00[WHITE] = position.pieces[H1] == Rook(WHITE) //&& position.pieces[E1] == King(WHITE)
+                        } else {
+                                position.can00[BLACK] = position.pieces[H8] == Rook(BLACK) //&& position.pieces[E8] == King(BLACK)
+                        }
+                }
+                if position.can000[p.color] {
+                        if p.color == WHITE {
+                                position.can000[WHITE] = position.pieces[A1] == Rook(WHITE) //&& position.pieces[E1] == King(WHITE)
+                        } else {
+                                position.can000[BLACK] = position.pieces[A8] == Rook(BLACK) //&& position.pieces[E8] == King(BLACK)
                         }
                 }
         }
-        return NewPosition(p, pieces, enpassant)
+        if move.captured != 0 {
+                position.board[color^1].Clear(move.to)
+                position.outposts[move.captured].Clear(move.to)
+                position.count[move.captured]--
+        }
+
+        position.board[2] = position.board[WHITE] | position.board[BLACK]
+        p.stage = 2 * (p.count[Pawn(WHITE)]   + p.count[Pawn(BLACK)])   +
+                  6 * (p.count[Knight(WHITE)] + p.count[Knight(BLACK)]) +
+                 12 * (p.count[Bishop(WHITE)] + p.count[Bishop(BLACK)]) +
+                 16 * (p.count[Rook(WHITE)]   + p.count[Rook(BLACK)])   +
+                 44 * (p.count[Queen(WHITE)]  + p.count[Queen(BLACK)])
+
+        position.setupAttacks()
+        return
 }
 
 func (p *Position) isCheck(color int) bool {
