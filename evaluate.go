@@ -23,9 +23,9 @@ func (p *Position) Evaluate() (score int) {
 
         evaluator.analyzeMaterial()
         evaluator.analyzeCoordination()
-        // evaluator.analyzePawnStructure(p)
-        // evaluator.analyzePassedPawns(p)
-        // evaluator.analyzeKingSafety(p)
+        evaluator.analyzePawnStructure()
+        // evaluator.analyzePassedPawns()
+        // evaluator.analyzeKingSafety()
 
         score = (evaluator.midgame * p.stage + evaluator.endgame * (256 - p.stage)) / 256
         return
@@ -90,14 +90,22 @@ func (e *Evaluator) analyzeCoordination() {
 }
 
 func (e *Evaluator) analyzePawnStructure() {
-        // for color := WHITE; color <= BLACK; color++ {
-        //     outposts = p->outposts(Pawn(color))
-        //
-        //     for outposts.IsNotEmpty() {
-        //             square := outposts.FirstSet()
-        //             outposts.Clear(target)
-        //     }
-        // }
+        var penalty [2]Score
+        pawn := [2]Piece{ Pawn(WHITE), Pawn(BLACK) }
+
+        for col := A1; col <= H1; col++ {
+                for color := WHITE; color <= BLACK; color++ {
+                        doubled := maskFile[col] & e.position.outposts[pawn[color]]
+                        if count := doubled.Count(); count > 1 {
+                                penalty[color].midgame += (count - 1) * doublePawnPenalty[0][col]
+                                penalty[color].endgame += (count - 1) * doublePawnPenalty[1][col]
+                        }
+                }
+        }
+
+        color, opposite := e.position.color, e.position.color^1
+        e.midgame += penalty[color].midgame - penalty[opposite].midgame
+        e.endgame += penalty[color].endgame - penalty[opposite].endgame
 }
 
 func (e *Evaluator) analyzePassedPawns() {

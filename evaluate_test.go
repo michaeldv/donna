@@ -46,3 +46,25 @@ func TestEvaluate050(t *testing.T) { // After 1. e2-e4 e7-e5 2. Ng1-f3 Nb8-c6 3.
         score := game.Start().Evaluate()
         expect(t, score, 0)
 }
+
+// Doubled pawns.
+func TestEvaluate100(t *testing.T) {
+        game := NewGame().Setup(`Ke1,h2,h3`, `Ke8,a7,a6`)
+        score := game.Start().Evaluate()
+
+        expect(t, score, 0)
+}
+
+func TestEvaluate110(t *testing.T) {
+        game := NewGame().Setup(`Ke1,h2,h3`, `Ke8,a7,h7`)
+        score := game.Start().Evaluate()
+
+        expect(t, score, -59)
+}
+
+func TestEvaluate120(t *testing.T) {
+        game := NewGame().Setup(`Ke1,f4,f5`, `Ke8,a7,h7`)
+        score := game.Start().Evaluate()
+
+        expect(t, score, -49)
+}
