@@ -42,7 +42,7 @@ func (p *Position) setupPieces() *Position {
         for square, piece := range p.pieces {
                 if piece != 0 {
                         p.outposts[piece].Set(square)
-                        p.board[piece.Color()].Set(square)
+                        p.board[piece.color()].Set(square)
                         p.count[piece]++
                 }
         }
@@ -68,9 +68,9 @@ func (p *Position) setupAttacks() *Position {
                 square := board.FirstSet()
                 piece := p.pieces[square]
                 p.targets[square] = p.Targets(square)
-                p.attacks[piece.Color()].Combine(p.targets[square])
-                if piece.IsKing() {
-                        kingSquare[piece.Color()] = square
+                p.attacks[piece.color()].Combine(p.targets[square])
+                if piece.isKing() {
+                        kingSquare[piece.color()] = square
                 }
                 board.Clear(square)
         }
@@ -123,7 +123,7 @@ func (p *Position) clone() *Position {
 func (p *Position) lift(move *Move) *Position {
         color := p.color
         if move.piece != 0 {
-                color = move.piece.Color()
+                color = move.piece.color()
         }
 
         p.pieces[move.from] = 0
@@ -156,10 +156,10 @@ func (p *Position) make(move *Move) *Position {
 
 func (p *Position) MakeMove(move *Move) *Position {
         eight := [2]int{ 8, -8 }
-        color := move.piece.Color()
+        color := move.piece.color()
         position := p.clone().make(move)
 
-        if kind := move.piece.Kind(); kind == KING {
+        if kind := move.piece.kind(); kind == KING {
                 if move.isCastle() {
                         switch move.to {
                         case G1:
@@ -224,7 +224,7 @@ func (p *Position) saveBest(ply int, move *Move) {
 }
 
 func (p *Position) isPawnPromotion(piece Piece, target int) bool {
-        return piece.IsPawn() && ((piece.IsWhite() && target >= A8) || (piece.IsBlack() && target <= H1))
+        return piece.isPawn() && ((piece.isWhite() && target >= A8) || (piece.isBlack() && target <= H1))
 }
 
 func (p *Position) isKingSideCastleAllowed(color int) bool {

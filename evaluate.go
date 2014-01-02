@@ -50,7 +50,7 @@ func (e *Evaluator) analyzeCoordination() {
                 if piece == 0 {
                         continue
                 }
-                color := piece.Color()
+                color := piece.color()
 
                 // Mobility: how many moves are available to squares not attacked by
                 // the opponent?

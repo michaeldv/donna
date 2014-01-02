@@ -105,7 +105,7 @@ func (b *Book) move(p *Position, entry Entry) (move *Move) {
 func (b *Book) polyglot(position *Position) (key uint64) {
         for i, piece := range position.pieces {
                 if piece != 0 {
-                        key ^= polyglotRandom[0:768][64 * piece.Polyglot() + i]
+                        key ^= polyglotRandom[0:768][64 * piece.polyglot() + i]
                 }
         }
 

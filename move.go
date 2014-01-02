@@ -101,7 +101,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 }
 
 func (m *Move) promote(kind int) *Move {
-        m.promoted = Piece(kind | m.piece.Color())
+        m.promoted = Piece(kind | m.piece.color())
 
         return m
 }
@@ -116,9 +116,9 @@ func (m *Move) is(move *Move) bool {
 
 func (m *Move) calculateScore(position *Position) int {
 	var midgame, endgame int
-	square := flip[m.piece.Color()][m.to]
+	square := flip[m.piece.color()][m.to]
 
-	switch m.piece.Kind() {
+	switch m.piece.kind() {
         case PAWN:
                 midgame += bonusPawn[0][square]
                 endgame += bonusPawn[1][square]
@@ -148,22 +148,22 @@ func (m *Move) calculateScore(position *Position) int {
 // PxN, NxN, BxN, RxN, QxN, KxN             KNIGHT = 2 << 1 // 4
 // PxP, NxP, BxP, RxP, QxP, KxP             PAWN   = 1 << 1 // 2
 func (m *Move) calculateValue() int {
-        if m.captured == 0 || m.captured.Kind() == KING {
+        if m.captured == 0 || m.captured.kind() == KING {
                 return 0
         }
 
-        victim := (QUEEN - m.captured.Kind()) / PAWN
-        attacker := m.piece.Kind() / PAWN - 1
+        victim := (QUEEN - m.captured.kind()) / PAWN
+        attacker := m.piece.kind() / PAWN - 1
 
         return victimAttacker[victim][attacker]
 }
 
 func (m *Move) isKingSideCastle() bool {
-        return m.piece.IsKing() && ((m.piece.IsWhite() && m.from == E1 && m.to == G1) || (m.piece.IsBlack() && m.from == E8 && m.to == G8))
+        return m.piece.isKing() && ((m.piece.isWhite() && m.from == E1 && m.to == G1) || (m.piece.isBlack() && m.from == E8 && m.to == G8))
 }
 
 func (m *Move) isQueenSideCastle() bool {
-        return m.piece.IsKing() && ((m.piece.IsWhite() && m.from == E1 && m.to == C1) || (m.piece.IsBlack() && m.from == E8 && m.to == C8))
+        return m.piece.isKing() && ((m.piece.isWhite() && m.from == E1 && m.to == C1) || (m.piece.isBlack() && m.from == E8 && m.to == C8))
 }
 
 func (m *Move) isCastle() bool {
@@ -171,9 +171,9 @@ func (m *Move) isCastle() bool {
 }
 
 func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
-        color := m.piece.Color()
+        color := m.piece.color()
 
-        if m.piece.IsPawn() && Row(m.from) == [2]int{1,6}[color] && Row(m.to) == [2]int{3,4}[color] {
+        if m.piece.isPawn() && Row(m.from) == [2]int{1,6}[color] && Row(m.to) == [2]int{3,4}[color] {
                 switch col := Col(m.to); col {
                 case 0:
                         return opponentPawns.IsSet(m.to + 1)
@@ -187,7 +187,7 @@ func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
 }
 
 func (m *Move) isEnpassantCapture(enpassant int) bool {
-        return m.piece.IsPawn() && m.to == enpassant
+        return m.piece.isPawn() && m.to == enpassant
 }
 
 func (m *Move) String() string {
@@ -203,7 +203,7 @@ func (m *Move) String() string {
                 piece, promoted := m.piece.String(), m.promoted.String()
                 format := `%c%d%c%c%d%s`
 
-                if m.piece.IsPawn() { // Skip piece name if it's a pawn.
+                if m.piece.isPawn() { // Skip piece name if it's a pawn.
                         return fmt.Sprintf(format, col[0], row[0], capture, col[1], row[1], promoted)
                 } else {
                         if Settings.Fancy { // Fancy notation is more readable with extra space.

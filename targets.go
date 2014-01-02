@@ -6,7 +6,7 @@ package donna
 
 func (p *Position) Targets(square int) (bitmask Bitmask) {
         piece := p.pieces[square]
-        kind, color := piece.Kind(), piece.Color()
+        kind, color := piece.kind(), piece.color()
 
         switch kind {
         case PAWN:

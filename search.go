@@ -94,7 +94,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         qnodes := p.game.qnodes
         for i, move := range moves {
                 if position := p.MakeMove(move); !position.isCheck(p.color) {
-                        Log("%d out of %d: evasion %s for %s\n", i, len(moves), move, C(move.piece.Color()))
+                        Log("%d out of %d: evasion %s for %s\n", i, len(moves), move, C(move.piece.color()))
                         p.game.qnodes++
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
@@ -140,7 +140,7 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
         moves := p.Captures() // TODO: followed by quiet checks.
         for i, move := range moves {
                 if position := p.MakeMove(move); !position.isCheck(p.color) {
-                        Log("%d out of %d: capture %s for %s\n", i, len(moves), move, C(move.piece.Color()))
+                        Log("%d out of %d: capture %s for %s\n", i, len(moves), move, C(move.piece.color()))
                         p.game.qnodes++
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)

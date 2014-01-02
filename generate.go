@@ -9,7 +9,7 @@ import(`sort`)
 // All moves.
 func (p *Position) Moves(ply int) (moves []*Move) {
         for i, piece := range p.pieces {
-                if piece != 0 && piece.Color() == p.color {
+                if piece != 0 && piece.color() == p.color {
                         moves = append(moves, p.PossibleMoves(i, piece)...)
                 }
         }
@@ -20,7 +20,7 @@ func (p *Position) Moves(ply int) (moves []*Move) {
 
 func (p *Position) Captures() (moves []*Move) {
         for i, piece := range p.pieces {
-                if piece != 0 && piece.Color() == p.color {
+                if piece != 0 && piece.color() == p.color {
                         moves = append(moves, p.PossibleCaptures(i, piece)...)
                 }
         }

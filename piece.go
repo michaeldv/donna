@@ -4,8 +4,6 @@
 
 package donna
 
-import ()
-
 type Piece uint8
 
 const (
@@ -45,7 +43,7 @@ func Pawn(color int) Piece {
 // Returns intrinsic piece value for the middlegame and
 // the endgame.
 func (p Piece) value() (int, int) {
-	switch p.Kind() {
+	switch p.kind() {
         case PAWN:
                 return valuePawn.midgame, valuePawn.endgame
         case KNIGHT:
@@ -62,7 +60,7 @@ func (p Piece) value() (int, int) {
 
 // Returns bonus points for a piece at the given square.
 func (p Piece) bonus(square int) (int, int) {
-	switch p.Kind() {
+	switch p.kind() {
         case PAWN:
                 return bonusPawn[0][square], bonusPawn[1][square]
         case KNIGHT:
@@ -81,53 +79,53 @@ func (p Piece) bonus(square int) (int, int) {
 
 // return Piece - 1 when color is White(0)
 //        Piece - 3 when color is Black(1)
-func (p Piece) Polyglot() int {
-        return int(p) - 1 - 2 * p.Color()
+func (p Piece) polyglot() int {
+        return int(p) - 1 - 2 * p.color()
 }
 
-func (p Piece)Color() int {
+func (p Piece) color() int {
         return int(p) & 0x01
 }
 
-func (p Piece)Kind() int {
+func (p Piece) kind() int {
         return int(p) & 0xFE
 }
 
-func (p Piece)IsWhite() bool {
+func (p Piece) isWhite() bool {
         return p & 0x01 == 0
 }
 
-func (p Piece)IsBlack() bool {
+func (p Piece) isBlack() bool {
         return p & 0x01 == 1
 }
 
-func (p Piece)IsKing() bool {
+func (p Piece) isKing() bool {
         return p & 0xFE == KING
 }
 
-func (p Piece)IsQueen() bool {
+func (p Piece) isQueen() bool {
         return p & 0xFE == QUEEN
 }
 
-func (p Piece)IsRook() bool {
+func (p Piece) isRook() bool {
         return p & 0xFE == ROOK
 }
 
-func (p Piece)IsBishop() bool {
+func (p Piece) isBishop() bool {
         return p & 0xFE == BISHOP
 }
 
-func (p Piece)IsKnight() bool {
+func (p Piece) isKnight() bool {
         return p & 0xFE == KNIGHT
 }
 
-func (p Piece)IsPawn() bool {
+func (p Piece) isPawn() bool {
         return p & 0xFE == PAWN
 }
 
-func (p Piece)String() string {
-        color := p.Color()
-        switch(p.Kind()) {
+func (p Piece) String() string {
+        color := p.color()
+        switch(p.kind()) {
         case KING:
                 if Settings.Fancy {
                         return []string{"\u2654", "\u265A"}[color]
