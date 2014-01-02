@@ -74,6 +74,33 @@ func TestTargets021(t *testing.T) {
         expect(t, uint64(position.targets[E8]), uint64(0x2838000000000000))
 }
 
+// No C8 target (black knight block).
+func TestTargets022(t *testing.T) {
+        game := NewGame().Setup(`Ke1`, `Ke8,Ra8,Nb8`)
+        game.current = BLACK
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E8]), uint64(0x2838000000000000))
+}
+
+// No C8 target (D8 under attack).
+func TestTargets023(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rd1`, `Ke8,Ra8`)
+        game.current = BLACK
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E8]), uint64(0x2838000000000000))
+}
+
+// No G8 target (F8 under attack)
+func TestTargets024(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rf1`, `Ke8,Rh8`)
+        game.current = BLACK
+        position := game.Start()
+
+        expect(t, uint64(position.targets[E8]), uint64(0x2838000000000000))
+}
+
 // Targets of white king on E8 *do not* include G8 and C8.
 func TestTargets025(t *testing.T) {
         game := NewGame().Setup(`Ke8`, `Ke1`)
