@@ -136,7 +136,7 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
                 quietAlpha = score
         }
 
-        moves := p.Captures() // TODO: followed by quiet checks.
+        moves := p.Captures(ply) // TODO: followed by quiet checks.
         for i, move := range moves {
                 if position := p.MakeMove(move); !position.isCheck(p.color) {
                         Log("%d out of %d: capture %s for %s\n", i, len(moves), move, C(move.piece.color()))

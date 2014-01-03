@@ -10,29 +10,33 @@ import(`sort`)
 func (p *Position) Moves(ply int) (moves []*Move) {
         for i, piece := range p.pieces {
                 if piece != 0 && piece.color() == p.color {
-                        moves = append(moves, p.PossibleMoves(i, piece)...)
+                        moves = append(moves, p.possibleMoves(i, piece)...)
                 }
         }
-        moves = p.Reorder(moves, best[0][ply])
+        moves = p.reorderMoves(moves, best[0][ply])
         Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
         return
 }
 
-func (p *Position) Captures() (moves []*Move) {
+func (p *Position) Captures(ply int) (moves []*Move) {
         for i, piece := range p.pieces {
                 if piece != 0 && piece.color() == p.color {
-                        moves = append(moves, p.PossibleCaptures(i, piece)...)
+                        moves = append(moves, p.possibleCaptures(i, piece)...)
                 }
         }
-        sort.Sort(byScore{moves})
-        Log("%d capture candidates for %s: %v\n", len(moves), C(p.color), moves)
+        if bestMove := best[0][ply]; bestMove != nil && bestMove.captured != 0 {
+                moves = p.reorderCaptures(moves, bestMove)
+        } else {
+                sort.Sort(byScore{moves})
+        }
 
+        Log("%d capture candidates for %s: %v\n", len(moves), C(p.color), moves)
         return
 }
 
 // All moves for the piece in certain square. This might include illegal
 // moves that cause check to the king.
-func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
+func (p *Position) possibleMoves(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
         for targets.IsNotEmpty() {
@@ -57,7 +61,7 @@ func (p *Position) PossibleMoves(square int, piece Piece) (moves []*Move) {
 
 // All capture moves for the piece in certain square. This might include
 // illegal moves that cause check to the king.
-func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
+func (p *Position) possibleCaptures(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
         for targets.IsNotEmpty() {
@@ -80,7 +84,7 @@ func (p *Position) PossibleCaptures(square int, piece Piece) (moves []*Move) {
         return
 }
 
-func (p *Position) Reorder(moves []*Move, bestMove *Move) []*Move {
+func (p *Position) reorderMoves(moves []*Move, bestMove *Move) []*Move {
         var principal, captures, promotions, remaining []*Move
 
         for _, move := range moves {
@@ -97,6 +101,20 @@ func (p *Position) Reorder(moves []*Move, bestMove *Move) []*Move {
         sort.Sort(byScore{captures})
         sort.Sort(byScore{remaining})
         return append(append(append(append(principal, captures...), promotions...), remaining...))
+}
+
+func (p *Position) reorderCaptures(moves []*Move, bestMove *Move) []*Move {
+        var principal, remaining []*Move
+
+        for _, move := range moves {
+                if len(principal) == 0 && move.is(bestMove) {
+                        principal = append(principal, move)
+                } else {
+                        remaining = append(remaining, move)
+                }
+        }
+        sort.Sort(byScore{remaining})
+        return append(principal, remaining...)
 }
 
 // Sorting moves by their relative score based on piece/square for regular moves
