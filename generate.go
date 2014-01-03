@@ -13,7 +13,7 @@ func (p *Position) Moves(ply int) (moves []*Move) {
                         moves = append(moves, p.possibleMoves(i, piece)...)
                 }
         }
-        moves = p.reorderMoves(moves, best[0][ply])
+        moves = p.reorderMoves(moves, best[0][ply], killer[ply])
         Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
         return
 }
@@ -84,12 +84,14 @@ func (p *Position) possibleCaptures(square int, piece Piece) (moves []*Move) {
         return
 }
 
-func (p *Position) reorderMoves(moves []*Move, bestMove *Move) []*Move {
-        var principal, captures, promotions, remaining []*Move
+func (p *Position) reorderMoves(moves []*Move, bestMove *Move, goodMove [2]*Move) []*Move {
+        var principal, killers, captures, promotions, remaining []*Move
 
         for _, move := range moves {
-                if bestMove != nil && len(principal) == 0 && move.is(bestMove) {
+                if len(principal) == 0 && bestMove != nil && move.is(bestMove) {
                         principal = append(principal, move)
+                } else if (goodMove[0] != nil && move.is(goodMove[0])) || (goodMove[1] != nil && move.is(goodMove[1])) {
+                        killers = append(killers, move)
                 } else if move.captured != 0 {
                         captures = append(captures, move)
                 } else if move.promoted != 0 {
@@ -98,9 +100,13 @@ func (p *Position) reorderMoves(moves []*Move, bestMove *Move) []*Move {
                         remaining = append(remaining, move)
                 }
         }
+        if len(killers) > 1 && killers[0] == goodMove[1] {
+                killers[0], killers[1] = killers[1], killers[0]
+        }
+
         sort.Sort(byScore{captures})
         sort.Sort(byScore{remaining})
-        return append(append(append(append(principal, captures...), promotions...), remaining...))
+        return append(append(append(append(append(principal, killers...), captures...), promotions...), remaining...))
 }
 
 func (p *Position) reorderCaptures(moves []*Move, bestMove *Move) []*Move {

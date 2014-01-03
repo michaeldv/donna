@@ -43,6 +43,10 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
 
                         if score >= beta {
+                                if !p.inCheck && move.captured == 0 && (killer[ply][0] == nil || !move.is(killer[ply][0])) {
+                                        killer[ply][1] = killer[ply][0]
+                                        killer[ply][0] = move
+                                }
                                 return score
                         }
                         if score > alpha {

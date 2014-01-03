@@ -91,6 +91,9 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
         fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
         //fmt.Println(`Depth   Nodes     QNodes      Nodes/s     Score     Best`)
         for depth := 1; depth <= maxDepth; depth++ {
+                best = [16][16]*Move{{nil}}
+                killer = [16][2]*Move{{nil}}
+
                 g.nodes, g.qnodes = 0, 0
                 start := time.Now()
                 score := g.Analyze(depth, position)
