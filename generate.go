@@ -90,12 +90,12 @@ func (p *Position) reorderMoves(moves []*Move, bestMove *Move, goodMove [2]*Move
         for _, move := range moves {
                 if len(principal) == 0 && bestMove != nil && move.is(bestMove) {
                         principal = append(principal, move)
-                } else if (goodMove[0] != nil && move.is(goodMove[0])) || (goodMove[1] != nil && move.is(goodMove[1])) {
-                        killers = append(killers, move)
                 } else if move.captured != 0 {
                         captures = append(captures, move)
                 } else if move.promoted != 0 {
                         promotions = append(promotions, move)
+                } else if (goodMove[0] != nil && move.is(goodMove[0])) || (goodMove[1] != nil && move.is(goodMove[1])) {
+                        killers = append(killers, move)
                 } else {
                         remaining = append(remaining, move)
                 }
@@ -106,7 +106,7 @@ func (p *Position) reorderMoves(moves []*Move, bestMove *Move, goodMove [2]*Move
 
         sort.Sort(byScore{captures})
         sort.Sort(byScore{remaining})
-        return append(append(append(append(append(principal, killers...), captures...), promotions...), remaining...))
+        return append(append(append(append(append(principal, captures...), promotions...), killers...), remaining...))
 }
 
 func (p *Position) reorderCaptures(moves []*Move, bestMove *Move) []*Move {
