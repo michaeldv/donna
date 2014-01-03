@@ -8,6 +8,7 @@ import()
 
 func (p *Position) search(depth, ply int, alpha, beta int) int {
         Log("\nsearch(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
+        p.game.nodes++
         if depth <= 0 && !p.inCheck {
                 return p.quiescence(depth, ply, alpha, beta)
         }
@@ -38,7 +39,6 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         nodes := p.game.nodes
         for i, move := range moves {
                 if position := p.MakeMove(move); !position.isCheck(p.color) {
-                        p.game.nodes++
                         score := -position.search(depth - 1, ply + 1, -beta, -alpha)
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
 
@@ -68,7 +68,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 
 func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
         Log("\nquiescence(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
-
+        p.game.qnodes++
         if ply > 14 {
                 return p.Evaluate()
         }
@@ -95,7 +95,6 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         for i, move := range moves {
                 if position := p.MakeMove(move); !position.isCheck(p.color) {
                         Log("%d out of %d: evasion %s for %s\n", i, len(moves), move, C(move.piece.color()))
-                        p.game.qnodes++
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                         if alpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
