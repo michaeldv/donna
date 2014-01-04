@@ -97,8 +97,8 @@ func (e *Evaluator) analyzePawnStructure() {
                 for color := WHITE; color <= BLACK; color++ {
                         doubled := maskFile[col] & e.position.outposts[pawn[color]]
                         if count := doubled.Count(); count > 1 {
-                                penalty[color].midgame += (count - 1) * doublePawnPenalty[0][col]
-                                penalty[color].endgame += (count - 1) * doublePawnPenalty[1][col]
+                                penalty[color].midgame += (count - 1) * penaltyDoubledPawn[0][col]
+                                penalty[color].endgame += (count - 1) * penaltyDoubledPawn[1][col]
                         }
                 }
         }

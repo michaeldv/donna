@@ -66,6 +66,22 @@ func init() {
                                 kingMoves[square].Set(i)
                         }
                 }
+
+                // Masks to check for passed pawns.
+                if col > 0 {
+                        maskPassed[WHITE][square].Fill(square - 1,  8, 0, 0x00FFFFFFFFFFFFFF)
+                        maskPassed[BLACK][square].Fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                }
+                maskPassed[WHITE][square].Fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
+                maskPassed[BLACK][square].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                if col < 7 {
+                        maskPassed[WHITE][square].Fill(square + 1,  8, 0, 0x00FFFFFFFFFFFFFF)
+                        maskPassed[BLACK][square].Fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                }
+
+                // Vertical squares in front of a pawn.
+                maskInFront[WHITE][square].Fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
+                maskInFront[BLACK][square].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
 	}
 }
 

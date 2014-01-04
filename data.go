@@ -175,10 +175,12 @@ var maskFile = [8]Bitmask{
 	0x1010101010101010, 0x2020202020202020, 0x4040404040404040, 0x8080808080808080,
 }
 
-var maskIsolatedFile = [8]Bitmask{
+var maskIsolated = [8]Bitmask{
 	0x0202020202020202, 0x0505050505050505, 0x0A0A0A0A0A0A0A0A, 0x1414141414141414,
 	0x2828282828282828, 0x5050505050505050, 0xA0A0A0A0A0A0A0A0, 0x4040404040404040,
 }
+
+var maskPassed, maskInFront [2][64]Bitmask
 
 var initialKingSquare = [2]int{ E1, E8 }
 
@@ -188,7 +190,6 @@ var (
         valueBishop    = Score{  350,  360 }
         valueRook      = Score{  525,  550 }
         valueQueen     = Score{ 1000, 1000 }
-        pawnPassed     = Score{    5,   25 }
         bishopPair     = Score{   25,   65 }
         rookMobility   = Score{    5,   10 }
         rookBehindPawn = Score{    5,   15 }
@@ -199,14 +200,25 @@ var (
         attackForce    = Score{    5,   10 }
 )
 
-var doublePawnPenalty = [2][8]int{
+var penaltyDoubledPawn = [2][8]int{
         { -45,  20,   0,  10,  10,   0, -20, -45 },
-	{ -60, -25, -20, -20, -20, -20, -25, -60 },
+        { -60, -25, -20, -20, -20, -20, -25, -60 },
 }
 
-var isolatedPawnPenalty = [2][8]int{
+var penaltyIsolatedPawn = [2][8]int{
         { -15, -15, -15, -10, -10, -15, -15, -15 },
         { -25, -25, -25, -20, -20, -25, -25, -25 },
+}
+
+var bonusPassedPawn = [64]int{
+		  0,   0,   0,   0,   0,   0,   0,   0,
+		145, 130, 115, 100, 100, 115, 130, 145,
+		105,  97,  90,  80,  80,  90,  97, 105,
+		 75,  70,  65,  60,  60,  65,  70,  75,
+		 50,  45,  40,  35,  35,  40,  45,  50,
+		 30,  28,  26,  25,  25,  26,  28,  30,
+		 15,  14,  12,  10,  10,  12,  14,  15,
+		 0,    0,   0,   0,   0,   0,   0,   0,
 }
 
 // Least valuable attacker/most valueable victim (LVA/MVV) move ordering.

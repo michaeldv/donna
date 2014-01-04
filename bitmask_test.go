@@ -106,3 +106,35 @@ func TestBitmask010(t *testing.T) { // Black
         expect(t, passed[6], Bitmask(0x0000E0E0E0E0E0E0))
         expect(t, passed[7], Bitmask(0x0000C0C0C0C0C0C0))
 }
+
+func TestBitmask030(t *testing.T) { // White
+        forward := [8]Bitmask{0}
+        for square := A4; square <= H4; square++ {
+                i := square - A4
+                forward[i].Fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
+        }
+        expect(t, forward[0], Bitmask(0x0101010100000000))
+        expect(t, forward[1], Bitmask(0x0202020200000000))
+        expect(t, forward[2], Bitmask(0x0404040400000000))
+        expect(t, forward[3], Bitmask(0x0808080800000000))
+        expect(t, forward[4], Bitmask(0x1010101000000000))
+        expect(t, forward[5], Bitmask(0x2020202000000000))
+        expect(t, forward[6], Bitmask(0x4040404000000000))
+        expect(t, forward[7], Bitmask(0x8080808000000000))
+}
+
+func TestBitmask040(t *testing.T) { // Black
+        forward := [8]Bitmask{0}
+        for square := A7; square <= H7; square++ {
+                i := square - A7
+                forward[i].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+        }
+        expect(t, forward[0], Bitmask(0x0000010101010101))
+        expect(t, forward[1], Bitmask(0x0000020202020202))
+        expect(t, forward[2], Bitmask(0x0000040404040404))
+        expect(t, forward[3], Bitmask(0x0000080808080808))
+        expect(t, forward[4], Bitmask(0x0000101010101010))
+        expect(t, forward[5], Bitmask(0x0000202020202020))
+        expect(t, forward[6], Bitmask(0x0000404040404040))
+        expect(t, forward[7], Bitmask(0x0000808080808080))
+}
