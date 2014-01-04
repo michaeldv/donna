@@ -30,6 +30,22 @@ func (b Bitmask) IsClear(position int) bool {
 	return !b.IsSet(position)
 }
 
+func (b Bitmask) FirstSet() int {
+        if b == 0 {
+                return -1
+        }
+	return deBrujin[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
+}
+
+// Returns number of bits set.
+func (b Bitmask) Count() int {
+        mask := b
+        mask -= (mask >> 1) & 0x5555555555555555
+        mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
+        mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
+        return int((mask * 0x0101010101010101) >> 56)
+}
+
 // Sets a bit at given position.
 func (b *Bitmask) Set(position int) *Bitmask {
 	*b |= 1 << uint(position)
@@ -80,22 +96,6 @@ func (b *Bitmask) Fill(square, direction int, occupied, board Bitmask) *Bitmask 
                 mask.Intersect(board)
         }
         return b
-}
-
-func (b *Bitmask) FirstSet() int {
-        if *b == 0 {
-                return -1
-        }
-	return deBrujin[((*b ^ (*b-1)) * 0x03F79D71B4CB0A89) >> 58]
-}
-
-// Returns number of bits set.
-func (b *Bitmask) Count() int {
-        mask := *b
-        mask -= (mask >> 1) & 0x5555555555555555
-        mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
-        mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
-        return int((mask * 0x0101010101010101) >> 56)
 }
 
 func (b Bitmask) String() string {

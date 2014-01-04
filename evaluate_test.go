@@ -59,12 +59,56 @@ func TestEvaluate110(t *testing.T) {
         game := NewGame().Setup(`Ke1,h2,h3`, `Ke8,a7,h7`)
         score := game.Start().Evaluate()
 
-        expect(t, score, -59)
+        expect(t, score, -74)
 }
 
 func TestEvaluate120(t *testing.T) {
-        game := NewGame().Setup(`Ke1,f4,f5`, `Ke8,a7,h7`)
+        game := NewGame().Setup(`Ke1,f4,f5`, `Ke8,f7,h7`)
         score := game.Start().Evaluate()
 
-        expect(t, score, -49)
+        expect(t, score, -45)
 }
+
+// Passed pawns.
+func TestEvaluate200(t *testing.T) {
+        game := NewGame().Setup(`Ke1,h4`, `Ke8,h5`) // Blocked.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 0)
+}
+
+func TestEvaluate210(t *testing.T) {
+        game := NewGame().Setup(`Ke1,h4`, `Ke8,g7`) // Can't pass.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 19)
+}
+
+func TestEvaluate220(t *testing.T) {
+        game := NewGame().Setup(`Ke1,e4`, `Ke8,d6`) // Can't pass.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 5)
+}
+
+func TestEvaluate230(t *testing.T) {
+        game := NewGame().Setup(`Ke1,e5`, `Ke8,e4`) // Both passing.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 0)
+}
+
+func TestEvaluate240(t *testing.T) {
+        game := NewGame().Setup(`Ke1,e5`, `Ke8,d5`) // Both passing but white is closer.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 29)
+}
+
+func TestEvaluate250(t *testing.T) {
+        game := NewGame().Setup(`Ke1,a5`, `Ke8,h7`) // Both passing but white is much closer.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 72)
+}
+
