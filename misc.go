@@ -61,6 +61,11 @@ func Square(row, column int) int {
 	return (row << 3) + column
 }
 
+// Creates a bitmask by shifting bit to the given offset.
+func Shift(offset int) Bitmask {
+	return Bitmask(1 << uint(offset))
+}
+
 // Integer version of math/abs.
 func Abs(n int) int {
         if n < 0 {

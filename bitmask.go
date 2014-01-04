@@ -11,11 +11,6 @@ import (
 
 type Bitmask uint64
 
-// Creates a bitmask by shifting bit to the given offset.
-func Shift(offset int) Bitmask {
-	return Bitmask(1 << uint(offset))
-}
-
 // Returns true if all bitmask bits are clear.
 func (b Bitmask) IsEmpty() bool {
 	return b == 0
@@ -62,6 +57,28 @@ func (b *Bitmask) Intersect(bitmask Bitmask) *Bitmask {
 // Excludes bits of one bitmask from another using bitwise XOR operator.
 func (b *Bitmask) Exclude(bitmask Bitmask) *Bitmask {
 	*b ^= (bitmask & *b)
+        return b
+}
+
+func (b *Bitmask) Shift(offset int) *Bitmask {
+        if offset > 0 {
+                *b <<= uint(offset)
+        } else {
+                *b >>= -uint(offset)
+        }
+        return b
+}
+
+func (b *Bitmask) Fill(square, direction int, occupied, board Bitmask) *Bitmask {
+        mask := Shift(square) & board
+
+        for mask.Shift(direction); mask.IsNotEmpty(); mask.Shift(direction) {
+                b.Combine(mask)
+                if (mask & occupied).IsNotEmpty() {
+                        break
+                }
+                mask.Intersect(board)
+        }
         return b
 }
 

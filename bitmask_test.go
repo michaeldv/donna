@@ -62,3 +62,47 @@ func containsMatcher(t *testing.T, actual, expected string, match bool) {
                 t.Errorf("\r\t\x1B[31m%s line %d\nContains: %s\n  Actual: %s\x1B[0m", file, line, expected, actual)
         }
 }
+
+func TestBitmask000(t *testing.T) { // White
+        passed := [8]Bitmask{0}
+        for square := A2; square <= H2; square++ {
+                i := square - A2
+                if Col(square) > 0 {
+                        passed[i].Fill(square - 1, 8, 0, 0x00FFFFFFFFFFFFFF)
+                }
+                passed[i].Fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
+                if Col(square) < 7 {
+                        passed[i].Fill(square + 1, 8, 0, 0x00FFFFFFFFFFFFFF)
+                }
+        }
+        expect(t, passed[0], Bitmask(0x0303030303030000))
+        expect(t, passed[1], Bitmask(0x0707070707070000))
+        expect(t, passed[2], Bitmask(0x0E0E0E0E0E0E0000))
+        expect(t, passed[3], Bitmask(0x1C1C1C1C1C1C0000))
+        expect(t, passed[4], Bitmask(0x3838383838380000))
+        expect(t, passed[5], Bitmask(0x7070707070700000))
+        expect(t, passed[6], Bitmask(0xE0E0E0E0E0E00000))
+        expect(t, passed[7], Bitmask(0xC0C0C0C0C0C00000))
+}
+
+func TestBitmask010(t *testing.T) { // Black
+        passed := [8]Bitmask{0}
+        for square := A7; square <= H7; square++ {
+                i := square - A7
+                if Col(square) > 0 {
+                        passed[i].Fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                }
+                passed[i].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                if Col(square) < 7 {
+                        passed[i].Fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                }
+        }
+        expect(t, passed[0], Bitmask(0x0000030303030303))
+        expect(t, passed[1], Bitmask(0x0000070707070707))
+        expect(t, passed[2], Bitmask(0x00000E0E0E0E0E0E))
+        expect(t, passed[3], Bitmask(0x00001C1C1C1C1C1C))
+        expect(t, passed[4], Bitmask(0x0000383838383838))
+        expect(t, passed[5], Bitmask(0x0000707070707070))
+        expect(t, passed[6], Bitmask(0x0000E0E0E0E0E0E0))
+        expect(t, passed[7], Bitmask(0x0000C0C0C0C0C0C0))
+}
