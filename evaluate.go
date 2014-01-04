@@ -114,6 +114,14 @@ func (e *Evaluator) analyzePawnStructure() {
                                    bonus[color].midgame += bonusPassedPawn[0][flip[color][square]]
                                    bonus[color].endgame += bonusPassedPawn[1][flip[color][square]]
                         }
+                        //
+                        // Check if the pawn is isolated, i.e. has no pawns of the
+                        // same color on either sides.
+                        //
+                        if (maskIsolated[column] & e.position.outposts[pawn[color]]).IsEmpty() {
+                                penalty[color].midgame += penaltyIsolatedPawn[0][column]
+                                penalty[color].endgame += penaltyIsolatedPawn[1][column]
+                        }
                         pawns.Clear(square)
                 }
                 //

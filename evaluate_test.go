@@ -112,3 +112,22 @@ func TestEvaluate250(t *testing.T) {
         expect(t, score, 72)
 }
 
+// Isolated pawns.
+func TestEvaluate300(t *testing.T) {
+        Settings.Log = true
+        game := NewGame().Setup(`Ke1,a5,c5`, `Ke8,f4,h4`) // All pawns are isolated.
+        score := game.Start().Evaluate()
+        Settings.Log = false
+
+        expect(t, score, 0)
+}
+
+func TestEvaluate310(t *testing.T) {
+        Settings.Log = true
+        game := NewGame().Setup(`Ke1,a2,c2,e2`, `Ke8,a7,b7,c7`) // White pawns are isolated.
+        score := game.Start().Evaluate()
+        Settings.Log = false
+
+        expect(t, score, -72)
+}
+

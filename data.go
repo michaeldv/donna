@@ -225,13 +225,13 @@ var (
 )
 
 var penaltyDoubledPawn = [2][8]int{
-        { -45,  20,   0,  10,  10,   0, -20, -45 },
-        { -60, -25, -20, -20, -20, -20, -25, -60 },
+        { -45,  20,   0,  10,  10,   0, -20, -45 }, // Middle of the game.
+        { -60, -25, -20, -20, -20, -20, -25, -60 }, // End of the game.
 }
 
 var penaltyIsolatedPawn = [2][8]int{
-        { -15, -15, -15, -10, -10, -15, -15, -15 },
-        { -25, -25, -25, -20, -20, -25, -25, -25 },
+        { -15, -15, -15, -10, -10, -15, -15, -15 }, // Middle of the game.
+        { -25, -25, -25, -20, -20, -25, -25, -25 }, // End of the game.
 }
 
 // Least valuable attacker/most valueable victim (LVA/MVV) move ordering.
