@@ -24,7 +24,7 @@ func (p *Position) Evaluate() (score int) {
         evaluator.analyzeMaterial()
         evaluator.analyzeCoordination()
         evaluator.analyzePawnStructure()
-        // evaluator.analyzePassedPawns()
+        evaluator.analyzeRooks()
         // evaluator.analyzeKingSafety()
 
         score = (evaluator.midgame * p.stage + evaluator.endgame * (256 - p.stage)) / 256
@@ -142,7 +142,44 @@ func (e *Evaluator) analyzePawnStructure() {
         e.endgame += penalty[color].endgame - penalty[opposite].endgame
 }
 
-func (e *Evaluator) analyzePassedPawns() {
+func (e *Evaluator) analyzeRooks() {
+        var bonus [2]Score
+        seventh := [2]Bitmask{ 0x00FF000000000000, 0x000000000000FF00 }
+
+        for color := WHITE; color <= BLACK; color++ {
+                rook := Rook(color)
+                if e.position.outposts[rook].IsEmpty() {
+                        continue
+                }
+                //
+                // Bonus if rooks are on 7th rank.
+                //
+                if count := (e.position.outposts[rook] & seventh[color]).Count(); count > 0 {
+                        bonus[color].midgame += count * rookOn7th.midgame
+                        bonus[color].endgame += count * rookOn7th.endgame
+                }
+                //
+                // Bonuses if rooks are on open or semi-open files.
+                //
+                rooks := e.position.outposts[rook]
+                for rooks.IsNotEmpty() {
+                        square := rooks.FirstSet()
+                        column := Col(square)
+                        if (e.position.outposts[Pawn(color)] & maskFile[column]).IsEmpty() {
+                                if (e.position.outposts[Pawn(color^1)] & maskFile[column]).IsEmpty() {
+                                        bonus[color].midgame += rookOnOpen.midgame
+                                        bonus[color].endgame += rookOnOpen.endgame
+                                } else {
+                                        bonus[color].midgame += rookOnSemiOpen.midgame
+                                        bonus[color].endgame += rookOnSemiOpen.endgame
+                                }
+                        }
+                        rooks.Clear(square)
+                }
+        }
+        color, opposite := e.position.color, e.position.color^1
+        e.midgame += bonus[color].midgame - bonus[opposite].midgame
+        e.endgame += bonus[color].endgame - bonus[opposite].endgame
 }
 
 func (e *Evaluator) analyzeKingSafety() {

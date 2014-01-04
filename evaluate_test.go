@@ -114,20 +114,37 @@ func TestEvaluate250(t *testing.T) {
 
 // Isolated pawns.
 func TestEvaluate300(t *testing.T) {
-        Settings.Log = true
         game := NewGame().Setup(`Ke1,a5,c5`, `Ke8,f4,h4`) // All pawns are isolated.
         score := game.Start().Evaluate()
-        Settings.Log = false
 
         expect(t, score, 0)
 }
 
 func TestEvaluate310(t *testing.T) {
-        Settings.Log = true
         game := NewGame().Setup(`Ke1,a2,c2,e2`, `Ke8,a7,b7,c7`) // White pawns are isolated.
         score := game.Start().Evaluate()
-        Settings.Log = false
 
         expect(t, score, -72)
 }
 
+// Rooks.
+func TestEvaluate400(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Ra7`, `Ke8,Rh3`) // White on 7th.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 6)
+}
+
+func TestEvaluate410(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rb1,Ng2,a2`, `Ke8,Rh8,Nb7,h7`) // White on open file.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 11)
+}
+
+func TestEvaluate420(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Rb1,a2,g2`, `Ke8,Rh8,h7,b7`) // White on semi-open file.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 10)
+}
