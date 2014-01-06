@@ -148,3 +148,66 @@ func TestEvaluate420(t *testing.T) {
 
         expect(t, score, 10)
 }
+
+// King shield.
+func TestEvaluate500(t *testing.T) {
+        game := NewGame().Setup(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,f7,g7,h7,Qa6,Na5`) // h2,g2,h2 == f7,g7,h7
+        score := game.Start().Evaluate()
+
+        expect(t, score, 0)
+}
+func TestEvaluate505(t *testing.T) {
+        game := NewGame().Setup(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,f7,g6,h7,Qa6,Na5`) // h2,g2,h2 vs f7,G6,h7
+        score := game.Start().Evaluate()
+
+        expect(t, score, 4)
+}
+
+func TestEvaluate510(t *testing.T) {
+        game := NewGame().Setup(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,f5,g6,h7,Qa6,Na5`) // h2,g2,h2 vs F5,G6,h7
+        score := game.Start().Evaluate()
+
+        expect(t, score, 8)
+}
+
+func TestEvaluate520(t *testing.T) {
+        game := NewGame().Setup(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,a7,f7,g7,Qa6,Na5`) // h2,g2,h2 vs A7,f7,g7
+        score := game.Start().Evaluate()
+
+        expect(t, score, 15)
+}
+
+func TestEvaluate530(t *testing.T) {
+        game := NewGame().Setup(`Kb1,a3,b2,c2,Qh3,Nh4`, `Kb8,a7,b7,c7,Qh6,Nh5`) // A3,b2,c2 vs a7,b7,c7
+        score := game.Start().Evaluate()
+
+        expect(t, score, -4)
+}
+
+func TestEvaluate540(t *testing.T) {
+        game := NewGame().Setup(`Kb1,a3,b4,c2,Qh3,Nh4`, `Kb8,a7,b7,c7,Qh6,Nh5`) // A3,B4,c2 vs a7,b7,c7
+        score := game.Start().Evaluate()
+
+        expect(t, score, -8)
+}
+
+func TestEvaluate550(t *testing.T) {
+        game := NewGame().Setup(`Kb1,b2,c2,h2,Qh3,Nh4`, `Kb8,a7,b7,c7,Qh6,Nh5`) // b2,c2,H2 vs a7,b7,c7
+        score := game.Start().Evaluate()
+
+        expect(t, score, -15)
+}
+
+func TestEvaluate560(t *testing.T) {
+        game := NewGame().Setup(`Ka1,a3,b2,Qc1,Nd2`, `Kh8,g7,h6,Qf8,Ne7`) // a3,b2 == g7,h6
+        score := game.Start().Evaluate()
+
+        expect(t, score, 0)
+}
+
+func TestEvaluate570(t *testing.T) {
+        game := NewGame().Setup(`Kb1,a2,c2,f2,g2,h2`, `Kg8,a7,c7,f7,g7,h7`) // B2 hole but not enough power to bother.
+        score := game.Start().Evaluate()
+
+        expect(t, score, 0)
+}

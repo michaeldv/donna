@@ -156,7 +156,7 @@ var bonusPassedPawn = [2][64]int{
 	       52,  46,  45,  40,  40,  45,  48,  52,
 	       37,  35,  32,  30,  30,  32,  35,  37,
 	       25,  22,  20,  17,  17,  20,  22,  25,
-	       15,  14,  13,  12,  12,  26,  28,  30,
+	       15,  14,  13,  12,  12,  13,  14,  15,
 	        7,   6,   6,   5,   5,   6,   6,   7,
 		0,   0,   0,   0,   0,   0,   0,   0, // H1 - H8
         },
@@ -222,6 +222,8 @@ var (
         rookOnSemiOpen = Score{    1,    1 }
         movesAvailable = Score{    5,   10 }
         attackForce    = Score{    5,   10 }
+        shieldMissing  = Score{   15,    0 } // Missing shield pawn penalty.
+        shieldDistance = Score{    5,    0 } // Shield pawn row distance from king penalty.
 )
 
 var penaltyDoubledPawn = [2][8]int{

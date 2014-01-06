@@ -25,6 +25,7 @@ func (p *Position) Evaluate() (score int) {
         evaluator.analyzeCoordination()
         evaluator.analyzePawnStructure()
         evaluator.analyzeRooks()
+        evaluator.analyzeKingShield()
         // evaluator.analyzeKingSafety()
 
         score = (evaluator.midgame * p.stage + evaluator.endgame * (256 - p.stage)) / 256
@@ -182,5 +183,51 @@ func (e *Evaluator) analyzeRooks() {
         e.endgame += bonus[color].endgame - bonus[opposite].endgame
 }
 
-func (e *Evaluator) analyzeKingSafety() {
+func (e *Evaluator) analyzeKingShield() {
+        var penalty [2]int
+
+        for color := WHITE; color <= BLACK; color++ {
+                king, pawn := King(color), Pawn(color)
+                //
+                // Pass if a) the king is missing, b) the king is on the initial square
+                // or c) the opposite side doesn't have a queen with one major piece.
+                //
+                if e.position.outposts[king].IsEmpty() || e.position.pieces[initialKingSquare[color]] == king || !e.strongEnough(color^1) {
+                        continue
+                }
+                //
+                // Calculate relative square for the king so we could treat black king
+                // as white. Don't bother with the shield if the king is too far.
+                //
+                square := flip[color^1][e.position.outposts[king].FirstSet()]
+                if square > H3 {
+                        continue
+                }
+                row, col := Coordinate(square)
+                from, to := Max(0, col - 1), Min(7, col + 1)
+                //
+                // For each of the shield columns find the closest same color pawn. The
+                // penalty is carried if the pawn is missing or is too far from the king
+                // (more than one row apart).
+                //
+                for column := from; column <= to; column++ {
+                        if closest := (e.position.outposts[pawn] & maskFile[column]).FirstSet(); closest != -1 {
+                                closest = flip[color^1][closest] // Make it relative.
+                                if distance := Abs(Row(closest) - row); distance > 1 {
+                                        penalty[color] += distance * -shieldDistance.midgame
+                                }
+                        } else {
+                                penalty[color] += -shieldMissing.midgame
+                        }
+                }
+                Log("penalty[%s] => %d\n", C(color), penalty[color])
+        }
+        color, opposite := e.position.color, e.position.color^1
+        e.midgame += penalty[color] - penalty[opposite]
+        // No endgame bonus or penalty.
+}
+
+func (e *Evaluator) strongEnough(color int) bool {
+        return e.position.count[Queen(color)] > 0 &&
+               (e.position.count[Rook(color)] > 0 || e.position.count[Bishop(color)] > 0 || e.position.count[Knight(color)] > 0)
 }
