@@ -230,16 +230,16 @@ func (p *Position) isPawnPromotion(piece Piece, target int) bool {
 
 func (p *Position) isKingSideCastleAllowed(color int) bool {
         if color == WHITE {
-                return p.can00[WHITE] && p.pieces[F1] == 0 && p.pieces[G1] == 0 && CASTLE_KING_WHITE & p.attacks[BLACK] == 0
+                return p.can00[WHITE] && p.pieces[F1] == 0 && p.pieces[G1] == 0 && castleKingWhite & p.attacks[BLACK] == 0
         }
-        return p.can00[BLACK] && p.pieces[F8] == 0 && p.pieces[G8] == 0 && CASTLE_KING_BLACK & p.attacks[WHITE] == 0
+        return p.can00[BLACK] && p.pieces[F8] == 0 && p.pieces[G8] == 0 && castleKingBlack & p.attacks[WHITE] == 0
 }
 
 func (p *Position) isQueenSideCastleAllowed(color int) bool {
         if p.color == WHITE {
-                return p.can000[WHITE] && p.pieces[D1] == 0 && p.pieces[C1] == 0 && p.pieces[B1] == 0 && CASTLE_QUEEN_WHITE & p.attacks[BLACK] == 0
+                return p.can000[WHITE] && p.pieces[D1] == 0 && p.pieces[C1] == 0 && p.pieces[B1] == 0 && castleQueenWhite & p.attacks[BLACK] == 0
         }
-        return p.can000[BLACK] && p.pieces[D8] == 0 && p.pieces[C8] == 0 && p.pieces[B8] == 0 && CASTLE_QUEEN_BLACK & p.attacks[WHITE] == 0
+        return p.can000[BLACK] && p.pieces[D8] == 0 && p.pieces[C8] == 0 && p.pieces[B8] == 0 && castleQueenBlack & p.attacks[WHITE] == 0
 }
 
 func (p *Position) String() string {

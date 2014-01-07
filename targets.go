@@ -39,7 +39,7 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
                 if target := p.enpassant; target != 0 {
                         if (color == WHITE && (target == square+7 || target == square+9)) || // Up/left or up/right a square.
                            (color == BLACK && (target == square-9 || target == square-7)) {  // Down/left or down/right a square.
-                                bitmask |= Shift(target)
+                                bitmask |= Bit(target)
                         }
                 }
         case KNIGHT:

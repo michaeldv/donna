@@ -4,10 +4,7 @@
 
 package donna
 
-import (
-        `bytes`
-        `fmt`
-)
+import (`bytes`; `fmt`)
 
 type Bitmask uint64
 
@@ -86,7 +83,7 @@ func (b *Bitmask) shift(offset int) *Bitmask {
 }
 
 func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
-        mask := Shift(square) & board
+        mask := Bit(square) & board
 
         for mask.shift(direction); mask.isNotEmpty(); mask.shift(direction) {
                 b.combine(mask)

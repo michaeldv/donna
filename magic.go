@@ -103,19 +103,19 @@ func createRookMask(square int) (bitmask Bitmask) {
 
 	// North.
 	for r := row + 1; r < 7; r++ {
-		bitmask |= Shift(r * 8 + col)
+		bitmask |= Bit(r * 8 + col)
 	}
 	// West.
 	for c := col - 1; c > 0; c-- {
-		bitmask |= Shift(row * 8 + c)
+		bitmask |= Bit(row * 8 + c)
 	}
 	// South.
 	for r := row - 1; r > 0; r-- {
-		bitmask |= Shift(r * 8 + col)
+		bitmask |= Bit(r * 8 + col)
 	}
 	// East.
 	for c := col + 1; c < 7; c++ {
-		bitmask |= Shift(row * 8 + c)
+		bitmask |= Bit(row * 8 + c)
 	}
 	return
 }
@@ -125,19 +125,19 @@ func createBishopMask(square int) (bitmask Bitmask) {
 
 	// North West.
 	for c, r := col - 1, row + 1; c > 0 && r < 7; c, r = c-1, r+1 {
-		bitmask |= Shift(r * 8 + c)
+		bitmask |= Bit(r * 8 + c)
 	}
 	// South West.
 	for c, r := col - 1, row - 1; c > 0 && r > 0; c, r = c-1, r-1 {
-		bitmask |= Shift(r * 8 + c)
+		bitmask |= Bit(r * 8 + c)
 	}
 	// South East.
 	for c, r := col + 1, row - 1; c < 7 && r > 0; c, r = c+1, r-1 {
-		bitmask |= Shift(r * 8 + c)
+		bitmask |= Bit(r * 8 + c)
 	}
 	// North East.
 	for c, r := col + 1, row + 1; c < 7 && r < 7; c, r = c+1, r+1 {
-		bitmask |= Shift(r * 8 + c)
+		bitmask |= Bit(r * 8 + c)
 	}
 	return
 }
@@ -147,7 +147,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 
 	// North.
 	for c, r := col, row + 1; r <= 7; r++ {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break
@@ -155,7 +155,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// East.
 	for c, r := col + 1, row; c <= 7; c++ {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break
@@ -163,7 +163,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// South.
 	for c, r := col, row - 1; r >= 0; r-- {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break
@@ -171,7 +171,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// West
 	for c, r := col - 1, row; c >= 0; c-- {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break
@@ -185,7 +185,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 
 	// North East.
 	for c, r := col + 1, row + 1; c <= 7 && r <= 7; c, r = c+1, r+1 {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break
@@ -193,7 +193,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// South East.
 	for c, r := col + 1, row - 1; c <= 7 && r >= 0; c, r = c+1, r-1 {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break
@@ -201,7 +201,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
         // South West.
 	for c, r := col - 1, row - 1; c >= 0 && r >= 0; c, r = c-1, r-1 {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break
@@ -209,7 +209,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
         // North West.
 	for c, r := col - 1, row + 1; c >= 0 && r <= 7; c, r = c-1, r+1 {
-                bit := Shift(r * 8 + c)
+                bit := Bit(r * 8 + c)
 		bitmask |= bit
 		if mask & bit != 0 {
 			break

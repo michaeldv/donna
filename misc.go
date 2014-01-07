@@ -28,10 +28,10 @@ const (
 )
 
 const (
-        CASTLE_KING_WHITE  = Bitmask((1 << E1) | (1 << F1) | (1 << G1))
-        CASTLE_KING_BLACK  = Bitmask((1 << E8) | (1 << F8) | (1 << G8))
-        CASTLE_QUEEN_WHITE = Bitmask((1 << E1) | (1 << D1) | (1 << C1))
-        CASTLE_QUEEN_BLACK = Bitmask((1 << E8) | (1 << D8) | (1 << C8))
+        castleKingWhite  = 0x0000000000000070 // E1 | F1 | G1
+        castleKingBlack  = 0x7000000000000000 // E8 | F8 | G8
+        castleQueenWhite = 0x000000000000001C // E1 | D1 | C1
+        castleQueenBlack = 0x1C00000000000000 // E8 | D8 | C8
 )
 
 type Globals struct {
@@ -62,7 +62,7 @@ func Square(row, column int) int {
 }
 
 // Creates a bitmask by shifting bit to the given offset.
-func Shift(offset int) Bitmask {
+func Bit(offset int) Bitmask {
 	return Bitmask(1 << uint(offset))
 }
 

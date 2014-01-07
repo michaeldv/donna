@@ -64,7 +64,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 		default:
 			piece = Pawn(p.color)
 		}
-                if (p.pieces[from] != piece) || (p.targets[from] & Shift(to) == 0) {
+                if (p.pieces[from] != piece) || (p.targets[from] & Bit(to) == 0) {
                         move = nil
                 } else {
                         move = NewMove(p, from, to)
