@@ -23,7 +23,7 @@ func init() {
 
 		// Rooks.
 		mask := createRookMask(square)
-		bits := uint(mask.Count())
+		bits := uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
 			bitmask := indexedBitmask(i, mask)
 			index := (bitmask * rookMagic[square].magic) >> 52
@@ -32,7 +32,7 @@ func init() {
 
 		// Bishops.
 		mask = createBishopMask(square)
-                bits = uint(mask.Count())
+                bits = uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
 			bitmask := indexedBitmask(i, mask)
 			index := (bitmask * bishopMagic[square].magic) >> 55
@@ -42,12 +42,12 @@ func init() {
                 // Pawns.
                 if row >= 1 && row <= 7 {
                         if col > 0 {
-                                pawnMoves[WHITE][square].Set(Square(row+1, col-1))
-                                pawnMoves[BLACK][square].Set(Square(row-1, col-1))
+                                pawnMoves[WHITE][square].set(Square(row+1, col-1))
+                                pawnMoves[BLACK][square].set(Square(row-1, col-1))
                         }
                         if col < 7 {
-                                pawnMoves[WHITE][square].Set(Square(row+1, col+1))
-                                pawnMoves[BLACK][square].Set(Square(row-1, col+1))
+                                pawnMoves[WHITE][square].set(Square(row+1, col+1))
+                                pawnMoves[BLACK][square].set(Square(row-1, col+1))
                         }
                 }
 
@@ -59,34 +59,34 @@ func init() {
 
                         r, c := Coordinate(i)
                         if (Abs(r - row) == 2 && Abs(c - col) == 1) || (Abs(r - row) == 1 && Abs(c - col) == 2) {
-                                knightMoves[square].Set(i)
+                                knightMoves[square].set(i)
                         }
 
                         if Abs(r - row) <= 1 && Abs(c - col) <= 1 {
-                                kingMoves[square].Set(i)
+                                kingMoves[square].set(i)
                         }
                 }
 
                 // Masks to check for passed pawns.
                 if col > 0 {
-                        maskPassed[WHITE][square].Fill(square - 1,  8, 0, 0x00FFFFFFFFFFFFFF)
-                        maskPassed[BLACK][square].Fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                        maskPassed[WHITE][square].fill(square - 1,  8, 0, 0x00FFFFFFFFFFFFFF)
+                        maskPassed[BLACK][square].fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
                 }
-                maskPassed[WHITE][square].Fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
-                maskPassed[BLACK][square].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                maskPassed[WHITE][square].fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
+                maskPassed[BLACK][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
                 if col < 7 {
-                        maskPassed[WHITE][square].Fill(square + 1,  8, 0, 0x00FFFFFFFFFFFFFF)
-                        maskPassed[BLACK][square].Fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                        maskPassed[WHITE][square].fill(square + 1,  8, 0, 0x00FFFFFFFFFFFFFF)
+                        maskPassed[BLACK][square].fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
                 }
 
                 // Vertical squares in front of a pawn.
-                maskInFront[WHITE][square].Fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
-                maskInFront[BLACK][square].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                maskInFront[WHITE][square].fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
+                maskInFront[BLACK][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
 	}
 }
 
 func indexedBitmask(index int, mask Bitmask) (bitmask Bitmask) {
-	count := mask.Count()
+	count := mask.count()
 
 	for i, his := 0, mask; i < count; i++ {
 		her := ((his - 1) & his) ^ his

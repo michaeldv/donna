@@ -84,7 +84,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                         }
                 }
 	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
-                from := p.outposts[King(p.color)].FirstSet()
+                from := p.outposts[King(p.color)].firstSet()
                 to := G1
                 if e2e4 == `0-0-0` {
                         to = C1
@@ -176,11 +176,11 @@ func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
         if m.piece.isPawn() && Row(m.from) == [2]int{1,6}[color] && Row(m.to) == [2]int{3,4}[color] {
                 switch col := Col(m.to); col {
                 case 0:
-                        return opponentPawns.IsSet(m.to + 1)
+                        return opponentPawns.isSet(m.to + 1)
                 case 7:
-                        return opponentPawns.IsSet(m.to - 1)
+                        return opponentPawns.isSet(m.to - 1)
                 default:
-                        return opponentPawns.IsSet(m.to + 1) || opponentPawns.IsSet(m.to - 1)
+                        return opponentPawns.isSet(m.to + 1) || opponentPawns.isSet(m.to - 1)
                 }
         }
         return false

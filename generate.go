@@ -39,8 +39,8 @@ func (p *Position) Captures(ply int) (moves []*Move) {
 func (p *Position) possibleMoves(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
-        for targets.IsNotEmpty() {
-                target := targets.FirstSet()
+        for targets.isNotEmpty() {
+                target := targets.firstSet()
                 //
                 // For regular moves each target square represents one possible
                 // move. For pawn promotion, however, we have to generate four
@@ -54,7 +54,7 @@ func (p *Position) possibleMoves(square int, piece Piece) (moves []*Move) {
                                 moves = append(moves, candidate)
                         }
                 }
-                targets.Clear(target)
+                targets.clear(target)
         }
         return
 }
@@ -64,8 +64,8 @@ func (p *Position) possibleMoves(square int, piece Piece) (moves []*Move) {
 func (p *Position) possibleCaptures(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
-        for targets.IsNotEmpty() {
-                target := targets.FirstSet()
+        for targets.isNotEmpty() {
+                target := targets.firstSet()
                 capture := p.pieces[target]
                 if capture != 0 {
                         if !p.isPawnPromotion(piece, target) {
@@ -79,7 +79,7 @@ func (p *Position) possibleCaptures(square int, piece Piece) (moves []*Move) {
                 } else if p.enpassant != 0 && target == p.enpassant {
                         moves = append(moves, NewMove(p, square, target))
                 }
-                targets.Clear(target)
+                targets.clear(target)
         }
         return
 }

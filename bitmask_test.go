@@ -68,11 +68,11 @@ func TestBitmask000(t *testing.T) { // White
         for square := A2; square <= H2; square++ {
                 i := square - A2
                 if Col(square) > 0 {
-                        passed[i].Fill(square - 1, 8, 0, 0x00FFFFFFFFFFFFFF)
+                        passed[i].fill(square - 1, 8, 0, 0x00FFFFFFFFFFFFFF)
                 }
-                passed[i].Fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
+                passed[i].fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
                 if Col(square) < 7 {
-                        passed[i].Fill(square + 1, 8, 0, 0x00FFFFFFFFFFFFFF)
+                        passed[i].fill(square + 1, 8, 0, 0x00FFFFFFFFFFFFFF)
                 }
         }
         expect(t, passed[0], Bitmask(0x0303030303030000))
@@ -90,11 +90,11 @@ func TestBitmask010(t *testing.T) { // Black
         for square := A7; square <= H7; square++ {
                 i := square - A7
                 if Col(square) > 0 {
-                        passed[i].Fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                        passed[i].fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
                 }
-                passed[i].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                passed[i].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
                 if Col(square) < 7 {
-                        passed[i].Fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                        passed[i].fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
                 }
         }
         expect(t, passed[0], Bitmask(0x0000030303030303))
@@ -111,7 +111,7 @@ func TestBitmask030(t *testing.T) { // White
         forward := [8]Bitmask{0}
         for square := A4; square <= H4; square++ {
                 i := square - A4
-                forward[i].Fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
+                forward[i].fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
         }
         expect(t, forward[0], Bitmask(0x0101010100000000))
         expect(t, forward[1], Bitmask(0x0202020200000000))
@@ -127,7 +127,7 @@ func TestBitmask040(t *testing.T) { // Black
         forward := [8]Bitmask{0}
         for square := A7; square <= H7; square++ {
                 i := square - A7
-                forward[i].Fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                forward[i].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
         }
         expect(t, forward[0], Bitmask(0x0000010101010101))
         expect(t, forward[1], Bitmask(0x0000020202020202))

@@ -20,16 +20,16 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
                 //
 		row := Row(square)
 		if color == WHITE {
-			if p.board[2].IsClear(square + 8) { // Can white pawn move up one square?
-				bitmask.Set(square + 8)
-				if row == 1 && p.board[2].IsClear(square + 16) { // How about two squares?
-					bitmask.Set(square + 16)
+			if p.board[2].isClear(square + 8) { // Can white pawn move up one square?
+				bitmask.set(square + 8)
+				if row == 1 && p.board[2].isClear(square + 16) { // How about two squares?
+					bitmask.set(square + 16)
 				}
 			}
-		} else if p.board[2].IsClear(square - 8) { // Can black pawn move up one square?
-			bitmask.Set(square - 8)
-			if row == 6 && p.board[2].IsClear(square - 16) { // How about two squares?
-				bitmask.Set(square - 16)
+		} else if p.board[2].isClear(square - 8) { // Can black pawn move up one square?
+			bitmask.set(square - 8)
+			if row == 6 && p.board[2].isClear(square - 16) { // How about two squares?
+				bitmask.set(square - 16)
 			}
 		}
                 //
@@ -44,7 +44,7 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
                 }
         case KNIGHT:
                 bitmask = knightMoves[square]
-                bitmask.Exclude(p.board[color])
+                bitmask.exclude(p.board[color])
         case BISHOP:
                 magic := ((bishopMagic[square].mask & p.board[2]) * bishopMagic[square].magic) >> 55
                 bitmask = bishopMagicMoves[square][magic] & ^p.board[color]
@@ -55,10 +55,10 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
                 magic := ((bishopMagic[square].mask & p.board[2]) * bishopMagic[square].magic) >> 55
                 bitmask = bishopMagicMoves[square][magic] & ^p.board[color]
                 magic = ((rookMagic[square].mask & p.board[2]) * rookMagic[square].magic) >> 52
-                bitmask.Combine(rookMagicMoves[square][magic] & ^p.board[color])
+                bitmask.combine(rookMagicMoves[square][magic] & ^p.board[color])
         case KING:
                 bitmask = kingMoves[square]
-                bitmask.Exclude(p.board[color])
+                bitmask.exclude(p.board[color])
         }
 
         return bitmask

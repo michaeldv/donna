@@ -12,25 +12,25 @@ import (
 type Bitmask uint64
 
 // Returns true if all bitmask bits are clear.
-func (b Bitmask) IsEmpty() bool {
+func (b Bitmask) isEmpty() bool {
 	return b == 0
 }
 
-func (b Bitmask) IsNotEmpty() bool {
+func (b Bitmask) isNotEmpty() bool {
 	return b != 0
 }
 
 // Returns true if a bit at given position is set.
-func (b Bitmask) IsSet(position int) bool {
+func (b Bitmask) isSet(position int) bool {
 	return b & (1 << uint(position)) != 0
 }
 
 // Returns true if a bit at given position is clear.
-func (b Bitmask) IsClear(position int) bool {
-	return !b.IsSet(position)
+func (b Bitmask) isClear(position int) bool {
+	return !b.isSet(position)
 }
 
-func (b Bitmask) FirstSet() int {
+func (b Bitmask) firstSet() int {
         if b == 0 {
                 return -1
         }
@@ -38,7 +38,7 @@ func (b Bitmask) FirstSet() int {
 }
 
 // Returns number of bits set.
-func (b Bitmask) Count() int {
+func (b Bitmask) count() int {
         mask := b
         mask -= (mask >> 1) & 0x5555555555555555
         mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
@@ -47,36 +47,36 @@ func (b Bitmask) Count() int {
 }
 
 // Sets a bit at given position.
-func (b *Bitmask) Set(position int) *Bitmask {
+func (b *Bitmask) set(position int) *Bitmask {
 	*b |= 1 << uint(position)
         return b
 }
 
 // Clears a bit at given position.
-func (b *Bitmask) Clear(position int) *Bitmask {
+func (b *Bitmask) clear(position int) *Bitmask {
 	*b &= ^(1 << uint(position))
         return b
 }
 
 // Combines two bitmasks using bitwise OR operator.
-func (b *Bitmask) Combine(bitmask Bitmask) *Bitmask {
+func (b *Bitmask) combine(bitmask Bitmask) *Bitmask {
 	*b |= bitmask
         return b
 }
 
 // Intersects two bitmasks using bitwise AND operator.
-func (b *Bitmask) Intersect(bitmask Bitmask) *Bitmask {
+func (b *Bitmask) intersect(bitmask Bitmask) *Bitmask {
 	*b &= bitmask
         return b
 }
 
 // Excludes bits of one bitmask from another using bitwise XOR operator.
-func (b *Bitmask) Exclude(bitmask Bitmask) *Bitmask {
+func (b *Bitmask) exclude(bitmask Bitmask) *Bitmask {
 	*b ^= (bitmask & *b)
         return b
 }
 
-func (b *Bitmask) Shift(offset int) *Bitmask {
+func (b *Bitmask) shift(offset int) *Bitmask {
         if offset > 0 {
                 *b <<= uint(offset)
         } else {
@@ -85,15 +85,15 @@ func (b *Bitmask) Shift(offset int) *Bitmask {
         return b
 }
 
-func (b *Bitmask) Fill(square, direction int, occupied, board Bitmask) *Bitmask {
+func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
         mask := Shift(square) & board
 
-        for mask.Shift(direction); mask.IsNotEmpty(); mask.Shift(direction) {
-                b.Combine(mask)
-                if (mask & occupied).IsNotEmpty() {
+        for mask.shift(direction); mask.isNotEmpty(); mask.shift(direction) {
+                b.combine(mask)
+                if (mask & occupied).isNotEmpty() {
                         break
                 }
-                mask.Intersect(board)
+                mask.intersect(board)
         }
         return b
 }
@@ -106,7 +106,7 @@ func (b Bitmask) String() string {
 		for col := 0; col <= 7; col++ {
 			position := row << 3 + col
 			buffer.WriteByte(' ')
-			if b.IsSet(position) {
+			if b.isSet(position) {
 				buffer.WriteString("\u2022") // Set
 			} else {
 				buffer.WriteString("\u22C5") // Clear

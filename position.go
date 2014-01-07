@@ -17,7 +17,7 @@ type Position struct {
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
         attacks   [3]Bitmask    // [0] all squares attacked by white, [1] by black, [2] either white or black.
         outposts  [16]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
-        count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
+        count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
         enpassant int           // En-passant square caused by previous move.
         color     int           // Side to make next move.
         stage     int           // Game stage (256 in the initial position).
@@ -42,8 +42,8 @@ func NewPosition(game *Game, pieces [64]Piece) *Position {
 func (p *Position) setupPieces() *Position {
         for square, piece := range p.pieces {
                 if piece != 0 {
-                        p.outposts[piece].Set(square)
-                        p.board[piece.color()].Set(square)
+                        p.outposts[piece].set(square)
+                        p.board[piece.color()].set(square)
                         p.count[piece]++
                 }
         }
@@ -65,15 +65,15 @@ func (p *Position) setupAttacks() *Position {
         var kingSquare [2]int
 
         board := p.board[2]
-        for board.IsNotEmpty() {
-                square := board.FirstSet()
+        for board.isNotEmpty() {
+                square := board.firstSet()
                 piece := p.pieces[square]
                 p.targets[square] = p.Targets(square)
-                p.attacks[piece.color()].Combine(p.targets[square])
+                p.attacks[piece.color()].combine(p.targets[square])
                 if piece.isKing() {
                         kingSquare[piece.color()] = square
                 }
-                board.Clear(square)
+                board.clear(square)
         }
         //
         // Now that we have attack targets for both kings adjust them to make sure the
@@ -88,17 +88,17 @@ func (p *Position) setupAttacks() *Position {
 }
 
 func (p *Position) updateKingTargets(kingSquare [2]int) *Position {
-        p.targets[kingSquare[WHITE]].Exclude(p.targets[kingSquare[BLACK]])
-        p.targets[kingSquare[BLACK]].Exclude(p.targets[kingSquare[WHITE]])
+        p.targets[kingSquare[WHITE]].exclude(p.targets[kingSquare[BLACK]])
+        p.targets[kingSquare[BLACK]].exclude(p.targets[kingSquare[WHITE]])
         //
         // Add castle jump targets if castles are allowed.
         //
         if kingSquare[p.color] == initialKingSquare[p.color] {
                 if p.isKingSideCastleAllowed(p.color) {
-                        p.targets[kingSquare[p.color]].Set(kingSquare[p.color] + 2)
+                        p.targets[kingSquare[p.color]].set(kingSquare[p.color] + 2)
                 }
                 if p.isQueenSideCastleAllowed(p.color) {
-                        p.targets[kingSquare[p.color]].Set(kingSquare[p.color] - 2)
+                        p.targets[kingSquare[p.color]].set(kingSquare[p.color] - 2)
                 }
         }
 
@@ -128,8 +128,8 @@ func (p *Position) lift(move *Move) *Position {
         }
 
         p.pieces[move.from] = 0
-        p.board[color].Clear(move.from)
-        p.outposts[move.piece].Clear(move.from)
+        p.board[color].clear(move.from)
+        p.outposts[move.piece].clear(move.from)
         return p
 }
 
@@ -140,12 +140,12 @@ func (p *Position) put(move *Move) *Position {
         }
 
         p.pieces[move.to] = piece
-        p.board[p.color].Set(move.to)
-        p.outposts[piece].Set(move.to)
+        p.board[p.color].set(move.to)
+        p.outposts[piece].set(move.to)
 
         if move.captured != 0 {
-                p.board[p.color^1].Clear(move.to)
-                p.outposts[move.captured].Clear(move.to)
+                p.board[p.color^1].clear(move.to)
+                p.outposts[move.captured].clear(move.to)
                 p.count[move.captured]--
         }
         return p
@@ -212,7 +212,7 @@ func (p *Position) MakeMove(move *Move) *Position {
 
 func (p *Position) isCheck(color int) bool {
         king := p.outposts[King(color)]
-        return king.Intersect(p.attacks[color^1]).IsNotEmpty()
+        return king.intersect(p.attacks[color^1]).isNotEmpty()
 }
 
 func (p *Position) saveBest(ply int, move *Move) {
