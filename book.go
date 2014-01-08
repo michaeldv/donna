@@ -47,7 +47,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
         }
         defer file.Close()
 
-        key := b.polyglot(position)
+        key := position.polyglot()
         //
         // Since book entries are ordered by the polyglot key use binary
         // search to find *first* book entry that matches the position.
@@ -100,36 +100,6 @@ func (b *Book) move(p *Position, entry Entry) (move *Move) {
                 move.promote(promo)
         }
         return
-}
-
-func (b *Book) polyglot(position *Position) (key uint64) {
-        for i, piece := range position.pieces {
-                if piece != 0 {
-                        key ^= polyglotRandom[0:768][64 * piece.polyglot() + i]
-                }
-        }
-
-	if position.can00[WHITE] {
-                key ^= polyglotRandom[768]
-	}
-	if position.can000[WHITE] {
-                key ^= polyglotRandom[769]
-	}
-	if position.can00[BLACK] {
-                key ^= polyglotRandom[770]
-	}
-	if position.can000[BLACK] {
-                key ^= polyglotRandom[771]
-	}
-        if position.enpassant != 0 {
-                col := Col(position.enpassant)
-                key ^= polyglotRandom[772 + col]
-        }
-	if position.color == WHITE {
-                key ^= polyglotRandom[780]
-	}
-
-	return
 }
 
 func (e *Entry) toCol() int {

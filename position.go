@@ -9,6 +9,7 @@ import(`bytes`)
 var killer [MaxPly][2]*Move
 var best [MaxPly][MaxPly]*Move // Assuming max depth = 4 which makes it 8 plies.
 var bestlen [MaxPly]int
+var repetition [1024]uint64
 
 type Position struct {
         game      *Game
@@ -21,6 +22,7 @@ type Position struct {
         enpassant int           // En-passant square caused by previous move.
         color     int           // Side to make next move.
         stage     int           // Game stage (256 in the initial position).
+        history   int           // Index to the tip of the repetitions array.
         inCheck   bool          // Is our king under attack?
         can00     [2]bool       // Is king-side castle allowed?
         can000    [2]bool       // Is queen-side castle allowed?
@@ -36,7 +38,7 @@ func NewPosition(game *Game, pieces [64]Piece) *Position {
         p.can000[WHITE] = p.pieces[E1] == King(WHITE) && p.pieces[A1] == Rook(WHITE)
         p.can000[BLACK] = p.pieces[E8] == King(BLACK) && p.pieces[A8] == Rook(BLACK)
 
-        return p.setupPieces().computeStage().setupAttacks()
+        return p.setupPieces().computeStage().setupAttacks().saveHistory(nil)
 }
 
 func (p *Position) setupPieces() *Position {
@@ -83,6 +85,23 @@ func (p *Position) setupAttacks() *Position {
         p.updateKingTargets(kingSquare)
         p.attacks[2] = p.attacks[WHITE] | p.attacks[BLACK]
         p.inCheck = p.isCheck(p.color)
+
+        return p
+}
+
+// Save position's polyglot hash in the repetition array incrementing history to point
+// to the next available spot. Positions resulted from the null move are not saved.
+func (p *Position) saveHistory(prev *Position) *Position {
+        spot := 0
+        if prev != nil {
+                if p.color == prev.color { // <-- Null move.
+                        return p
+                }
+                spot = prev.history
+        }
+
+        repetition[spot] = p.polyglot()
+        p.history = spot + 1
 
         return p
 }
@@ -207,7 +226,7 @@ func (p *Position) MakeMove(move *Move) *Position {
         }
 
         position.color ^= 1 // <-- Switch side to move.
-        return position.computeStage().setupAttacks()
+        return position.computeStage().setupAttacks().saveHistory(p)
 }
 
 func (p *Position) isCheck(color int) bool {
@@ -216,7 +235,18 @@ func (p *Position) isCheck(color int) bool {
 }
 
 func (p *Position) isRepetition() bool {
-        return true
+        if p.history > 6 {
+                reps, hash := 0, repetition[p.history - 1]
+                for i := p.history - 1; i >= 0; i-- {
+                        if repetition[i] == hash {
+                                reps++
+                                if reps == 3 {
+                                        return true
+                                }
+                        }
+                }
+        }
+        return false
 }
 
 func (p *Position) saveBest(ply int, move *Move) {
@@ -244,6 +274,37 @@ func (p *Position) isQueenSideCastleAllowed(color int) bool {
                 return p.can000[WHITE] && p.pieces[D1] == 0 && p.pieces[C1] == 0 && p.pieces[B1] == 0 && castleQueenWhite & p.attacks[BLACK] == 0
         }
         return p.can000[BLACK] && p.pieces[D8] == 0 && p.pieces[C8] == 0 && p.pieces[B8] == 0 && castleQueenBlack & p.attacks[WHITE] == 0
+}
+
+// Compute position's polyglot hash.
+func (p *Position) polyglot() (key uint64) {
+        for i, piece := range p.pieces {
+                if piece != 0 {
+                        key ^= polyglotRandom[0:768][64 * piece.polyglot() + i]
+                }
+        }
+
+	if p.can00[WHITE] {
+                key ^= polyglotRandom[768]
+	}
+	if p.can000[WHITE] {
+                key ^= polyglotRandom[769]
+	}
+	if p.can00[BLACK] {
+                key ^= polyglotRandom[770]
+	}
+	if p.can000[BLACK] {
+                key ^= polyglotRandom[771]
+	}
+        if p.enpassant != 0 {
+                col := Col(p.enpassant)
+                key ^= polyglotRandom[772 + col]
+        }
+	if p.color == WHITE {
+                key ^= polyglotRandom[780]
+	}
+
+	return
 }
 
 func (p *Position) String() string {
