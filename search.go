@@ -19,9 +19,9 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         }
 
 	// Checkmate pruning.
-	if CHECKMATE - ply <= alpha {
+	if Checkmate - ply <= alpha {
 		return alpha
-	} else if -CHECKMATE + ply >= beta {
+	} else if -Checkmate + ply >= beta {
 		return beta
 	}
 
@@ -59,7 +59,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         if nodes == p.game.nodes { // No moves were available.
                 if p.inCheck {
                         Lop("Checkmate")
-                        return -CHECKMATE + ply
+                        return -Checkmate + ply
                 } else {
                         Lop("Stalemate")
                         return 0
@@ -78,9 +78,9 @@ func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
         }
 
 	// Checkmate pruning.
-	if CHECKMATE - ply <= alpha {
+	if Checkmate - ply <= alpha {
 		return alpha
-	} else if -CHECKMATE + ply >= beta {
+	} else if -Checkmate + ply >= beta {
 		return beta
 	}
 
@@ -91,7 +91,7 @@ func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
 }
 
 func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
-        score, bestScore := 0, -CHECKMATE
+        score, bestScore := 0, -Checkmate
         quietAlpha, quietBeta := alpha, beta
 
         moves := p.Moves(ply) // TODO: check evasions only.
@@ -121,7 +121,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
 
         if qnodes == p.game.qnodes {
                 bestlen[ply] = ply
-                return -CHECKMATE + ply
+                return -Checkmate + ply
         }
 
         Log("End of quiescenceInCheck(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)

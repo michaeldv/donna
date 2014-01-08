@@ -6,9 +6,9 @@ package donna
 
 import(`bytes`)
 
-var killer [16][2]*Move
-var best [16][16]*Move // Assuming max depth = 4 which makes it 8 plies.
-var bestlen [16]int
+var killer [MaxPly][2]*Move
+var best [MaxPly][MaxPly]*Move // Assuming max depth = 4 which makes it 8 plies.
+var bestlen [MaxPly]int
 
 type Position struct {
         game      *Game
@@ -213,6 +213,10 @@ func (p *Position) MakeMove(move *Move) *Position {
 func (p *Position) isCheck(color int) bool {
         king := p.outposts[King(color)]
         return king.intersect(p.attacks[color^1]).isNotEmpty()
+}
+
+func (p *Position) isRepetition() bool {
+        return true
 }
 
 func (p *Position) saveBest(ply int, move *Move) {

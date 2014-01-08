@@ -7,12 +7,9 @@ package donna
 import (
         `bytes`
         `fmt`
-        `math`
         `regexp`
         `time`
 )
-
-const CHECKMATE = math.MaxInt16
 
 type Game struct {
 	pieces	[64]Piece
@@ -91,8 +88,8 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
         fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
         //fmt.Println(`Depth   Nodes     QNodes      Nodes/s     Score     Best`)
         for depth := 1; depth <= maxDepth; depth++ {
-                best = [16][16]*Move{{nil}}
-                killer = [16][2]*Move{{nil}}
+                best = [MaxPly][MaxPly]*Move{}
+                killer = [MaxPly][2]*Move{}
 
                 g.nodes, g.qnodes = 0, 0
                 start := time.Now()
@@ -106,7 +103,7 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
 }
 
 func (g *Game) Analyze(depth int, position *Position) string {
-        score := position.search(depth*2, 0, -CHECKMATE, CHECKMATE)
+        score := position.search(depth*2, 0, -Checkmate, Checkmate)
         if position.color == BLACK {
                 score = -score
         }
