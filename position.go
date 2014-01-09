@@ -153,6 +153,7 @@ func (p *Position) lift(move *Move) *Position {
         p.pieces[move.from] = 0
         p.board[color].clear(move.from)
         p.outposts[move.piece].clear(move.from)
+        p.count[move.piece]--
         return p
 }
 
@@ -165,6 +166,7 @@ func (p *Position) land(move *Move) *Position {
         p.pieces[move.to] = piece
         p.board[move.piece.color()].set(move.to)
         p.outposts[piece].set(move.to)
+        p.count[piece]++
 
         if move.captured != 0 {
                 p.board[move.piece.color()^1].clear(move.to)
@@ -210,14 +212,12 @@ func (p *Position) MakeMove(move *Move) *Position {
                                 // Take out the en-passant pawn and decrement opponent's pawn count.
                                 //
                                 p.lift(NewMove(p, move.to + eight[color^1], move.to + eight[color^1]))
-                                p.count[Pawn(color^1)]--
                         } else if move.promoted != 0 {
                                 //
                                 // Replace a pawn on 8th rank with the promoted piece.
                                 //
                                 p.land(move)
                                 p.count[Pawn(color)]--
-                                p.count[move.promoted]++
                         }
                 }
                 if p.can00[color] {
@@ -240,12 +240,14 @@ func (p *Position) MakeMove(move *Move) *Position {
         p.computeStage().setupAttacks()
         if p.isCheck(color) { // <-- Invalid move leaving our King exposed.
                 p.takeBack(move)
+                p.color = color // <-- Restore color.
                 return nil
         }
         return p.saveHistory(p)
 }
 
 func (p *Position) takeBack(move *Move) *Position {
+        p.color = move.piece.color()
         withdrawal, capture, promotion := move.withdraw()
 
         if promotion != nil {
