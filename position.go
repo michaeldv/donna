@@ -67,6 +67,10 @@ func (p *Position) setupAttacks() *Position {
         var kingSquare [2]int
 
         board := p.board[2]
+
+        p.targets = [64]Bitmask{}
+        p.attacks = [3]Bitmask{}
+
         for board.isNotEmpty() {
                 square := board.firstSet()
                 piece := p.pieces[square]
@@ -152,18 +156,18 @@ func (p *Position) lift(move *Move) *Position {
         return p
 }
 
-func (p *Position) put(move *Move) *Position {
+func (p *Position) land(move *Move) *Position {
         piece := move.piece
         if move.promoted != 0 {
                 piece = move.promoted
         }
 
         p.pieces[move.to] = piece
-        p.board[p.color].set(move.to)
+        p.board[move.piece.color()].set(move.to)
         p.outposts[piece].set(move.to)
 
         if move.captured != 0 {
-                p.board[p.color^1].clear(move.to)
+                p.board[move.piece.color()^1].clear(move.to)
                 p.outposts[move.captured].clear(move.to)
                 p.count[move.captured]--
         }
@@ -171,62 +175,92 @@ func (p *Position) put(move *Move) *Position {
 }
 
 func (p *Position) make(move *Move) *Position {
-        return p.lift(move).put(move)
+        return p.lift(move).land(move)
 }
 
 func (p *Position) MakeMove(move *Move) *Position {
         eight := [2]int{ 8, -8 }
         color := move.piece.color()
-        position := p.clone().make(move)
+        p.lift(move).land(move)
 
+        enpassant := p.enpassant // Save current e-passant state.
         if kind := move.piece.kind(); kind == KING {
                 if move.isCastle() {
                         switch move.to {
                         case G1:
-                                position.make(NewMove(position, H1, F1))
+                                p.make(NewMove(p, H1, F1))
                         case C1:
-                                position.make(NewMove(position, A1, D1))
+                                p.make(NewMove(p, A1, D1))
                         case G8:
-                                position.make(NewMove(position, H8, F8))
+                                p.make(NewMove(p, H8, F8))
                         case C8:
-                                position.make(NewMove(position, A8, D8))
+                                p.make(NewMove(p, A8, D8))
                         }
                 }
-                position.can00[color], position.can000[color] = false, false
+                p.can00[color], p.can000[color] = false, false
         } else {
                 if kind == PAWN {
                         if move.isEnpassant(p.outposts[Pawn(color^1)]) {
                                 //
                                 // Mark the en-passant square.
                                 //
-                                position.enpassant = move.from + eight[color]
+                                p.enpassant = move.from + eight[color]
                         } else if move.isEnpassantCapture(p.enpassant) {
                                 //
                                 // Take out the en-passant pawn and decrement opponent's pawn count.
                                 //
-                                position.lift(NewMove(position, move.to + eight[color^1], move.to + eight[color^1]))
-                                position.count[Pawn(color^1)]--
+                                p.lift(NewMove(p, move.to + eight[color^1], move.to + eight[color^1]))
+                                p.count[Pawn(color^1)]--
                         } else if move.promoted != 0 {
                                 //
                                 // Replace a pawn on 8th rank with the promoted piece.
                                 //
-                                position.put(move)
-                                position.count[Pawn(color)]--
-                                position.count[move.promoted]++
+                                p.land(move)
+                                p.count[Pawn(color)]--
+                                p.count[move.promoted]++
                         }
                 }
-                if position.can00[color] {
+                if p.can00[color] {
                         rookSquare := [2]int{ H1, H8 }
-                        position.can00[color] = position.pieces[rookSquare[color]] == Rook(color)
+                        p.can00[color] = p.pieces[rookSquare[color]] == Rook(color)
                 }
-                if position.can000[color] {
+                if p.can000[color] {
                         rookSquare := [2]int{ A1, A8 }
-                        position.can000[color] = position.pieces[rookSquare[color]] == Rook(color)
+                        p.can000[color] = p.pieces[rookSquare[color]] == Rook(color)
                 }
         }
+        //
+        // If en-passant hasn't changed then reset it.
+        //
+        if enpassant == p.enpassant {
+                      p.enpassant = 0
+        }
 
-        position.color ^= 1 // <-- Switch side to move.
-        return position.computeStage().setupAttacks().saveHistory(p)
+        p.color = color^1 // <-- Switch side to move.
+        p.computeStage().setupAttacks()
+        if p.isCheck(color) { // <-- Invalid move leaving our King exposed.
+                p.takeBack(move)
+                return nil
+        }
+        return p.saveHistory(p)
+}
+
+func (p *Position) takeBack(move *Move) *Position {
+        withdrawal, capture, promotion := move.withdraw()
+
+        if promotion != nil {
+                p.lift(promotion)
+        }
+
+        p.lift(withdrawal).land(withdrawal)
+
+        if capture != nil {
+                p.land(capture)
+        }
+
+        p.computeStage().setupAttacks()
+
+        return p
 }
 
 func (p *Position) isCheck(color int) bool {

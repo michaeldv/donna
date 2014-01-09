@@ -50,11 +50,16 @@ func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 
 func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
         position := NewGame().InitialPosition().Start()
-        position = position.MakeMove(NewMove(position, E2, E4))
-        position = position.MakeMove(NewMove(position, D7, D5))
-        position = position.MakeMove(NewMove(position, E4, E5))
-        position = position.MakeMove(NewMove(position, F7, F5))
-        position = position.MakeMove(NewMove(position, E1, E2))
+        // position = position.MakeMove(NewMove(position, E2, E4))
+        // position = position.MakeMove(NewMove(position, D7, D5))
+        // position = position.MakeMove(NewMove(position, E4, E5))
+        // position = position.MakeMove(NewMove(position, F7, F5))
+        // position = position.MakeMove(NewMove(position, E1, E2))
+        position.MakeMove(NewMove(position, E2, E4))
+        position.MakeMove(NewMove(position, D7, D5))
+        position.MakeMove(NewMove(position, E4, E5))
+        position.MakeMove(NewMove(position, F7, F5))
+        position.MakeMove(NewMove(position, E1, E2))
 
         expect(t, position.polyglot(), uint64(0x652A607CA3F242C1))
 }

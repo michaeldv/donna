@@ -174,3 +174,40 @@ func TestPosition120(t *testing.T) {
         p = p.MakeMove(NewMove(p, E2, E1));  p = p.MakeMove(NewMove(p, E7, E8)) // 4.
         expect(t, p.isRepetition(), true) // <-- 3 time repetioion with lost 0-0 right.
 }
+
+// Undo the move.
+// func TestPosition200(t *testing.T) {
+//         Settings.Log = true
+//         p := NewGame().InitialPosition().Start()
+//         move :=  NewMove(p, E2, E4)
+//         p.MakeMove(move)
+//         Log("MOVE %s\n%s", move, p)
+//         p.takeBack(move)
+//         Log("TAKE BACK %s\n%s", move, p)
+//         Settings.Log = false
+// }
+// 
+// func TestPosition210(t *testing.T) {
+//         Settings.Log = true
+//         p := NewGame().Setup(`Ke1,Rh1`, `Ke8,Re7`).Start()
+//         move :=  NewMove(p, H1, H2)
+//         pos := p.MakeMove(move)
+//         Log("MOVE %s\n%s", move, pos)
+//         // p.takeBack(move)
+//         // Log("TAKE BACK %s\n%s", move, p)
+//         Settings.Log = false
+// }
+
+func TestPosition230(t *testing.T) {
+        Settings.Log = true
+        p := NewGame().InitialPosition().Start()
+        p.MakeMove(NewMove(p, E2, E4));  p.MakeMove(NewMove(p, E7, E5))
+        p.MakeMove(NewMove(p, G1, F3));  p.MakeMove(NewMove(p, G8, F6))
+
+        move :=  NewMove(p, F3, E5)
+        p.MakeMove(move)
+        Log("MOVE %s\n%s", move, p)
+        p.takeBack(move)
+        Log("TAKE BACK %s\n%s", move, p)
+        Settings.Log = false
+}
