@@ -198,16 +198,85 @@ func TestPosition120(t *testing.T) {
 //         Settings.Log = false
 // }
 
-func TestPosition230(t *testing.T) {
-        Settings.Log = true
-        p := NewGame().InitialPosition().Start()
-        p.MakeMove(NewMove(p, E2, E4));  p.MakeMove(NewMove(p, E7, E5))
-        p.MakeMove(NewMove(p, G1, F3));  p.MakeMove(NewMove(p, G8, F6))
+// func TestPosition230(t *testing.T) {
+//         Settings.Log, Settings.Fancy = true, true
+// 
+//         p := NewGame().InitialPosition().Start()
+//         p.MakeMove(NewMove(p, E2, E4));
+//         p.MakeMove(NewMove(p, E7, E6))
+//         p.MakeMove(NewMove(p, E4, E5));
+// 
+//         ep := NewMove(p, F7, F5)
+//         p.MakeMove(ep)
+//         Log("EP1 %s, ep %d\n%s\n\n", ep, p.enpassant, p)
+// 
+//         ep = NewMove(p, E5, F6)
+//         p.MakeMove(ep)
+//         Log("EP2 %s, ep %d\n%s\n\n", ep, p.enpassant, p)
+// 
+//         Log("Taking back %s, move.enpassant %v\n", ep, ep.enpassant)
+//         p.takeBack(ep)
+//         Log("EP3 %s, ep %d\n%s\n\n", ep, p.enpassant, p)
+// 
+//         Settings.Log, Settings.Fancy = false, false
+// }
 
-        move :=  NewMove(p, F3, E5)
-        p.MakeMove(move)
-        Log("MOVE %s\n%s", move, p)
+func TestPosition240(t *testing.T) {
+        Settings.Log, Settings.Fancy = true, true
+
+        p := NewGame().Setup(`Ke1,h7`, `Ke8,a2`).Start()
+        Log("Initial p.inCheck = %v, p.stage = %d\n%s\n\n", p.inCheck, p.stage, p)
+        Log("%v", p.count)
+
+        game      := p.game
+        pieces    := p.pieces
+        targets   := p.targets
+        board     := p.board
+        attacks   := p.attacks
+        outposts  := p.outposts
+        count     := p.count
+        enpassant := p.enpassant
+        color     := p.color
+        stage     := p.stage
+        history   := p.history
+        inCheck   := p.inCheck
+        can00     := p.can00
+        can000    := p.can000
+
+        move := NewMove(p, H7, H8).promote(QUEEN)
+        p.MakeMove(move);
+        Log("Move %s p.inCheck = %v, p.stage = %d\n%s\n\n", move, p.inCheck, p.stage, p)
+
+        Log("Taking back %s\n", move)
         p.takeBack(move)
-        Log("TAKE BACK %s\n%s", move, p)
-        Settings.Log = false
+        Log("Move %s p.inCheck = %v, p.stage = %d\n%s\n\n", move, p.inCheck, p.stage, p)
+
+        Lop("game      : ", game      == p.game)        //t
+        Lop("pieces    : ", pieces    == p.pieces)
+        Lop("targets   : ", targets   == p.targets)
+        Lop("board     : ", board     == p.board)
+        Lop("attacks   : ", attacks   == p.attacks)
+        Lop("outposts  : ", outposts  == p.outposts)
+        Lop("count     : ", count     == p.count)
+        Lop("enpassant : ", enpassant == p.enpassant)   //t
+        Lop("color     : ", color     == p.color)
+        Lop("stage     : ", stage     == p.stage)
+        Lop("history   : ", history   == p.history)     //t
+        Lop("inCheck   : ", inCheck   == p.inCheck)
+        Lop("can00     : ", can00     == p.can00)       //t
+        Lop("can000    : ", can000    == p.can000)      //t
+        Log("%v", p.count)
+
+        Settings.Log, Settings.Fancy = false, false
 }
+
+// PAWN   = 1 << 1 // 2
+// KNIGHT = 2 << 1 // 4
+// BISHOP = 3 << 1 // 6
+// ROOK   = 4 << 1 // 8
+// QUEEN  = 5 << 1 // 10
+// KING   = 6 << 1 // 12
+// 
+// [0 0  1 1 0 0 0 0 0 0 0 0 1 1 0 0]
+// [0 0 -2 1 0 0 0 0 0 0 1 0 1 1 0 0]
+// - 2 white pawns and 1 queen

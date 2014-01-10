@@ -10,12 +10,13 @@ import (
 )
 
 type Move struct {
-        from     int
-        to       int
-        score    int
-        piece    Piece
-        captured Piece
-        promoted Piece
+        from      int
+        to        int
+        score     int
+        enpassant int // en-passant square on pawn capture.
+        piece     Piece
+        captured  Piece
+        promoted  Piece
 }
 
 func NewMove(p *Position, from, to int) *Move {
@@ -28,6 +29,7 @@ func NewMove(p *Position, from, to int) *Move {
 
         if p.enpassant != 0 && to == p.enpassant {
                 move.captured = Pawn(p.color^1)
+                move.enpassant = p.enpassant
         }
 
         if move.captured == 0 {
@@ -120,6 +122,10 @@ func (m *Move) withdraw() (withdrawal, capture, promotion *Move) {
                 capture.from  = m.to
                 capture.to    = m.to
                 capture.piece = m.captured
+                if m.enpassant != 0 {
+                        capture.to = m.to + [2]int{ 8, -8 }[m.captured.color()]
+                        capture.enpassant = m.enpassant
+                }
         }
         //
         // Generate the move to lift the promoted piece.
@@ -139,7 +145,8 @@ func (m *Move) is(move *Move) bool {
                  m.to == move.to    &&
               m.piece == move.piece &&
            m.captured == m.captured &&
-           m.promoted == m.promoted
+           m.promoted == m.promoted &&
+          m.enpassant == m.enpassant
 }
 
 func (m *Move) calculateScore(position *Position) int {
@@ -198,7 +205,7 @@ func (m *Move) isCastle() bool {
         return m.isKingSideCastle() || m.isQueenSideCastle()
 }
 
-func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
+func (m *Move) causesEnpassant(opponentPawns Bitmask) bool {
         color := m.piece.color()
 
         if m.piece.isPawn() && Row(m.from) == [2]int{1,6}[color] && Row(m.to) == [2]int{3,4}[color] {
@@ -212,10 +219,6 @@ func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
                 }
         }
         return false
-}
-
-func (m *Move) isEnpassantCapture(enpassant int) bool {
-        return m.piece.isPawn() && m.to == enpassant
 }
 
 func (m *Move) String() string {

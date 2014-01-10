@@ -10,8 +10,8 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         Log("\nsearch(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         p.game.nodes++
         if depth <= 0 && !p.inCheck {
-                return p.Evaluate()
-                //return p.quiescence(depth, ply, alpha, beta)
+                // return p.Evaluate()
+                return p.quiescence(depth, ply, alpha, beta)
         }
 
         if p.isRepetition() {
@@ -32,14 +32,14 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 	}
 
         // Null move pruning. TODO: skip it if we're following principal variation.
-        // if !p.inCheck && p.board[p.color].count() > 5 && p.Evaluate() >= beta {
-        //         p.color ^= 1
-        //         score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
-        //         p.color ^= 1
-        //         if score >= beta {
-        //                 return score
-        //         }
-        // }
+        if !p.inCheck && p.board[p.color].count() > 5 && p.Evaluate() >= beta {
+                p.color ^= 1
+                score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
+                p.color ^= 1
+                if score >= beta {
+                        return score
+                }
+        }
 
         moves, movesMade := p.Moves(ply), 0
         for i, move := range moves {

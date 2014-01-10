@@ -173,6 +173,9 @@ func (p *Position) land(move *Move) *Position {
                 p.outposts[move.captured].clear(move.to)
                 p.count[move.captured]--
         }
+        // if move.promoted != 0 {
+        //         p.count[Pawn(move.piece.color())]--
+        // }
         return p
 }
 
@@ -181,11 +184,13 @@ func (p *Position) make(move *Move) *Position {
 }
 
 func (p *Position) MakeMove(move *Move) *Position {
+        Log("\n==> Make %s - count WP %d, WQ %d\n", move, p.count[Pawn(WHITE)], p.count[Queen(WHITE)])
+
         eight := [2]int{ 8, -8 }
         color := move.piece.color()
         p.lift(move).land(move)
 
-        enpassant := p.enpassant // Save current e-passant state.
+        enpassant := p.enpassant // Save current en-passant state.
         if kind := move.piece.kind(); kind == KING {
                 if move.isCastle() {
                         switch move.to {
@@ -202,22 +207,21 @@ func (p *Position) MakeMove(move *Move) *Position {
                 p.can00[color], p.can000[color] = false, false
         } else {
                 if kind == PAWN {
-                        if move.isEnpassant(p.outposts[Pawn(color^1)]) {
+                        if move.causesEnpassant(p.outposts[Pawn(color^1)]) {
                                 //
                                 // Mark the en-passant square.
                                 //
                                 p.enpassant = move.from + eight[color]
-                        } else if move.isEnpassantCapture(p.enpassant) {
+                        } else if move.enpassant != 0 {
                                 //
-                                // Take out the en-passant pawn and decrement opponent's pawn count.
+                                // En-passant pawn capture: take out the en-passant pawn.
                                 //
                                 p.lift(NewMove(p, move.to + eight[color^1], move.to + eight[color^1]))
                         } else if move.promoted != 0 {
                                 //
                                 // Replace a pawn on 8th rank with the promoted piece.
                                 //
-                                p.land(move)
-                                p.count[Pawn(color)]--
+                                // p.land(move)
                         }
                 }
                 if p.can00[color] {
@@ -235,12 +239,13 @@ func (p *Position) MakeMove(move *Move) *Position {
         if enpassant == p.enpassant {
                       p.enpassant = 0
         }
+        Log("--> Made %s - count WP %d, WQ %d\n", move, p.count[Pawn(WHITE)], p.count[Queen(WHITE)])
+
 
         p.color = color^1 // <-- Switch side to move.
         p.computeStage().setupAttacks()
         if p.isCheck(color) { // <-- Invalid move leaving our King exposed.
                 p.takeBack(move)
-                p.color = color // <-- Restore color.
                 return nil
         }
         return p.saveHistory(p)
@@ -251,17 +256,19 @@ func (p *Position) takeBack(move *Move) *Position {
         withdrawal, capture, promotion := move.withdraw()
 
         if promotion != nil {
-                p.lift(promotion)
+                p.lift(promotion).land(withdrawal)
+        } else {
+                p.lift(withdrawal).land(withdrawal)
         }
-
-        p.lift(withdrawal).land(withdrawal)
 
         if capture != nil {
                 p.land(capture)
+                p.enpassant = capture.enpassant
         }
 
         p.computeStage().setupAttacks()
 
+        Log("tookBack - count WP %d, WQ %d\n", p.count[Pawn(WHITE)], p.count[Queen(WHITE)])
         return p
 }
 
