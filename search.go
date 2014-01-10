@@ -14,15 +14,10 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                 return p.quiescence(depth, ply, alpha, beta)
         }
 
-        if p.isRepetition() {
-                return 0
-        }
-
-        if ply > MaxPly - 2 {
+        if ply > 14 {
                 bestlen[ply] = ply
                 return p.Evaluate()
         }
-
 
 	// Checkmate pruning.
 	if Checkmate - ply <= alpha {
@@ -82,12 +77,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
         Log("\nquiescence(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         p.game.qnodes++
-
-        if p.isRepetition() {
-                return 0
-        }
-
-        if ply > MaxPly - 2 {
+        if ply > 14 {
                 return p.Evaluate()
         }
 
