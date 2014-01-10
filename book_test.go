@@ -8,20 +8,20 @@ import (`testing`)
 
 // See test key values at http://hardy.uhasselt.be/Toga/book_format.html
 func TestBook000(t *testing.T) {
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
 
         expect(t, position.polyglot(), uint64(0x463B96181691FC9C))
 }
 
 func TestBook010(t *testing.T) { // 1. e4
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, E2, E4))
 
         expect(t, position.polyglot(), uint64(0x823C9B50FD114196))
 }
 
 func TestBook020(t *testing.T) { // 1. e4 d5
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, E2, E4))
         position = position.MakeMove(NewMove(position, D7, D5))
 
@@ -29,7 +29,7 @@ func TestBook020(t *testing.T) { // 1. e4 d5
 }
 
 func TestBook030(t *testing.T) { // 1. e4 d5 2. e5
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, E2, E4))
         position = position.MakeMove(NewMove(position, D7, D5))
         position = position.MakeMove(NewMove(position, E4, E5))
@@ -38,7 +38,7 @@ func TestBook030(t *testing.T) { // 1. e4 d5 2. e5
 }
 
 func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, E2, E4))
         position = position.MakeMove(NewMove(position, D7, D5))
         position = position.MakeMove(NewMove(position, E4, E5))
@@ -49,7 +49,7 @@ func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 }
 
 func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, E2, E4))
         position = position.MakeMove(NewMove(position, D7, D5))
         position = position.MakeMove(NewMove(position, E4, E5))
@@ -60,7 +60,7 @@ func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Cas
 }
 
 func TestBook060(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, E2, E4))
         position = position.MakeMove(NewMove(position, D7, D5))
         position = position.MakeMove(NewMove(position, E4, E5))
@@ -72,7 +72,7 @@ func TestBook060(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black
 }
 
 func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpassant
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, A2, A4))
         position = position.MakeMove(NewMove(position, B7, B5))
         position = position.MakeMove(NewMove(position, H2, H4))
@@ -84,7 +84,7 @@ func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpass
 }
 
 func TestBook080(t *testing.T) { // TODO: 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, A2, A4))
         position = position.MakeMove(NewMove(position, B7, B5))
         position = position.MakeMove(NewMove(position, H2, H4))
@@ -98,7 +98,7 @@ func TestBook080(t *testing.T) { // TODO: 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc
 
 
 func TestBook100(t *testing.T) { // 1. e4 e5
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, E2, E4))
         position = position.MakeMove(NewMove(position, E7, E5))
 
@@ -106,7 +106,7 @@ func TestBook100(t *testing.T) { // 1. e4 e5
 }
 
 func TestBook110(t *testing.T) { // 1. d4 d5
-        position := NewGame().InitialPosition().Start()
+        position := NewGame().InitialPosition().Start(White)
         position = position.MakeMove(NewMove(position, D2, D4))
         position = position.MakeMove(NewMove(position, D7, D5))
 

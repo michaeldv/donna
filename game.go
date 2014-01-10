@@ -12,17 +12,17 @@ import (
 )
 
 type Game struct {
-	pieces	[64]Piece
-        current int
-        nodes   int
-        qnodes  int
+	pieces	     [64]Piece
+        nodes        int
+        qnodes       int
+        killers      [MaxPly][2]*Move
+        bestLine     [MaxPly][MaxPly]*Move // Assuming max depth = 4 which makes it 8 plies.
+        bestLength   [MaxPly]int
+        repetitions  [1024]uint64
 }
 
 func NewGame() *Game {
-        game := new(Game)
-        game.current = WHITE
-
-        return game
+        return new(Game)
 }
 
 func (g *Game) Setup(white, black string) *Game {
@@ -76,7 +76,7 @@ func (g *Game) InitialPosition() *Game {
 func (g *Game) Think(maxDepth int, position *Position) *Move {
         book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
         if position == nil {
-                position = g.Start()
+                position = g.Start(White)
         }
         move := book.pickMove(position)
         if move != nil {
@@ -86,37 +86,40 @@ func (g *Game) Think(maxDepth int, position *Position) *Move {
 
         // fmt.Printf("%s", position)
         fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
-        //fmt.Println(`Depth   Nodes     QNodes      Nodes/s     Score     Best`)
         for depth := 1; depth <= maxDepth; depth++ {
-                best = [MaxPly][MaxPly]*Move{}
-                killer = [MaxPly][2]*Move{}
-
                 g.nodes, g.qnodes = 0, 0
                 start := time.Now()
                 score := g.Analyze(depth, position)
                 finish := time.Since(start).Seconds()
                 fmt.Printf(" %d %02d:%02d    %8d    %8d    %8.1f   %5s   %v\n",
-                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes, float64(g.nodes + g.qnodes) / finish, score, best[0][0 : bestlen[0]])
+                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                        float64(g.nodes + g.qnodes) / finish, score,
+                        g.bestLine[0][0 : g.bestLength[0]])
         }
-        fmt.Printf("Best move: %s\n", best[0][0])
-        return best[0][0]
+        fmt.Printf("Best move: %s\n", g.bestLine[0][0])
+        return g.bestLine[0][0]
 }
 
 func (g *Game) Analyze(depth int, position *Position) string {
         score := position.search(depth*2, 0, -Checkmate, Checkmate)
-        if position.color == BLACK {
+        if position.color == Black {
                 score = -score
         }
         return fmt.Sprintf(`%.2f`, float64(score) / 100.0)
 }
 
-func (g *Game) Start() *Position {
-        return NewPosition(g, g.pieces)
+func (g *Game) Start(color int) *Position {
+        g.bestLine = [MaxPly][MaxPly]*Move{}
+        g.bestLength = [MaxPly]int{}
+        g.killers = [MaxPly][2]*Move{}
+        g.repetitions = [1024]uint64{}
+
+        return NewPosition(g, g.pieces, color, 0)
 }
 
 func (g *Game) Search(depth int) *Move {
-        g.Analyze(depth, NewPosition(g, g.pieces))
-        return best[0][0]
+        g.Analyze(depth, NewPosition(g, g.pieces, White, 0))
+        return g.bestLine[0][0]
 }
 
 func (g *Game)String() string {

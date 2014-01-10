@@ -89,7 +89,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                 if e2e4 == `0-0-0` {
                         to = C1
                 }
-                if p.color == BLACK {
+                if p.color == Black {
                         to += 56
                 }
                 move = NewMove(p, from, to)

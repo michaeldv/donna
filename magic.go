@@ -42,12 +42,12 @@ func init() {
                 // Pawns.
                 if row >= 1 && row <= 7 {
                         if col > 0 {
-                                pawnMoves[WHITE][square].set(Square(row+1, col-1))
-                                pawnMoves[BLACK][square].set(Square(row-1, col-1))
+                                pawnMoves[White][square].set(Square(row+1, col-1))
+                                pawnMoves[Black][square].set(Square(row-1, col-1))
                         }
                         if col < 7 {
-                                pawnMoves[WHITE][square].set(Square(row+1, col+1))
-                                pawnMoves[BLACK][square].set(Square(row-1, col+1))
+                                pawnMoves[White][square].set(Square(row+1, col+1))
+                                pawnMoves[Black][square].set(Square(row-1, col+1))
                         }
                 }
 
@@ -69,19 +69,19 @@ func init() {
 
                 // Masks to check for passed pawns.
                 if col > 0 {
-                        maskPassed[WHITE][square].fill(square - 1,  8, 0, 0x00FFFFFFFFFFFFFF)
-                        maskPassed[BLACK][square].fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                        maskPassed[White][square].fill(square - 1,  8, 0, 0x00FFFFFFFFFFFFFF)
+                        maskPassed[Black][square].fill(square - 1, -8, 0, 0xFFFFFFFFFFFFFF00)
                 }
-                maskPassed[WHITE][square].fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
-                maskPassed[BLACK][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                maskPassed[White][square].fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
+                maskPassed[Black][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
                 if col < 7 {
-                        maskPassed[WHITE][square].fill(square + 1,  8, 0, 0x00FFFFFFFFFFFFFF)
-                        maskPassed[BLACK][square].fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
+                        maskPassed[White][square].fill(square + 1,  8, 0, 0x00FFFFFFFFFFFFFF)
+                        maskPassed[Black][square].fill(square + 1, -8, 0, 0xFFFFFFFFFFFFFF00)
                 }
 
                 // Vertical squares in front of a pawn.
-                maskInFront[WHITE][square].fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
-                maskInFront[BLACK][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+                maskInFront[White][square].fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
+                maskInFront[Black][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
 	}
 }
 

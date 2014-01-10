@@ -18,7 +18,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         }
 
         if ply > MaxPly - 2 {
-                bestlen[ply] = ply
+                p.game.bestLength[ply] = ply
                 return p.Evaluate()
         }
 
@@ -47,9 +47,9 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
 
                         if score >= beta {
-                                if !p.inCheck && move.captured == 0 && (killer[ply][0] == nil || !move.is(killer[ply][0])) {
-                                        killer[ply][1] = killer[ply][0]
-                                        killer[ply][0] = move
+                                if !p.inCheck && move.captured == 0 && (p.game.killers[ply][0] == nil || !move.is(p.game.killers[ply][0])) {
+                                        p.game.killers[ply][1] = p.game.killers[ply][0]
+                                        p.game.killers[ply][0] = move
                                 }
                                 return score
                         }
@@ -129,7 +129,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         }
 
         if movesMade == 0 {
-                bestlen[ply] = ply
+                p.game.bestLength[ply] = ply
                 return -Checkmate + ply
         }
 
@@ -145,7 +145,7 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
 
         bestScore, quietAlpha, quietBeta := score, alpha, beta
         if score > alpha {
-                bestlen[ply] = ply
+                p.game.bestLength[ply] = ply
                 quietAlpha = score
         }
 

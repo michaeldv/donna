@@ -10,8 +10,8 @@ const Checkmate = math.MaxInt16
 const MaxPly = 32
 
 const (
-        WHITE = iota
-        BLACK
+        White = iota
+        Black
 )
 
 const (
