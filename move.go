@@ -106,34 +106,6 @@ func (m *Move) promote(kind int) *Move {
         return m
 }
 
-func (m *Move) withdraw() (withdrawal, capture, promotion *Move) {
-        withdrawal = new(Move)
-
-        withdrawal.from  = m.to
-        withdrawal.to    = m.from
-        withdrawal.piece = m.piece
-        //
-        // Generate the move to put captured piece back.
-        //
-        if m.captured != 0 {
-                capture = new(Move)
-                capture.from  = m.to
-                capture.to    = m.to
-                capture.piece = m.captured
-        }
-        //
-        // Generate the move to lift the promoted piece.
-        //
-        if m.promoted != 0 {
-                promotion = new(Move)
-                promotion.from  = m.to
-                promotion.to    = m.to
-                promotion.piece = m.promoted
-        }
-
-        return
-}
-
 func (m *Move) is(move *Move) bool {
         return m.from == move.from  &&
                  m.to == move.to    &&

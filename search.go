@@ -10,8 +10,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         Log("\nsearch(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         p.game.nodes++
         if depth <= 0 && !p.inCheck {
-                return p.Evaluate()
-                //return p.quiescence(depth, ply, alpha, beta)
+                return p.quiescence(depth, ply, alpha, beta)
         }
 
         if p.isRepetition() {
@@ -32,25 +31,22 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 	}
 
         // Null move pruning. TODO: skip it if we're following principal variation.
-        // if !p.inCheck && p.board[p.color].count() > 5 && p.Evaluate() >= beta {
-        //         p.color ^= 1
-        //         score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
-        //         p.color ^= 1
-        //         if score >= beta {
-        //                 return score
-        //         }
-        // }
+        if !p.inCheck && p.board[p.color].count() > 5 && p.Evaluate() >= beta {
+                p.color ^= 1
+                score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
+                p.color ^= 1
+                if score >= beta {
+                        return score
+                }
+        }
 
         moves := p.Moves(ply)
         nodes := p.game.nodes
         for i, move := range moves {
-                if p.MakeMove(move) != nil {
-                        Log("MAKE %s (%s)\n%s", move, C(p.color), p)
-                        score := -p.search(depth - 1, ply + 1, -beta, -alpha)
+                if position := p.MakeMove(move); !position.isCheck(p.color) {
+                        score := -position.search(depth - 1, ply + 1, -beta, -alpha)
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
 
-                        p.takeBack(move)
-                        //Log("TAKE BACK %s (%s)\n%s", move, C(p.color), p)
                         if score >= beta {
                                 if !p.inCheck && move.captured == 0 && (killer[ply][0] == nil || !move.is(killer[ply][0])) {
                                         killer[ply][1] = killer[ply][0]
@@ -111,14 +107,13 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         moves := p.Moves(ply) // TODO: check evasions only.
         qnodes := p.game.qnodes
         for i, move := range moves {
-                if p.MakeMove(move) != nil {
+                if position := p.MakeMove(move); !position.isCheck(p.color) {
                         Log("%d out of %d: evasion %s for %s\n", i, len(moves), move, C(move.piece.color()))
 
-                        score = -p.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
+                        score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                         if alpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
-                                score = -p.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
+                                score = -position.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
                         }
-                        p.takeBack(move)
 
                         if score >= beta {
                                 return score
@@ -157,13 +152,14 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
 
         moves := p.Captures(ply) // TODO: followed by quiet checks.
         for i, move := range moves {
-                if p.MakeMove(move) != nil {
+                if position := p.MakeMove(move); !position.isCheck(p.color) {
                         Log("%d out of %d: capture %s for %s\n", i, len(moves), move, C(move.piece.color()))
-                        score = -p.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
+                        p.game.qnodes++
+
+                        score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                         if quietAlpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
-                                score = -p.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
+                                score = -position.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
                         }
-                        p.takeBack(move)
 
                         if score >= beta {
                                 return score
