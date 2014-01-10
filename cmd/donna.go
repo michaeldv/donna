@@ -60,7 +60,7 @@ func main() {
         donna.Settings.Log = true
         donna.Settings.Fancy = true
 
-        donna.NewGame().Setup(`Kf8,Qf6`, `Kh7,Nf5`).Search(2)
+        donna.NewGame().Setup(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).Search(2)
 
         // donna.NewGame().Setup(`Ka7,Qb1,Bg2`, `Ka5,b3,g3`).Think(4, nil) // Qb2
         // donna.NewGame().Setup(`Kh5,Qg7,Be5,f2,f3`, `Kh1`).Think(4, nil) // Bh2

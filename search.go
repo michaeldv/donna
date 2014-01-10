@@ -41,11 +41,11 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         //         }
         // }
 
-        moves, movesMade := p.Moves(ply), 0
+        moves := p.Moves(ply)
+        nodes := p.game.nodes
         for i, move := range moves {
                 if p.MakeMove(move) != nil {
                         Log("MAKE %s (%s)\n%s", move, C(p.color), p)
-                        movesMade++
                         score := -p.search(depth - 1, ply + 1, -beta, -alpha)
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
 
@@ -65,8 +65,8 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                 }
         }
 
-        if movesMade == 0 { // No moves were available.
-                if p.isCheck(p.color) {
+        if nodes == p.game.nodes { // No moves were available.
+                if p.inCheck {
                         Lop("Checkmate")
                         return -Checkmate + ply
                 } else {
