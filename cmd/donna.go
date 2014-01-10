@@ -57,19 +57,15 @@ func repl() {
 }
 
 func main() {
-        donna.Settings.Log = false//true
+        donna.Settings.Log = true
         donna.Settings.Fancy = true
 
-        // move := donna.NewGame().Setup(`Kh3,f7,g7`, `Kh6`).Search(3)
-        // donna.Log("\nBest move: %s\n", move)
-        // expect(t, move, `g7-g8Q`)
-
-        //en-passant expect(t, move, `Kd5-e4`)
+        donna.NewGame().Setup(`Kf8,Qf6`, `Kh7,Nf5`).Search(2)
 
         // donna.NewGame().Setup(`Ka7,Qb1,Bg2`, `Ka5,b3,g3`).Think(4, nil) // Qb2
         // donna.NewGame().Setup(`Kh5,Qg7,Be5,f2,f3`, `Kh1`).Think(4, nil) // Bh2
         // donna.NewGame().Setup(`Kd3,Rd8,a5,b2,f2,g5`, `Kd1`).Think(4, nil) // Rd4
-        repl()
+        // repl()
 }
 
 //
