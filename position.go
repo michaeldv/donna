@@ -225,17 +225,22 @@ func (p *Position) isCheck(color int) bool {
 }
 
 func (p *Position) isRepetition() bool {
-        // if p.history > 6 {
-        //         reps, hash := 0, p.game.repetitions[p.history - 1]
-        //         for i := p.history - 1; i >= 0; i-- {
-        //                 if p.game.repetitions[i] == hash {
-        //                         reps++
-        //                         if reps == 3 {
-        //                                 return true
-        //                         }
-        //                 }
-        //         }
-        // }
+        if p.flags.irreversible {
+                return false
+        }
+
+        for prev, reps := p.previous, 1; prev != nil; prev = prev.previous {
+                if prev.flags.irreversible {
+                        return false
+                }
+                if prev.color == p.color && prev.hash == p.hash {
+                        reps++
+                        if reps == 3 {
+                                return true
+                        }
+                }
+        }
+
         return false
 }
 
