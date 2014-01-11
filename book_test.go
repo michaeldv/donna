@@ -45,7 +45,7 @@ func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
         position = position.MakeMove(NewMove(position, F7, F5))
 
         expect(t, position.polyglot(), uint64(0x22A48B5A8E47FF78))
-        expect(t, position.enpassant, F6)
+        expect(t, position.flags.enpassant, F6)
 }
 
 func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
@@ -80,7 +80,7 @@ func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpass
         position = position.MakeMove(NewMove(position, C2, C4))
 
         expect(t, position.polyglot(), uint64(0x3C8123EA7B067637))
-        expect(t, position.enpassant, C3)
+        expect(t, position.flags.enpassant, C3)
 }
 
 func TestBook080(t *testing.T) { // TODO: 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle

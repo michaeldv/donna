@@ -41,7 +41,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 
         moves, movesMade := p.Moves(ply), 0
         for i, move := range moves {
-                if position := p.MakeMove(move); !position.isCheck(p.color) {
+                if position := p.MakeMove(move); position != nil {
                         movesMade++
                         score := -position.search(depth - 1, ply + 1, -beta, -alpha)
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
@@ -105,7 +105,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
 
         moves, movesMade := p.Moves(ply), 0 // TODO: check evasions only.
         for i, move := range moves {
-                if position := p.MakeMove(move); !position.isCheck(p.color) {
+                if position := p.MakeMove(move); position != nil {
                         Log("%d out of %d: evasion %s for %s\n", i, len(moves), move, C(move.piece.color()))
 
                         movesMade++
@@ -151,7 +151,7 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
 
         moves := p.Captures(ply) // TODO: followed by quiet checks.
         for i, move := range moves {
-                if position := p.MakeMove(move); !position.isCheck(p.color) {
+                if position := p.MakeMove(move); position != nil {
                         Log("%d out of %d: capture %s for %s\n", i, len(moves), move, C(move.piece.color()))
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)

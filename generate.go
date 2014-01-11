@@ -76,7 +76,7 @@ func (p *Position) possibleCaptures(square int, piece Piece) (moves []*Move) {
                                         moves = append(moves, candidate)
                                 }
                         }
-                } else if p.enpassant != 0 && target == p.enpassant {
+                } else if p.flags.enpassant != 0 && target == p.flags.enpassant {
                         moves = append(moves, NewMove(p, square, target))
                 }
                 targets.clear(target)

@@ -26,7 +26,7 @@ func NewMove(p *Position, from, to int) *Move {
         move.piece = p.pieces[from]
         move.captured = p.pieces[to]
 
-        if p.enpassant != 0 && to == p.enpassant {
+        if p.flags.enpassant != 0 && to == p.flags.enpassant {
                 move.captured = Pawn(p.color^1)
         }
 

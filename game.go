@@ -18,7 +18,6 @@ type Game struct {
         killers      [MaxPly][2]*Move
         bestLine     [MaxPly][MaxPly]*Move // Assuming max depth = 4 which makes it 8 plies.
         bestLength   [MaxPly]int
-        repetitions  [1024]uint64
 }
 
 func NewGame() *Game {
@@ -109,16 +108,15 @@ func (g *Game) Analyze(depth int, position *Position) string {
 }
 
 func (g *Game) Start(color int) *Position {
-        g.bestLine = [MaxPly][MaxPly]*Move{}
+        g.bestLine   = [MaxPly][MaxPly]*Move{}
         g.bestLength = [MaxPly]int{}
-        g.killers = [MaxPly][2]*Move{}
-        g.repetitions = [1024]uint64{}
+        g.killers    = [MaxPly][2]*Move{}
 
-        return NewPosition(g, g.pieces, color, 0)
+        return NewPosition(g, g.pieces, color, nil)
 }
 
 func (g *Game) Search(depth int) *Move {
-        g.Analyze(depth, NewPosition(g, g.pieces, White, 0))
+        g.Analyze(depth, NewPosition(g, g.pieces, White, nil))
         return g.bestLine[0][0]
 }
 

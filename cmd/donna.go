@@ -27,12 +27,12 @@ func repl() {
                         fmt.Println(`help: not implemented yet.`)
                 case `new`:
                         game = donna.NewGame().InitialPosition()
-                        position = game.Start()
+                        position = game.Start(donna.White)
                         fmt.Printf("%s\n", position)
                 case `go`:
                         if game == nil || position == nil {
                                 game = donna.NewGame().InitialPosition()
-                                position = game.Start()
+                                position = game.Start(donna.White)
                         }
                         move = game.Think(3, position)
                         position = position.MakeMove(move)
@@ -40,7 +40,7 @@ func repl() {
                 default:
                         if game == nil || position == nil {
                                 game = donna.NewGame().InitialPosition()
-                                position = game.Start()
+                                position = game.Start(donna.White)
                         }
                         move = donna.NewMoveFromString(command, position)
                         if move != nil {

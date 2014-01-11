@@ -6,36 +6,42 @@ package donna
 
 import(`bytes`)
 
+type Flags struct {
+        enpassant   int         // En-passant square caused by previous move.
+        reversible  bool        // Is this position reversible?
+        can00       [2]bool     // Is king-side castle allowed?
+        can000      [2]bool     // Is queen-side castle allowed?
+}
+
 type Position struct {
         game      *Game
+        previous  *Position     // Previous position.
+        flags     *Flags        // Flags set by last move leading to this position.
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
         targets   [64]Bitmask   // Attack targets for each piece on the board.
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
         attacks   [3]Bitmask    // [0] all squares attacked by white, [1] by black, [2] either white or black.
         outposts  [16]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
-        enpassant int           // En-passant square caused by previous move.
         color     int           // Side to make next move.
         stage     int           // Game stage (256 in the initial position).
-        history   int           // Index to the tip of the repetitions array.
+        hash      uint64        // Polyglot hash value.
         inCheck   bool          // Is our king under attack?
-        can00     [2]bool       // Is king-side castle allowed?
-        can000    [2]bool       // Is queen-side castle allowed?
 }
 
-func NewPosition(game *Game, pieces [64]Piece, color, enpassant int) *Position {
-        p := new(Position)
-        p.game = game
-        p.pieces = pieces
-        p.enpassant = enpassant
-        p.color = color
+func NewPosition(game *Game, pieces [64]Piece, color int, flags *Flags) *Position {
+        p := &Position{ game: game, pieces: pieces, color: color }
+        if flags != nil {
+	        p.flags = flags
+        } else {
+	        p.flags = &Flags{ enpassant: 0, reversible: true }
+		p.flags.can00[White]  = p.pieces[E1] == King(White) && p.pieces[H1] == Rook(White)
+		p.flags.can00[Black]  = p.pieces[E8] == King(Black) && p.pieces[H8] == Rook(Black)
+		p.flags.can000[White] = p.pieces[E1] == King(White) && p.pieces[A1] == Rook(White)
+		p.flags.can000[Black] = p.pieces[E8] == King(Black) && p.pieces[A8] == Rook(Black)
+	}
 
-        p.can00[White]  = p.pieces[E1] == King(White) && p.pieces[H1] == Rook(White)
-        p.can00[Black]  = p.pieces[E8] == King(Black) && p.pieces[H8] == Rook(Black)
-        p.can000[White] = p.pieces[E1] == King(White) && p.pieces[A1] == Rook(White)
-        p.can000[Black] = p.pieces[E8] == King(Black) && p.pieces[A8] == Rook(Black)
-
-        return p.setupPieces().computeStage().setupAttacks() //.saveHistory(nil)
+        return p.setupPieces().setupAttacks().computeStage()
 }
 
 func (p *Position) setupPieces() *Position {
@@ -46,22 +52,35 @@ func (p *Position) setupPieces() *Position {
                         p.count[piece]++
                 }
         }
+        p.board[2] = p.board[White] | p.board[Black]
         return p
 }
 
-func (p *Position) computeStage() *Position {
+func (p *Position) updatePieces(updates [64]Piece, squares []int) *Position {
+        for _, square := range squares {
+		if newer, older := updates[square], p.pieces[square]; newer != older {
+			if older != 0 {
+				p.count[older]--
+			}
+			p.outposts[older].clear(square)
+			p.board[newer.color()^1].clear(square)
+			p.pieces[square] = newer
+	                if newer != 0 {
+	                        p.outposts[newer].set(square)
+	                        p.board[newer.color()].set(square)
+				p.count[newer]++
+	                } else {
+	                        p.outposts[newer].clear(square)
+	                        p.board[newer.color()].clear(square)
+	                }
+		}
+        }
         p.board[2] = p.board[White] | p.board[Black]
-
-        p.stage = 2 * (p.count[Pawn(White)]   + p.count[Pawn(Black)])   +
-                  6 * (p.count[Knight(White)] + p.count[Knight(Black)]) +
-                 12 * (p.count[Bishop(White)] + p.count[Bishop(Black)]) +
-                 16 * (p.count[Rook(White)]   + p.count[Rook(Black)])   +
-                 44 * (p.count[Queen(White)]  + p.count[Queen(Black)])
         return p
 }
 
 func (p *Position) setupAttacks() *Position {
-        var kingSquare [2]int
+        kingSquare := [2]int{ -1, -1 }
 
         board := p.board[2]
         for board.isNotEmpty() {
@@ -86,26 +105,11 @@ func (p *Position) setupAttacks() *Position {
         return p
 }
 
-// Save position's polyglot hash in the repetitions array incrementing history to point
-// to the next available spot. Positions resulted from the null move are not saved.
-func (p *Position) saveHistory(prev *Position) *Position {
-        spot := 0
-        if prev != nil {
-                if p.color == prev.color { // <-- Null move.
-                        return p
-                }
-                spot = prev.history
-        }
-
-        p.game.repetitions[spot] = p.polyglot()
-        p.history = spot + 1
-
-        return p
-}
-
 func (p *Position) updateKingTargets(kingSquare [2]int) *Position {
-        p.targets[kingSquare[White]].exclude(p.targets[kingSquare[Black]])
-        p.targets[kingSquare[Black]].exclude(p.targets[kingSquare[White]])
+	if kingSquare[White] >= 0 && kingSquare[Black] >= 0 {
+                p.targets[kingSquare[White]].exclude(p.targets[kingSquare[Black]])
+                p.targets[kingSquare[Black]].exclude(p.targets[kingSquare[White]])
+	}
         //
         // Add castle jump targets if castles are allowed.
         //
@@ -117,63 +121,98 @@ func (p *Position) updateKingTargets(kingSquare [2]int) *Position {
                         p.targets[kingSquare[p.color]].set(kingSquare[p.color] - 2)
                 }
         }
+        return p
+}
 
+func (p *Position) computeStage() *Position {
+        p.hash  = p.polyglot()
+        p.stage = 2 * (p.count[Pawn(White)]   + p.count[Pawn(Black)])   +
+                  6 * (p.count[Knight(White)] + p.count[Knight(Black)]) +
+                 12 * (p.count[Bishop(White)] + p.count[Bishop(Black)]) +
+                 16 * (p.count[Rook(White)]   + p.count[Rook(Black)])   +
+                 44 * (p.count[Queen(White)]  + p.count[Queen(Black)])
         return p
 }
 
 func (p *Position) MakeMove(move *Move) *Position {
         eight := [2]int{ 8, -8 }
         color := move.piece.color()
-        enpassant := 0
+	flags := &Flags{
+		enpassant:  0,
+		can00:      p.flags.can00,
+		can000:     p.flags.can000,
+		reversible: true,
+	}
 
-        pieces := p.pieces
-        pieces[move.from] = 0
-        pieces[move.to] = move.piece
+        delta := p.pieces
+        delta[move.from] = 0
+        delta[move.to] = move.piece
+        squares := []int{ move.from, move.to }
 
         if kind := move.piece.kind(); kind == KING {
                 if move.isCastle() {
                         switch move.to {
                         case G1:
-                                pieces[H1], pieces[F1] = 0, Rook(White)
+                                delta[H1], delta[F1] = 0, Rook(White)
+				squares = append(squares, H1, F1)
                         case C1:
-                                pieces[A1], pieces[D1] = 0, Rook(White)
+                                delta[A1], delta[D1] = 0, Rook(White)
+				squares = append(squares, A1, D1)
                         case G8:
-                                pieces[H8], pieces[F8] = 0, Rook(Black)
+                                delta[H8], delta[F8] = 0, Rook(Black)
+				squares = append(squares, H8, F8)
                         case C8:
-                                pieces[A8], pieces[D8] = 0, Rook(Black)
+                                delta[A8], delta[D8] = 0, Rook(Black)
+				squares = append(squares, A8, D8)
                         }
                 }
-                p.can00[color], p.can000[color] = false, false
+                flags.can00[color], flags.can000[color] = false, false
         } else {
                 if kind == PAWN {
                         if move.isEnpassant(p.outposts[Pawn(color^1)]) {
                                 //
                                 // Mark the en-passant square.
                                 //
-                                enpassant = move.from + eight[color]
-                        } else if move.isEnpassantCapture(p.enpassant) {
+                                flags.enpassant = move.from + eight[color]
+                        } else if move.isEnpassantCapture(p.flags.enpassant) {
                                 //
                                 // Take out the en-passant pawn and decrement opponent's pawn count.
                                 //
-                                pieces[move.to - eight[color]] = 0
+                                delta[move.to - eight[color]] = 0
+				squares = append(squares, move.to - eight[color])
                         } else if move.promoted != 0 {
                                 //
                                 // Replace a pawn on 8th rank with the promoted piece.
                                 //
-                                pieces[move.to] = move.promoted
+                                delta[move.to] = move.promoted
                         }
                 }
-                if p.can00[color] {
+                if p.flags.can00[color] {
                         rookSquare := [2]int{ H1, H8 }
-                        p.can00[color] = p.pieces[rookSquare[color]] == Rook(color)
+                        flags.can00[color] = delta[rookSquare[color]] == Rook(color)
                 }
-                if p.can000[color] {
+                if p.flags.can000[color] {
                         rookSquare := [2]int{ A1, A8 }
-                        p.can000[color] = p.pieces[rookSquare[color]] == Rook(color)
+                        flags.can000[color] = delta[rookSquare[color]] == Rook(color)
                 }
         }
 
-        return NewPosition(p.game, pieces, color^1, enpassant)
+	position := &Position{
+		game:     p.game,
+		previous: p,
+		board:    p.board,
+		count:    p.count,
+		pieces:   p.pieces,
+		outposts: p.outposts,
+		color:    color^1,
+		flags:    flags,
+	}
+
+	position.updatePieces(delta, squares).setupAttacks()
+	if position.isCheck(color) {
+		return nil
+	}
+	return position.computeStage()
 }
 
 func (p *Position) isCheck(color int) bool {
@@ -182,17 +221,17 @@ func (p *Position) isCheck(color int) bool {
 }
 
 func (p *Position) isRepetition() bool {
-        if p.history > 6 {
-                reps, hash := 0, p.game.repetitions[p.history - 1]
-                for i := p.history - 1; i >= 0; i-- {
-                        if p.game.repetitions[i] == hash {
-                                reps++
-                                if reps == 3 {
-                                        return true
-                                }
-                        }
-                }
-        }
+        // if p.history > 6 {
+        //         reps, hash := 0, p.game.repetitions[p.history - 1]
+        //         for i := p.history - 1; i >= 0; i-- {
+        //                 if p.game.repetitions[i] == hash {
+        //                         reps++
+        //                         if reps == 3 {
+        //                                 return true
+        //                         }
+        //                 }
+        //         }
+        // }
         return false
 }
 
@@ -211,16 +250,16 @@ func (p *Position) isPawnPromotion(piece Piece, target int) bool {
 
 func (p *Position) isKingSideCastleAllowed(color int) bool {
         if color == White {
-                return p.can00[White] && p.pieces[F1] == 0 && p.pieces[G1] == 0 && castleKingWhite & p.attacks[Black] == 0
+                return p.flags.can00[White] && p.pieces[F1] == 0 && p.pieces[G1] == 0 && castleKingWhite & p.attacks[Black] == 0
         }
-        return p.can00[Black] && p.pieces[F8] == 0 && p.pieces[G8] == 0 && castleKingBlack & p.attacks[White] == 0
+        return p.flags.can00[Black] && p.pieces[F8] == 0 && p.pieces[G8] == 0 && castleKingBlack & p.attacks[White] == 0
 }
 
 func (p *Position) isQueenSideCastleAllowed(color int) bool {
-        if p.color == White {
-                return p.can000[White] && p.pieces[D1] == 0 && p.pieces[C1] == 0 && p.pieces[B1] == 0 && castleQueenWhite & p.attacks[Black] == 0
+        if color == White {
+                return p.flags.can000[White] && p.pieces[D1] == 0 && p.pieces[C1] == 0 && p.pieces[B1] == 0 && castleQueenWhite & p.attacks[Black] == 0
         }
-        return p.can000[Black] && p.pieces[D8] == 0 && p.pieces[C8] == 0 && p.pieces[B8] == 0 && castleQueenBlack & p.attacks[White] == 0
+        return p.flags.can000[Black] && p.pieces[D8] == 0 && p.pieces[C8] == 0 && p.pieces[B8] == 0 && castleQueenBlack & p.attacks[White] == 0
 }
 
 // Compute position's polyglot hash.
@@ -231,20 +270,20 @@ func (p *Position) polyglot() (key uint64) {
                 }
         }
 
-	if p.can00[White] {
+	if p.flags.can00[White] {
                 key ^= polyglotRandom[768]
 	}
-	if p.can000[White] {
+	if p.flags.can000[White] {
                 key ^= polyglotRandom[769]
 	}
-	if p.can00[Black] {
+	if p.flags.can00[Black] {
                 key ^= polyglotRandom[770]
 	}
-	if p.can000[Black] {
+	if p.flags.can000[Black] {
                 key ^= polyglotRandom[771]
 	}
-        if p.enpassant != 0 {
-                col := Col(p.enpassant)
+        if p.flags.enpassant != 0 {
+                col := Col(p.flags.enpassant)
                 key ^= polyglotRandom[772 + col]
         }
 	if p.color == White {
