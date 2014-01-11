@@ -199,6 +199,14 @@ func (p *Position) MakeMove(move *Move) *Position {
         }
         if move.captured != 0 {
                 flags.irreversible = true
+                if !p.flags.banned00[color^1] {
+                        rookSquare := [2]int{ H1, H8 }
+                        flags.banned00[color^1] = delta[rookSquare[color^1]] != Rook(color^1)
+                }
+                if !p.flags.banned000[color^1] {
+                        rookSquare := [2]int{ A1, A8 }
+                        flags.banned000[color^1] = delta[rookSquare[color^1]] != Rook(color^1)
+                }
         }
 
 	position := &Position{

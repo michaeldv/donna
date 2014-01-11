@@ -143,6 +143,14 @@ func TestPosition082(t *testing.T) { // King has moved.
         expect(t, p.can000(Black), false)
 }
 
+func TestPosition083(t *testing.T) { // Rook is taken.
+        p := NewGame().Setup(`Ke1,Nb6`, `Ke8,Ra8,Rh8`).Start(White)
+        p = p.MakeMove(NewMove(p, B6, A8))
+
+        expect(t, p.can00(Black), true)
+        expect(t, p.can000(Black), false)
+}
+
 // Straight repetition.
 func TestPosition100(t *testing.T) {
         p := NewGame().InitialPosition().Start(White) // Initial 1.
