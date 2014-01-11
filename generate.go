@@ -13,7 +13,7 @@ func (p *Position) Moves(ply int) (moves []*Move) {
                         moves = append(moves, p.possibleMoves(i, piece)...)
                 }
         }
-        moves = p.reorderMoves(moves, best[0][ply], killer[ply])
+        moves = p.reorderMoves(moves, p.game.bestLine[0][ply], p.game.killers[ply])
         Log("%d candidates for %s: %v\n", len(moves), C(p.color), moves)
         return
 }
@@ -24,7 +24,7 @@ func (p *Position) Captures(ply int) (moves []*Move) {
                         moves = append(moves, p.possibleCaptures(i, piece)...)
                 }
         }
-        if bestMove := best[0][ply]; bestMove != nil && bestMove.captured != 0 {
+        if bestMove := p.game.bestLine[0][ply]; bestMove != nil && bestMove.captured != 0 {
                 moves = p.reorderCaptures(moves, bestMove)
         } else {
                 sort.Sort(byScore{moves})
@@ -76,7 +76,7 @@ func (p *Position) possibleCaptures(square int, piece Piece) (moves []*Move) {
                                         moves = append(moves, candidate)
                                 }
                         }
-                } else if p.enpassant != 0 && target == p.enpassant {
+                } else if p.flags.enpassant != 0 && target == p.flags.enpassant {
                         moves = append(moves, NewMove(p, square, target))
                 }
                 targets.clear(target)

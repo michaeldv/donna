@@ -27,12 +27,12 @@ func repl() {
                         fmt.Println(`help: not implemented yet.`)
                 case `new`:
                         game = donna.NewGame().InitialPosition()
-                        position = game.Start()
+                        position = game.Start(donna.White)
                         fmt.Printf("%s\n", position)
                 case `go`:
                         if game == nil || position == nil {
                                 game = donna.NewGame().InitialPosition()
-                                position = game.Start()
+                                position = game.Start(donna.White)
                         }
                         move = game.Think(3, position)
                         position = position.MakeMove(move)
@@ -40,7 +40,7 @@ func repl() {
                 default:
                         if game == nil || position == nil {
                                 game = donna.NewGame().InitialPosition()
-                                position = game.Start()
+                                position = game.Start(donna.White)
                         }
                         move = donna.NewMoveFromString(command, position)
                         if move != nil {
@@ -59,12 +59,6 @@ func repl() {
 func main() {
         donna.Settings.Log = false//true
         donna.Settings.Fancy = true
-
-        // move := donna.NewGame().Setup(`Kh3,f7,g7`, `Kh6`).Search(3)
-        // donna.Log("\nBest move: %s\n", move)
-        // expect(t, move, `g7-g8Q`)
-
-        //en-passant expect(t, move, `Kd5-e4`)
 
         // donna.NewGame().Setup(`Ka7,Qb1,Bg2`, `Ka5,b3,g3`).Think(4, nil) // Qb2
         // donna.NewGame().Setup(`Kh5,Qg7,Be5,f2,f3`, `Kh1`).Think(4, nil) // Bh2

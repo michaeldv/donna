@@ -19,7 +19,7 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
 		// the pawn are empty then add the second square as possible target.
                 //
 		row := Row(square)
-		if color == WHITE {
+		if color == White {
 			if p.board[2].isClear(square + 8) { // Can white pawn move up one square?
 				bitmask.set(square + 8)
 				if row == 1 && p.board[2].isClear(square + 16) { // How about two squares?
@@ -36,9 +36,9 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
                 // If the last move set the en-passant square and it is diagonally adjacent
                 // to the current pawn, then add en-passant to the pawn's attack targets.
                 //
-                if target := p.enpassant; target != 0 {
-                        if (color == WHITE && (target == square+7 || target == square+9)) || // Up/left or up/right a square.
-                           (color == BLACK && (target == square-9 || target == square-7)) {  // Down/left or down/right a square.
+                if target := p.flags.enpassant; target != 0 {
+                        if (color == White && (target == square+7 || target == square+9)) || // Up/left or up/right a square.
+                           (color == Black && (target == square-9 || target == square-7)) {  // Down/left or down/right a square.
                                 bitmask |= Bit(target)
                         }
                 }

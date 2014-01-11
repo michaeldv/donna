@@ -92,9 +92,9 @@ func (e *Evaluator) analyzeCoordination() {
 
 func (e *Evaluator) analyzePawnStructure() {
         var bonus, penalty [2]Score
-        pawn := [2]Piece{ Pawn(WHITE), Pawn(BLACK) }
+        pawn := [2]Piece{ Pawn(White), Pawn(Black) }
 
-        for color := WHITE; color <= BLACK; color++ {
+        for color := White; color <= Black; color++ {
                 var doubled [8]int // Number of doubled pawns in each column.
 
                 pawns := e.position.outposts[pawn[color]]
@@ -147,7 +147,7 @@ func (e *Evaluator) analyzeRooks() {
         var bonus [2]Score
         seventh := [2]Bitmask{ 0x00FF000000000000, 0x000000000000FF00 }
 
-        for color := WHITE; color <= BLACK; color++ {
+        for color := White; color <= Black; color++ {
                 rook := Rook(color)
                 if e.position.outposts[rook].isEmpty() {
                         continue
@@ -186,13 +186,13 @@ func (e *Evaluator) analyzeRooks() {
 func (e *Evaluator) analyzeKingShield() {
         var penalty [2]int
 
-        for color := WHITE; color <= BLACK; color++ {
+        for color := White; color <= Black; color++ {
                 king, pawn := King(color), Pawn(color)
                 //
                 // Pass if a) the king is missing, b) the king is on the initial square
                 // or c) the opposite side doesn't have a queen with one major piece.
                 //
-                if e.position.outposts[king].isEmpty() || e.position.pieces[initialKingSquare[color]] == king || !e.strongEnough(color^1) {
+                if e.position.outposts[king].isEmpty() || e.position.pieces[homeKing[color]] == king || !e.strongEnough(color^1) {
                         continue
                 }
                 //

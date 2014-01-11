@@ -10,13 +10,12 @@ import (
 )
 
 type Move struct {
-        from      int
-        to        int
-        score     int
-        enpassant int // en-passant square on pawn capture.
-        piece     Piece
-        captured  Piece
-        promoted  Piece
+        from     int
+        to       int
+        score    int
+        piece    Piece
+        captured Piece
+        promoted Piece
 }
 
 func NewMove(p *Position, from, to int) *Move {
@@ -27,9 +26,8 @@ func NewMove(p *Position, from, to int) *Move {
         move.piece = p.pieces[from]
         move.captured = p.pieces[to]
 
-        if p.enpassant != 0 && to == p.enpassant {
+        if p.flags.enpassant != 0 && to == p.flags.enpassant {
                 move.captured = Pawn(p.color^1)
-                move.enpassant = p.enpassant
         }
 
         if move.captured == 0 {
@@ -91,7 +89,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                 if e2e4 == `0-0-0` {
                         to = C1
                 }
-                if p.color == BLACK {
+                if p.color == Black {
                         to += 56
                 }
                 move = NewMove(p, from, to)
@@ -108,45 +106,12 @@ func (m *Move) promote(kind int) *Move {
         return m
 }
 
-func (m *Move) withdraw() (withdrawal, capture, promotion *Move) {
-        withdrawal = new(Move)
-
-        withdrawal.from  = m.to
-        withdrawal.to    = m.from
-        withdrawal.piece = m.piece
-        //
-        // Generate the move to put captured piece back.
-        //
-        if m.captured != 0 {
-                capture = new(Move)
-                capture.from  = m.to
-                capture.to    = m.to
-                capture.piece = m.captured
-                if m.enpassant != 0 {
-                        capture.to = m.to + [2]int{ 8, -8 }[m.captured.color()]
-                        capture.enpassant = m.enpassant
-                }
-        }
-        //
-        // Generate the move to lift the promoted piece.
-        //
-        if m.promoted != 0 {
-                promotion = new(Move)
-                promotion.from  = m.to
-                promotion.to    = m.to
-                promotion.piece = m.promoted
-        }
-
-        return
-}
-
 func (m *Move) is(move *Move) bool {
         return m.from == move.from  &&
                  m.to == move.to    &&
               m.piece == move.piece &&
            m.captured == m.captured &&
-           m.promoted == m.promoted &&
-          m.enpassant == m.enpassant
+           m.promoted == m.promoted
 }
 
 func (m *Move) calculateScore(position *Position) int {
@@ -205,7 +170,7 @@ func (m *Move) isCastle() bool {
         return m.isKingSideCastle() || m.isQueenSideCastle()
 }
 
-func (m *Move) causesEnpassant(opponentPawns Bitmask) bool {
+func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
         color := m.piece.color()
 
         if m.piece.isPawn() && Row(m.from) == [2]int{1,6}[color] && Row(m.to) == [2]int{3,4}[color] {
@@ -219,6 +184,10 @@ func (m *Move) causesEnpassant(opponentPawns Bitmask) bool {
                 }
         }
         return false
+}
+
+func (m *Move) isEnpassantCapture(enpassant int) bool {
+        return m.piece.isPawn() && m.to == enpassant
 }
 
 func (m *Move) String() string {
