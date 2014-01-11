@@ -26,13 +26,6 @@ const (
 	A8; B8; C8; D8; E8; F8; G8; H8
 )
 
-const (
-        castleKingWhite  = 0x0000000000000070 // E1 | F1 | G1
-        castleKingBlack  = 0x7000000000000000 // E8 | F8 | G8
-        castleQueenWhite = 0x000000000000001C // E1 | D1 | C1
-        castleQueenBlack = 0x1C00000000000000 // E8 | D8 | C8
-)
-
 var deBrujin = [64]int{
 	 0, 47,  1, 56, 48, 27,  2, 60,
 	57, 49, 41, 37, 28, 16,  3, 61,
@@ -177,7 +170,6 @@ var bonusKing = [2][64]int{
 	},
 }
 
-
 var bonusPassedPawn = [2][64]int{
         {
 		0,   0,   0,   0,   0,   0,   0,   0, // A1 - A8
@@ -233,9 +225,31 @@ var maskIsolated = [8]Bitmask{
 	0x2828282828282828, 0x5050505050505050, 0xA0A0A0A0A0A0A0A0, 0x4040404040404040,
 }
 
-var maskPassed, maskInFront [2][64]Bitmask
-
 var initialKingSquare = [2]int{ E1, E8 }
+
+// Castle squares that should be *empty* in order for catle to be valid.
+var gapKing = [2]Bitmask{
+        0x0000000000000060, // F1 | G1
+        0x6000000000000000, // F8 | G8
+}
+
+var gapQueen = [2]Bitmask{
+        0x000000000000000E, // C1 | D1
+        0x0E00000000000000, // C8 | D8
+}
+
+// Castle squares that should be *safe* in order for catle to be valid.
+var castleKing = [2]Bitmask{
+        0x0000000000000070, // E1 | F1 | G1
+        0x7000000000000000, // E8 | F8 | G8
+}
+
+var castleQueen = [2]Bitmask{
+        0x000000000000001C, // C1 | D1 | E1
+        0x1C00000000000000, // C8 | D8 | E8
+}
+
+var maskPassed, maskInFront [2][64]Bitmask
 
 var (
         valuePawn      = Score{  100,  100 }
