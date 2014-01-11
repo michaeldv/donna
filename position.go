@@ -16,7 +16,7 @@ type Flags struct {
 type Position struct {
         game      *Game
         previous  *Position     // Previous position.
-        flags     *Flags        // Flags set by last move leading to this position.
+        flags     Flags         // Flags set by last move leading to this position.
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
         targets   [64]Bitmask   // Attack targets for each piece on the board.
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
@@ -29,17 +29,21 @@ type Position struct {
         inCheck   bool          // Is our king under attack?
 }
 
-func NewPosition(game *Game, pieces [64]Piece, color int, flags *Flags) *Position {
+func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position {
         p := &Position{ game: game, pieces: pieces, color: color }
-        if flags != nil {
-	        p.flags = flags
-        } else {
-	        p.flags = &Flags{}
-		p.flags.banned00[White]  = p.pieces[E1] != King(White) || p.pieces[H1] != Rook(White)
-		p.flags.banned00[Black]  = p.pieces[E8] != King(Black) || p.pieces[H8] != Rook(Black)
-		p.flags.banned000[White] = p.pieces[E1] != King(White) || p.pieces[A1] != Rook(White)
-		p.flags.banned000[Black] = p.pieces[E8] != King(Black) || p.pieces[A8] != Rook(Black)
-	}
+
+        if !p.flags.banned00[White] {
+                p.flags.banned00[White] = p.pieces[E1] != King(White) || p.pieces[H1] != Rook(White)
+        }
+        if !p.flags.banned00[Black] {
+                p.flags.banned00[Black] = p.pieces[E8] != King(Black) || p.pieces[H8] != Rook(Black)
+        }
+        if !p.flags.banned000[White] {
+                p.flags.banned000[White] = p.pieces[E1] != King(White) || p.pieces[A1] != Rook(White)
+        }
+        if !p.flags.banned000[Black] {
+                p.flags.banned000[Black] = p.pieces[E8] != King(Black) || p.pieces[A8] != Rook(Black)
+        }
 
         return p.setupPieces().setupAttacks().computeStage()
 }
@@ -113,7 +117,7 @@ func (p *Position) updateKingTargets(kingSquare [2]int) *Position {
         //
         // Add castle jump targets if castles are allowed.
         //
-        if kingSquare[p.color] == initialKingSquare[p.color] {
+        if kingSquare[p.color] == homeKing[p.color] {
                 if p.can00(p.color) {
                         p.targets[kingSquare[p.color]].set(kingSquare[p.color] + 2)
                 }
@@ -137,7 +141,7 @@ func (p *Position) computeStage() *Position {
 func (p *Position) MakeMove(move *Move) *Position {
         eight := [2]int{ 8, -8 }
         color := move.piece.color()
-        flags := &Flags{ banned00: p.flags.banned00, banned000: p.flags.banned000 }
+        flags := Flags{ banned00: p.flags.banned00, banned000: p.flags.banned000 }
 
         delta := p.pieces
         delta[move.from] = 0
@@ -146,6 +150,7 @@ func (p *Position) MakeMove(move *Move) *Position {
 
         if kind := move.piece.kind(); kind == KING {
                 if move.isCastle() {
+                        flags.irreversible = true
                         switch move.to {
                         case G1:
                                 delta[H1], delta[F1] = 0, Rook(White)
@@ -164,6 +169,7 @@ func (p *Position) MakeMove(move *Move) *Position {
                 flags.banned00[color], flags.banned000[color] = true, true
         } else {
                 if kind == PAWN {
+                        flags.irreversible = true
                         if move.isEnpassant(p.outposts[Pawn(color^1)]) {
                                 //
                                 // Mark the en-passant square.
@@ -190,6 +196,9 @@ func (p *Position) MakeMove(move *Move) *Position {
                         rookSquare := [2]int{ A1, A8 }
                         flags.banned000[color] = delta[rookSquare[color]] != Rook(color)
                 }
+        }
+        if move.captured != 0 {
+                flags.irreversible = true
         }
 
 	position := &Position{

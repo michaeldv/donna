@@ -112,11 +112,11 @@ func (g *Game) Start(color int) *Position {
         g.bestLength = [MaxPly]int{}
         g.killers    = [MaxPly][2]*Move{}
 
-        return NewPosition(g, g.pieces, color, nil)
+        return NewPosition(g, g.pieces, color, Flags{})
 }
 
 func (g *Game) Search(depth int) *Move {
-        g.Analyze(depth, NewPosition(g, g.pieces, White, nil))
+        g.Analyze(depth, NewPosition(g, g.pieces, White, Flags{}))
         return g.bestLine[0][0]
 }
 

@@ -192,7 +192,7 @@ func (e *Evaluator) analyzeKingShield() {
                 // Pass if a) the king is missing, b) the king is on the initial square
                 // or c) the opposite side doesn't have a queen with one major piece.
                 //
-                if e.position.outposts[king].isEmpty() || e.position.pieces[initialKingSquare[color]] == king || !e.strongEnough(color^1) {
+                if e.position.outposts[king].isEmpty() || e.position.pieces[homeKing[color]] == king || !e.strongEnough(color^1) {
                         continue
                 }
                 //

@@ -225,7 +225,7 @@ var maskIsolated = [8]Bitmask{
 	0x2828282828282828, 0x5050505050505050, 0xA0A0A0A0A0A0A0A0, 0x4040404040404040,
 }
 
-var initialKingSquare = [2]int{ E1, E8 }
+var homeKing = [2]int{ E1, E8 }
 
 // Castle squares that should be *empty* in order for catle to be valid.
 var gapKing = [2]Bitmask{
