@@ -176,3 +176,18 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
         Log("End of quiescenceStayPat(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
         return bestScore
 }
+
+func (p *Position) Perft(depth int) (total int64) {
+        if depth == 0 {
+                return 1
+        }
+
+        moves := p.Moves(0)
+        for _, move := range moves {
+                if position := p.MakeMove(move); position != nil {
+                        delta := position.Perft(depth - 1)
+                        total += delta
+                }
+        }
+        return
+}

@@ -6,6 +6,7 @@ package main
 
 import (
         `fmt`
+        `time`
         `github.com/michaeldv/donna`
 )
 
@@ -21,6 +22,8 @@ func repl() {
                 case ``:
                 case `bench`:
                         benchmark()
+                case `perft`:
+                        perft(5)
                 case `exit`, `quit`:
                         return
                 case `help`:
@@ -79,4 +82,23 @@ func benchmark() {
         for i := 0;  i < 3; i++ {
                 game.Think(3, nil)
         }
+}
+
+func perft(depth int) (total int64){
+        p := donna.NewGame().InitialPosition().Start(donna.White)
+
+        start := time.Now()
+        moves := p.Moves(0)
+        for _, move := range moves {
+                if position := p.MakeMove(move); position != nil {
+                        delta := position.Perft(depth - 1)
+                        total += delta
+                        fmt.Printf("%7s - %d\n", move, delta)
+                }
+        }
+        finish := time.Since(start).Seconds()
+        fmt.Printf("\n  Nodes: %d\n", total)
+        fmt.Printf("Elapsed: %.2fs\n", finish)
+        fmt.Printf("Nodes/s: %.2f\n", float64(total) / finish)
+        return
 }
