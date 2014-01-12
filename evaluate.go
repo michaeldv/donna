@@ -98,7 +98,7 @@ func (e *Evaluator) analyzePawnStructure() {
                 var doubled [8]int // Number of doubled pawns in each column.
 
                 pawns := e.position.outposts[pawn[color]]
-                for pawns.isNotEmpty() {
+                for pawns != 0 {
                         square := pawns.firstSet()
                         column := Col(square)
                         //
@@ -110,8 +110,8 @@ func (e *Evaluator) analyzePawnStructure() {
                         // same and adjacent columns; and b) there is no same color
                         // pawns in front of us.
                         //
-                        if (maskPassed[color][square] & e.position.outposts[pawn[color^1]]).isEmpty() &&
-                           (maskInFront[color][square] & e.position.outposts[pawn[color]]).isEmpty() {
+                        if maskPassed[color][square] & e.position.outposts[pawn[color^1]] == 0 &&
+                           maskInFront[color][square] & e.position.outposts[pawn[color]] == 0 {
                                    bonus[color].midgame += bonusPassedPawn[0][flip[color][square]]
                                    bonus[color].endgame += bonusPassedPawn[1][flip[color][square]]
                         }
@@ -119,7 +119,7 @@ func (e *Evaluator) analyzePawnStructure() {
                         // Check if the pawn is isolated, i.e. has no pawns of the
                         // same color on either sides.
                         //
-                        if (maskIsolated[column] & e.position.outposts[pawn[color]]).isEmpty() {
+                        if maskIsolated[column] & e.position.outposts[pawn[color]] == 0 {
                                 penalty[color].midgame += penaltyIsolatedPawn[0][column]
                                 penalty[color].endgame += penaltyIsolatedPawn[1][column]
                         }
@@ -149,7 +149,7 @@ func (e *Evaluator) analyzeRooks() {
 
         for color := White; color <= Black; color++ {
                 rook := Rook(color)
-                if e.position.outposts[rook].isEmpty() {
+                if e.position.outposts[rook] == 0 {
                         continue
                 }
                 //
@@ -163,11 +163,11 @@ func (e *Evaluator) analyzeRooks() {
                 // Bonuses if rooks are on open or semi-open files.
                 //
                 rooks := e.position.outposts[rook]
-                for rooks.isNotEmpty() {
+                for rooks != 0 {
                         square := rooks.firstSet()
                         column := Col(square)
-                        if (e.position.outposts[Pawn(color)] & maskFile[column]).isEmpty() {
-                                if (e.position.outposts[Pawn(color^1)] & maskFile[column]).isEmpty() {
+                        if e.position.outposts[Pawn(color)] & maskFile[column] == 0 {
+                                if e.position.outposts[Pawn(color^1)] & maskFile[column] == 0 {
                                         bonus[color].midgame += rookOnOpen.midgame
                                         bonus[color].endgame += rookOnOpen.endgame
                                 } else {
@@ -192,7 +192,7 @@ func (e *Evaluator) analyzeKingShield() {
                 // Pass if a) the king is missing, b) the king is on the initial square
                 // or c) the opposite side doesn't have a queen with one major piece.
                 //
-                if e.position.outposts[king].isEmpty() || e.position.pieces[homeKing[color]] == king || !e.strongEnough(color^1) {
+                if e.position.outposts[king] == 0 || e.position.pieces[homeKing[color]] == king || !e.strongEnough(color^1) {
                         continue
                 }
                 //

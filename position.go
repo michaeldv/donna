@@ -84,17 +84,12 @@ func (p *Position) updatePieces(updates [64]Piece, squares []int) *Position {
 }
 
 func (p *Position) setupAttacks() *Position {
-        kingSquare := [2]int{ -1, -1 }
-
         board := p.board[2]
-        for board.isNotEmpty() {
+        for board != 0 {
                 square := board.firstSet()
                 piece := p.pieces[square]
                 p.targets[square] = p.Targets(square)
                 p.attacks[piece.color()].combine(p.targets[square])
-                if piece.isKing() {
-                        kingSquare[piece.color()] = square
-                }
                 board.clear(square)
         }
         //
@@ -102,14 +97,16 @@ func (p *Position) setupAttacks() *Position {
         // kings don't stomp on each other. Also, combine attacks bitmask and set the
         // flag is the king is being attacked.
         //
-        p.updateKingTargets(kingSquare)
+        p.updateKingTargets()
         p.attacks[2] = p.attacks[White] | p.attacks[Black]
         p.inCheck = p.isCheck(p.color)
 
         return p
 }
 
-func (p *Position) updateKingTargets(kingSquare [2]int) *Position {
+func (p *Position) updateKingTargets() *Position {
+	kingSquare := [2]int{ p.outposts[King(White)].firstSet(), p.outposts[King(Black)].firstSet() }
+
 	if kingSquare[White] >= 0 && kingSquare[Black] >= 0 {
                 p.targets[kingSquare[White]].exclude(p.targets[kingSquare[Black]])
                 p.targets[kingSquare[Black]].exclude(p.targets[kingSquare[White]])
@@ -228,8 +225,7 @@ func (p *Position) MakeMove(move *Move) *Position {
 }
 
 func (p *Position) isCheck(color int) bool {
-        king := p.outposts[King(color)]
-        return king.intersect(p.attacks[color^1]).isNotEmpty()
+        return p.outposts[King(color)] & p.attacks[color^1] != 0
 }
 
 func (p *Position) isRepetition() bool {
@@ -267,14 +263,14 @@ func (p *Position) isPawnPromotion(piece Piece, target int) bool {
 
 func (p *Position) can00(color int) bool {
         return !p.flags.banned00[color] &&
-               (gapKing[color] & p.board[2]).isEmpty() &&
-               (castleKing[color] & p.attacks[color^1]).isEmpty()
+               (gapKing[color] & p.board[2] == 0) &&
+               (castleKing[color] & p.attacks[color^1] == 0)
 }
 
 func (p *Position) can000(color int) bool {
         return !p.flags.banned000[color] &&
-               (gapQueen[color] & p.board[2]).isEmpty() &&
-               (castleQueen[color] & p.attacks[color^1]).isEmpty()
+               (gapQueen[color] & p.board[2] == 0) &&
+               (castleQueen[color] & p.attacks[color^1] == 0)
 }
 
 // Compute position's polyglot hash.

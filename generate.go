@@ -39,7 +39,7 @@ func (p *Position) Captures(ply int) (moves []*Move) {
 func (p *Position) possibleMoves(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
-        for targets.isNotEmpty() {
+        for targets != 0 {
                 target := targets.firstSet()
                 //
                 // For regular moves each target square represents one possible
@@ -64,7 +64,7 @@ func (p *Position) possibleMoves(square int, piece Piece) (moves []*Move) {
 func (p *Position) possibleCaptures(square int, piece Piece) (moves []*Move) {
         targets := p.targets[square]
 
-        for targets.isNotEmpty() {
+        for targets != 0 {
                 target := targets.firstSet()
                 capture := p.pieces[target]
                 if capture != 0 {
