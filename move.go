@@ -19,12 +19,7 @@ type Move struct {
 }
 
 func NewMove(p *Position, from, to int) *Move {
-        move := new(Move)
-
-        move.from = from
-        move.to = to
-        move.piece = p.pieces[from]
-        move.captured = p.pieces[to]
+        move := &Move{ from: from, to: to, piece: p.pieces[from], captured: p.pieces[to] }
 
         if p.flags.enpassant != 0 && to == p.flags.enpassant {
                 move.captured = Pawn(p.color^1)
@@ -115,29 +110,8 @@ func (m *Move) is(move *Move) bool {
 }
 
 func (m *Move) calculateScore(position *Position) int {
-	var midgame, endgame int
 	square := flip[m.piece.color()][m.to]
-
-	switch m.piece.kind() {
-        case PAWN:
-                midgame += bonusPawn[0][square]
-                endgame += bonusPawn[1][square]
-        case KNIGHT:
-                midgame += bonusKnight[0][square]
-                endgame += bonusKnight[1][square]
-        case BISHOP:
-                midgame += bonusBishop[0][square]
-                endgame += bonusBishop[1][square]
-        case ROOK:
-                midgame += bonusRook[0][square]
-                endgame += bonusRook[1][square]
-        case QUEEN:
-                midgame += bonusQueen[0][square]
-                endgame += bonusQueen[1][square]
-        case KING:
-                midgame += bonusKing[0][square]
-                endgame += bonusKing[1][square]
-        }
+        midgame, endgame := m.piece.bonus(square)
 
 	return (midgame * position.stage + endgame * (256 - position.stage)) / 256
 }
@@ -148,7 +122,7 @@ func (m *Move) calculateScore(position *Position) int {
 // PxN, NxN, BxN, RxN, QxN, KxN             KNIGHT = 2 << 1 // 4
 // PxP, NxP, BxP, RxP, QxP, KxP             PAWN   = 1 << 1 // 2
 func (m *Move) calculateValue() int {
-        if m.captured == 0 || m.captured.kind() == KING {
+        if m.captured == 0 || m.captured.isKing() {
                 return 0
         }
 
@@ -158,16 +132,18 @@ func (m *Move) calculateValue() int {
         return victimAttacker[victim][attacker]
 }
 
-func (m *Move) isKingSideCastle() bool {
-        return m.piece.isKing() && ((m.piece.isWhite() && m.from == E1 && m.to == G1) || (m.piece.isBlack() && m.from == E8 && m.to == G8))
+func (m *Move) is00() bool {
+        return (m.piece == King(White) && m.from == E1 && m.to == G1) ||
+               (m.piece == King(Black) && m.from == E8 && m.to == G8)
 }
 
-func (m *Move) isQueenSideCastle() bool {
-        return m.piece.isKing() && ((m.piece.isWhite() && m.from == E1 && m.to == C1) || (m.piece.isBlack() && m.from == E8 && m.to == C8))
+func (m *Move) is000() bool {
+        return (m.piece == King(White) && m.from == E1 && m.to == C1) ||
+               (m.piece == King(Black) && m.from == E8 && m.to == C8)
 }
 
 func (m *Move) isCastle() bool {
-        return m.isKingSideCastle() || m.isQueenSideCastle()
+        return m.is00() || m.is000()
 }
 
 func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
@@ -213,7 +189,7 @@ func (m *Move) String() string {
                         }
                         return fmt.Sprintf(format, piece, col[0], row[0], capture, col[1], row[1], promoted)
                 }
-        } else if m.isKingSideCastle() {
+        } else if m.is00() {
                 return `0-0`
         } else {
                 return `0-0-0`
