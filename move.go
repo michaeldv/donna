@@ -57,7 +57,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 		case `N`, `n`:
 			piece = Knight(p.color)
 		default:
-			piece = Pawn(p.color)
+			piece = p.pieces[from] // <-- Makes piece character optional.
 		}
                 if (p.pieces[from] != piece) || (p.targets[from] & Bit(to) == 0) {
                         move = nil
