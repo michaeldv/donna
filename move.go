@@ -4,18 +4,22 @@
 
 package donna
 
-import (
-        `fmt`
-        `regexp`
+import (`fmt`; `regexp`)
+
+const (
+        isPromotion = 0x0F
+        isCastle    = 0x10
+        isEnpassant = 0x20
+        isPawnJump  = 0x40
 )
 
 type Move struct {
         from     int
         to       int
         score    int
+        flags    uint8
         piece    Piece
         captured Piece
-        promoted Piece
 }
 
 func NewMove(p *Position, from, to int) *Move {
@@ -96,7 +100,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 }
 
 func (m *Move) promote(kind int) *Move {
-        m.promoted = Piece(kind | m.piece.color())
+        m.flags = uint8(Piece(kind | m.piece.color()))
 
         return m
 }
@@ -104,9 +108,9 @@ func (m *Move) promote(kind int) *Move {
 func (m *Move) is(move *Move) bool {
         return m.from == move.from  &&
                  m.to == move.to    &&
+              m.flags == m.flags    &&
               m.piece == move.piece &&
-           m.captured == m.captured &&
-           m.promoted == m.promoted
+           m.captured == m.captured
 }
 
 func (m *Move) calculateScore(position *Position) int {
@@ -176,7 +180,7 @@ func (m *Move) String() string {
                 if m.captured != 0 {
                         capture = 'x'
                 }
-                piece, promoted := m.piece.String(), m.promoted.String()
+                piece, promoted := m.piece.String(), Piece(m.flags & isPromotion).String()
                 format := `%c%d%c%c%d%s`
 
                 if m.piece.isPawn() { // Skip piece name if it's a pawn.

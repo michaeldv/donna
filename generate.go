@@ -92,7 +92,7 @@ func (p *Position) reorderMoves(moves []*Move, bestMove *Move, goodMove [2]*Move
                         principal = append(principal, move)
                 } else if move.captured != 0 {
                         captures = append(captures, move)
-                } else if move.promoted != 0 {
+                } else if move.flags & isPromotion != 0 {
                         promotions = append(promotions, move)
                 } else if (goodMove[0] != nil && move.is(goodMove[0])) || (goodMove[1] != nil && move.is(goodMove[1])) {
                         killers = append(killers, move)

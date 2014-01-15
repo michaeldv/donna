@@ -181,11 +181,11 @@ func (p *Position) MakeMove(move *Move) *Position {
                                 //
                                 delta[move.to - eight[color]] = 0
 				squares = append(squares, move.to - eight[color])
-                        } else if move.promoted != 0 {
+                        } else if promoted := move.flags & isPromotion; promoted != 0 {
                                 //
                                 // Replace a pawn on 8th rank with the promoted piece.
                                 //
-                                delta[move.to] = move.promoted
+                                delta[move.to] = Piece(promoted)
                         }
                 }
                 if !p.flags.banned00[color] {
