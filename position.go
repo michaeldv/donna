@@ -6,6 +6,9 @@ package donna
 
 import(`bytes`)
 
+var tree [1024]Position
+var node int
+
 type Flags struct {
         enpassant     int       // En-passant square caused by previous move.
         irreversible  bool      // Is this position reversible?
@@ -30,7 +33,8 @@ type Position struct {
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position {
-        p := &Position{ game: game, pieces: pieces, color: color }
+        tree[node] = Position{ game: game, pieces: pieces, color: color }
+        p := &tree[node]
 
         if !p.flags.banned00[White] {
                 p.flags.banned00[White] = p.pieces[E1] != King(White) || p.pieces[H1] != Rook(White)
@@ -206,7 +210,8 @@ func (p *Position) MakeMove(move *Move) *Position {
                 }
         }
 
-	position := &Position{
+	node++
+	tree[node] = Position{
 		game:     p.game,
 		previous: p,
 		board:    p.board,
@@ -217,11 +222,18 @@ func (p *Position) MakeMove(move *Move) *Position {
 		flags:    flags,
 	}
 
+        position := &tree[node]
 	position.updatePieces(delta, squares).setupAttacks()
 	if position.isCheck(color) {
+                node--
 		return nil
 	}
 	return position.computeStage()
+}
+
+func (p *Position) TakeBack(move *Move) *Position {
+        node--
+        return &tree[node]
 }
 
 func (p *Position) isCheck(color int) bool {

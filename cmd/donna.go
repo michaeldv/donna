@@ -93,6 +93,7 @@ func perft(depth int) (total int64){
                 if position := p.MakeMove(move); position != nil {
                         delta := position.Perft(depth - 1)
                         total += delta
+                        position.TakeBack(move)
                         fmt.Printf("%7s - %d\n", move, delta)
                 }
         }

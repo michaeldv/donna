@@ -44,6 +44,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
                         score := -position.search(depth - 1, ply + 1, -beta, -alpha)
+                        position.TakeBack(move)
                         Log("Move %d/%d: %s (%d): score: %d, alpha: %d, beta: %d\n", i+1, len(moves), C(p.color), depth, score, alpha, beta)
 
                         if score >= beta {
@@ -113,6 +114,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
                         if alpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
                                 score = -position.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
                         }
+                        position.TakeBack(move)
 
                         if score >= beta {
                                 return score
@@ -158,6 +160,7 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
                         if quietAlpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
                                 score = -position.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
                         }
+                        position.TakeBack(move)
 
                         if score >= beta {
                                 return score
@@ -187,6 +190,7 @@ func (p *Position) Perft(depth int) (total int64) {
                 if position := p.MakeMove(move); position != nil {
                         delta := position.Perft(depth - 1)
                         total += delta
+                        position.TakeBack(move)
                 }
         }
         return
