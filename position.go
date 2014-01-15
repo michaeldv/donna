@@ -18,10 +18,9 @@ type Flags struct {
 
 type Position struct {
         game      *Game
-        previous  *Position     // Previous position.
         flags     Flags         // Flags set by last move leading to this position.
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
-        targets   [64]Bitmask   // Attack targets for each piece on the board.
+        targets   [64]Bitmask   // Attack targets for pieces on each square of the board.
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
         attacks   [3]Bitmask    // [0] all squares attacked by white, [1] by black, [2] either white or black.
         outposts  [16]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
@@ -213,7 +212,6 @@ func (p *Position) MakeMove(move *Move) *Position {
 	node++
 	tree[node] = Position{
 		game:     p.game,
-		previous: p,
 		board:    p.board,
 		count:    p.count,
 		pieces:   p.pieces,
@@ -245,11 +243,11 @@ func (p *Position) isRepetition() bool {
                 return false
         }
 
-        for prev, reps := p.previous, 1; prev != nil; prev = prev.previous {
-                if prev.flags.irreversible {
+        for reps, prevNode := 1, node - 1; prevNode >= 0; prevNode-- {
+                if tree[prevNode].flags.irreversible {
                         return false
                 }
-                if prev.color == p.color && prev.hash == p.hash {
+                if tree[prevNode].color == p.color && tree[prevNode].hash == p.hash {
                         reps++
                         if reps == 3 {
                                 return true
