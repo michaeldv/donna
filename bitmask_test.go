@@ -138,3 +138,20 @@ func TestBitmask040(t *testing.T) { // Black
         expect(t, forward[6], Bitmask(0x0000404040404040))
         expect(t, forward[7], Bitmask(0x0000808080808080))
 }
+
+func TestBitmask050(t *testing.T) {
+        mask := Bitmask(0x0000000000000000)
+        bit := mask.firstPop()
+        expect(t, bit, -1)
+        expect(t, mask, Bitmask(0x0000000000000000))
+
+        mask = Bitmask(0x0000000000000001)
+        bit = mask.firstPop()
+        expect(t, bit, 0)
+        expect(t, mask, Bitmask(0x0000000000000000))
+
+        mask = Bitmask(0x8000000000000000)
+        bit = mask.firstPop()
+        expect(t, bit, 63)
+        expect(t, mask, Bitmask(0x0000000000000000))
+}

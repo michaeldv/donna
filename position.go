@@ -91,12 +91,10 @@ func (p *Position) updatePieces(updates [64]Piece, squares []int) *Position {
 
 func (p *Position) setupAttacks() *Position {
         board := p.board[2]
-        for board != 0 {
-                square := board.firstSet()
+        for square := board.firstPop(); square >= 0; square = board.firstPop() {
                 piece := p.pieces[square]
                 p.targets[square] = p.Targets(square)
                 p.attacks[piece.color()].combine(p.targets[square])
-                board.clear(square)
         }
         //
         // Now that we have attack targets for both kings adjust them to make sure the
