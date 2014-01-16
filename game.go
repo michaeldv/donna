@@ -108,6 +108,8 @@ func (g *Game) Analyze(depth int, position *Position) string {
 }
 
 func (g *Game) Start(color int) *Position {
+        tree = [1024]Position{}
+        node = 0
         g.bestLine   = [MaxPly][MaxPly]*Move{}
         g.bestLength = [MaxPly]int{}
         g.killers    = [MaxPly][2]*Move{}

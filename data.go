@@ -37,6 +37,19 @@ var deBrujin = [64]int{
 	13, 18,  8, 12,  7,  6,  5, 63,
 }
 
+var castleKingside = [2]uint8{ 1, 4 }
+var castleQueenside = [2]uint8{ 2, 8 }
+var castleRights = [64]uint8{
+	13, 15, 15, 15, 12, 15, 15, 14, // A1 -- H1
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	 7, 15, 15, 15,  3, 15, 15, 11, // A8 -- H8
+}
+
 // Piece/location bonus points from the Black's point of view.
 var bonusPawn = [2][64]int{
 	{

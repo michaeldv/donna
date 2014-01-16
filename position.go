@@ -12,8 +12,6 @@ var node int
 type Flags struct {
         enpassant     int       // En-passant square caused by previous move.
         irreversible  bool      // Is this position reversible?
-        banned00      [2]bool   // Is king-side castle allowed?
-        banned000     [2]bool   // Is queen-side castle allowed?
 }
 
 type Position struct {
@@ -29,23 +27,28 @@ type Position struct {
         stage     int           // Game stage (256 in the initial position).
         hash      uint64        // Polyglot hash value.
         inCheck   bool          // Is our king under attack?
+        castles   uint8         // Castle rights mask.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position {
         tree[node] = Position{ game: game, pieces: pieces, color: color }
         p := &tree[node]
 
-        if !p.flags.banned00[White] {
-                p.flags.banned00[White] = p.pieces[E1] != King(White) || p.pieces[H1] != Rook(White)
+        p.castles = castleKingside[White] | castleQueenside[White] |
+                    castleKingside[Black] | castleQueenside[Black]
+
+        if p.pieces[E1] != King(White) || p.pieces[H1] != Rook(White) {
+                p.castles &= ^castleKingside[White]
         }
-        if !p.flags.banned00[Black] {
-                p.flags.banned00[Black] = p.pieces[E8] != King(Black) || p.pieces[H8] != Rook(Black)
+        if p.pieces[E1] != King(White) || p.pieces[A1] != Rook(White) {
+                p.castles &= ^castleQueenside[White]
         }
-        if !p.flags.banned000[White] {
-                p.flags.banned000[White] = p.pieces[E1] != King(White) || p.pieces[A1] != Rook(White)
+
+        if p.pieces[E8] != King(Black) || p.pieces[H8] != Rook(Black) {
+                p.castles &= ^castleKingside[Black]
         }
-        if !p.flags.banned000[Black] {
-                p.flags.banned000[Black] = p.pieces[E8] != King(Black) || p.pieces[A8] != Rook(Black)
+        if p.pieces[E8] != King(Black) || p.pieces[A8] != Rook(Black) {
+                p.castles &= ^castleQueenside[Black]
         }
 
         return p.setupPieces().setupAttacks().computeStage()
@@ -141,12 +144,16 @@ func (p *Position) computeStage() *Position {
 func (p *Position) MakeMove(move *Move) *Position {
         eight := [2]int{ 8, -8 }
         color := move.piece.color()
-        flags := Flags{ banned00: p.flags.banned00, banned000: p.flags.banned000 }
+        flags := Flags{}
 
         delta := p.pieces
         delta[move.from] = 0
         delta[move.to] = move.piece
         squares := []int{ move.from, move.to }
+
+        // Castle rights for current node are based on the castle rights from
+        // the previous node.
+        castles := tree[node].castles & castleRights[move.from] & castleRights[move.to]
 
         if kind := move.piece.kind(); kind == KING {
                 if move.isCastle() {
@@ -166,7 +173,8 @@ func (p *Position) MakeMove(move *Move) *Position {
                                 squares = append(squares, A8, D8)
                         }
                 }
-                flags.banned00[color], flags.banned000[color] = true, true
+                castles &= ^castleKingside[color]
+                castles &= ^castleQueenside[color]
         } else {
                 if kind == PAWN {
                         flags.irreversible = true
@@ -188,24 +196,32 @@ func (p *Position) MakeMove(move *Move) *Position {
                                 delta[move.to] = Piece(promoted)
                         }
                 }
-                if !p.flags.banned00[color] {
+                if p.castles & castleKingside[color] != 0 {
                         rookSquare := [2]int{ H1, H8 }
-                        flags.banned00[color] = delta[rookSquare[color]] != Rook(color)
+                        if delta[rookSquare[color]] != Rook(color) {
+                                castles &= ^castleKingside[color]
+                        }
                 }
-                if !p.flags.banned000[color] {
+                if p.castles & castleQueenside[color] != 0 {
                         rookSquare := [2]int{ A1, A8 }
-                        flags.banned000[color] = delta[rookSquare[color]] != Rook(color)
+                        if delta[rookSquare[color]] != Rook(color) {
+                                castles &= ^castleQueenside[color]
+                        }
                 }
         }
         if move.captured != 0 {
                 flags.irreversible = true
-                if !p.flags.banned00[color^1] {
+                if p.castles & castleKingside[color^1] != 0 {
                         rookSquare := [2]int{ H1, H8 }
-                        flags.banned00[color^1] = delta[rookSquare[color^1]] != Rook(color^1)
+                        if delta[rookSquare[color^1]] != Rook(color^1) {
+                                castles &= ^castleKingside[color^1]
+                        }
                 }
-                if !p.flags.banned000[color^1] {
+                if p.castles & castleQueenside[color^1] != 0 {
                         rookSquare := [2]int{ A1, A8 }
-                        flags.banned000[color^1] = delta[rookSquare[color^1]] != Rook(color^1)
+                        if delta[rookSquare[color]] != Rook(color^1) {
+                                castles &= ^castleQueenside[color^1]
+                        }
                 }
         }
 
@@ -218,6 +234,7 @@ func (p *Position) MakeMove(move *Move) *Position {
 		outposts: p.outposts,
 		color:    color^1,
 		flags:    flags,
+		castles:  castles,
 	}
 
         position := &tree[node]
@@ -272,13 +289,13 @@ func (p *Position) isPawnPromotion(piece Piece, target int) bool {
 }
 
 func (p *Position) can00(color int) bool {
-        return !p.flags.banned00[color] &&
+        return p.castles & castleKingside[color] != 0 &&
                (gapKing[color] & p.board[2] == 0) &&
                (castleKing[color] & p.attacks[color^1] == 0)
 }
 
 func (p *Position) can000(color int) bool {
-        return !p.flags.banned000[color] &&
+        return p.castles & castleQueenside[color] != 0 &&
                (gapQueen[color] & p.board[2] == 0) &&
                (castleQueen[color] & p.attacks[color^1] == 0)
 }
@@ -291,16 +308,16 @@ func (p *Position) polyglot() (key uint64) {
                 }
         }
 
-	if !p.flags.banned00[White] {
+	if p.castles & castleKingside[White] != 0 {
                 key ^= polyglotRandom[768]
 	}
-	if !p.flags.banned000[White] {
+	if p.castles & castleQueenside[White] != 0 {
                 key ^= polyglotRandom[769]
 	}
-	if !p.flags.banned00[Black] {
+	if p.castles & castleKingside[Black] != 0 {
                 key ^= polyglotRandom[770]
 	}
-	if !p.flags.banned000[Black] {
+	if p.castles & castleQueenside[Black] != 0 {
                 key ^= polyglotRandom[771]
 	}
         if p.flags.enpassant != 0 {
