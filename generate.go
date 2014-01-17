@@ -6,11 +6,45 @@ package donna
 
 import(`sort`)
 
+type MoveList struct {
+        position  *Position
+        moves     [256]Move
+        ply       int
+        head      int
+        tail      int
+}
+
+var moveList [MaxPly]MoveList
+
+func (p *Position) startMoveGen(ply int) (ml *MoveList) {
+        ml = &moveList[ply]
+        ml.position = p
+        ml.moves = [256]Move{}
+        ml.ply = ply
+        ml.head, ml.tail = 0, 0
+        return
+}
+
+func (ml *MoveList) nextMove() (move *Move) {
+        if ml.head == ml.tail {
+                return nil
+        }
+        return &ml.moves[ml.head]
+}
+
+func (ml *MoveList) GenerateMoves() *MoveList {
+        return ml
+}
+
+func (ml *MoveList) GenerateCaptures() *MoveList {
+        return ml
+}
+
 // All moves.
 func (p *Position) Moves(ply int) (moves []*Move) {
-        for i, piece := range p.pieces {
+        for square, piece := range p.pieces {
                 if piece != 0 && piece.color() == p.color {
-                        moves = append(moves, p.possibleMoves(i, piece)...)
+                        moves = append(moves, p.possibleMoves(square, piece)...)
                 }
         }
         moves = p.reorderMoves(moves, p.game.bestLine[0][ply], p.game.killers[ply])
