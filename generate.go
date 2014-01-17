@@ -29,14 +29,66 @@ func (ml *MoveList) nextMove() (move *Move) {
         if ml.head == ml.tail {
                 return nil
         }
-        return &ml.moves[ml.head]
+        move = &ml.moves[ml.head]
+        ml.head++
+        return
 }
 
 func (ml *MoveList) GenerateMoves() *MoveList {
+        for square, piece := range ml.position.pieces {
+                if piece != 0 && piece.color() == ml.position.color {
+                        ml.possibleMoves(square, piece)
+                }
+        }
+        return ml
+}
+
+func (ml *MoveList) possibleMoves(square int, piece Piece) *MoveList {
+        targets := ml.position.targets[square]
+
+        for target := targets.firstPop(); target >= 0; target = targets.firstPop() {
+                if !ml.position.isPawnPromotion(piece, target) {
+                        ml.moves[ml.tail].add(ml.position, square, target)
+                        ml.tail++
+                } else {
+                        for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
+                                ml.moves[ml.tail].add(ml.position, square, target).promote(name)
+                                ml.tail++
+                        }
+                }
+        }
         return ml
 }
 
 func (ml *MoveList) GenerateCaptures() *MoveList {
+        for square, piece := range ml.position.pieces {
+                if piece != 0 && piece.color() == ml.position.color {
+                        ml.possibleCaptures(square, piece)
+                }
+        }
+        return ml
+}
+
+func (ml *MoveList) possibleCaptures(square int, piece Piece) *MoveList {
+        targets := ml.position.targets[square]
+
+        for target := targets.firstPop(); target >= 0; target = targets.firstPop() {
+                capture := ml.position.pieces[target]
+                if capture != 0 {
+                        if !ml.position.isPawnPromotion(piece, target) {
+                                ml.moves[ml.tail].add(ml.position, square, target)
+                                ml.tail++
+                        } else {
+                                for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
+                                        ml.moves[ml.tail].add(ml.position, square, target).promote(name)
+                                        ml.tail++
+                                }
+                        }
+                } else if ml.position.flags.enpassant != 0 && target == ml.position.flags.enpassant {
+                        ml.moves[ml.tail].add(ml.position, square, target)
+                        ml.tail++
+                }
+        }
         return ml
 }
 

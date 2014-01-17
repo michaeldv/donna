@@ -113,6 +113,25 @@ func (m *Move) is(move *Move) bool {
            m.captured == m.captured
 }
 
+func (m *Move) add(p *Position, from, to int) *Move {
+        m.from     = from
+        m.to       = to
+        m.piece    = p.pieces[from]
+        m.captured = p.pieces[to]
+
+        if p.flags.enpassant != 0 && to == p.flags.enpassant {
+                m.captured = Pawn(p.color^1)
+        }
+
+        if m.captured == 0 {
+                m.score = m.calculateScore(p)
+        } else {
+                m.score = m.calculateValue()
+        }
+
+        return m
+}
+
 func (m *Move) calculateScore(position *Position) int {
 	square := flip[m.piece.color()][m.to]
         midgame, endgame := m.piece.bonus(square)
