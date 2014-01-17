@@ -88,8 +88,8 @@ func perft(depth int) (total int64){
         p := donna.NewGame().InitialPosition().Start(donna.White)
 
         start := time.Now()
-        moves := p.Moves(0)
-        for _, move := range moves {
+        gen := p.StartMoveGen(depth).GenerateMoves()
+        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         delta := position.Perft(depth - 1)
                         total += delta

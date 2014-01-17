@@ -39,9 +39,9 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                 }
         }
 
-        gen := p.startMoveGen(ply).GenerateMoves()
+        gen := p.StartMoveGen(ply).GenerateMoves()
         movesMade := 0
-        for move := gen.nextMove(); move != nil; move = gen.nextMove() {
+        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
                         score := -position.search(depth - 1, ply + 1, -beta, -alpha)
@@ -105,9 +105,9 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         score, bestScore := 0, -Checkmate
         quietAlpha, quietBeta := alpha, beta
 
-        gen := p.startMoveGen(ply).GenerateMoves()
+        gen := p.StartMoveGen(ply).GenerateMoves()
         movesMade := 0
-        for move := gen.nextMove(); move != nil; move = gen.nextMove() {
+        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
                         Log("%d: evasion %s for %s\n", movesMade, move, C(move.piece.color()))
@@ -153,9 +153,9 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
                 quietAlpha = score
         }
 
-        gen := p.startMoveGen(ply).GenerateCaptures() // TODO: followed by quiet checks.
+        gen := p.StartMoveGen(ply).GenerateCaptures() // TODO: followed by quiet checks.
         movesMade := 0
-        for move := gen.nextMove(); move != nil; move = gen.nextMove() {
+        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
                         Log("%d: capture %s for %s\n", movesMade, move, C(move.piece.color()))
@@ -189,8 +189,8 @@ func (p *Position) Perft(depth int) (total int64) {
                 return 1
         }
 
-        moves := p.Moves(0)
-        for _, move := range moves {
+        gen := p.StartMoveGen(depth).GenerateMoves()
+        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         delta := position.Perft(depth - 1)
                         total += delta

@@ -16,7 +16,7 @@ type MoveList struct {
 
 var moveList [MaxPly]MoveList
 
-func (p *Position) startMoveGen(ply int) (ml *MoveList) {
+func (p *Position) StartMoveGen(ply int) (ml *MoveList) {
         ml = &moveList[ply]
         ml.position = p
         ml.moves = [256]Move{}
@@ -25,7 +25,7 @@ func (p *Position) startMoveGen(ply int) (ml *MoveList) {
         return
 }
 
-func (ml *MoveList) nextMove() (move *Move) {
+func (ml *MoveList) NextMove() (move *Move) {
         if ml.head == ml.tail {
                 return nil
         }
