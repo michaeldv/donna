@@ -29,10 +29,10 @@ func NewBook(fileName string) *Book {
         return book
 }
 
-func (b *Book) pickMove(position *Position) (move *Move) {
+func (b *Book) pickMove(position *Position) (move Move) {
         entries := b.lookup(position)
         if len(entries) == 0 {
-                return nil // TODO: set the "useless book" flag after a few misses.
+                return 0 // TODO: set the "useless book" flag after a few misses.
         }
 
         return b.move(position, entries[Random(len(entries))])
@@ -78,7 +78,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
         return
 }
 
-func (b *Book) move(p *Position, entry Entry) (move *Move) {
+func (b *Book) move(p *Position, entry Entry) (move Move) {
         from := Square(entry.fromRow(), entry.fromCol())
         to   := Square(entry.toRow(), entry.toCol())
         //

@@ -61,8 +61,8 @@ func (m Move) izPawnJump() bool {
 }
 
 func (m Move) promote(kind int) Move {
-        piece := Piece(kind | move.color())
-        return m | (piece << 24)
+        piece := Piece(kind | m.color())
+        return m | Move(int(piece) << 24)
 }
 
 func NewMove(p *Position, from, to int) (move Move) {
@@ -72,7 +72,7 @@ func NewMove(p *Position, from, to int) (move Move) {
                 capture = Pawn(piece.color()^1)
         }
 
-        move = Move(from | (to << 8) | (piece << 16) | (capture << 20))
+        move = Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
 
         return
 }
@@ -140,8 +140,8 @@ func NewMoveFromString(e2e4 string, p *Position) (move Move) {
 }
 
 func (m Move) calculateScore(position *Position) int {
-	square := flip[m.color()][m.to]
-        midgame, endgame := m.piece.bonus(square)
+	square := flip[m.color()][m.to()]
+        midgame, endgame := m.piece().bonus(square)
 
 	return (midgame * position.stage + endgame * (256 - position.stage)) / 256
 }
@@ -200,6 +200,7 @@ func (m Move) isEnpassantCapture(enpassant int) bool {
 
 func (m Move) String() string {
         from, to, piece, capture := m.split()
+        promo := m.promo()
 
         if !m.isCastle() {
                 col := [2]int{ Col(from) + 'a', Col(to) + 'a' }
@@ -209,9 +210,8 @@ func (m Move) String() string {
                 if capture != 0 {
                         sign = 'x'
                 }
-                piece, promo := piece.String(), m.promo().String()
-                format := `%c%d%c%c%d%s`
 
+                format := `%c%d%c%c%d%s`
                 if piece.isPawn() { // Skip piece name if it's a pawn.
                         return fmt.Sprintf(format, col[0], row[0], sign, col[1], row[1], promo)
                 } else {

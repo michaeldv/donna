@@ -139,24 +139,25 @@ func (p *Position) computeStage() *Position {
         return p
 }
 
-func (p *Position) MakeMove(move *Move) *Position {
+func (p *Position) MakeMove(move Move) *Position {
         eight := [2]int{ 8, -8 }
-        color := move.piece.color()
+        color := move.color()
         flags := Flags{}
 
+        from, to, piece, capture := move.split()
         delta := p.pieces
-        delta[move.from] = 0
-        delta[move.to] = move.piece
-        squares := []int{ move.from, move.to }
+        delta[from] = 0
+        delta[to] = piece
+        squares := []int{ from, to }
 
         // Castle rights for current node are based on the castle rights from
         // the previous node.
-        castles := tree[node].castles & castleRights[move.from] & castleRights[move.to]
+        castles := tree[node].castles & castleRights[from] & castleRights[to]
 
-        if kind := move.piece.kind(); kind == KING {
+        if kind := piece.kind(); kind == KING {
                 if move.isCastle() {
                         flags.irreversible = true
-                        switch move.to {
+                        switch to {
                         case G1:
                                 delta[H1], delta[F1] = 0, Rook(White)
                                 squares = append(squares, H1, F1)
@@ -180,18 +181,18 @@ func (p *Position) MakeMove(move *Move) *Position {
                                 //
                                 // Mark the en-passant square.
                                 //
-                                flags.enpassant = move.from + eight[color]
+                                flags.enpassant = from + eight[color]
                         } else if move.isEnpassantCapture(p.flags.enpassant) {
                                 //
                                 // Take out the en-passant pawn and decrement opponent's pawn count.
                                 //
-                                delta[move.to - eight[color]] = 0
-				squares = append(squares, move.to - eight[color])
-                        } else if promoted := move.flags & isPromotion; promoted != 0 {
+                                delta[to - eight[color]] = 0
+				squares = append(squares, to - eight[color])
+                        } else if promo := move.promo(); promo != 0 {
                                 //
                                 // Replace a pawn on 8th rank with the promoted piece.
                                 //
-                                delta[move.to] = Piece(promoted)
+                                delta[to] = promo
                         }
                 }
                 if p.castles & castleKingside[color] != 0 {
@@ -207,7 +208,7 @@ func (p *Position) MakeMove(move *Move) *Position {
                         }
                 }
         }
-        if move.captured != 0 {
+        if capture != 0 {
                 flags.irreversible = true
                 if p.castles & castleKingside[color^1] != 0 {
                         rookSquare := [2]int{ H1, H8 }
@@ -244,7 +245,7 @@ func (p *Position) MakeMove(move *Move) *Position {
 	return position.computeStage()
 }
 
-func (p *Position) TakeBack(move *Move) *Position {
+func (p *Position) TakeBack(move Move) *Position {
         node--
         return &tree[node]
 }
@@ -273,7 +274,7 @@ func (p *Position) isRepetition() bool {
         return false
 }
 
-func (p *Position) saveBest(ply int, move *Move) {
+func (p *Position) saveBest(ply int, move Move) {
         p.game.bestLine[ply][ply] = move
         p.game.bestLength[ply] = ply + 1
         for i := ply + 1; i < p.game.bestLength[ply + 1]; i++ {

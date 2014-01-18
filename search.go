@@ -41,7 +41,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 
         gen := p.StartMoveGen(ply).GenerateMoves()
         movesMade := 0
-        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
                         score := -position.search(depth - 1, ply + 1, -beta, -alpha)
@@ -49,7 +49,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                         Log("Move %d: %s (%d): score: %d, alpha: %d, beta: %d\n", movesMade, C(p.color), depth, score, alpha, beta)
 
                         if score >= beta {
-                                if !p.inCheck && move.captured == 0 && (p.game.killers[ply][0] == nil || !move.is(p.game.killers[ply][0])) {
+                                if !p.inCheck && move.capture() == 0 && move != p.game.killers[ply][0] {
                                         p.game.killers[ply][1] = p.game.killers[ply][0]
                                         p.game.killers[ply][0] = move
                                 }
@@ -107,10 +107,10 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
 
         gen := p.StartMoveGen(ply).GenerateMoves()
         movesMade := 0
-        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
-                        Log("%d: evasion %s for %s\n", movesMade, move, C(move.piece.color()))
+                        Log("%d: evasion %s for %s\n", movesMade, move, C(move.color()))
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                         if alpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
@@ -155,10 +155,10 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
 
         gen := p.StartMoveGen(ply).GenerateCaptures() // TODO: followed by quiet checks.
         movesMade := 0
-        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
-                        Log("%d: capture %s for %s\n", movesMade, move, C(move.piece.color()))
+                        Log("%d: capture %s for %s\n", movesMade, move, C(move.color()))
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                         if quietAlpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
@@ -190,7 +190,7 @@ func (p *Position) Perft(depth int) (total int64) {
         }
 
         gen := p.StartMoveGen(depth).GenerateMoves()
-        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         delta := position.Perft(depth - 1)
                         total += delta

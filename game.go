@@ -15,8 +15,8 @@ type Game struct {
 	pieces	     [64]Piece
         nodes        int
         qnodes       int
-        killers      [MaxPly][2]*Move
-        bestLine     [MaxPly][MaxPly]*Move // Assuming max depth = 4 which makes it 8 plies.
+        killers      [MaxPly][2]Move
+        bestLine     [MaxPly][MaxPly]Move // Assuming max depth = 4 which makes it 8 plies.
         bestLength   [MaxPly]int
 }
 
@@ -72,13 +72,13 @@ func (g *Game) InitialPosition() *Game {
                        `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 }
 
-func (g *Game) Think(maxDepth int, position *Position) *Move {
+func (g *Game) Think(maxDepth int, position *Position) Move {
         book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
         if position == nil {
                 position = g.Start(White)
         }
         move := book.pickMove(position)
-        if move != nil {
+        if move != 0 {
                 fmt.Printf("Book move: %s\n", move)
                 return move
         }
@@ -110,14 +110,14 @@ func (g *Game) Analyze(depth int, position *Position) string {
 func (g *Game) Start(color int) *Position {
         tree = [1024]Position{}
         node = 0
-        g.bestLine   = [MaxPly][MaxPly]*Move{}
+        g.bestLine   = [MaxPly][MaxPly]Move{}
         g.bestLength = [MaxPly]int{}
-        g.killers    = [MaxPly][2]*Move{}
+        g.killers    = [MaxPly][2]Move{}
 
         return NewPosition(g, g.pieces, color, Flags{})
 }
 
-func (g *Game) Search(depth int) *Move {
+func (g *Game) Search(depth int) Move {
         g.Analyze(depth, NewPosition(g, g.pieces, White, Flags{}))
         return g.bestLine[0][0]
 }
