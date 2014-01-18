@@ -98,7 +98,8 @@ func (e *Evaluator) analyzePawnStructure() {
                 var doubled [8]int // Number of doubled pawns in each column.
 
                 pawns := e.position.outposts[pawn[color]]
-                for square := pawns.pop(); square >= 0; square = pawns.pop() {
+                for pawns != 0 {
+                        square := pawns.pop()
                         column := Col(square)
                         //
                         // count doubled pawns in the column as they carry a penalty.
@@ -161,7 +162,8 @@ func (e *Evaluator) analyzeRooks() {
                 // Bonuses if rooks are on open or semi-open files.
                 //
                 rooks := e.position.outposts[rook]
-                for square := rooks.pop(); square >= 0; square = rooks.pop() {
+                for rooks != 0 {
+                        square := rooks.pop()
                         column := Col(square)
                         if e.position.outposts[Pawn(color)] & maskFile[column] == 0 {
                                 if e.position.outposts[Pawn(color^1)] & maskFile[column] == 0 {

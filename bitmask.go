@@ -28,17 +28,19 @@ func (b Bitmask) isClear(position int) bool {
 }
 
 
+// Finds least significant bit set (LSB) in non-zero bitmask. Returns
+// an integer in 0..63 range.
 func (b Bitmask) first() int {
 	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
+// Finds *and clears* least significant bit set (LSB) in non-zero
+// bitmask. Returns an integer in 0..63 range.
 func (b *Bitmask) pop() int {
-        if *b == 0 {
-                return -1
-        }
-        bit := deBruijn[((*b ^ (*b - 1)) * 0x03F79D71B4CB0A89) >> 58]
-        *b &= (*b - 1)
-        return bit
+        magic := (*b - 1)
+        index := deBruijn[((*b ^ magic) * 0x03F79D71B4CB0A89) >> 58]
+        *b &= magic
+        return index
 }
 
 // Returns number of bits set.
