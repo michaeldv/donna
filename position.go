@@ -156,7 +156,7 @@ func (p *Position) MakeMove(move Move) *Position {
         castles := tree[node].castles & castleRights[from] & castleRights[to]
 
         if kind := piece.kind(); kind == KING {
-                if move.isCastle() {
+                if move.izCastle() {
                         flags.irreversible = true
                         switch to {
                         case G1:

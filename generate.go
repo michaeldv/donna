@@ -148,7 +148,11 @@ func (ml *MoveList) kingMoves(color int) *MoveList {
                 targets := ml.position.targets[square]
                 for targets != 0 {
                         target := targets.pop()
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+                        move := NewMove(ml.position, square, target)
+                        if square == homeKing[color] && Abs(square - target) == 2 {
+                                move = move.castle()
+                        }
+                        ml.moves[ml.tail].move = move
                         ml.tail++
                 }
         }

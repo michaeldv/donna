@@ -7,9 +7,9 @@ package donna
 import (`fmt`; `regexp`)
 
 const (
-        isCastle    = 1
-        isEnpassant = 2
-        isPawnJump  = 4
+        isCastle    = 0x10000000
+        isEnpassant = 0x20000000
+        isPawnJump  = 0x40000000
 )
 
 // Bits 00:00:00:FF => Dource square (0 .. 63).
@@ -48,22 +48,35 @@ func (m Move) promo() Piece {
         return Piece((m >> 24) & 0x0F)
 }
 
-func (m Move) izCastle() bool {
-        return (m >> 28) & isCastle != 0
-}
-
-func (m Move) izEnpassant() bool {
-        return (m >> 28) & isEnpassant != 0
-}
-
-func (m Move) izPawnJump() bool {
-        return (m >> 28) & isPawnJump != 0
-}
-
 func (m Move) promote(kind int) Move {
         piece := Piece(kind | m.color())
         return m | Move(int(piece) << 24)
 }
+
+func (m Move) izCastle() bool {
+        return m & isCastle != 0
+}
+
+func (m Move) castle() Move {
+        return m | isCastle
+}
+
+func (m Move) izEnpassant() bool {
+        return m & isEnpassant != 0
+}
+
+func (m Move) enpassant() Move {
+        return m | isEnpassant
+}
+
+func (m Move) izPawnJump() bool {
+        return m & isPawnJump != 0
+}
+
+func (m Move) pawnJump() Move {
+        return m | isPawnJump
+}
+
 
 func NewMove(p *Position, from, to int) (move Move) {
         piece, capture := p.pieces[from], p.pieces[to]
