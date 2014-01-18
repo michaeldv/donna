@@ -12,8 +12,8 @@ import (
 
 func repl() {
         var game *donna.Game
-        var move *donna.Move
         var position *donna.Position
+        var move donna.Move
 
         for command := ``; ; command = `` {
                 fmt.Print(`donna> `)
@@ -46,7 +46,7 @@ func repl() {
                                 position = game.Start(donna.White)
                         }
                         move = donna.NewMoveFromString(command, position)
-                        if move != nil {
+                        if move != 0 {
                                 position = position.MakeMove(move)
                                 fmt.Printf("%s\n", position)
                                 move = game.Think(3, position)
@@ -89,7 +89,7 @@ func perft(depth int) (total int64){
 
         start := time.Now()
         gen := p.StartMoveGen(depth).GenerateMoves()
-        for move := gen.NextMove(); move != nil; move = gen.NextMove() {
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         delta := position.Perft(depth - 1)
                         total += delta
