@@ -6,12 +6,26 @@ package donna
 
 import(`sort`)
 
+const (
+        stepPrincipal = iota
+        stepCaptures
+        stepPromotions
+        stepKillers
+        stepRemaining
+)
+
+type MoveEx struct {
+        move   Move
+        score  int
+}
+
 type MoveList struct {
         position  *Position
-        moves     [256]Move
+        moves     [256]MoveEx
         ply       int
         head      int
         tail      int
+        step      int
 }
 
 var moveList [MaxPly]MoveList

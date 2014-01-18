@@ -7,38 +7,78 @@ package donna
 import (`fmt`; `regexp`)
 
 const (
-        isPromotion = 0x0F
-        isCastle    = 0x10
-        isEnpassant = 0x20
-        isPawnJump  = 0x40
+        isCastle    = 1
+        isEnpassant = 2
+        isPawnJump  = 4
 )
 
-type Move struct {
-        from     int
-        to       int
-        score    int
-        flags    uint8
-        piece    Piece
-        captured Piece
+// Bits 00:00:00:FF => Dource square (0 .. 63).
+// Bits 00:00:FF:00 => Destination square (0 .. 63).
+// Bits 00:0F:00:00 => Piece making the move.
+// Bits 00:F0:00:00 => Captured piece if any.
+// Bits 0F:00:00:00 => Promoted piece if any.
+// Bits F0:00:00:00 => Castle, en-passant, or pawn jump flags.
+type Move uint32
+
+func (m Move) from() int {
+        return int(m & 0xFF)
 }
 
-func NewMove(p *Position, from, to int) *Move {
-        move := &Move{ from: from, to: to, piece: p.pieces[from], captured: p.pieces[to] }
+func (m Move) to() int {
+        return int((m >> 8) & 0xFF)
+}
+
+func (m Move) piece() Piece {
+        return Piece((m >> 16) & 0x0F)
+}
+
+func (m Move) color() int {
+        return int((m >> 16) & 1)
+}
+
+func (m Move) capture() Piece {
+        return Piece((m >> 20) & 0x0F)
+}
+
+func (m Move) split() (from, to int, piece, capture Piece) {
+        return int(m & 0xFF), int((m >> 8) & 0xFF), Piece((m >> 16) & 0x0F), Piece((m >> 20) & 0x0F)
+}
+
+func (m Move) promo() Piece {
+        return Piece((m >> 24) & 0x0F)
+}
+
+func (m Move) izCastle() bool {
+        return (m >> 28) & isCastle != 0
+}
+
+func (m Move) izEnpassant() bool {
+        return (m >> 28) & isEnpassant != 0
+}
+
+func (m Move) izPawnJump() bool {
+        return (m >> 28) & isPawnJump != 0
+}
+
+func (m Move) promote(kind int) Move {
+        piece := Piece(kind | move.color())
+        return m | (piece << 24)
+}
+
+func NewMove(p *Position, from, to int) (move Move) {
+        piece, capture := p.pieces[from], p.pieces[to]
 
         if p.flags.enpassant != 0 && to == p.flags.enpassant {
-                move.captured = Pawn(p.color^1)
+                capture = Pawn(piece.color()^1)
         }
 
-        if move.captured == 0 {
-                move.score = move.calculateScore(p)
-        } else {
-                move.score = move.calculateValue()
-        }
+        move = Move(from | (to << 8) | (piece << 16) | (capture << 20))
 
-        return move
+        return
 }
 
-func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
+
+func NewMoveFromString(e2e4 string, p *Position) (move Move) {
 	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
 	arr := re.FindStringSubmatch(e2e4)
 
@@ -64,7 +104,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
 			piece = p.pieces[from] // <-- Makes piece character optional.
 		}
                 if (p.pieces[from] != piece) || (p.targets[from] & Bit(to) == 0) {
-                        move = nil
+                        move = 0 // Invalid move.
                 } else {
                         move = NewMove(p, from, to)
                         if len(promo) > 0 {
@@ -78,7 +118,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                                 case `N`, `n`:
                                         move.promote(KNIGHT)
                                 default:
-                                        move = nil
+                                        move = 0
                                 }
                         }
                 }
@@ -93,47 +133,14 @@ func NewMoveFromString(e2e4 string, p *Position) (move *Move) {
                 }
                 move = NewMove(p, from, to)
                 if !move.isCastle() {
-                        move = nil
+                        move = 0
                 }
 	}
 	return
 }
 
-func (m *Move) promote(kind int) *Move {
-        m.flags = uint8(Piece(kind | m.piece.color()))
-
-        return m
-}
-
-func (m *Move) is(move *Move) bool {
-        return m.from == move.from  &&
-                 m.to == move.to    &&
-              m.flags == m.flags    &&
-              m.piece == move.piece &&
-           m.captured == m.captured
-}
-
-func (m *Move) add(p *Position, from, to int) *Move {
-        m.from     = from
-        m.to       = to
-        m.piece    = p.pieces[from]
-        m.captured = p.pieces[to]
-
-        if p.flags.enpassant != 0 && to == p.flags.enpassant {
-                m.captured = Pawn(p.color^1)
-        }
-
-        if m.captured == 0 {
-                m.score = m.calculateScore(p)
-        } else {
-                m.score = m.calculateValue()
-        }
-
-        return m
-}
-
-func (m *Move) calculateScore(position *Position) int {
-	square := flip[m.piece.color()][m.to]
+func (m Move) calculateScore(position *Position) int {
+	square := flip[m.color()][m.to]
         midgame, endgame := m.piece.bonus(square)
 
 	return (midgame * position.stage + endgame * (256 - position.stage)) / 256
@@ -144,73 +151,76 @@ func (m *Move) calculateScore(position *Position) int {
 // PxB, NxB, BxB, RxB, QxB, KxB             BISHOP = 3 << 1 // 6
 // PxN, NxN, BxN, RxN, QxN, KxN             KNIGHT = 2 << 1 // 4
 // PxP, NxP, BxP, RxP, QxP, KxP             PAWN   = 1 << 1 // 2
-func (m *Move) calculateValue() int {
-        if m.captured == 0 || m.captured.isKing() {
+func (m Move) calculateValue() int {
+        capture := m.capture()
+        if capture == 0 || capture.isKing() {
                 return 0
         }
 
-        victim := (QUEEN - m.captured.kind()) / PAWN
-        attacker := m.piece.kind() / PAWN - 1
+        victim := (QUEEN - capture.kind()) / PAWN
+        attacker := m.piece().kind() / PAWN - 1
 
         return victimAttacker[victim][attacker]
 }
 
-func (m *Move) is00() bool {
-        return (m.piece == King(White) && m.from == E1 && m.to == G1) ||
-               (m.piece == King(Black) && m.from == E8 && m.to == G8)
+func (m Move) is00() bool {
+        from, to, piece, _ := m.split()
+        return (piece == King(White) && from == E1 && to == G1) || (piece == King(Black) && from == E8 && to == G8)
 }
 
-func (m *Move) is000() bool {
-        return (m.piece == King(White) && m.from == E1 && m.to == C1) ||
-               (m.piece == King(Black) && m.from == E8 && m.to == C8)
+func (m Move) is000() bool {
+        from, to, piece, _ := m.split()
+        return (piece == King(White) && from == E1 && to == C1) || (piece == King(Black) && from == E8 && to == C8)
 }
 
-func (m *Move) isCastle() bool {
+func (m Move) isCastle() bool {
         return m.is00() || m.is000()
 }
 
-func (m *Move) isEnpassant(opponentPawns Bitmask) bool {
-        color := m.piece.color()
+func (m Move) isEnpassant(opponentPawns Bitmask) bool {
+        from, to, piece, _ := m.split()
+        color := m.color()
 
-        if m.piece.isPawn() && Row(m.from) == [2]int{1,6}[color] && Row(m.to) == [2]int{3,4}[color] {
-                switch col := Col(m.to); col {
+        if piece.isPawn() && Row(from) == [2]int{1,6}[color] && Row(to) == [2]int{3,4}[color] {
+                switch col := Col(to); col {
                 case 0:
-                        return opponentPawns.isSet(m.to + 1)
+                        return opponentPawns.isSet(to + 1)
                 case 7:
-                        return opponentPawns.isSet(m.to - 1)
+                        return opponentPawns.isSet(to - 1)
                 default:
-                        return opponentPawns.isSet(m.to + 1) || opponentPawns.isSet(m.to - 1)
+                        return opponentPawns.isSet(to + 1) || opponentPawns.isSet(to - 1)
                 }
         }
         return false
 }
 
-func (m *Move) isEnpassantCapture(enpassant int) bool {
-        return m.piece.isPawn() && m.to == enpassant
+func (m Move) isEnpassantCapture(enpassant int) bool {
+        return m.piece().isPawn() && m.to() == enpassant
 }
 
-func (m *Move) String() string {
+func (m Move) String() string {
+        from, to, piece, capture := m.split()
 
         if !m.isCastle() {
-                col := [2]int{ Col(m.from) + 'a', Col(m.to) + 'a' }
-                row := [2]int{ Row(m.from) + 1, Row(m.to) + 1 }
+                col := [2]int{ Col(from) + 'a', Col(to) + 'a' }
+                row := [2]int{ Row(from) + 1, Row(to) + 1 }
 
-                capture := '-'
-                if m.captured != 0 {
-                        capture = 'x'
+                sign := '-'
+                if capture != 0 {
+                        sign = 'x'
                 }
-                piece, promoted := m.piece.String(), Piece(m.flags & isPromotion).String()
+                piece, promo := piece.String(), m.promo().String()
                 format := `%c%d%c%c%d%s`
 
-                if m.piece.isPawn() { // Skip piece name if it's a pawn.
-                        return fmt.Sprintf(format, col[0], row[0], capture, col[1], row[1], promoted)
+                if piece.isPawn() { // Skip piece name if it's a pawn.
+                        return fmt.Sprintf(format, col[0], row[0], sign, col[1], row[1], promo)
                 } else {
                         if Settings.Fancy { // Fancy notation is more readable with extra space.
                                 format = `%s ` + format
                         } else {
                                 format = `%s` + format
                         }
-                        return fmt.Sprintf(format, piece, col[0], row[0], capture, col[1], row[1], promoted)
+                        return fmt.Sprintf(format, piece, col[0], row[0], sign, col[1], row[1], promo)
                 }
         } else if m.is00() {
                 return `0-0`
