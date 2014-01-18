@@ -49,31 +49,112 @@ func (ml *MoveList) NextMove() (move Move) {
 }
 
 func (ml *MoveList) GenerateMoves() *MoveList {
-        for square, piece := range ml.position.pieces {
-                if piece != 0 && piece.color() == ml.position.color {
-                        ml.possibleMoves(square, piece)
-                }
-        }
+        color := ml.position.color
+        ml.pawnMoves(color)
+        ml.knightMoves(color)
+        ml.bishopMoves(color)
+        ml.rookMoves(color)
+        ml.queenMoves(color)
+        ml.kingMoves(color)
         return ml
 }
 
-func (ml *MoveList) possibleMoves(square int, piece Piece) *MoveList {
-        targets := ml.position.targets[square]
+func (ml *MoveList) pawnMoves(color int) *MoveList {
+        pawns := ml.position.outposts[Pawn(color)]
 
-        for targets != 0 {
-                target := targets.pop()
-                if !ml.position.isPawnPromotion(piece, target) {
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
-                        ml.tail++
-                } else {
-                        for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                ml.moves[ml.tail].move = NewMove(ml.position, square, target).promote(name)
+        for pawns != 0 {
+                square := pawns.pop()
+                targets := ml.position.targets[square]
+                for targets != 0 {
+                        target := targets.pop()
+                        if !ml.position.isPawnPromotion(Pawn(color), target) {
+                                ml.moves[ml.tail].move = NewMove(ml.position, square, target)
                                 ml.tail++
+                        } else {
+                                for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
+                                        ml.moves[ml.tail].move = NewMove(ml.position, square, target).promote(name)
+                                        ml.tail++
+                                }
                         }
                 }
         }
         return ml
 }
+
+func (ml *MoveList) knightMoves(color int) *MoveList {
+        knights := ml.position.outposts[Knight(color)]
+
+        for knights != 0 {
+                square := knights.pop()
+                targets := ml.position.targets[square]
+                for targets != 0 {
+                        target := targets.pop()
+                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+                        ml.tail++
+                }
+        }
+        return ml
+}
+
+func (ml *MoveList) bishopMoves(color int) *MoveList {
+        bishops := ml.position.outposts[Bishop(color)]
+
+        for bishops != 0 {
+                square := bishops.pop()
+                targets := ml.position.targets[square]
+                for targets != 0 {
+                        target := targets.pop()
+                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+                        ml.tail++
+                }
+        }
+        return ml
+}
+
+func (ml *MoveList) rookMoves(color int) *MoveList {
+        rooks := ml.position.outposts[Rook(color)]
+
+        for rooks != 0 {
+                square := rooks.pop()
+                targets := ml.position.targets[square]
+                for targets != 0 {
+                        target := targets.pop()
+                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+                        ml.tail++
+                }
+        }
+        return ml
+}
+
+func (ml *MoveList) queenMoves(color int) *MoveList {
+        queens := ml.position.outposts[Queen(color)]
+
+        for queens != 0 {
+                square := queens.pop()
+                targets := ml.position.targets[square]
+                for targets != 0 {
+                        target := targets.pop()
+                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+                        ml.tail++
+                }
+        }
+        return ml
+}
+
+func (ml *MoveList) kingMoves(color int) *MoveList {
+        king := ml.position.outposts[King(color)]
+        if king != 0 {
+                square := king.pop()
+                targets := ml.position.targets[square]
+                for targets != 0 {
+                        target := targets.pop()
+                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+                        ml.tail++
+                }
+        }
+        return ml
+}
+
 
 func (ml *MoveList) GenerateCaptures() *MoveList {
         for square, piece := range ml.position.pieces {
