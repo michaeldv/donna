@@ -91,7 +91,7 @@ func (p *Position) updatePieces(updates [64]Piece, squares []int) *Position {
 
 func (p *Position) setupAttacks() *Position {
         board := p.board[2]
-        for square := board.firstPop(); square >= 0; square = board.firstPop() {
+        for square := board.pop(); square >= 0; square = board.pop() {
                 piece := p.pieces[square]
                 p.targets[square] = p.Targets(square)
                 p.attacks[piece.color()].combine(p.targets[square])
@@ -109,7 +109,7 @@ func (p *Position) setupAttacks() *Position {
 }
 
 func (p *Position) updateKingTargets() *Position {
-	kingSquare := [2]int{ p.outposts[King(White)].firstSet(), p.outposts[King(Black)].firstSet() }
+	kingSquare := [2]int{ p.outposts[King(White)].first(), p.outposts[King(Black)].first() }
 
 	if kingSquare[White] >= 0 && kingSquare[Black] >= 0 {
                 p.targets[kingSquare[White]].exclude(p.targets[kingSquare[Black]])

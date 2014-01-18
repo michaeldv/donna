@@ -60,7 +60,7 @@ func (ml *MoveList) GenerateMoves() *MoveList {
 func (ml *MoveList) possibleMoves(square int, piece Piece) *MoveList {
         targets := ml.position.targets[square]
 
-        for target := targets.firstPop(); target >= 0; target = targets.firstPop() {
+        for target := targets.pop(); target >= 0; target = targets.pop() {
                 if !ml.position.isPawnPromotion(piece, target) {
                         ml.moves[ml.tail].move = NewMove(ml.position, square, target)
                         ml.tail++
@@ -86,7 +86,7 @@ func (ml *MoveList) GenerateCaptures() *MoveList {
 func (ml *MoveList) possibleCaptures(square int, piece Piece) *MoveList {
         targets := ml.position.targets[square]
 
-        for target := targets.firstPop(); target >= 0; target = targets.firstPop() {
+        for target := targets.pop(); target >= 0; target = targets.pop() {
                 capture := ml.position.pieces[target]
                 if capture != 0 {
                         if !ml.position.isPawnPromotion(piece, target) {
@@ -139,7 +139,7 @@ func (p *Position) Captures(ply int) (moves []Move) {
 func (p *Position) possibleMoves(square int, piece Piece) (moves []Move) {
         targets := p.targets[square]
 
-        for target := targets.firstPop(); target >= 0; target = targets.firstPop() {
+        for target := targets.pop(); target >= 0; target = targets.pop() {
                 //
                 // For regular moves each target square represents one possible
                 // move. For pawn promotion, however, we have to generate four
@@ -162,7 +162,7 @@ func (p *Position) possibleMoves(square int, piece Piece) (moves []Move) {
 func (p *Position) possibleCaptures(square int, piece Piece) (moves []Move) {
         targets := p.targets[square]
 
-        for target := targets.firstPop(); target >= 0; target = targets.firstPop() {
+        for target := targets.pop(); target >= 0; target = targets.pop() {
                 capture := p.pieces[target]
                 if capture != 0 {
                         if !p.isPawnPromotion(piece, target) {

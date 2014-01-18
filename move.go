@@ -123,7 +123,7 @@ func NewMoveFromString(e2e4 string, p *Position) (move Move) {
                         }
                 }
 	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
-                from := p.outposts[King(p.color)].firstSet()
+                from := p.outposts[King(p.color)].first()
                 to := G1
                 if e2e4 == `0-0-0` {
                         to = C1

@@ -28,18 +28,15 @@ func (b Bitmask) isClear(position int) bool {
 }
 
 
-func (b Bitmask) firstSet() int {
-        if b == 0 {
-                return -1
-        }
-	return deBrujin[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
+func (b Bitmask) first() int {
+	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
-func (b *Bitmask) firstPop() int {
+func (b *Bitmask) pop() int {
         if *b == 0 {
                 return -1
         }
-        bit := deBrujin[((*b ^ (*b - 1)) * 0x03F79D71B4CB0A89) >> 58]
+        bit := deBruijn[((*b ^ (*b - 1)) * 0x03F79D71B4CB0A89) >> 58]
         *b &= (*b - 1)
         return bit
 }

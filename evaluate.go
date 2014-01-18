@@ -98,7 +98,7 @@ func (e *Evaluator) analyzePawnStructure() {
                 var doubled [8]int // Number of doubled pawns in each column.
 
                 pawns := e.position.outposts[pawn[color]]
-                for square := pawns.firstPop(); square >= 0; square = pawns.firstPop() {
+                for square := pawns.pop(); square >= 0; square = pawns.pop() {
                         column := Col(square)
                         //
                         // count doubled pawns in the column as they carry a penalty.
@@ -161,7 +161,7 @@ func (e *Evaluator) analyzeRooks() {
                 // Bonuses if rooks are on open or semi-open files.
                 //
                 rooks := e.position.outposts[rook]
-                for square := rooks.firstPop(); square >= 0; square = rooks.firstPop() {
+                for square := rooks.pop(); square >= 0; square = rooks.pop() {
                         column := Col(square)
                         if e.position.outposts[Pawn(color)] & maskFile[column] == 0 {
                                 if e.position.outposts[Pawn(color^1)] & maskFile[column] == 0 {
@@ -195,7 +195,7 @@ func (e *Evaluator) analyzeKingShield() {
                 // Calculate relative square for the king so we could treat black king
                 // as white. Don't bother with the shield if the king is too far.
                 //
-                square := flip[color^1][e.position.outposts[king].firstSet()]
+                square := flip[color^1][e.position.outposts[king].first()]
                 if square > H3 {
                         continue
                 }
@@ -207,8 +207,8 @@ func (e *Evaluator) analyzeKingShield() {
                 // (more than one row apart).
                 //
                 for column := from; column <= to; column++ {
-                        if closest := (e.position.outposts[pawn] & maskFile[column]).firstSet(); closest != -1 {
-                                closest = flip[color^1][closest] // Make it relative.
+                        if shield := (e.position.outposts[pawn] & maskFile[column]); shield != 0 {
+                                closest := flip[color^1][shield.first()] // Make it relative.
                                 if distance := Abs(Row(closest) - row); distance > 1 {
                                         penalty[color] += distance * -shieldDistance.midgame
                                 }
