@@ -90,6 +90,17 @@ func NewMove(p *Position, from, to int) (move Move) {
         return
 }
 
+func NewCastle(p *Position, from, to int) Move {
+        return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
+}
+
+func NewEnpassant(p *Position, from, to int) Move {
+        return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
+}
+
+func NewPawnJump(p *Position, from, to int) Move {
+        return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isPawnJump)
+}
 
 func NewMoveFromString(e2e4 string, p *Position) (move Move) {
 	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)

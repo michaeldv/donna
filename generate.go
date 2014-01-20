@@ -67,14 +67,19 @@ func (ml *MoveList) pawnMoves(color int) *MoveList {
                 targets := ml.position.targets[square]
                 for targets != 0 {
                         target := targets.pop()
-                        if !ml.position.isPawnPromotion(Pawn(color), target) {
-                                ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+                        if target > H1 && target < A8 {
+                                ml.moves[ml.tail].move = ml.position.pawnMove(square, target)
                                 ml.tail++
-                        } else {
-                                for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                        ml.moves[ml.tail].move = NewMove(ml.position, square, target).promote(name)
-                                        ml.tail++
-                                }
+                        } else { // Promotion.
+                                m1, m2, m3, m4 := ml.position.pawnPromotion(square, target)
+                                ml.moves[ml.tail].move = m1
+                                ml.tail++
+                                ml.moves[ml.tail].move = m2
+                                ml.tail++
+                                ml.moves[ml.tail].move = m3
+                                ml.tail++
+                                ml.moves[ml.tail].move = m4
+                                ml.tail++
                         }
                 }
         }
@@ -142,15 +147,17 @@ func (ml *MoveList) queenMoves(color int) *MoveList {
 }
 
 func (ml *MoveList) kingMoves(color int) *MoveList {
+        var move Move
         king := ml.position.outposts[King(color)]
         if king != 0 {
                 square := king.pop()
                 targets := ml.position.targets[square]
                 for targets != 0 {
                         target := targets.pop()
-                        move := NewMove(ml.position, square, target)
                         if square == homeKing[color] && Abs(square - target) == 2 {
-                                move = move.castle()
+                                move = NewCastle(ml.position, square, target)
+                        } else {
+                                move = NewMove(ml.position, square, target)
                         }
                         ml.moves[ml.tail].move = move
                         ml.tail++
@@ -316,3 +323,38 @@ func (p *Position) reorderCaptures(moves []Move, bestMove Move) []Move {
 // func (her byScore) Len() int           { return len(her.moves)}
 // func (her byScore) Swap(i, j int)      { her.moves[i], her.moves[j] = her.moves[j], her.moves[i] }
 // func (her byScore) Less(i, j int) bool { return her.moves[i].score > her.moves[j].score }
+
+func (p *Position) pawnMove(square, target int) Move {
+        color := p.color
+
+        if RelRow(square, color) == 1 && RelRow(target, color) == 3 {
+                if p.isEnpassant(target, color) {
+                        return NewEnpassant(p, square, target)
+                } else {
+                        return NewPawnJump(p, square, target)
+                }
+        }
+
+        return NewMove(p, square, target)
+}
+
+func (p *Position) pawnPromotion(square, target int) (m1, m2, m3, m4 Move) {
+        m1 = NewMove(p, square, target).promote(QUEEN)
+        m2 = NewMove(p, square, target).promote(ROOK)
+        m3 = NewMove(p, square, target).promote(BISHOP)
+        m4 = NewMove(p, square, target).promote(KNIGHT)
+        return
+}
+
+func (p *Position) isEnpassant(target, color int) bool {
+        pawns := p.outposts[Pawn(color^1)] // Opposite color pawns.
+        switch col := Col(target); col {
+        case 0:
+                return pawns.isSet(target + 1)
+        case 7:
+                return pawns.isSet(target - 1)
+        default:
+                return pawns.isSet(target + 1) || pawns.isSet(target - 1)
+        }
+        return false
+}

@@ -78,7 +78,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
         return
 }
 
-func (b *Book) move(p *Position, entry Entry) (move Move) {
+func (b *Book) move(p *Position, entry Entry) Move {
         from := Square(entry.fromRow(), entry.fromCol())
         to   := Square(entry.toRow(), entry.toCol())
         //
@@ -86,20 +86,28 @@ func (b *Book) move(p *Position, entry Entry) (move Move) {
         // as e1-h1, e1-a1, e8-h8, and e8-a8.
         //
         if from == E1 && to == H1 {
-                to = G1
+                return NewCastle(p, from, G1)
         } else if from == E1 && to == A1 {
-                to = C1
+                return NewCastle(p, from, C1)
         } else if from == E8 && to == H8 {
-                to = G8
+                return NewCastle(p, from, G8)
         } else if from == E8 && to == A8 {
-                to = C8
+                return NewCastle(p, from, C8)
+        } else {
+                //
+                // Special treatment for non-promo pawn moves since they might
+                // cause en-passant.
+                //
+                if piece := p.pieces[from]; piece.isPawn() && to > H1 && to < A8 {
+                        return p.pawnMove(from, to)
+                }
         }
 
-        move = NewMove(p, from, to)
+        move := NewMove(p, from, to)
         if promo := entry.promoted(); promo != 0 {
                 move.promote(promo)
         }
-        return
+        return move
 }
 
 func (e *Entry) toCol() int {

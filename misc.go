@@ -32,6 +32,10 @@ func Coordinate(n int) (int, int) {
         return Row(n), Col(n)
 }
 
+func RelRow(square, color int) int {
+        return Row(square) ^ (color * 7)
+}
+
 // Returns n for the given the given row/column coordinate.
 func Square(row, column int) int {
 	return (row << 3) + column

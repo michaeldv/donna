@@ -19,7 +19,7 @@ func TestPosition010(t *testing.T) {
         p = p.MakeMove(NewMove(p, E4, E5))
         expect(t, p.flags.enpassant, 0)
 
-        p = p.MakeMove(NewMove(p, F7, F5))
+        p = p.MakeMove(NewEnpassant(p, F7, F5))
         expect(t, p.flags.enpassant, F6)
 }
 

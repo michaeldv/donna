@@ -178,7 +178,7 @@ func (p *Position) MakeMove(move Move) *Position {
         } else {
                 if kind == PAWN {
                         flags.irreversible = true
-                        if move.isEnpassant(p.outposts[Pawn(color^1)]) {
+                        if move.izEnpassant() {//p.outposts[Pawn(color^1)]) {
                                 //
                                 // Mark the en-passant square.
                                 //
