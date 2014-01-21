@@ -6,109 +6,136 @@ package donna
 
 import (`testing`)
 
+func openBook() (*Book, *Position) {
+	return NewBook(`/tmp`), NewGame().InitialPosition().Start(White)
+}
+
+func polyglotEntry(source, target int) Entry {
+	return Entry{ Move: uint16(Row(source) << 9) | uint16(Col(source) << 6) |
+		            uint16(Row(target) << 3) | uint16(Col(target)) }
+}
+
 // See test key values at http://hardy.uhasselt.be/Toga/book_format.html
 func TestBook000(t *testing.T) {
-        position := NewGame().InitialPosition().Start(White)
+        p := NewGame().InitialPosition().Start(White)
 
-        expect(t, position.polyglot(), uint64(0x463B96181691FC9C))
+        expect(t, p.polyglot(), uint64(0x463B96181691FC9C))
 }
 
 func TestBook010(t *testing.T) { // 1. e4
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, E2, E4))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
 
-        expect(t, position.polyglot(), uint64(0x823C9B50FD114196))
+        expect(t, p.polyglot(), uint64(0x823C9B50FD114196))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
 }
 
 func TestBook020(t *testing.T) { // 1. e4 d5
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, E2, E4))
-        position = position.MakeMove(NewMove(position, D7, D5))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
 
-        expect(t, position.polyglot(), uint64(0x0756B94461C50FB0))
+        expect(t, p.polyglot(), uint64(0x0756B94461C50FB0))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
 }
 
 func TestBook030(t *testing.T) { // 1. e4 d5 2. e5
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, E2, E4))
-        position = position.MakeMove(NewMove(position, D7, D5))
-        position = position.MakeMove(NewMove(position, E4, E5))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E4, E5)))
 
-        expect(t, position.polyglot(), uint64(0x662FAFB965DB29D4))
+        expect(t, p.polyglot(), uint64(0x662FAFB965DB29D4))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
 }
 
 func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, E2, E4))
-        position = position.MakeMove(NewMove(position, D7, D5))
-        position = position.MakeMove(NewMove(position, E4, E5))
-        position = position.MakeMove(NewMove(position, F7, F5))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E4, E5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(F7, F5)))
 
-        expect(t, position.polyglot(), uint64(0x22A48B5A8E47FF78))
-        expect(t, position.flags.enpassant, F6)
+        expect(t, p.polyglot(), uint64(0x22A48B5A8E47FF78))
+        expect(t, p.flags.enpassant, F6)
+        expect(t, p.castles, uint8(0x0F))
 }
 
 func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, E2, E4))
-        position = position.MakeMove(NewMove(position, D7, D5))
-        position = position.MakeMove(NewMove(position, E4, E5))
-        position = position.MakeMove(NewMove(position, F7, F5))
-        position = position.MakeMove(NewMove(position, E1, E2))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E4, E5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(F7, F5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E1, E2)))
 
-        expect(t, position.polyglot(), uint64(0x652A607CA3F242C1))
+        expect(t, p.polyglot(), uint64(0x652A607CA3F242C1))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, castleKingside[Black] | castleQueenside[Black])
 }
 
 func TestBook060(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, E2, E4))
-        position = position.MakeMove(NewMove(position, D7, D5))
-        position = position.MakeMove(NewMove(position, E4, E5))
-        position = position.MakeMove(NewMove(position, F7, F5))
-        position = position.MakeMove(NewMove(position, E1, E2))
-        position = position.MakeMove(NewMove(position, E8, F7))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E4, E5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(F7, F5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E1, E2)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E8, F7)))
 
-        expect(t, position.polyglot(), uint64(0x00FDD303C946BDD9))
+        expect(t, p.polyglot(), uint64(0x00FDD303C946BDD9))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0))
 }
 
 func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpassant
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, A2, A4))
-        position = position.MakeMove(NewMove(position, B7, B5))
-        position = position.MakeMove(NewMove(position, H2, H4))
-        position = position.MakeMove(NewMove(position, B5, B4))
-        position = position.MakeMove(NewMove(position, C2, C4))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(A2, A4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(B7, B5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(H2, H4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(B5, B4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(C2, C4)))
 
-        expect(t, position.polyglot(), uint64(0x3C8123EA7B067637))
-        expect(t, position.flags.enpassant, C3)
+        expect(t, p.polyglot(), uint64(0x3C8123EA7B067637))
+        expect(t, p.flags.enpassant, C3)
+        expect(t, p.castles, uint8(0x0F))
 }
 
 func TestBook080(t *testing.T) { // TODO: 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, A2, A4))
-        position = position.MakeMove(NewMove(position, B7, B5))
-        position = position.MakeMove(NewMove(position, H2, H4))
-        position = position.MakeMove(NewMove(position, B5, B4))
-        position = position.MakeMove(NewMove(position, C2, C4))
-        position = position.MakeMove(NewMove(position, B4, C3))
-        position = position.MakeMove(NewMove(position, A1, A3))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(A2, A4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(B7, B5)))
+        p = p.MakeMove(book.move(p, polyglotEntry(H2, H4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(B5, B4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(C2, C4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(B4, C3)))
+        p = p.MakeMove(book.move(p, polyglotEntry(A1, A3)))
 
-        expect(t, position.polyglot(), uint64(0x5C3F9B829B279560))
+        expect(t, p.polyglot(), uint64(0x5C3F9B829B279560))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
 }
 
 
 func TestBook100(t *testing.T) { // 1. e4 e5
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, E2, E4))
-        position = position.MakeMove(NewMove(position, E7, E5))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(E7, E5)))
 
-        expect(t, position.polyglot(), uint64(0x0844931A6EF4B9A0))
+        expect(t, p.polyglot(), uint64(0x0844931A6EF4B9A0))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
 }
 
 func TestBook110(t *testing.T) { // 1. d4 d5
-        position := NewGame().InitialPosition().Start(White)
-        position = position.MakeMove(NewMove(position, D2, D4))
-        position = position.MakeMove(NewMove(position, D7, D5))
+        book, p := openBook()
+        p = p.MakeMove(book.move(p, polyglotEntry(D2, D4)))
+        p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
 
-        expect(t, position.polyglot(), uint64(0x06649BA69B8C9FF8))
+        expect(t, p.polyglot(), uint64(0x06649BA69B8C9FF8))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
 }
