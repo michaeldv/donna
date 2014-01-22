@@ -201,27 +201,6 @@ func (m Move) isCastle() bool {
         return m.is00() || m.is000()
 }
 
-func (m Move) isEnpassant(opponentPawns Bitmask) bool {
-        from, to, piece, _ := m.split()
-        color := m.color()
-
-        if piece.isPawn() && Row(from) == [2]int{1,6}[color] && Row(to) == [2]int{3,4}[color] {
-                switch col := Col(to); col {
-                case 0:
-                        return opponentPawns.isSet(to + 1)
-                case 7:
-                        return opponentPawns.isSet(to - 1)
-                default:
-                        return opponentPawns.isSet(to + 1) || opponentPawns.isSet(to - 1)
-                }
-        }
-        return false
-}
-
-func (m Move) isEnpassantCapture(enpassant int) bool {
-        return m.piece().isPawn() && m.to() == enpassant
-}
-
 func (m Move) String() string {
         from, to, piece, capture := m.split()
         promo := m.promo()
