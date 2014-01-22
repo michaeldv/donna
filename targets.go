@@ -18,27 +18,21 @@ func (p *Position) Targets(square int) (bitmask Bitmask) {
 		// If the pawn is in its initial position and two squares in front of
 		// the pawn are empty then add the second square as possible target.
                 //
-		row := Row(square)
-		if color == White {
-			if p.board[2].isClear(square + 8) { // Can white pawn move up one square?
-				bitmask.set(square + 8)
-				if row == 1 && p.board[2].isClear(square + 16) { // How about two squares?
-					bitmask.set(square + 16)
-				}
-			}
-		} else if p.board[2].isClear(square - 8) { // Can black pawn move up one square?
-			bitmask.set(square - 8)
-			if row == 6 && p.board[2].isClear(square - 16) { // How about two squares?
-				bitmask.set(square - 16)
+		row := RelRow(square, color)
+		eight := [2]int{ 8, -8 }[color]
+
+		if p.board[2].isClear(square + eight) { // Can white pawn move up one square?
+			bitmask.set(square + eight)
+			if row == 1 && p.board[2].isClear(square + eight * 2) { // How about two squares?
+				bitmask.set(square + eight * 2)
 			}
 		}
                 //
                 // If the last move set the en-passant square and it is diagonally adjacent
                 // to the current pawn, then add en-passant to the pawn's attack targets.
                 //
-                if target := p.flags.enpassant; target != 0 {
-                        if (color == White && (target == square+7 || target == square+9)) || // Up/left or up/right a square.
-                           (color == Black && (target == square-9 || target == square-7)) {  // Down/left or down/right a square.
+                if target := p.flags.enpassant; row == 4 && target != 0 {
+                        if target == square + (eight - 1) || target == square + (eight + 1) {
                                 bitmask |= Bit(target)
                         }
                 }
