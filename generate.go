@@ -51,10 +51,7 @@ func (ml *MoveList) NextMove() (move Move) {
 func (ml *MoveList) GenerateMoves() *MoveList {
         color := ml.position.color
         ml.pawnMoves(color)
-        ml.knightMoves(color)
-        ml.bishopMoves(color)
-        ml.rookMoves(color)
-        ml.queenMoves(color)
+        ml.kbrqMoves(color)
         ml.kingMoves(color)
         return ml
 }
@@ -86,63 +83,19 @@ func (ml *MoveList) pawnMoves(color int) *MoveList {
         return ml
 }
 
-func (ml *MoveList) knightMoves(color int) *MoveList {
-        knights := ml.position.outposts[Knight(color)]
-
-        for knights != 0 {
-                square := knights.pop()
-                targets := ml.position.targets[square]
-                for targets != 0 {
-                        target := targets.pop()
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
-                        ml.tail++
-                }
-        }
-        return ml
-}
-
-func (ml *MoveList) bishopMoves(color int) *MoveList {
-        bishops := ml.position.outposts[Bishop(color)]
-
-        for bishops != 0 {
-                square := bishops.pop()
-                targets := ml.position.targets[square]
-                for targets != 0 {
-                        target := targets.pop()
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
-                        ml.tail++
-                }
-        }
-        return ml
-}
-
-func (ml *MoveList) rookMoves(color int) *MoveList {
-        rooks := ml.position.outposts[Rook(color)]
-
-        for rooks != 0 {
-                square := rooks.pop()
-                targets := ml.position.targets[square]
-                for targets != 0 {
-                        target := targets.pop()
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
-                        ml.tail++
-                }
-        }
-        return ml
-}
-
-func (ml *MoveList) queenMoves(color int) *MoveList {
-        queens := ml.position.outposts[Queen(color)]
-
-        for queens != 0 {
-                square := queens.pop()
-                targets := ml.position.targets[square]
-                for targets != 0 {
-                        target := targets.pop()
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
-                        ml.tail++
-                }
-        }
+func (ml *MoveList) kbrqMoves(color int) *MoveList {
+	for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
+	        outposts := ml.position.outposts[Piece(kind|color)]
+	        for outposts != 0 {
+	                square := outposts.pop()
+	                targets := ml.position.targets[square]
+	                for targets != 0 {
+	                        target := targets.pop()
+	                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+	                        ml.tail++
+	                }
+	        }
+	}
         return ml
 }
 
