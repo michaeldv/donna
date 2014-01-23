@@ -51,7 +51,7 @@ func (ml *MoveList) NextMove() (move Move) {
 func (ml *MoveList) GenerateMoves() *MoveList {
         color := ml.position.color
         ml.pawnMoves(color)
-        ml.kbrqMoves(color)
+        ml.pieceMoves(color)
         ml.kingMoves(color)
         return ml
 }
@@ -83,7 +83,7 @@ func (ml *MoveList) pawnMoves(color int) *MoveList {
         return ml
 }
 
-func (ml *MoveList) kbrqMoves(color int) *MoveList {
+func (ml *MoveList) pieceMoves(color int) *MoveList {
 	for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
 	        outposts := ml.position.outposts[Piece(kind|color)]
 	        for outposts != 0 {
@@ -121,37 +121,64 @@ func (ml *MoveList) kingMoves(color int) *MoveList {
 
 
 func (ml *MoveList) GenerateCaptures() *MoveList {
-        for square, piece := range ml.position.pieces {
-                if piece != 0 && piece.color() == ml.position.color {
-                        ml.possibleCaptures(square, piece)
-                }
-        }
+        color := ml.position.color
+        ml.pawnCaptures(color)
+        ml.pieceCaptures(color)
         return ml
 }
 
-func (ml *MoveList) possibleCaptures(square int, piece Piece) *MoveList {
-        targets := ml.position.targets[square]
+// Generates all pseudo-legal pawn captures and Queen promotions.
+func (ml *MoveList) pawnCaptures(color int) *MoveList {
+        pawns := ml.position.outposts[Pawn(color)]
 
-        for targets != 0 {
-                target := targets.pop()
-                capture := ml.position.pieces[target]
-                if capture != 0 {
-                        if !ml.position.isPawnPromotion(piece, target) {
-                                ml.moves[ml.tail].move = NewMove(ml.position, square, target)
-                                ml.tail++
-                        } else {
-                                for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                        ml.moves[ml.tail].move = NewMove(ml.position, square, target).promote(name)
-                                        ml.tail++
-                                }
-                        }
-                } else if ml.position.flags.enpassant != 0 && target == ml.position.flags.enpassant {
+        for pawns != 0 {
+                square := pawns.pop()
+                //
+                // First check capture targets on rows 2-7 (no promotions).
+                //
+                targets := ml.position.targets[square] & ml.position.board[color^1] & 0x00FFFFFFFFFFFF00
+                for targets != 0 {
+                        target := targets.pop()
                         ml.moves[ml.tail].move = NewMove(ml.position, square, target)
                         ml.tail++
                 }
+                //
+                // Now check promo rows. The might include capture targets as well
+                // as empty promo square in front of the pawn.
+                //
+                if RelRow(square, color) == 6 {
+                        eight := [2]int{ 8, -8 }
+                        lastRow := [2]Bitmask{ 0xFF00000000000000,  0x00000000000000FF }
+                        targets  = ml.position.targets[square] & lastRow[color]
+                        targets |= ml.position.board[2] & Bit(square + eight[color])
+
+                        for targets != 0 {
+                                target := targets.pop()
+                                ml.moves[ml.tail].move = NewMove(ml.position, square, target).promote(QUEEN)
+                                ml.tail++
+                        }
+                }
         }
         return ml
 }
+
+// Generates all pseudo-legal captures by pieces other than pawn.
+func (ml *MoveList) pieceCaptures(color int) *MoveList {
+	for _, kind := range [5]int{ KNIGHT, BISHOP, ROOK, QUEEN, KING } {
+	        outposts := ml.position.outposts[Piece(kind|color)]
+	        for outposts != 0 {
+	                square := outposts.pop()
+	                targets := ml.position.targets[square] & ml.position.board[color^1]
+	                for targets != 0 {
+	                        target := targets.pop()
+	                        ml.moves[ml.tail].move = NewMove(ml.position, square, target)
+	                        ml.tail++
+	                }
+	        }
+	}
+	return ml
+}
+
 
 // All moves.
 func (p *Position) Moves(ply int) (moves []Move) {
