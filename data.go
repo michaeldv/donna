@@ -12,6 +12,8 @@ const MaxPly = 32
 const (
         White = iota
         Black
+        maskNone = 0x0000000000000000
+        maskFull = 0xFFFFFFFFFFFFFFFF
 )
 
 const (
@@ -228,7 +230,12 @@ var flip = [2][64]int{
         },
 }
 
-var maskFile = [8]Bitmask{
+var maskRank = [8]Bitmask{ // 0 to 8
+        0x00000000000000FF, 0x000000000000FF00, 0x0000000000FF0000, 0x00000000FF000000,
+        0x000000FF00000000, 0x0000FF0000000000, 0x00FF000000000000, 0xFF00000000000000,
+}
+
+var maskFile = [8]Bitmask{ // A to H
 	0x0101010101010101, 0x0202020202020202, 0x0404040404040404, 0x0808080808080808,
 	0x1010101010101010, 0x2020202020202020, 0x4040404040404040, 0x8080808080808080,
 }
@@ -261,8 +268,6 @@ var castleQueen = [2]Bitmask{
         0x000000000000001C, // C1 | D1 | E1
         0x1C00000000000000, // C8 | D8 | E8
 }
-
-var maskPassed, maskInFront [2][64]Bitmask
 
 var (
         valuePawn      = Score{  100,  100 }
