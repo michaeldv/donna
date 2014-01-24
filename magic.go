@@ -25,13 +25,17 @@ var (
         // check from all squares except maskEvade[x][y]. For example, if white
         // king on B2 gets checked by black bishop on G7 the king can't step back
         // to A1 (despite not being attacked by black).
-        maskEvade      [64][64]Bitmask
+        maskEvade        [64][64]Bitmask
 
         // If a king on square [x] gets checked from square [y] the check can be
         // evaded by moving a piece to maskBlock[x][y]. For example, if white
         // king on B2 gets checked by black bishop on G7 the check can be evaded
         // by moving white piece onto C3-G7 diagonal (including capture on G7).
         maskBlock        [64][64]Bitmask
+
+        // Bitmask to indicate pawn attacks for a square. For example, C3 is being
+        // attacked by white pawns on B2 and D2, and black pawns on B4 and D4.
+        maskPawnAttack   [2][64]Bitmask
 )
 
 func init() {
@@ -81,6 +85,24 @@ func init() {
                         }
                         if Abs(r - row) <= 1 && Abs(c - col) <= 1 {
                                 kingMoves[square].set(i)
+                        }
+                }
+
+                // Pawn attacks.
+                if row > 1 { // White pawns can't attack first two ranks.
+                        if col != 0 {
+                                maskPawnAttack[White][square] |= Bit(square - 9)
+                        }
+                        if col != 7 {
+                                maskPawnAttack[White][square] |= Bit(square - 7)
+                        }
+                }
+                if row < 6 { // Black pawns can attack 7th and 8th ranks.
+                        if col != 0 {
+                                maskPawnAttack[Black][square] |= Bit(square + 7)
+                        }
+                        if col != 7 {
+                                maskPawnAttack[Black][square] |= Bit(square + 9)
                         }
                 }
 
