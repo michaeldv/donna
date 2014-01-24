@@ -4,6 +4,8 @@
 
 package donna
 
+import()
+
 type Magic struct {
 	mask   Bitmask
 	magic  Bitmask
@@ -15,6 +17,21 @@ var (
         pawnMoves        [2][64]Bitmask
 	rookMagicMoves   [64][4096]Bitmask
 	bishopMagicMoves [64][512]Bitmask
+
+        maskPassed       [2][64]Bitmask
+        maskInFront      [2][64]Bitmask
+
+        // If a king on square [x] gets checked from square [y] it can evade the
+        // check from all squares except maskEvade[x][y]. For example, if white
+        // king on B2 gets checked by black bishop on G7 the king can't step back
+        // to A1 (despite not being attacked by black).
+        maskEvade      [64][64]Bitmask
+
+        // If a king on square [x] gets checked from square [y] the check can be
+        // evaded by moving a piece to maskBlock[x][y]. For example, if white
+        // king on B2 gets checked by black bishop on G7 the check can be evaded
+        // by moving white piece onto C3-G7 diagonal (including capture on G7).
+        maskBlock        [64][64]Bitmask
 )
 
 func init() {
@@ -51,17 +68,17 @@ func init() {
                         }
                 }
 
-                // Knights and Kings.
+                // Blocks, Evasions, Knights, and Kings.
                 for i := A1; i <= H8; i++ {
-                        if i == square || Abs(i - square) > 17 {
-                                continue
-                        }
+			r, c := Coordinate(i)
+			blockAndEvade(square, i, row, col, r, c)
 
-                        r, c := Coordinate(i)
+                        if i == square || Abs(i - square) > 17 {
+                                continue // No king or knight can reach that far.
+                        }
                         if (Abs(r - row) == 2 && Abs(c - col) == 1) || (Abs(r - row) == 1 && Abs(c - col) == 2) {
                                 knightMoves[square].set(i)
                         }
-
                         if Abs(r - row) <= 1 && Abs(c - col) <= 1 {
                                 kingMoves[square].set(i)
                         }
@@ -216,4 +233,47 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 		}
 	}
 	return
+}
+
+func blockAndEvade(square, target, row, col, r, c int) {
+	if row == r {
+		if col < c {
+			maskBlock[square][target].fill(square, 1, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskFile[0]) >> 1)
+		} else if col > c {
+			maskBlock[square][target].fill(square, -1, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskFile[7]) << 1)
+		}
+	} else if col == c {
+		if row < r {
+			maskBlock[square][target].fill(square, 8, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskRank[0]) >> 8)
+		} else {
+			maskBlock[square][target].fill(square, -8, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskRank[7]) << 8)
+		}
+	} else if col + r == row + c {
+		if col < c {
+			maskBlock[square][target].fill(square, 9, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskRank[0] & ^maskFile[0]) >> 9)
+		} else {
+			maskBlock[square][target].fill(square, -9, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskRank[7] & ^maskFile[7]) << 9)
+		}
+	} else if col + row == c + r {
+		if col < c {
+			maskBlock[square][target].fill(square, -7, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskRank[7] & ^maskFile[0]) << 7)
+		} else {
+			maskBlock[square][target].fill(square, 7, Bit(target), maskFull)
+			maskEvade[square][target] = ^((Bit(square) & ^maskRank[0] & ^maskFile[7]) >> 7)
+		}
+	}
+	//
+	// Default values are all 0 for maskBlock[square][target] (Go sets it for us)
+	// and all 1 for maskEvade[square][target].
+	//
+	if maskEvade[square][target] == 0 {
+		maskEvade[square][target] = maskFull
+	}
 }
