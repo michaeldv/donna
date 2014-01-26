@@ -173,6 +173,51 @@ func (ml *MoveList) pieceCaptures(color int) *MoveList {
 	return ml
 }
 
+
+func (ml *MoveList) GenerateEvasions() *MoveList {
+        color := ml.position.color
+        enemy := ml.position.color^1
+        square := ml.position.outposts[King(color)].first()
+        pawn, knight, bishop, rook, queen := Pawn(enemy), Knight(enemy), Bishop(enemy), Rook(enemy), Queen(enemy)
+        //
+        // Find out what pieces are checking the king. Usually it's a single
+        // piece but double check is also a possibility.
+        //
+        checkers := maskPawnAttack[enemy][square] & ml.position.outposts[pawn]
+        checkers |= ml.position.Targets(square, knight) & ml.position.outposts[knight]
+        checkers |= ml.position.Targets(square, bishop) & (ml.position.outposts[bishop] | ml.position.outposts[queen])
+        checkers |= ml.position.Targets(square, rook) & (ml.position.outposts[rook] | ml.position.outposts[queen])
+        //
+        // Generate possible king retreats first, i.e. moves to squares not
+        // occupied by friendly pieces and not attacked by the opponent.
+        //
+        retreats := kingMoves[square] & ^ml.position.board[color] & ^ml.position.attacks[enemy]
+        //
+        // If the attacker is a sliding piece then exclude the square behind
+        // the king since retreating there is still a check.
+        //
+        attackSquare := checkers.pop()
+        if ml.position.pieces[attackSquare] != pawn { // Knight's attack is maskFull.
+                retreats &= maskEvade[square][attackSquare]
+        }
+        //
+        // If checkers mask is not empty then we've got double check and
+        // retreat is the only option.
+        //
+        if checkers {
+                attackSquare = checkers.first()
+                if ml.position.pieces[attackSquare] != pawn {
+                        retreats &= maskEvade[square][attackSquare]
+                }
+                for retreats != 0 {
+                        ml.moves[ml.tail].move = NewMove(ml.position, square, retreats.pop())
+                        ml.tail++
+                }
+                return ml
+        }
+        return ml
+}
+
 // All moves.
 func (p *Position) Moves(ply int) (moves []Move) {
         for square, piece := range p.pieces {
