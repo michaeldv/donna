@@ -193,18 +193,20 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         //
         retreats := kingMoves[square] & ^ml.position.board[color] & ^ml.position.attacks[enemy]
         //
-        // If the attacker is a sliding piece then exclude the square behind
-        // the king since retreating there is still a check.
+        // If the attacking piece is bishop, rook, or queen then exclude the
+        // square behind the king using avasion mask. Note that knight's
+        // evasion mask is full board so we only check if the attacking piece
+        // is not a pawn.
         //
         attackSquare := checkers.pop()
-        if ml.position.pieces[attackSquare] != pawn { // Knight's attack is maskFull.
+        if ml.position.pieces[attackSquare] != pawn {
                 retreats &= maskEvade[square][attackSquare]
         }
         //
         // If checkers mask is not empty then we've got double check and
         // retreat is the only option.
         //
-        if checkers {
+        if checkers != 0 {
                 attackSquare = checkers.first()
                 if ml.position.pieces[attackSquare] != pawn {
                         retreats &= maskEvade[square][attackSquare]
@@ -215,6 +217,26 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
                 }
                 return ml
         }
+        //
+        // Generate king retreats.
+        //
+        for retreats != 0 {
+                ml.moves[ml.tail].move = NewMove(ml.position, square, retreats.pop())
+                ml.tail++
+        }
+        //
+        // Rare case when the check could be avoided by en-passant capture.
+        // For example: Ke4, c5, e5 vs. Ke8, d7. Black's d7-d5+ could be
+        // evaded by c5xd6 or e5xd6 en-passant captures.
+        //
+        if enpassant := attackSquare + eight[color]; ml.position.flags.enpassant == enpassant {
+                pawns := maskPawnAttack[enpassant] & ml.position.outposts[Pawn(color)]
+                for pawns != 0 {
+                        ml.moves[ml.tail].move = NewEnpassant(ml.position, square, pawns.pop())
+                        ml.tail++
+                }
+        }
+
         return ml
 }
 
