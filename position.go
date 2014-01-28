@@ -94,7 +94,7 @@ func (p *Position) setupAttacks() *Position {
         for board != 0 {
                 square := board.pop()
                 piece := p.pieces[square]
-                p.targets[square] = p.Targets(square)
+                p.targets[square] = p.Targets(square, piece)
                 p.attacks[piece.color()].combine(p.targets[square])
         }
         //

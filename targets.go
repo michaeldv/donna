@@ -4,8 +4,7 @@
 
 package donna
 
-func (p *Position) Targets(square int) (bitmask Bitmask) {
-        piece := p.pieces[square]
+func (p *Position) Targets(square int, piece Piece) (bitmask Bitmask) {
         kind, color := piece.kind(), piece.color()
 
         switch kind {

@@ -143,9 +143,10 @@ func (ml *MoveList) pawnCaptures(color int) *MoveList {
                 // as empty promo square in front of the pawn.
                 //
                 if RelRow(square, color) == 6 {
-                        eight := [2]int{ 8, -8 }
-                        lastRow := [2]Bitmask{ 0xFF00000000000000,  0x00000000000000FF }
-                        targets  = ml.position.targets[square] & lastRow[color]
+                        //
+                        // Select maskRank[7] for white and maskRank[0] for black.
+                        //
+                        targets  = ml.position.targets[square] & maskRank[7 - 7 * color]
                         targets |= ml.position.board[2] & Bit(square + eight[color])
 
                         for targets != 0 {
@@ -225,16 +226,40 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
                 ml.tail++
         }
         //
+        // Pawn captures.
+        //
+        pawns := maskPawnAttack[color][attackSquare] & ml.position.outposts[Pawn(color)]
+        for pawns != 0 {
+                ml.moves[ml.tail].move = NewMove(ml.position, square, pawns.pop())
+                ml.tail++
+        }
+        //
         // Rare case when the check could be avoided by en-passant capture.
         // For example: Ke4, c5, e5 vs. Ke8, d7. Black's d7-d5+ could be
         // evaded by c5xd6 or e5xd6 en-passant captures.
         //
         if enpassant := attackSquare + eight[color]; ml.position.flags.enpassant == enpassant {
-                pawns := maskPawnAttack[enpassant] & ml.position.outposts[Pawn(color)]
+                pawns := maskPawnAttack[color][enpassant] & ml.position.outposts[Pawn(color)]
                 for pawns != 0 {
                         ml.moves[ml.tail].move = NewEnpassant(ml.position, square, pawns.pop())
                         ml.tail++
                 }
+        }
+        //
+        // See if the check could be blocked.
+        //
+        block := maskBlock[square][attackSquare]
+        //
+        // Handle one square pawn pushes: promote to Queen when reaching last rank.
+        //
+        pawns = (ml.position.outposts[Pawn(color)] >> uint(eight[color])) & ^(ml.position.board[2]) & block
+        for pawns != 0 {
+                targetSquare := square + eight[color]
+                ml.moves[ml.tail].move = NewMove(ml.position, targetSquare, pawns.pop())
+                if targetSquare >= A8 || targetSquare <= H1 {
+                        ml.moves[ml.tail].move.promote(QUEEN)
+                }
+                ml.tail++
         }
 
         return ml
