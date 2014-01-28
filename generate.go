@@ -184,7 +184,7 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         // Find out what pieces are checking the king. Usually it's a single
         // piece but double check is also a possibility.
         //
-        checkers := maskPawnAttack[enemy][square] & ml.position.outposts[pawn]
+        checkers := maskPawn[enemy][square] & ml.position.outposts[pawn]
         checkers |= ml.position.Targets(square, knight) & ml.position.outposts[knight]
         checkers |= ml.position.Targets(square, bishop) & (ml.position.outposts[bishop] | ml.position.outposts[queen])
         checkers |= ml.position.Targets(square, rook) & (ml.position.outposts[rook] | ml.position.outposts[queen])
@@ -228,7 +228,7 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         //
         // Pawn captures.
         //
-        pawns := maskPawnAttack[color][attackSquare] & ml.position.outposts[Pawn(color)]
+        pawns := maskPawn[color][attackSquare] & ml.position.outposts[Pawn(color)]
         for pawns != 0 {
                 ml.moves[ml.tail].move = NewMove(ml.position, square, pawns.pop())
                 ml.tail++
@@ -239,7 +239,7 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         // evaded by c5xd6 or e5xd6 en-passant captures.
         //
         if enpassant := attackSquare + eight[color]; ml.position.flags.enpassant == enpassant {
-                pawns := maskPawnAttack[color][enpassant] & ml.position.outposts[Pawn(color)]
+                pawns := maskPawn[color][enpassant] & ml.position.outposts[Pawn(color)]
                 for pawns != 0 {
                         ml.moves[ml.tail].move = NewEnpassant(ml.position, square, pawns.pop())
                         ml.tail++

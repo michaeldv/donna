@@ -31,10 +31,10 @@ func TestMagic010(t *testing.T) {
 }
 
 func TestMagic020(t *testing.T) {
-        expect(t, maskPawnAttack[White][A3], Bitmask( Bit(B2) ))
-        expect(t, maskPawnAttack[White][D5], Bitmask( Bit(C4) | Bit(E4) ))
-        expect(t, maskPawnAttack[White][F8], Bitmask( Bit(E7) | Bit(G7) ))
-        expect(t, maskPawnAttack[Black][H4], Bitmask( Bit(G5) ))
-        expect(t, maskPawnAttack[Black][C5], Bitmask( Bit(B6) | Bit(D6) ))
-        expect(t, maskPawnAttack[Black][B1], Bitmask( Bit(A2) | Bit(C2) ))
+        expect(t, maskPawn[White][A3], Bitmask( Bit(B2) ))
+        expect(t, maskPawn[White][D5], Bitmask( Bit(C4) | Bit(E4) ))
+        expect(t, maskPawn[White][F8], Bitmask( Bit(E7) | Bit(G7) ))
+        expect(t, maskPawn[Black][H4], Bitmask( Bit(G5) ))
+        expect(t, maskPawn[Black][C5], Bitmask( Bit(B6) | Bit(D6) ))
+        expect(t, maskPawn[Black][B1], Bitmask( Bit(A2) | Bit(C2) ))
 }

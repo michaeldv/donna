@@ -35,7 +35,7 @@ var (
 
         // Bitmask to indicate pawn attacks for a square. For example, C3 is being
         // attacked by white pawns on B2 and D2, and black pawns on B4 and D4.
-        maskPawnAttack   [2][64]Bitmask
+        maskPawn         [2][64]Bitmask
 )
 
 func init() {
@@ -91,18 +91,18 @@ func init() {
                 // Pawn attacks.
                 if row > 1 { // White pawns can't attack first two ranks.
                         if col != 0 {
-                                maskPawnAttack[White][square] |= Bit(square - 9)
+                                maskPawn[White][square] |= Bit(square - 9)
                         }
                         if col != 7 {
-                                maskPawnAttack[White][square] |= Bit(square - 7)
+                                maskPawn[White][square] |= Bit(square - 7)
                         }
                 }
                 if row < 6 { // Black pawns can attack 7th and 8th ranks.
                         if col != 0 {
-                                maskPawnAttack[Black][square] |= Bit(square + 7)
+                                maskPawn[Black][square] |= Bit(square + 7)
                         }
                         if col != 7 {
-                                maskPawnAttack[Black][square] |= Bit(square + 9)
+                                maskPawn[Black][square] |= Bit(square + 9)
                         }
                 }
 
