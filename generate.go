@@ -254,9 +254,9 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         //
         pawns = ml.position.pawnMovesMask(color) & block
         for pawns != 0 {
-                targetSquare := square + eight[color]
-                ml.moves[ml.tail].move = NewMove(ml.position, targetSquare, pawns.pop())
-                if targetSquare >= A8 || targetSquare <= H1 {
+                from := pawns.pop(); to := from + eight[color]
+                ml.moves[ml.tail].move = NewMove(ml.position, from, to)
+                if to >= A8 || to <= H1 {
                         ml.moves[ml.tail].move.promote(QUEEN)
                 }
                 ml.tail++
@@ -266,12 +266,31 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         //
         pawns = ml.position.pawnJumpsMask(color) & block
         for pawns != 0 {
-                targetSquare := square + 2 * eight[color]
-                ml.moves[ml.tail].move = NewMove(ml.position, targetSquare, pawns.pop())
+                from := pawns.pop()
+                ml.moves[ml.tail].move = NewMove(ml.position, from, from + 2 * eight[color])
                 ml.tail++
+        }
+        //
+        // What's left is to enerate all possible knight, bishop, rook, and
+        // queen moves that evade the check.
+        //
+        for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
+                ml.addEvasion(Piece(kind|color), block)
         }
 
         return ml
+}
+
+func (ml *MoveList) addEvasion(piece Piece, block Bitmask) {
+        outposts := ml.position.outposts[piece]
+        for outposts != 0 {
+                from := outposts.pop()
+                targets := ml.position.targets[from] & block
+                for targets != 0 {
+                        ml.moves[ml.tail].move = NewMove(ml.position, from, targets.pop())
+                        ml.tail++
+                }
+        }
 }
 
 // All moves.
