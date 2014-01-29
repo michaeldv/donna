@@ -252,13 +252,22 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         //
         // Handle one square pawn pushes: promote to Queen when reaching last rank.
         //
-        pawns = (ml.position.outposts[Pawn(color)] >> uint(eight[color])) & ^(ml.position.board[2]) & block
+        pawns = ml.position.pawnMovesMask(color) & block
         for pawns != 0 {
                 targetSquare := square + eight[color]
                 ml.moves[ml.tail].move = NewMove(ml.position, targetSquare, pawns.pop())
                 if targetSquare >= A8 || targetSquare <= H1 {
                         ml.moves[ml.tail].move.promote(QUEEN)
                 }
+                ml.tail++
+        }
+        //
+        // Handle two square pawn pushes.
+        //
+        pawns = ml.position.pawnJumpsMask(color) & block
+        for pawns != 0 {
+                targetSquare := square + 2 * eight[color]
+                ml.moves[ml.tail].move = NewMove(ml.position, targetSquare, pawns.pop())
                 ml.tail++
         }
 
@@ -419,4 +428,24 @@ func (p *Position) isEnpassant(target, color int) bool {
                 return pawns.isSet(target + 1) || pawns.isSet(target - 1)
         }
         return false
+}
+
+func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
+        if color == White {
+                mask = (p.outposts[Pawn(White)] >> 8)
+        } else {
+                mask = (p.outposts[Pawn(Black)] << 8)
+        }
+        mask &= ^p.board[2]
+        return
+}
+
+func (p *Position) pawnJumpsMask(color int) (mask Bitmask) {
+        if color == White {
+                mask = maskRank[4] & (p.outposts[Pawn(White)] >> 16)
+        } else {
+                mask = maskRank[5] & (p.outposts[Pawn(Black)] << 16)
+        }
+        mask &= ^p.board[2]
+        return
 }
