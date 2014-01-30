@@ -461,9 +461,9 @@ func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
 
 func (p *Position) pawnJumpsMask(color int) (mask Bitmask) {
         if color == White {
-                mask = maskRank[4] & (p.outposts[Pawn(White)] >> 16)
+                mask = maskRank[3] & (p.outposts[Pawn(White)] >> 16)
         } else {
-                mask = maskRank[5] & (p.outposts[Pawn(Black)] << 16)
+                mask = maskRank[4] & (p.outposts[Pawn(Black)] << 16)
         }
         mask &= ^p.board[2]
         return
