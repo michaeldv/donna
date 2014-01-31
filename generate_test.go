@@ -82,6 +82,40 @@ func TestGenerate100(t *testing.T) {
 
         doesNotContain(t, gen.allMoves(), `0-0`)
 }
+
+// New incremental generator tests.
+///////////////////////////////////////////////////////////////////////////////
+
+// Pawn moves that include promotions.
+func TestGenerate200(t *testing.T) {
+        game := NewGame().Setup(`Ka1,a6,b7`, `Kh8,g3,h2`)
+        white := game.Start(White).StartMoveGen(1).pawnMoves(White)
+        expect(t, white.allMoves(), `[a6-a7 b7-b8Q b7-b8R b7-b8B b7-b8N]`)
+
+        black := game.Start(Black).StartMoveGen(1).pawnMoves(Black)
+        expect(t, black.allMoves(), `[h2-h1q h2-h1r h2-h1b h2-h1n g3-g2]`)
+}
+
+// Pawn moves that include jumps.
+func TestGenerate210(t *testing.T) {
+        game := NewGame().Setup(`Ka1,a6`, `Kh8,a7,g7,h6`)
+        white := game.Start(White).StartMoveGen(1).pawnMoves(White)
+        expect(t, white.allMoves(), `[]`)
+
+        black := game.Start(Black).StartMoveGen(1).pawnMoves(Black)
+        expect(t, black.allMoves(), `[h6-h5 g7-g5 g7-g6]`)
+}
+
+// Pawn captures without promotions.
+func TestGenerate220(t *testing.T) {
+        game := NewGame().Setup(`Ka1,a6,f6,g5`, `Kh8,b7,g7,h6`)
+        white := game.Start(White).StartMoveGen(1).pawnCaptures(White)
+        expect(t, white.allMoves(), `[g5xh6 a6xb7 f6xg7]`)
+
+        black := game.Start(Black).StartMoveGen(1).pawnCaptures(Black)
+        expect(t, black.allMoves(), `[h6xg5 b7xa6 g7xf6]`)
+}
+
 // func TestGenerate010(t *testing.T) {
 //         Settings.Log = false
 //         Settings.Fancy = false
