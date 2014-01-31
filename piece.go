@@ -165,3 +165,20 @@ func (p Piece) String() string {
         }
         return ``
 }
+
+// Colorless ASCII representation (perfect for tests).
+func (p Piece) s() string {
+        switch(p.kind()) {
+        case KING:
+                return `K`
+        case QUEEN:
+                return `Q`
+        case ROOK:
+                return `R`
+        case BISHOP:
+                return `B`
+        case KNIGHT:
+                return `N`
+        }
+        return ``
+}

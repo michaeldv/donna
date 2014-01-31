@@ -203,7 +203,7 @@ func (m Move) isCastle() bool {
 
 func (m Move) String() string {
         from, to, piece, capture := m.split()
-        promo := m.promo()
+        promo := m.promo().s()
 
         if !m.isCastle() {
                 col := [2]int{ Col(from) + 'a', Col(to) + 'a' }
@@ -218,12 +218,13 @@ func (m Move) String() string {
                 if piece.isPawn() { // Skip piece name if it's a pawn.
                         return fmt.Sprintf(format, col[0], row[0], sign, col[1], row[1], promo)
                 } else {
-                        if Settings.Fancy { // Fancy notation is more readable with extra space.
-                                format = `%s ` + format
+                        if Settings.Fancy {
+                                // Fancy notation is more readable with extra space.
+                                return fmt.Sprintf(`%s ` + format, piece, col[0], row[0], sign, col[1], row[1], promo)
                         } else {
-                                format = `%s` + format
+                                // Use uppercase letter to representa a piece regardless of its color.
+                                return fmt.Sprintf(`%s` + format, piece.s(), col[0], row[0], sign, col[1], row[1], promo)
                         }
-                        return fmt.Sprintf(format, piece, col[0], row[0], sign, col[1], row[1], promo)
                 }
         } else if m.is00() {
                 return `0-0`

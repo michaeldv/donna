@@ -93,7 +93,7 @@ func TestGenerate200(t *testing.T) {
         expect(t, white.allMoves(), `[a6-a7 b7-b8Q b7-b8R b7-b8B b7-b8N]`)
 
         black := game.Start(Black).StartMoveGen(1).pawnMoves(Black)
-        expect(t, black.allMoves(), `[h2-h1q h2-h1r h2-h1b h2-h1n g3-g2]`)
+        expect(t, black.allMoves(), `[h2-h1Q h2-h1R h2-h1B h2-h1N g3-g2]`)
 }
 
 // Pawn moves that include jumps.
@@ -114,6 +114,26 @@ func TestGenerate220(t *testing.T) {
 
         black := game.Start(Black).StartMoveGen(1).pawnCaptures(Black)
         expect(t, black.allMoves(), `[h6xg5 b7xa6 g7xf6]`)
+}
+
+// Pawn captures with Queen promotion.
+func TestGenerate230(t *testing.T) {
+        game := NewGame().Setup(`Ka1,Rh1,Bf1,c7`, `Kh8,Nb8,Qd8,g2`)
+        white := game.Start(White).StartMoveGen(1).pawnCaptures(White)
+        expect(t, white.allMoves(), `[c7xb8Q c7-c8Q c7xd8Q]`)
+
+        black := game.Start(Black).StartMoveGen(1).pawnCaptures(Black)
+        expect(t, black.allMoves(), `[g2xf1Q g2-g1Q g2xh1Q]`)
+}
+
+// Piece captures.
+func TestGenerate240(t *testing.T) {
+        game := NewGame().Setup(`Ka1,Qd1,Rh1,Bb3,Ne5`, `Ka8,Qd8,Rh8,Be6,Ng6`)
+        white := game.Start(White).StartMoveGen(1).pieceCaptures(White)
+        expect(t, white.allMoves(), `[Ne5xg6 Bb3xe6 Rh1xh8 Qd1xd8]`)
+
+        black := game.Start(Black).StartMoveGen(1).pieceCaptures(Black)
+        expect(t, black.allMoves(), `[Ng6xe5 Be6xb3 Rh8xh1 Qd8xd1]`)
 }
 
 // func TestGenerate010(t *testing.T) {
