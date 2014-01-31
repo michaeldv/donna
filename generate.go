@@ -293,6 +293,16 @@ func (ml *MoveList) addEvasion(piece Piece, block Bitmask) {
         }
 }
 
+// Return a list of generated moves by continuously calling the next move
+// until the list is empty.
+func (ml *MoveList) allMoves() (moves []Move) {
+	for move := ml.NextMove(); move != 0; move = ml.NextMove() {
+		moves = append(moves, move)
+	}
+	return
+}
+
+
 // All moves.
 func (p *Position) Moves(ply int) (moves []Move) {
         for square, piece := range p.pieces {
