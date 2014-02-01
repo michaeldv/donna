@@ -185,17 +185,17 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         // piece but double check is also a possibility.
         //
         checkers := maskPawn[enemy][square] & ml.position.outposts[pawn]
-        checkers |= ml.position.Targets(square, knight) & ml.position.outposts[knight]
-        checkers |= ml.position.Targets(square, bishop) & (ml.position.outposts[bishop] | ml.position.outposts[queen])
-        checkers |= ml.position.Targets(square, rook) & (ml.position.outposts[rook] | ml.position.outposts[queen])
+        checkers |= ml.position.Targets(square, Knight(color)) & ml.position.outposts[knight]
+        checkers |= ml.position.Targets(square, Bishop(color)) & (ml.position.outposts[bishop] | ml.position.outposts[queen])
+        checkers |= ml.position.Targets(square, Rook(color)) & (ml.position.outposts[rook] | ml.position.outposts[queen])
         //
         // Generate possible king retreats first, i.e. moves to squares not
         // occupied by friendly pieces and not attacked by the opponent.
         //
-        retreats := kingMoves[square] & ^ml.position.board[color] & ^ml.position.attacks[enemy]
+        retreats := ml.position.targets[square] & ^ml.position.attacks[enemy]
         //
         // If the attacking piece is bishop, rook, or queen then exclude the
-        // square behind the king using avasion mask. Note that knight's
+        // square behind the king using evasion mask. Note that knight's
         // evasion mask is full board so we only check if the attacking piece
         // is not a pawn.
         //
@@ -226,11 +226,12 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
                 ml.tail++
         }
         //
-        // Pawn captures.
+        // Pawn captures: do we have any pawns available that could capture
+        // the attacking piece?
         //
         pawns := maskPawn[color][attackSquare] & ml.position.outposts[Pawn(color)]
         for pawns != 0 {
-                ml.moves[ml.tail].move = NewMove(ml.position, square, pawns.pop())
+                ml.moves[ml.tail].move = NewMove(ml.position, pawns.pop(), attackSquare)
                 ml.tail++
         }
         //
@@ -241,7 +242,7 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         if enpassant := attackSquare + eight[color]; ml.position.flags.enpassant == enpassant {
                 pawns := maskPawn[color][enpassant] & ml.position.outposts[Pawn(color)]
                 for pawns != 0 {
-                        ml.moves[ml.tail].move = NewEnpassant(ml.position, square, pawns.pop())
+                        ml.moves[ml.tail].move = NewEnpassant(ml.position, pawns.pop(), attackSquare + eight[color])
                         ml.tail++
                 }
         }
@@ -254,7 +255,7 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         //
         pawns = ml.position.pawnMovesMask(color) & block
         for pawns != 0 {
-                from := pawns.pop(); to := from + eight[color]
+                to := pawns.pop(); from := to - eight[color]
                 ml.moves[ml.tail].move = NewMove(ml.position, from, to)
                 if to >= A8 || to <= H1 {
                         ml.moves[ml.tail].move.promote(QUEEN)
@@ -266,12 +267,12 @@ func (ml *MoveList) GenerateEvasions() *MoveList {
         //
         pawns = ml.position.pawnJumpsMask(color) & block
         for pawns != 0 {
-                from := pawns.pop()
-                ml.moves[ml.tail].move = NewMove(ml.position, from, from + 2 * eight[color])
+                to := pawns.pop(); from := to - 2 * eight[color]
+                ml.moves[ml.tail].move = NewMove(ml.position, from, to)
                 ml.tail++
         }
         //
-        // What's left is to enerate all possible knight, bishop, rook, and
+        // What's left is to generate all possible knight, bishop, rook, and
         // queen moves that evade the check.
         //
         for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
@@ -461,9 +462,9 @@ func (p *Position) isEnpassant(target, color int) bool {
 
 func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
         if color == White {
-                mask = (p.outposts[Pawn(White)] >> 8)
+                mask = (p.outposts[Pawn(White)] << 8)
         } else {
-                mask = (p.outposts[Pawn(Black)] << 8)
+                mask = (p.outposts[Pawn(Black)] >> 8)
         }
         mask &= ^p.board[2]
         return
@@ -471,9 +472,9 @@ func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
 
 func (p *Position) pawnJumpsMask(color int) (mask Bitmask) {
         if color == White {
-                mask = maskRank[3] & (p.outposts[Pawn(White)] >> 16)
+                mask = maskRank[3] & (p.outposts[Pawn(White)] << 16)
         } else {
-                mask = maskRank[4] & (p.outposts[Pawn(Black)] << 16)
+                mask = maskRank[4] & (p.outposts[Pawn(Black)] >> 16)
         }
         mask &= ^p.board[2]
         return

@@ -210,7 +210,7 @@ func (m Move) String() string {
                 row := [2]int{ Row(from) + 1, Row(to) + 1 }
 
                 sign := '-'
-                if capture != 0 {
+                if capture != 0 || (piece.isPawn() && Col(from) != Col(to)) {
                         sign = 'x'
                 }
 
