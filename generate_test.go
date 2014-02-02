@@ -147,7 +147,7 @@ func TestGenerate270(t *testing.T) {
 func TestGenerate280(t *testing.T) {
         game := NewGame().Setup(`Ka1`, `Kf8,Nc4,b2`)
         white := game.Start(White).StartMoveGen(1).GenerateEvasions()
-        expect(t, white.allMoves(), `[Ka1-a2 Ka1-b1]`)
+        expect(t, white.allMoves(), `[Ka1-b1 Ka1-a2]`)
 }
 
 // Check evasions (king retreats).

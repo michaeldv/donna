@@ -56,3 +56,58 @@ func (p *Position) Targets(square int, piece Piece) (bitmask Bitmask) {
 
         return bitmask
 }
+
+func (p *Position) pawnAttacks(color int) (bitmask Bitmask) {
+        if color == White {
+                bitmask  = (p.outposts[Pawn(White)] & ^maskFile[0]) << 7
+                bitmask |= (p.outposts[Pawn(White)] & ^maskFile[7]) << 9
+        } else {
+                bitmask  = (p.outposts[Pawn(Black)] & ^maskFile[0]) >> 9
+                bitmask |= (p.outposts[Pawn(Black)] & ^maskFile[7]) >> 7
+        }
+        return
+}
+
+func (p *Position) knightAttacks(color int) (bitmask Bitmask) {
+        outposts := p.outposts[Knight(color)]
+        for outposts != 0 {
+                bitmask |= knightMoves[outposts.pop()]
+        }
+        return
+}
+
+func (p *Position) bishopAttacks(color int) (bitmask Bitmask) {
+        outposts := p.outposts[Bishop(color)]
+        for outposts != 0 {
+                square := outposts.pop()
+                magic := ((bishopMagic[square].mask & p.board[2]) * bishopMagic[square].magic) >> 55
+                bitmask |= bishopMagicMoves[square][magic]
+        }
+        return
+}
+
+func (p *Position) rookAttacks(color int) (bitmask Bitmask) {
+        outposts := p.outposts[Rook(color)]
+        for outposts != 0 {
+                square := outposts.pop()
+                magic := ((rookMagic[square].mask & p.board[2]) * rookMagic[square].magic) >> 52
+                bitmask |= rookMagicMoves[square][magic]
+        }
+        return
+}
+
+func (p *Position) queenAttacks(color int) (bitmask Bitmask) {
+        outposts := p.outposts[Queen(color)]
+        for outposts != 0 {
+                square := outposts.pop()
+                magic := ((bishopMagic[square].mask & p.board[2]) * bishopMagic[square].magic) >> 55
+                bitmask |= bishopMagicMoves[square][magic]
+                magic = ((rookMagic[square].mask & p.board[2]) * rookMagic[square].magic) >> 52
+                bitmask |= rookMagicMoves[square][magic]
+        }
+        return
+}
+
+func (p *Position) kingAttacks(color int) Bitmask {
+         return kingMoves[p.outposts[King(color)].first()]
+}

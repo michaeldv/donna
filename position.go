@@ -93,29 +93,19 @@ func (p *Position) setupAttacks() *Position {
         board := p.board[2]
         for board != 0 {
                 square := board.pop()
-                piece := p.pieces[square]; color := piece.color()
+                piece := p.pieces[square]
                 p.targets[square] = p.Targets(square, piece)
-                if !piece.isPawn() {
-                        p.attacks[color].combine(p.targets[square])
-                }
         }
+        p.attacks[White] = p.pawnAttacks(White) | p.knightAttacks(White) | p.bishopAttacks(White) |
+                           p.rookAttacks(White) | p.queenAttacks(White) | p.kingAttacks(White)
+        p.attacks[Black] = p.pawnAttacks(Black) | p.knightAttacks(Black) | p.bishopAttacks(Black) |
+                           p.rookAttacks(Black) | p.queenAttacks(Black) | p.kingAttacks(Black)
+        p.attacks[2] = p.attacks[White] | p.attacks[Black]
         //
         // Now that we have attack targets for both kings adjust them to make sure the
         // kings don't stomp on each other.
         //
         p.updateKingTargets()
-        //
-        // Pawn attacks include friendly pieces, i.e. for white pawns on a2 and b3 the
-        // attacks mask is a4 | b3 | c4.
-        //
-        p.attacks[White] |= (p.outposts[Pawn(White)] & ^maskFile[0]) << 7
-        p.attacks[White] |= (p.outposts[Pawn(White)] & ^maskFile[7]) << 9
-        p.attacks[Black] |= (p.outposts[Pawn(Black)] & ^maskFile[0]) >> 9
-        p.attacks[Black] |= (p.outposts[Pawn(Black)] & ^maskFile[7]) >> 7
-        //
-        // Combine attacks bitmask and set the flag is the king is being attacked.
-        //
-        p.attacks[2] = p.attacks[White] | p.attacks[Black]
         p.inCheck = p.isCheck(p.color)
 
         return p
