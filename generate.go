@@ -294,6 +294,48 @@ func (ml *MoveList) addEvasion(piece Piece, block Bitmask) {
         }
 }
 
+// Non-capturing checks.
+func (ml *MoveList) GenerateChecks() *MoveList {
+        color := ml.position.color
+        enemy := ml.position.color^1
+        square := ml.position.outposts[King(enemy)].first()
+
+        // Possible Knight checks.
+        checks := knightMoves[square]
+        outposts := ml.position.outposts[Knight(color)]
+        for outposts != 0 {
+                from := outposts.pop()
+                targets := knightMoves[from] & checks & ^ml.position.board[2]
+                for targets != 0 {
+                        ml.moves[ml.tail].move = NewMove(ml.position, from, targets.pop())
+                        ml.tail++
+                }
+        }
+
+        // Possible Bishop or Queen checks.
+        checks = ml.position.Targets(square, Bishop(color))
+        outposts = ml.position.outposts[Bishop(color)] | ml.position.outposts[Queen(color)]
+        for outposts != 0 {
+                from := outposts.pop()
+                targets := ml.position.Targets(from, Bishop(color)) & checks & ^ml.position.board[2]
+                for targets != 0 {
+                        // to := targets.pop()
+                        //
+                        // If piece[to] is the only friendly piece between the
+                        // attacking bishop and the enemy's king then moving
+                        // the firendly pieces away causes discovered check.
+                        //
+                }
+        }
+
+        // Possible Rook or Queen checks.
+        return ml
+}
+
+func (ml *MoveList) GenerateQuiets() *MoveList {
+        return ml
+}
+
 // Return a list of generated moves by continuously calling the next move
 // until the list is empty.
 func (ml *MoveList) allMoves() (moves []Move) {
