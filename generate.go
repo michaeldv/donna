@@ -313,18 +313,31 @@ func (ml *MoveList) GenerateChecks() *MoveList {
         }
 
         // Possible Bishop or Queen checks.
-        checks = ml.position.Targets(square, Bishop(color))
+        checks = ml.position.Targets(square, Bishop(enemy))
         outposts = ml.position.outposts[Bishop(color)] | ml.position.outposts[Queen(color)]
         for outposts != 0 {
                 from := outposts.pop()
-                targets := ml.position.Targets(from, Bishop(color)) & checks & ^ml.position.board[2]
+                targets := ml.position.Targets(from, Bishop(enemy)) & checks & ^ml.position.board[enemy]
                 for targets != 0 {
-                        // to := targets.pop()
-                        //
-                        // If piece[to] is the only friendly piece between the
-                        // attacking bishop and the enemy's king then moving
-                        // the firendly pieces away causes discovered check.
-                        //
+                        to := targets.pop()
+                        if piece := ml.position.pieces[to]; piece == 0 {
+                                ml.moves[ml.tail].move = NewMove(ml.position, from, to)
+                                ml.tail++
+                        } else if piece.color() == color && sameDiagonal[from][to] {
+                                //
+                                // Moving the piece away gives discovered check.
+                                //
+                                switch piece.kind() {
+                                case PAWN:
+                                        // movePawnFrom(square, targets, mask)
+                                case KNIGHT:
+                                        // moveKnightFrom(square, targets, mask)
+                                case ROOK:
+                                        // moveRookFrom(square, targets, mask)
+                                case KING:
+                                        // moveKingFrom(square, targets, mask)
+                                }
+                        }
                 }
         }
 
