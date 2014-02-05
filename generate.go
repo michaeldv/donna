@@ -14,345 +14,49 @@ const (
         stepRemaining
 )
 
-type MoveEx struct {
+type MoveWithScore struct {
         move   Move
         score  int
 }
 
-type MoveList struct {
-        position  *Position
-        moves     [256]MoveEx
-        ply       int
-        head      int
-        tail      int
-        step      int
+type MoveGen struct {
+        p     *Position
+        list  [256]MoveWithScore
+        head  int
+        tail  int
+        step  int
+        ply   int
 }
 
-var moveList [MaxPly]MoveList
+var moveList [MaxPly]MoveGen
 
-func (p *Position) StartMoveGen(ply int) (ml *MoveList) {
-        ml = &moveList[ply]
-        ml.position = p
-        ml.moves = [256]MoveEx{}
-        ml.ply = ply
-        ml.head, ml.tail = 0, 0
+func (p *Position) StartMoveGen(ply int) (gen *MoveGen) {
+        gen = &moveList[ply]
+        gen.p = p
+        gen.list = [256]MoveWithScore{}
+        gen.head, gen.tail = 0, 0
+        gen.ply = ply
         return
 }
 
-func (ml *MoveList) NextMove() (move Move) {
-        if ml.head == ml.tail {
+func (gen *MoveGen) NextMove() (move Move) {
+        if gen.head == gen.tail {
                 return 0
         }
-        move = ml.moves[ml.head].move
-        ml.head++
+        move = gen.list[gen.head].move
+        gen.head++
         return
 }
 
-func (ml *MoveList) GenerateMoves() *MoveList {
-        color := ml.position.color
-        ml.pawnMoves(color)
-        ml.pieceMoves(color)
-        ml.kingMoves(color)
-        return ml
-}
 
-func (ml *MoveList) pawnMoves(color int) *MoveList {
-        pawns := ml.position.outposts[Pawn(color)]
-
-        for pawns != 0 {
-                square := pawns.pop()
-                targets := ml.position.targets[square]
-                for targets != 0 {
-                        target := targets.pop()
-                        if target > H1 && target < A8 {
-                                ml.moves[ml.tail].move = ml.position.pawnMove(square, target)
-                                ml.tail++
-                        } else { // Promotion.
-                                m1, m2, m3, m4 := ml.position.pawnPromotion(square, target)
-                                ml.moves[ml.tail].move = m1
-                                ml.tail++
-                                ml.moves[ml.tail].move = m2
-                                ml.tail++
-                                ml.moves[ml.tail].move = m3
-                                ml.tail++
-                                ml.moves[ml.tail].move = m4
-                                ml.tail++
-                        }
-                }
-        }
-        return ml
-}
-
-func (ml *MoveList) pieceMoves(color int) *MoveList {
-	for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
-	        outposts := ml.position.outposts[Piece(kind|color)]
-	        for outposts != 0 {
-	                square := outposts.pop()
-	                targets := ml.position.targets[square]
-	                for targets != 0 {
-	                        ml.moves[ml.tail].move = NewMove(ml.position, square, targets.pop())
-	                        ml.tail++
-	                }
-	        }
-	}
-        return ml
-}
-
-func (ml *MoveList) kingMoves(color int) *MoveList {
-        king := ml.position.outposts[King(color)]
-        if king != 0 {
-                square := king.pop()
-                targets := ml.position.targets[square]
-                for targets != 0 {
-                        target := targets.pop()
-                        if square == homeKing[color] && Abs(square - target) == 2 {
-                                ml.moves[ml.tail].move = NewCastle(ml.position, square, target)
-                        } else {
-                                ml.moves[ml.tail].move = NewMove(ml.position, square, target)
-                        }
-                        ml.tail++
-                }
-        }
-        return ml
-}
-
-
-func (ml *MoveList) GenerateCaptures() *MoveList {
-        color := ml.position.color
-        ml.pawnCaptures(color)
-        ml.pieceCaptures(color)
-        return ml
-}
-
-// Generates all pseudo-legal pawn captures and Queen promotions.
-func (ml *MoveList) pawnCaptures(color int) *MoveList {
-        pawns := ml.position.outposts[Pawn(color)]
-
-        for pawns != 0 {
-                square := pawns.pop()
-                //
-                // First check capture targets on rows 2-7 (no promotions).
-                //
-                targets := ml.position.targets[square] & ml.position.board[color^1] & 0x00FFFFFFFFFFFF00
-                for targets != 0 {
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, targets.pop())
-                        ml.tail++
-                }
-                //
-                // Now check promo rows. The might include capture targets as well
-                // as empty promo square in front of the pawn.
-                //
-                if RelRow(square, color) == 6 {
-                        //
-                        // Select maskRank[7] for white and maskRank[0] for black.
-                        //
-                        targets  = ml.position.targets[square] & maskRank[7 - 7 * color]
-                        targets |= ml.position.board[2] & Bit(square + eight[color])
-
-                        for targets != 0 {
-                                ml.moves[ml.tail].move = NewMove(ml.position, square, targets.pop()).promote(QUEEN)
-                                ml.tail++
-                        }
-                }
-        }
-        return ml
-}
-
-// Generates all pseudo-legal captures by pieces other than pawn.
-func (ml *MoveList) pieceCaptures(color int) *MoveList {
-	for _, kind := range [5]int{ KNIGHT, BISHOP, ROOK, QUEEN, KING } {
-	        outposts := ml.position.outposts[Piece(kind|color)]
-	        for outposts != 0 {
-	                square := outposts.pop()
-	                targets := ml.position.targets[square] & ml.position.board[color^1]
-	                for targets != 0 {
-	                        ml.moves[ml.tail].move = NewMove(ml.position, square, targets.pop())
-	                        ml.tail++
-	                }
-	        }
-	}
-	return ml
-}
-
-
-func (ml *MoveList) GenerateEvasions() *MoveList {
-        color := ml.position.color
-        enemy := ml.position.color^1
-        square := ml.position.outposts[King(color)].first()
-        pawn, knight, bishop, rook, queen := Pawn(enemy), Knight(enemy), Bishop(enemy), Rook(enemy), Queen(enemy)
-        //
-        // Find out what pieces are checking the king. Usually it's a single
-        // piece but double check is also a possibility.
-        //
-        checkers := maskPawn[enemy][square] & ml.position.outposts[pawn]
-        checkers |= ml.position.Targets(square, Knight(color)) & ml.position.outposts[knight]
-        checkers |= ml.position.Targets(square, Bishop(color)) & (ml.position.outposts[bishop] | ml.position.outposts[queen])
-        checkers |= ml.position.Targets(square, Rook(color)) & (ml.position.outposts[rook] | ml.position.outposts[queen])
-        //
-        // Generate possible king retreats first, i.e. moves to squares not
-        // occupied by friendly pieces and not attacked by the opponent.
-        //
-        retreats := ml.position.targets[square] & ^ml.position.attacks[enemy]
-        //
-        // If the attacking piece is bishop, rook, or queen then exclude the
-        // square behind the king using evasion mask. Note that knight's
-        // evasion mask is full board so we only check if the attacking piece
-        // is not a pawn.
-        //
-        attackSquare := checkers.pop()
-        if ml.position.pieces[attackSquare] != pawn {
-                retreats &= maskEvade[square][attackSquare]
-        }
-        //
-        // If checkers mask is not empty then we've got double check and
-        // retreat is the only option.
-        //
-        if checkers != 0 {
-                attackSquare = checkers.first()
-                if ml.position.pieces[attackSquare] != pawn {
-                        retreats &= maskEvade[square][attackSquare]
-                }
-                for retreats != 0 {
-                        ml.moves[ml.tail].move = NewMove(ml.position, square, retreats.pop())
-                        ml.tail++
-                }
-                return ml
-        }
-        //
-        // Generate king retreats.
-        //
-        for retreats != 0 {
-                ml.moves[ml.tail].move = NewMove(ml.position, square, retreats.pop())
-                ml.tail++
-        }
-        //
-        // Pawn captures: do we have any pawns available that could capture
-        // the attacking piece?
-        //
-        pawns := maskPawn[color][attackSquare] & ml.position.outposts[Pawn(color)]
-        for pawns != 0 {
-                ml.moves[ml.tail].move = NewMove(ml.position, pawns.pop(), attackSquare)
-                ml.tail++
-        }
-        //
-        // Rare case when the check could be avoided by en-passant capture.
-        // For example: Ke4, c5, e5 vs. Ke8, d7. Black's d7-d5+ could be
-        // evaded by c5xd6 or e5xd6 en-passant captures.
-        //
-        if enpassant := attackSquare + eight[color]; ml.position.flags.enpassant == enpassant {
-                pawns := maskPawn[color][enpassant] & ml.position.outposts[Pawn(color)]
-                for pawns != 0 {
-                        ml.moves[ml.tail].move = NewEnpassant(ml.position, pawns.pop(), attackSquare + eight[color])
-                        ml.tail++
-                }
-        }
-        //
-        // See if the check could be blocked.
-        //
-        block := maskBlock[square][attackSquare]
-        //
-        // Handle one square pawn pushes: promote to Queen when reaching last rank.
-        //
-        pawns = ml.position.pawnMovesMask(color) & block
-        for pawns != 0 {
-                to := pawns.pop(); from := to - eight[color]
-                ml.moves[ml.tail].move = NewMove(ml.position, from, to)
-                if to >= A8 || to <= H1 {
-                        ml.moves[ml.tail].move.promote(QUEEN)
-                }
-                ml.tail++
-        }
-        //
-        // Handle two square pawn pushes.
-        //
-        pawns = ml.position.pawnJumpsMask(color) & block
-        for pawns != 0 {
-                to := pawns.pop(); from := to - 2 * eight[color]
-                ml.moves[ml.tail].move = NewMove(ml.position, from, to)
-                ml.tail++
-        }
-        //
-        // What's left is to generate all possible knight, bishop, rook, and
-        // queen moves that evade the check.
-        //
-        for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
-                ml.addEvasion(Piece(kind|color), block)
-        }
-
-        return ml
-}
-
-func (ml *MoveList) addEvasion(piece Piece, block Bitmask) {
-        outposts := ml.position.outposts[piece]
-        for outposts != 0 {
-                from := outposts.pop()
-                targets := ml.position.targets[from] & block
-                for targets != 0 {
-                        ml.moves[ml.tail].move = NewMove(ml.position, from, targets.pop())
-                        ml.tail++
-                }
-        }
-}
-
-// Non-capturing checks.
-func (ml *MoveList) GenerateChecks() *MoveList {
-        color := ml.position.color
-        enemy := ml.position.color^1
-        square := ml.position.outposts[King(enemy)].first()
-
-        // Possible Knight checks.
-        checks := knightMoves[square]
-        outposts := ml.position.outposts[Knight(color)]
-        for outposts != 0 {
-                from := outposts.pop()
-                targets := knightMoves[from] & checks & ^ml.position.board[2]
-                for targets != 0 {
-                        ml.moves[ml.tail].move = NewMove(ml.position, from, targets.pop())
-                        ml.tail++
-                }
-        }
-
-        // Possible Bishop or Queen checks.
-        checks = ml.position.Targets(square, Bishop(enemy))
-        outposts = ml.position.outposts[Bishop(color)] | ml.position.outposts[Queen(color)]
-        for outposts != 0 {
-                from := outposts.pop()
-                targets := ml.position.Targets(from, Bishop(enemy)) & checks & ^ml.position.board[enemy]
-                for targets != 0 {
-                        to := targets.pop()
-                        if piece := ml.position.pieces[to]; piece == 0 {
-                                ml.moves[ml.tail].move = NewMove(ml.position, from, to)
-                                ml.tail++
-                        } else if piece.color() == color && sameDiagonal[from][to] {
-                                //
-                                // Moving the piece away gives discovered check.
-                                //
-                                switch piece.kind() {
-                                case PAWN:
-                                        // movePawnFrom(square, targets, mask)
-                                case KNIGHT:
-                                        // moveKnightFrom(square, targets, mask)
-                                case ROOK:
-                                        // moveRookFrom(square, targets, mask)
-                                case KING:
-                                        // moveKingFrom(square, targets, mask)
-                                }
-                        }
-                }
-        }
-
-        // Possible Rook or Queen checks.
-        return ml
-}
-
-func (ml *MoveList) GenerateQuiets() *MoveList {
-        return ml
+func (gen *MoveGen) GenerateQuiets() *MoveGen {
+        return gen
 }
 
 // Return a list of generated moves by continuously calling the next move
 // until the list is empty.
-func (ml *MoveList) allMoves() (moves []Move) {
-	for move := ml.NextMove(); move != 0; move = ml.NextMove() {
+func (gen *MoveGen) allMoves() (moves []Move) {
+	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		moves = append(moves, move)
 	}
 	return
