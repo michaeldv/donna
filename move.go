@@ -175,7 +175,7 @@ func (m Move) calculateScore(position *Position) int {
 // PxB, NxB, BxB, RxB, QxB, KxB             BISHOP = 3 << 1 // 6
 // PxN, NxN, BxN, RxN, QxN, KxN             KNIGHT = 2 << 1 // 4
 // PxP, NxP, BxP, RxP, QxP, KxP             PAWN   = 1 << 1 // 2
-func (m Move) calculateValue() int {
+func (m Move) value() int {
         capture := m.capture()
         if capture == 0 || capture.isKing() {
                 return 0
