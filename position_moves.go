@@ -37,20 +37,20 @@ func (p *Position) moveScore(m Move) int {
 func (p *Position) pawnMove(square, target int) Move {
         if RelRow(square, p.color) == 1 && RelRow(target, p.color) == 3 {
                 if p.isEnpassant(target, p.color) {
-                        return NewEnpassant(p, square, target)
+                        return p.NewEnpassant(square, target)
                 } else {
-                        return NewPawnJump(p, square, target)
+                        return p.NewPawnJump(square, target)
                 }
         }
 
-        return NewMove(p, square, target)
+        return p.NewMove(square, target)
 }
 
 func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
-        return NewMove(p, square, target).promote(QUEEN),
-               NewMove(p, square, target).promote(ROOK),
-               NewMove(p, square, target).promote(BISHOP),
-               NewMove(p, square, target).promote(KNIGHT)
+        return p.NewMove(square, target).promote(QUEEN),
+               p.NewMove(square, target).promote(ROOK),
+               p.NewMove(square, target).promote(BISHOP),
+               p.NewMove(square, target).promote(KNIGHT)
 }
 
 func (p *Position) isEnpassant(target, color int) bool {
@@ -114,7 +114,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
                 if (p.pieces[from] != piece) || (p.targets[from] & Bit(to) == 0) {
                         move = 0 // Invalid move.
                 } else {
-                        move = NewMove(p, from, to)
+                        move = p.NewMove(from, to)
                         if len(promo) > 0 {
                                 switch promo {
                                 case `Q`, `q`:
@@ -139,7 +139,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
                 if p.color == Black {
                         to += 56
                 }
-                move = NewMove(p, from, to)
+                move = p.NewMove(from, to)
                 if !move.isCastle() {
                         move = 0
                 }

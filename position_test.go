@@ -10,16 +10,16 @@ func TestPosition010(t *testing.T) {
         p := NewGame().Setup(`Ke1,e2`, `Kg8,d7,f7`).Start(White)
         expect(t, p.flags.enpassant, 0)
 
-        p = p.MakeMove(NewMove(p, E2, E4))
+        p = p.MakeMove(p.NewMove(E2, E4))
         expect(t, p.flags.enpassant, 0)
 
-        p = p.MakeMove(NewMove(p, D7, D5))
+        p = p.MakeMove(p.NewMove(D7, D5))
         expect(t, p.flags.enpassant, 0)
 
-        p = p.MakeMove(NewMove(p, E4, E5))
+        p = p.MakeMove(p.NewMove(E4, E5))
         expect(t, p.flags.enpassant, 0)
 
-        p = p.MakeMove(NewEnpassant(p, F7, F5))
+        p = p.MakeMove(p.NewEnpassant(F7, F5))
         expect(t, p.flags.enpassant, F6)
 }
 
@@ -125,9 +125,9 @@ func TestPosition080(t *testing.T) { // Rooks on wrong squares.
 
 func TestPosition081(t *testing.T) { // Rook has moved.
         p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
-        p = p.MakeMove(NewMove(p, A1, A2))
-        p = p.MakeMove(NewMove(p, E8, E7))
-        p = p.MakeMove(NewMove(p, A2, A1))
+        p = p.MakeMove(p.NewMove(A1, A2))
+        p = p.MakeMove(p.NewMove(E8, E7))
+        p = p.MakeMove(p.NewMove(A2, A1))
 
         expect(t, p.can00(White), true)
         expect(t, p.can000(White), false)
@@ -135,9 +135,9 @@ func TestPosition081(t *testing.T) { // Rook has moved.
 
 func TestPosition082(t *testing.T) { // King has moved.
         p := NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`).Start(Black)
-        p = p.MakeMove(NewMove(p, E8, E7))
-        p = p.MakeMove(NewMove(p, E1, E2))
-        p = p.MakeMove(NewMove(p, E7, E8))
+        p = p.MakeMove(p.NewMove(E8, E7))
+        p = p.MakeMove(p.NewMove(E1, E2))
+        p = p.MakeMove(p.NewMove(E7, E8))
 
         expect(t, p.can00(Black), false)
         expect(t, p.can000(Black), false)
@@ -145,7 +145,7 @@ func TestPosition082(t *testing.T) { // King has moved.
 
 func TestPosition083(t *testing.T) { // Rook is taken.
         p := NewGame().Setup(`Ke1,Nb6`, `Ke8,Ra8,Rh8`).Start(White)
-        p = p.MakeMove(NewMove(p, B6, A8))
+        p = p.MakeMove(p.NewMove(B6, A8))
 
         expect(t, p.can00(Black), true)
         expect(t, p.can000(Black), false)
@@ -154,11 +154,11 @@ func TestPosition083(t *testing.T) { // Rook is taken.
 // Straight repetition.
 func TestPosition100(t *testing.T) {
         p := NewGame().InitialPosition().Start(White) // Initial 1.
-        p = p.MakeMove(NewMove(p, G1, F3));  p = p.MakeMove(NewMove(p, G8, F6)) // 1.
-        p = p.MakeMove(NewMove(p, F3, G1));  p = p.MakeMove(NewMove(p, F6, G8)) // Initial 2.
-        p = p.MakeMove(NewMove(p, G1, F3));  p = p.MakeMove(NewMove(p, G8, F6)) // 2.
-        p = p.MakeMove(NewMove(p, F3, G1));  p = p.MakeMove(NewMove(p, F6, G8)) // Initial 3.
-        p = p.MakeMove(NewMove(p, G1, F3));  p = p.MakeMove(NewMove(p, G8, F6)) // 3.
+        p = p.MakeMove(p.NewMove(G1, F3));  p = p.MakeMove(p.NewMove(G8, F6)) // 1.
+        p = p.MakeMove(p.NewMove(F3, G1));  p = p.MakeMove(p.NewMove(F6, G8)) // Initial 2.
+        p = p.MakeMove(p.NewMove(G1, F3));  p = p.MakeMove(p.NewMove(G8, F6)) // 2.
+        p = p.MakeMove(p.NewMove(F3, G1));  p = p.MakeMove(p.NewMove(F6, G8)) // Initial 3.
+        p = p.MakeMove(p.NewMove(G1, F3));  p = p.MakeMove(p.NewMove(G8, F6)) // 3.
 
         expect(t, p.isRepetition(), true)
 }
@@ -166,18 +166,18 @@ func TestPosition100(t *testing.T) {
 // Repetition with some moves in between.
 func TestPosition110(t *testing.T) {
         p := NewGame().InitialPosition().Start(White)
-        p = p.MakeMove(NewMove(p, E2, E4));  p = p.MakeMove(NewMove(p, E7, E5))
+        p = p.MakeMove(p.NewMove(E2, E4));  p = p.MakeMove(p.NewMove(E7, E5))
 
-        p = p.MakeMove(NewMove(p, G1, F3));  p = p.MakeMove(NewMove(p, G8, F6)) // 1.
-        p = p.MakeMove(NewMove(p, B1, C3));  p = p.MakeMove(NewMove(p, B8, C6))
-        p = p.MakeMove(NewMove(p, F1, C4));  p = p.MakeMove(NewMove(p, F8, C5))
-        p = p.MakeMove(NewMove(p, C3, B1));  p = p.MakeMove(NewMove(p, C6, B8))
-        p = p.MakeMove(NewMove(p, C4, F1));  p = p.MakeMove(NewMove(p, C5, F8)) // 2.
+        p = p.MakeMove(p.NewMove(G1, F3));  p = p.MakeMove(p.NewMove(G8, F6)) // 1.
+        p = p.MakeMove(p.NewMove(B1, C3));  p = p.MakeMove(p.NewMove(B8, C6))
+        p = p.MakeMove(p.NewMove(F1, C4));  p = p.MakeMove(p.NewMove(F8, C5))
+        p = p.MakeMove(p.NewMove(C3, B1));  p = p.MakeMove(p.NewMove(C6, B8))
+        p = p.MakeMove(p.NewMove(C4, F1));  p = p.MakeMove(p.NewMove(C5, F8)) // 2.
 
-        p = p.MakeMove(NewMove(p, F1, C4));  p = p.MakeMove(NewMove(p, F8, C5))
-        p = p.MakeMove(NewMove(p, B1, C3));  p = p.MakeMove(NewMove(p, B8, C6))
-        p = p.MakeMove(NewMove(p, C4, F1));  p = p.MakeMove(NewMove(p, C5, F8))
-        p = p.MakeMove(NewMove(p, C3, B1));  p = p.MakeMove(NewMove(p, C6, B8)) // 3.
+        p = p.MakeMove(p.NewMove(F1, C4));  p = p.MakeMove(p.NewMove(F8, C5))
+        p = p.MakeMove(p.NewMove(B1, C3));  p = p.MakeMove(p.NewMove(B8, C6))
+        p = p.MakeMove(p.NewMove(C4, F1));  p = p.MakeMove(p.NewMove(C5, F8))
+        p = p.MakeMove(p.NewMove(C3, B1));  p = p.MakeMove(p.NewMove(C6, B8)) // 3.
 
         expect(t, p.isRepetition(), true)
 }
@@ -185,15 +185,15 @@ func TestPosition110(t *testing.T) {
 // Irreversible 0-0.
 func TestPosition120(t *testing.T) {
         p := NewGame().Setup(`Ke1,Rh1,h2`, `Ke8,Ra8,a7`).Start(White)
-        p = p.MakeMove(NewMove(p, H2, H4));  p = p.MakeMove(NewMove(p, A7, A5)) // 1.
-        p = p.MakeMove(NewMove(p, E1, E2));  p = p.MakeMove(NewMove(p, E8, E7)) // King has moved.
-        p = p.MakeMove(NewMove(p, E2, E1));  p = p.MakeMove(NewMove(p, E7, E8)) // 2.
-        p = p.MakeMove(NewMove(p, E1, E2));  p = p.MakeMove(NewMove(p, E8, E7)) // King has moved again.
-        p = p.MakeMove(NewMove(p, E2, E1));  p = p.MakeMove(NewMove(p, E7, E8)) // 3.
+        p = p.MakeMove(p.NewMove(H2, H4));  p = p.MakeMove(p.NewMove(A7, A5)) // 1.
+        p = p.MakeMove(p.NewMove(E1, E2));  p = p.MakeMove(p.NewMove(E8, E7)) // King has moved.
+        p = p.MakeMove(p.NewMove(E2, E1));  p = p.MakeMove(p.NewMove(E7, E8)) // 2.
+        p = p.MakeMove(p.NewMove(E1, E2));  p = p.MakeMove(p.NewMove(E8, E7)) // King has moved again.
+        p = p.MakeMove(p.NewMove(E2, E1));  p = p.MakeMove(p.NewMove(E7, E8)) // 3.
         expect(t, p.isRepetition(), false) // <-- Lost 0-0 right.
 
-        p = p.MakeMove(NewMove(p, E1, E2));  p = p.MakeMove(NewMove(p, E8, E7)) // King has moved again.
-        p = p.MakeMove(NewMove(p, E2, E1));  p = p.MakeMove(NewMove(p, E7, E8)) // 4.
+        p = p.MakeMove(p.NewMove(E1, E2));  p = p.MakeMove(p.NewMove(E8, E7)) // King has moved again.
+        p = p.MakeMove(p.NewMove(E2, E1));  p = p.MakeMove(p.NewMove(E7, E8)) // 4.
         expect(t, p.isRepetition(), true) // <-- 3 time repetioion with lost 0-0 right.
 }
 

@@ -32,7 +32,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 //
                                 // Empty square: simply move a bishop to check.
                                 //
-                                gen.list[gen.tail].move = NewMove(gen.p, from, to)
+                                gen.list[gen.tail].move = gen.p.NewMove(from, to)
                                 gen.tail++
                         } else if piece.color() == color && sameDiagonal[from][square] {
                                 //

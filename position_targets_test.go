@@ -166,7 +166,7 @@ func TestTargets120(t *testing.T) {
 func TestTargets130(t *testing.T) {
         game := NewGame().Setup(`Kd1,e2`, `Ke8,d4`)
         position := game.Start(White)
-        position = position.MakeMove(NewEnpassant(position, E2, E4))            // Creates en-passant on e3.
+        position = position.MakeMove(position.NewEnpassant(E2, E4))             // Creates en-passant on e3.
 
         expect(t, uint64(position.targets[E4]), uint64(Bit(E5)))                // e5
         expect(t, uint64(position.targets[D4]), uint64(Bit(D3)|Bit(E3)))        // d3, e3 (en-passant).

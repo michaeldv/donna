@@ -86,13 +86,13 @@ func (b *Book) move(p *Position, entry Entry) Move {
         // as e1-h1, e1-a1, e8-h8, and e8-a8.
         //
         if from == E1 && to == H1 {
-                return NewCastle(p, from, G1)
+                return p.NewCastle(from, G1)
         } else if from == E1 && to == A1 {
-                return NewCastle(p, from, C1)
+                return p.NewCastle(from, C1)
         } else if from == E8 && to == H8 {
-                return NewCastle(p, from, G8)
+                return p.NewCastle(from, G8)
         } else if from == E8 && to == A8 {
-                return NewCastle(p, from, C8)
+                return p.NewCastle(from, C8)
         } else {
                 //
                 // Special treatment for non-promo pawn moves since they might
@@ -103,7 +103,7 @@ func (b *Book) move(p *Position, entry Entry) Move {
                 }
         }
 
-        move := NewMove(p, from, to)
+        move := p.NewMove(from, to)
         if promo := entry.promoted(); promo != 0 {
                 move.promote(promo)
         }

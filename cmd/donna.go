@@ -45,7 +45,7 @@ func repl() {
                                 game = donna.NewGame().InitialPosition()
                                 position = game.Start(donna.White)
                         }
-                        move = donna.NewMoveFromString(command, position)
+                        move = position.NewMoveFromString(command)
                         if move != 0 {
                                 position = position.MakeMove(move)
                                 fmt.Printf("%s\n", position)

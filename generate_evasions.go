@@ -42,7 +42,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
                         retreats &= maskEvade[square][attackSquare]
                 }
                 for retreats != 0 {
-                        gen.list[gen.tail].move = NewMove(gen.p, square, retreats.pop())
+                        gen.list[gen.tail].move = gen.p.NewMove(square, retreats.pop())
                         gen.tail++
                 }
                 return gen
@@ -51,7 +51,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // Generate king retreats.
         //
         for retreats != 0 {
-                gen.list[gen.tail].move = NewMove(gen.p, square, retreats.pop())
+                gen.list[gen.tail].move = gen.p.NewMove(square, retreats.pop())
                 gen.tail++
         }
         //
@@ -60,7 +60,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         //
         pawns := maskPawn[color][attackSquare] & gen.p.outposts[Pawn(color)]
         for pawns != 0 {
-                gen.list[gen.tail].move = NewMove(gen.p, pawns.pop(), attackSquare)
+                gen.list[gen.tail].move = gen.p.NewMove(pawns.pop(), attackSquare)
                 gen.tail++
         }
         //
@@ -71,7 +71,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         if enpassant := attackSquare + eight[color]; gen.p.flags.enpassant == enpassant {
                 pawns := maskPawn[color][enpassant] & gen.p.outposts[Pawn(color)]
                 for pawns != 0 {
-                        gen.list[gen.tail].move = NewEnpassant(gen.p, pawns.pop(), attackSquare + eight[color])
+                        gen.list[gen.tail].move = gen.p.NewEnpassant(pawns.pop(), attackSquare + eight[color])
                         gen.tail++
                 }
         }
@@ -85,7 +85,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         pawns = gen.p.pawnMovesMask(color) & block
         for pawns != 0 {
                 to := pawns.pop(); from := to - eight[color]
-                gen.list[gen.tail].move = NewMove(gen.p, from, to)
+                gen.list[gen.tail].move = gen.p.NewMove(from, to)
                 if to >= A8 || to <= H1 {
                         gen.list[gen.tail].move.promote(QUEEN)
                 }
@@ -97,7 +97,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         pawns = gen.p.pawnJumpsMask(color) & block
         for pawns != 0 {
                 to := pawns.pop(); from := to - 2 * eight[color]
-                gen.list[gen.tail].move = NewMove(gen.p, from, to)
+                gen.list[gen.tail].move = gen.p.NewMove(from, to)
                 gen.tail++
         }
         //
@@ -117,7 +117,7 @@ func (gen *MoveGen) addEvasion(piece Piece, block Bitmask) {
                 from := outposts.pop()
                 targets := gen.p.targets[from] & block
                 for targets != 0 {
-                        gen.list[gen.tail].move = NewMove(gen.p, from, targets.pop())
+                        gen.list[gen.tail].move = gen.p.NewMove(from, targets.pop())
                         gen.tail++
                 }
         }

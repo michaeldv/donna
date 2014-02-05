@@ -22,7 +22,7 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
                 //
                 targets := gen.p.targets[square] & gen.p.board[color^1] & 0x00FFFFFFFFFFFF00
                 for targets != 0 {
-                        gen.list[gen.tail].move = NewMove(gen.p, square, targets.pop())
+                        gen.list[gen.tail].move = gen.p.NewMove(square, targets.pop())
                         gen.tail++
                 }
                 //
@@ -37,7 +37,7 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
                         targets |= gen.p.board[2] & Bit(square + eight[color])
 
                         for targets != 0 {
-                                gen.list[gen.tail].move = NewMove(gen.p, square, targets.pop()).promote(QUEEN)
+                                gen.list[gen.tail].move = gen.p.NewMove(square, targets.pop()).promote(QUEEN)
                                 gen.tail++
                         }
                 }
@@ -53,7 +53,7 @@ func (gen *MoveGen) pieceCaptures(color int) *MoveGen {
 	                square := outposts.pop()
 	                targets := gen.p.targets[square] & gen.p.board[color^1]
 	                for targets != 0 {
-	                        gen.list[gen.tail].move = NewMove(gen.p, square, targets.pop())
+	                        gen.list[gen.tail].move = gen.p.NewMove(square, targets.pop())
 	                        gen.tail++
 	                }
 	        }

@@ -4,7 +4,7 @@
 
 package donna
 
-import (`fmt`; `regexp`)
+import (`fmt`)
 
 const (
         isCastle    = 0x10000000
@@ -75,99 +75,6 @@ func (m Move) izPawnJump() bool {
 
 func (m Move) pawnJump() Move {
         return m | isPawnJump
-}
-
-
-func NewMove(p *Position, from, to int) (move Move) {
-        piece, capture := p.pieces[from], p.pieces[to]
-
-        if p.flags.enpassant != 0 && to == p.flags.enpassant {
-                capture = Pawn(piece.color()^1)
-        }
-
-        move = Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
-
-        return
-}
-
-func NewCastle(p *Position, from, to int) Move {
-        return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
-}
-
-func NewEnpassant(p *Position, from, to int) Move {
-        return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
-}
-
-func NewPawnJump(p *Position, from, to int) Move {
-        return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isPawnJump)
-}
-
-func NewMoveFromString(e2e4 string, p *Position) (move Move) {
-	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
-	arr := re.FindStringSubmatch(e2e4)
-
-	if len(arr) > 0 {
-		name  := arr[1]
-		from  := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
-		to    := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
-		promo := arr[6]
-
-		var piece Piece
-		switch name {
-		case `K`, `k`:
-			piece = King(p.color)
-		case `Q`, `q`:
-			piece = Queen(p.color)
-		case `R`, `r`:
-			piece = Rook(p.color)
-		case `B`, `b`:
-			piece = Bishop(p.color)
-		case `N`, `n`:
-			piece = Knight(p.color)
-		default:
-			piece = p.pieces[from] // <-- Makes piece character optional.
-		}
-                if (p.pieces[from] != piece) || (p.targets[from] & Bit(to) == 0) {
-                        move = 0 // Invalid move.
-                } else {
-                        move = NewMove(p, from, to)
-                        if len(promo) > 0 {
-                                switch promo {
-                                case `Q`, `q`:
-                                        move.promote(QUEEN)
-                                case `R`, `r`:
-                                        move.promote(ROOK)
-                                case `B`, `b`:
-                                        move.promote(BISHOP)
-                                case `N`, `n`:
-                                        move.promote(KNIGHT)
-                                default:
-                                        move = 0
-                                }
-                        }
-                }
-	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
-                from := p.outposts[King(p.color)].first()
-                to := G1
-                if e2e4 == `0-0-0` {
-                        to = C1
-                }
-                if p.color == Black {
-                        to += 56
-                }
-                move = NewMove(p, from, to)
-                if !move.isCastle() {
-                        move = 0
-                }
-	}
-	return
-}
-
-func (m Move) calculateScore(position *Position) int {
-	square := flip[m.color()][m.to()]
-        midgame, endgame := m.piece().bonus(square)
-
-	return (midgame * position.stage + endgame * (256 - position.stage)) / 256
 }
 
 // PxQ, NxQ, BxQ, RxQ, QxQ, KxQ => where => QUEEN  = 5 << 1 // 10

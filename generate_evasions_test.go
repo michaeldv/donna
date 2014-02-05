@@ -80,7 +80,7 @@ func TestGenerate360(t *testing.T) {
 func TestGenerate370(t *testing.T) {
         game := NewGame().Setup(`Kd4,d5,f5`, `Kd8,e7`)
         black := game.Start(Black)
-        white := black.MakeMove(NewEnpassant(black, E7, E5)).StartMoveGen(1).GenerateEvasions()
+        white := black.MakeMove(black.NewEnpassant(E7, E5)).StartMoveGen(1).GenerateEvasions()
         expect(t, white.allMoves(), `[Kd4-c3 Kd4-d3 Kd4-e3 Kd4-c4 Kd4-e4 Kd4-c5 Kd4xe5 d5xe6 f5xe6]`)
 }
 
@@ -88,7 +88,7 @@ func TestGenerate370(t *testing.T) {
 func TestGenerate380(t *testing.T) {
         game := NewGame().Setup(`Kb1,b2`, `Ka5,a4,c5,c4`)
         white := game.Start(White)
-        black := white.MakeMove(NewEnpassant(white, B2, B4)).StartMoveGen(1).GenerateEvasions()
+        black := white.MakeMove(white.NewEnpassant(B2, B4)).StartMoveGen(1).GenerateEvasions()
         expect(t, black.allMoves(), `[Ka5xb4 Ka5-b5 Ka5-a6 Ka5-b6 c5xb4 a4xb3 c4xb3]`)
 }
 

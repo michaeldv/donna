@@ -104,10 +104,10 @@ func (p *Position) possibleMoves(square int, piece Piece) (moves []Move) {
                 // possible moves, one for each promoted piece.
                 //
                 if !p.isPawnPromotion(piece, target) {
-                        moves = append(moves, NewMove(p, square, target))
+                        moves = append(moves, p.NewMove(square, target))
                 } else {
                         for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                candidate := NewMove(p, square, target).promote(name)
+                                candidate := p.NewMove(square, target).promote(name)
                                 moves = append(moves, candidate)
                         }
                 }
@@ -125,15 +125,15 @@ func (p *Position) possibleCaptures(square int, piece Piece) (moves []Move) {
                 capture := p.pieces[target]
                 if capture != 0 {
                         if !p.isPawnPromotion(piece, target) {
-                                moves = append(moves, NewMove(p, square, target))
+                                moves = append(moves, p.NewMove(square, target))
                         } else {
                                 for _,name := range([]int{ QUEEN, ROOK, BISHOP, KNIGHT }) {
-                                        candidate := NewMove(p, square, target).promote(name)
+                                        candidate := p.NewMove(square, target).promote(name)
                                         moves = append(moves, candidate)
                                 }
                         }
                 } else if p.flags.enpassant != 0 && target == p.flags.enpassant {
-                        moves = append(moves, NewMove(p, square, target))
+                        moves = append(moves, p.NewMove(square, target))
                 }
         }
         return

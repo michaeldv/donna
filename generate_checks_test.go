@@ -105,11 +105,11 @@ func TestGenChecks090(t *testing.T) {
 // Bishop: discovered non-capturing check: no enpassant captures.
 func TestGenChecks100(t *testing.T) {
         p := NewGame().Setup(`Ka1,Bf4,e5`, `Kb8,f7`).Start(Black)
-        white := p.MakeMove(NewEnpassant(p, F7, F5)).StartMoveGen(1).GenerateChecks()
+        white := p.MakeMove(p.NewEnpassant(F7, F5)).StartMoveGen(1).GenerateChecks()
         expect(t, white.allMoves(), `[e5-e6]`)
 
         p = NewGame().Setup(`Ka1,e2`, `Kb8,Be5,d4`).Start(White)
-        black := p.MakeMove(NewEnpassant(p, E2, E4)).StartMoveGen(1).GenerateChecks()
+        black := p.MakeMove(p.NewEnpassant(E2, E4)).StartMoveGen(1).GenerateChecks()
         expect(t, black.allMoves(), `[d4-d3]`)
 }
 
