@@ -36,7 +36,7 @@ func (p *Position) moveScore(m Move) int {
 
 func (p *Position) pawnMove(square, target int) Move {
         if RelRow(square, p.color) == 1 && RelRow(target, p.color) == 3 {
-                if p.isEnpassant(target, p.color) {
+                if p.causesEnpassant(target) {
                         return p.NewEnpassant(square, target)
                 } else {
                         return p.NewPawnJump(square, target)
@@ -53,8 +53,8 @@ func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
                p.NewMove(square, target).promote(KNIGHT)
 }
 
-func (p *Position) isEnpassant(target, color int) bool {
-        pawns := p.outposts[Pawn(color^1)] // Opposite color pawns.
+func (p *Position) causesEnpassant(target int) bool {
+        pawns := p.outposts[Pawn(p.color^1)] // Opposite color pawns.
         switch col := Col(target); col {
         case 0:
                 return pawns.isSet(target + 1)
