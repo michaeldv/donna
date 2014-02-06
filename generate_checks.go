@@ -68,6 +68,53 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
         }
 
         // Non-capturing Rook or Queen checks.
+        checks = gen.p.Targets(square, Rook(enemy))
+        outposts = gen.p.outposts[Rook(color)] | gen.p.outposts[Queen(color)]
+        for outposts != 0 {
+                from := outposts.pop()
+                targets := gen.p.Targets(from, Rook(enemy)) & checks & ^gen.p.board[enemy]
+                for targets != 0 {
+                        to := targets.pop()
+                        if piece := gen.p.pieces[to]; piece == 0 {
+                                //
+                                // Empty square: simply move a rook to check.
+                                //
+                                gen.list[gen.tail].move = gen.p.NewMove(from, to)
+                                gen.tail++
+                        } else if piece.color() == color {
+				sameRow := Row(from) == Row(square)
+				sameCol := Col(from) == Col(square)
+				if sameRow || sameCol {
+	                                //
+	                                // Non-empty square occupied by friendly piece on the same
+	                                // file or rank: moving the piece away causes discovered check.
+	                                //
+	                                switch piece.kind() {
+	                                case PAWN:
+	                                        // Block pawn promotions (since they are treated as
+	                                        // captures) and en-passant captures.
+	                                        prohibit := maskRank[0] | maskRank[7]
+	                                        if gen.p.flags.enpassant != 0 {
+	                                                prohibit.set(gen.p.flags.enpassant)
+	                                        }
+	                                        gen.movePawn(to, gen.p.targets[to] & ^gen.p.board[2] & ^prohibit)
+	                                case KING:
+	                                        // Make sure the king steps out of attack file or rank.
+						prohibit := maskNone
+						if sameRow {
+							prohibit = maskRank[Row(square)]
+						} else {
+							prohibit = maskFile[Col(square)]
+						}
+	                                        gen.moveKing(to, gen.p.targets[to] & ^gen.p.board[2] & ^prohibit)
+	                                default:
+	                                        gen.movePiece(to, gen.p.targets[to] & ^gen.p.board[2])
+	                                }
+				}
+			}
+		}
+	}
+
         // Non-capturing Pawn checks.
         return gen
 }

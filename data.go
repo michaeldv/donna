@@ -12,8 +12,8 @@ const MaxPly = 32
 const (
         White = iota
         Black
-        maskNone = 0x0000000000000000
-        maskFull = 0xFFFFFFFFFFFFFFFF
+        maskNone = Bitmask(0x0000000000000000)
+        maskFull = Bitmask(0xFFFFFFFFFFFFFFFF)
 )
 
 const (
