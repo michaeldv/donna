@@ -56,10 +56,18 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 }
                         }
                 }
+		if gen.p.pieces[from].isQueen() {
+			//
+			// Queen could move straight as a rook and check diagonally as a bishop
+			// or move diagonally as a bishop and check straight as a rook.
+			//
+			targets = (gen.p.Targets(from, Rook(color)) & checks) |
+			          (gen.p.Targets(from, Bishop(color)) & gen.p.Targets(square, Rook(color)))
+                        gen.movePiece(from, targets & ^gen.p.board[2])
+		}
         }
 
         // Non-capturing Rook or Queen checks.
-
         // Non-capturing Pawn checks.
         return gen
 }

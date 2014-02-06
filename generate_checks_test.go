@@ -113,3 +113,13 @@ func TestGenChecks100(t *testing.T) {
         expect(t, black.allMoves(), `[d4-d3]`)
 }
 
+// Bishop: extra Rook moves for Queen.
+func TestGenChecks110(t *testing.T) {
+        game := NewGame().Setup(`Kb1,Qa1,f2,a2`, `Kh1,Qa7,Nb8,a6`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[Qa1-h8]`)
+
+        black := game.Start(Black).StartMoveGen(1).GenerateChecks()
+        expect(t, black.allMoves(), `[Qa7-b6 Qa7-h7]`)
+}
+
