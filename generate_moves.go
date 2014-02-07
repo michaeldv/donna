@@ -40,18 +40,10 @@ func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
         for targets != 0 {
                 target := targets.pop()
                 if target > H1 && target < A8 {
-                        gen.list[gen.tail].move = gen.p.pawnMove(square, target)
-                        gen.tail++
+                        gen.add(gen.p.pawnMove(square, target))
                 } else { // Promotion.
                         m1, m2, m3, m4 := gen.p.pawnPromotion(square, target)
-                        gen.list[gen.tail].move = m1
-                        gen.tail++
-                        gen.list[gen.tail].move = m2
-                        gen.tail++
-                        gen.list[gen.tail].move = m3
-                        gen.tail++
-                        gen.list[gen.tail].move = m4
-                        gen.tail++
+                        gen.add(m1); gen.add(m2); gen.add(m3); gen.add(m4)
                 }
         }
         return gen
@@ -61,19 +53,17 @@ func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
         for targets != 0 {
                 target := targets.pop()
                 if square == homeKing[gen.p.color] && Abs(square - target) == 2 {
-                        gen.list[gen.tail].move = gen.p.NewCastle(square, target)
+                        gen.add(gen.p.NewCastle(square, target))
                 } else {
-                        gen.list[gen.tail].move = gen.p.NewMove(square, target)
+                        gen.add(gen.p.NewMove(square, target))
                 }
-                gen.tail++
         }
         return gen
 }
 
 func (gen *MoveGen) movePiece(square int, targets Bitmask) *MoveGen {
         for targets != 0 {
-                gen.list[gen.tail].move = gen.p.NewMove(square, targets.pop())
-                gen.tail++
+                gen.add(gen.p.NewMove(square, targets.pop()))
         }
         return gen
 }

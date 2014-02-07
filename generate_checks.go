@@ -32,8 +32,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 //
                                 // Empty square: simply move a bishop to check.
                                 //
-                                gen.list[gen.tail].move = gen.p.NewMove(from, to)
-                                gen.tail++
+                                gen.add(gen.p.NewMove(from, to))
                         } else if piece.color() == color && sameDiagonal[from][square] {
                                 //
                                 // Non-empty square occupied by friendly piece on the same
@@ -79,8 +78,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 //
                                 // Empty square: simply move a rook to check.
                                 //
-                                gen.list[gen.tail].move = gen.p.NewMove(from, to)
-                                gen.tail++
+                                gen.add(gen.p.NewMove(from, to))
                         } else if piece.color() == color {
 				sameRow := Row(from) == Row(square)
 				sameCol := Col(from) == Col(square)

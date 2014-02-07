@@ -53,6 +53,12 @@ func (gen *MoveGen) GenerateQuiets() *MoveGen {
         return gen
 }
 
+func (gen *MoveGen) add(move Move) *MoveGen {
+        gen.list[gen.tail].move = move
+        gen.tail++
+        return gen
+}
+
 // Return a list of generated moves by continuously calling the next move
 // until the list is empty.
 func (gen *MoveGen) allMoves() (moves []Move) {

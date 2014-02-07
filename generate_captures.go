@@ -20,8 +20,7 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
                 square := pawns.pop()
                 targets := gen.p.targets[square] & gen.p.board[color^1] & 0x00FFFFFFFFFFFF00
                 for targets != 0 {
-                        gen.list[gen.tail].move = gen.p.NewMove(square, targets.pop())
-                        gen.tail++
+                        gen.add(gen.p.NewMove(square, targets.pop()))
                 }
                 //
                 // Now check promo rows. The might include capture targets as well
@@ -35,8 +34,7 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
                         targets |= gen.p.board[2] & Bit(square + eight[color])
 
                         for targets != 0 {
-                                gen.list[gen.tail].move = gen.p.NewMove(square, targets.pop()).promote(QUEEN)
-                                gen.tail++
+                                gen.add(gen.p.NewMove(square, targets.pop()).promote(QUEEN))
                         }
                 }
         }
