@@ -41,17 +41,13 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
                 if gen.p.pieces[attackSquare] != pawn {
                         retreats &= maskEvade[square][attackSquare]
                 }
-                for retreats != 0 {
-                        gen.add(gen.p.NewMove(square, retreats.pop()))
-                }
-                return gen
+                return gen.movePiece(square, retreats)
         }
         //
-        // Generate king retreats.
+        // Generate king retreats. Since castle is not an option there is
+        // no reason to use moveKing().
         //
-        for retreats != 0 {
-                gen.add(gen.p.NewMove(square, retreats.pop()))
-        }
+        gen.movePiece(square, retreats)
         //
         // Pawn captures: do we have any pawns available that could capture
         // the attacking piece?
@@ -111,8 +107,6 @@ func (gen *MoveGen) addEvasion(piece Piece, block Bitmask) {
         for outposts != 0 {
                 from := outposts.pop()
                 targets := gen.p.targets[from] & block
-                for targets != 0 {
-                        gen.add(gen.p.NewMove(from, targets.pop()))
-                }
+                gen.movePiece(from, targets)
         }
 }
