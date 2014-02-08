@@ -9,33 +9,22 @@ func (gen *MoveGen) GenerateCaptures() *MoveGen {
         return gen.pawnCaptures(color).pieceCaptures(color)
 }
 
-// Generates all pseudo-legal pawn captures and Queen promotions.
+// Generates all pseudo-legal pawn captures and promotions.
 func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
+        enemy := color^1
         pawns := gen.p.outposts[Pawn(color)]
 
         for pawns != 0 {
-                //
-                // First check capture targets on rows 2-7 (no promotions).
-                //
                 square := pawns.pop()
-                targets := gen.p.targets[square] & gen.p.board[color^1] & 0x00FFFFFFFFFFFF00
-                for targets != 0 {
-                        gen.add(gen.p.NewMove(square, targets.pop()))
-                }
                 //
-                // Now check promo rows. The might include capture targets as well
-                // as empty promo square in front of the pawn.
+                // For pawns on files 2-6 the moves include captures only,
+                // while for pawns on the 7th file the moves include captures
+                // as well as promotion on empty square in front of the pawn.
                 //
-                if RelRow(square, color) == 6 {
-                        //
-                        // Select maskRank[7] for white and maskRank[0] for black.
-                        //
-                        targets  = gen.p.targets[square] & maskRank[7 - 7 * color]
-                        targets |= gen.p.board[2] & Bit(square + eight[color])
-
-                        for targets != 0 {
-                                gen.add(gen.p.NewMove(square, targets.pop()).promote(QUEEN))
-                        }
+                if row := RelRow(square, color); row != 6 {
+                        gen.movePawn(square, gen.p.targets[square] & gen.p.board[enemy])
+                } else {
+                        gen.movePawn(square, gen.p.targets[square])
                 }
         }
         return gen

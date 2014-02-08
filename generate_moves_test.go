@@ -121,8 +121,8 @@ func TestGenerate220(t *testing.T) {
 func TestGenerate230(t *testing.T) {
         game := NewGame().Setup(`Ka1,Rh1,Bf1,c7`, `Kh8,Nb8,Qd8,g2`)
         white := game.Start(White).StartMoveGen(1).pawnCaptures(White)
-        expect(t, white.allMoves(), `[c7xb8Q c7-c8Q c7xd8Q]`)
+        expect(t, white.allMoves(), `[c7xb8Q c7xb8R c7xb8B c7xb8N c7-c8Q c7-c8R c7-c8B c7-c8N c7xd8Q c7xd8R c7xd8B c7xd8N]`)
 
         black := game.Start(Black).StartMoveGen(1).pawnCaptures(Black)
-        expect(t, black.allMoves(), `[g2xf1Q g2-g1Q g2xh1Q]`)
+        expect(t, black.allMoves(), `[g2xf1Q g2xf1R g2xf1B g2xf1N g2-g1Q g2-g1R g2-g1B g2-g1N g2xh1Q g2xh1R g2xh1B g2xh1N]`)
 }
