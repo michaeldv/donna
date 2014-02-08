@@ -35,7 +35,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         score, bestScore := 0, -Checkmate
         quietAlpha, quietBeta := alpha, beta
 
-        gen := p.StartMoveGen(ply).GenerateMoves()
+        gen := p.StartMoveGen(ply).GenerateEvasions()
         movesMade := 0
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
