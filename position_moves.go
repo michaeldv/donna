@@ -27,13 +27,6 @@ func (p *Position) NewPawnJump(from, to int) Move {
         return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isPawnJump)
 }
 
-func (p *Position) moveScore(m Move) int {
-	square := flip[m.color()][m.to()]
-        midgame, endgame := m.piece().bonus(square)
-
-	return (midgame * p.stage + endgame * (256 - p.stage)) / 256
-}
-
 func (p *Position) pawnMove(square, target int) Move {
         if RelRow(square, p.color) == 1 && RelRow(target, p.color) == 3 {
                 if p.causesEnpassant(target) {

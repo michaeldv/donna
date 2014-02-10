@@ -298,20 +298,6 @@ var penaltyIsolatedPawn = [2][8]int{
         { -25, -25, -25, -20, -20, -25, -25, -25 }, // End of the game.
 }
 
-// Least valuable attacker/most valueable victim (LVA/MVV) move ordering.
-// PxQ, NxQ, BxQ, RxQ, QxQ, KxQ
-// PxR, NxR, BxR, RxR, QxR, KxR
-// PxB, NxB, BxB, RxB, QxB, KxB
-// PxN, NxN, BxN, RxN, QxN, KxN
-// PxP, NxP, BxP, RxP, QxP, KxP
-var victimAttacker = [5][6]int{
-        { 300, 290, 280, 270, 260, 250 },
-        { 240, 230, 220, 210, 200, 190 },
-        { 180, 170, 160, 150, 140, 130 },
-        { 120, 110, 100,  90,  80,  70 },
-        {  60,  50,  40,  30,  20,  10 },
-}
-
 var polyglotRandom = [...]uint64{
 	0x9D39247E33776D41, 0x2AF7398005AAA5C7, 0x44DB015024623547, 0x9C15F73E62A76AE2,
 	0x75834465489C0C89, 0x3290AC3A203001BF, 0x0FBBAD1F61042279, 0xE83A908FF2FB60CA,

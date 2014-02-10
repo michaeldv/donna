@@ -7,6 +7,8 @@ package donna
 import (`fmt`)
 
 const (
+        isCapture   = 0x00F00000
+        isPromo     = 0x0F000000
         isCastle    = 0x10000000
         isEnpassant = 0x20000000
         isPawnJump  = 0x40000000
@@ -77,21 +79,15 @@ func (m Move) pawnJump() Move {
         return m | isPawnJump
 }
 
-// PxQ, NxQ, BxQ, RxQ, QxQ, KxQ => where => QUEEN  = 5 << 1 // 10
-// PxR, NxR, BxR, RxR, QxR, KxR             ROOK   = 4 << 1 // 8
-// PxB, NxB, BxB, RxB, QxB, KxB             BISHOP = 3 << 1 // 6
-// PxN, NxN, BxN, RxN, QxN, KxN             KNIGHT = 2 << 1 // 4
-// PxP, NxP, BxP, RxP, QxP, KxP             PAWN   = 1 << 1 // 2
+// Non-capturing move score based on piece/square bonus values.
+func (m Move) score() (int, int) {
+	square := flip[m.color()][m.to()]
+	return m.piece().bonus(square)
+}
+
+// Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() int {
-        capture := m.capture()
-        if capture == 0 || capture.isKing() {
-                return 0
-        }
-
-        victim := (QUEEN - capture.kind()) / PAWN
-        attacker := m.piece().kind() / PAWN - 1
-
-        return victimAttacker[victim][attacker]
+        return int(m.capture().kind()) * 16 - m.piece().kind() + 1024
 }
 
 func (m Move) is00() bool {
