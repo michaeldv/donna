@@ -132,7 +132,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
                 if p.color == Black {
                         to += 56
                 }
-                move = p.NewMove(from, to)
+                move = p.NewCastle(from, to)
                 if !move.isCastle() {
                         move = 0
                 }
