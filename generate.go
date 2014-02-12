@@ -4,7 +4,7 @@
 
 package donna
 
-import() //(`sort`)
+import(`sort`)
 
 const (
         stepPrincipal = iota
@@ -48,6 +48,28 @@ func (gen *MoveGen) NextMove() (move Move) {
         return
 }
 
+func (gen *MoveGen) rank() *MoveGen {
+        if gen.tail - gen.head < 2 {
+                return gen
+        }
+        for i := gen.head; i < gen.tail; i++ {
+                move := gen.list[i].move
+                if move == gen.p.game.bestLine[0][gen.ply] {
+                        gen.list[i].score = 0xFFFF
+                } else if move == gen.p.game.killers[gen.ply][0] {
+                        gen.list[i].score = 0xFFFE
+                } else if move == gen.p.game.killers[gen.ply][1] {
+                        gen.list[i].score = 0xFFFD
+                } else if move & isCapture != 0 {
+                        gen.list[i].score = move.value()
+                } else {
+                        endgame, midgame := move.score()
+                        gen.list[i].score = (midgame * gen.p.stage + endgame * (256 - gen.p.stage)) / 256
+                }
+        }
+        sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
+        return gen
+}
 
 func (gen *MoveGen) GenerateQuiets() *MoveGen {
         return gen
@@ -186,9 +208,9 @@ func (p *Position) reorderCaptures(moves []Move, bestMove Move) []Move {
 
 // Sorting moves by their relative score based on piece/square for regular moves
 // or least valuaeable attacker/most valueable victim for captures.
-// type byScore struct {
-//         moves []Move
-// }
-// func (her byScore) Len() int           { return len(her.moves)}
-// func (her byScore) Swap(i, j int)      { her.moves[i], her.moves[j] = her.moves[j], her.moves[i] }
-// func (her byScore) Less(i, j int) bool { return her.moves[i].score > her.moves[j].score }
+type byScore struct {
+        list []MoveWithScore
+}
+func (her byScore) Len() int           { return len(her.list)}
+func (her byScore) Swap(i, j int)      { her.list[i], her.list[j] = her.list[j], her.list[i] }
+func (her byScore) Less(i, j int) bool { return her.list[i].score > her.list[j].score }

@@ -16,7 +16,7 @@ type Game struct {
         nodes        int
         qnodes       int
         killers      [MaxPly][2]Move
-        bestLine     [MaxPly][MaxPly]Move // Assuming max depth = 4 which makes it 8 plies.
+        bestLine     [MaxPly][MaxPly]Move
         bestLength   [MaxPly]int
 }
 
