@@ -27,6 +27,25 @@ func (p *Position) NewPawnJump(from, to int) Move {
         return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isPawnJump)
 }
 
+// Returns a bitmask of all pinned pieces preventing a check for the king on
+// given square. The color of the pieces match the color of the king.
+func (p *Position) pinnedMask(square int) (mask Bitmask) {
+        color := p.pieces[square].color()
+        enemy := color^1
+        attackers := (p.outposts[Bishop(enemy)] | p.outposts[Queen(enemy)]) & bishopMagicMoves[square][0]
+        attackers |= (p.outposts[Rook(enemy)] | p.outposts[Queen(enemy)]) & rookMagicMoves[square][0]
+
+        for attackers != 0 {
+                attackSquare := attackers.pop()
+                blockers := maskBlock[square][attackSquare] & ^Bit(attackSquare) & p.board[2]
+
+                if blockers.count() == 1 {
+                        mask |= blockers & p.board[color] // Only friendly pieces are pinned.
+                }
+        }
+        return
+}
+
 func (p *Position) pawnMove(square, target int) Move {
         if RelRow(square, p.color) == 1 && RelRow(target, p.color) == 3 {
                 if p.causesEnpassant(target) {
