@@ -38,3 +38,29 @@ func TestMagic020(t *testing.T) {
         expect(t, maskPawn[Black][C5], Bitmask( Bit(B6) | Bit(D6) ))
         expect(t, maskPawn[Black][B1], Bitmask( Bit(A2) | Bit(C2) ))
 }
+
+func TestMagic030(t *testing.T) {
+        // Same file.
+        expect(t, maskStraight[A2][A5], maskFile[0])
+        expect(t, maskStraight[H6][H1], maskFile[7])
+        // Same rank.
+        expect(t, maskStraight[A2][F2], maskRank[1])
+        expect(t, maskStraight[H6][B6], maskRank[5])
+        // Edge cases.
+        expect(t, maskStraight[A1][C5], maskNone) // Random squares.
+        expect(t, maskStraight[E4][E4], maskNone) // Same square.
+}
+
+func TestMagic040(t *testing.T) {
+        // Same diagonal.
+        expect(t, maskDiagonal[C4][F7], Bit(A2) | Bit(B3) | Bit(C4) |Bit(D5) | Bit(E6) | Bit(F7) | Bit(G8))
+        expect(t, maskDiagonal[F6][H8], maskA1H8)
+        expect(t, maskDiagonal[F1][H3], Bit(F1) | Bit(G2) | Bit(H3))
+        // Same anti-diagonal.
+        expect(t, maskDiagonal[C2][B3], Bit(D1) | Bit(C2) | Bit(B3) | Bit(A4))
+        expect(t, maskDiagonal[F3][B7], maskH1A8)
+        expect(t, maskDiagonal[H3][D7], Bit(H3) | Bit(G4) | Bit(F5) | Bit(E6) | Bit(D7) | Bit(C8))
+        // Edge cases.
+        expect(t, maskDiagonal[A2][G4], maskNone) // Random squares.
+        expect(t, maskDiagonal[E4][E4], maskNone) // Same square.
+}

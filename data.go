@@ -14,6 +14,8 @@ const (
         Black
         maskNone = Bitmask(0x0000000000000000)
         maskFull = Bitmask(0xFFFFFFFFFFFFFFFF)
+        maskA1H8 = Bitmask(0x8040201008040201)
+        maskH1A8 = Bitmask(0x0102040810204080)
 )
 
 const (

@@ -21,6 +21,13 @@ var (
         maskPassed       [2][64]Bitmask
         maskInFront      [2][64]Bitmask
 
+        // Complete file or rank mask if both squares reside on on the same file
+        // or rank.
+        maskStraight     [64][64]Bitmask
+
+        // Complete diagonal mask if both squares reside on on the same diagonal.
+        maskDiagonal     [64][64]Bitmask
+
         // If a king on square [x] gets checked from square [y] it can evade the
         // check from all squares except maskEvade[x][y]. For example, if white
         // king on B2 gets checked by black bishop on G7 the king can't step back
@@ -75,10 +82,10 @@ func init() {
                         }
                 }
 
-                // Blocks, Evasions, Diagonals, Knights, and Kings.
+                // Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
                 for i := A1; i <= H8; i++ {
 			r, c := Coordinate(i)
-			blockAndEvade(square, i, row, col, r, c)
+			setMasks(square, i, row, col, r, c)
 
                         if row + col == r + c || row + c == col + r {
                                 sameDiagonal[square][i] = true
@@ -264,7 +271,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	return
 }
 
-func blockAndEvade(square, target, row, col, r, c int) {
+func setMasks(square, target, row, col, r, c int) {
 	if row == r {
 		if col < c {
 			maskBlock[square][target].fill(square, 1, Bit(target), maskFull)
@@ -273,6 +280,9 @@ func blockAndEvade(square, target, row, col, r, c int) {
 			maskBlock[square][target].fill(square, -1, Bit(target), maskFull)
 			maskEvade[square][target] = ^((Bit(square) & ^maskFile[7]) << 1)
 		}
+                if col != c {
+                        maskStraight[square][target] = maskRank[r]
+                }
 	} else if col == c {
 		if row < r {
 			maskBlock[square][target].fill(square, 8, Bit(target), maskFull)
@@ -281,7 +291,10 @@ func blockAndEvade(square, target, row, col, r, c int) {
 			maskBlock[square][target].fill(square, -8, Bit(target), maskFull)
 			maskEvade[square][target] = ^((Bit(square) & ^maskRank[7]) << 8)
 		}
-	} else if col + r == row + c {
+                if row != r {
+                        maskStraight[square][target] = maskFile[c]
+                }
+	} else if r + col == row + c { // Diagonals (A1->H8).
 		if col < c {
 			maskBlock[square][target].fill(square, 9, Bit(target), maskFull)
 			maskEvade[square][target] = ^((Bit(square) & ^maskRank[0] & ^maskFile[0]) >> 9)
@@ -289,7 +302,12 @@ func blockAndEvade(square, target, row, col, r, c int) {
 			maskBlock[square][target].fill(square, -9, Bit(target), maskFull)
 			maskEvade[square][target] = ^((Bit(square) & ^maskRank[7] & ^maskFile[7]) << 9)
 		}
-	} else if col + row == c + r {
+                if shift := (r - c) & 15; shift < 8 { // A1-A8-H8
+                        maskDiagonal[square][target] = maskA1H8 << uint(8 * shift)
+                } else { // B1-H1-H7
+                        maskDiagonal[square][target] = maskA1H8 >> uint(8 * (16-shift))
+                }
+	} else if row + col == r + c { // AntiDiagonals (H1->A8).
 		if col < c {
 			maskBlock[square][target].fill(square, -7, Bit(target), maskFull)
 			maskEvade[square][target] = ^((Bit(square) & ^maskRank[7] & ^maskFile[0]) << 7)
@@ -297,6 +315,11 @@ func blockAndEvade(square, target, row, col, r, c int) {
 			maskBlock[square][target].fill(square, 7, Bit(target), maskFull)
 			maskEvade[square][target] = ^((Bit(square) & ^maskRank[0] & ^maskFile[7]) >> 7)
 		}
+                if shift := 7 ^ (r + c); shift < 8 { // A8-A1-H1
+                        maskDiagonal[square][target] = maskH1A8 >> uint(8 * shift)
+                } else { // B8-H8-H2
+                        maskDiagonal[square][target] = maskH1A8 << uint(8 * (16-shift))
+                }
 	}
 	//
 	// Default values are all 0 for maskBlock[square][target] (Go sets it for us)
