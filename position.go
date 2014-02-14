@@ -189,10 +189,8 @@ func (p *Position) MakeMove(move Move) *Position {
                 }
         }
 
-        castles = p.validateRooks(color, castles, delta)
         if capture != 0 {
                 flags.irreversible = true
-                castles = p.validateRooks(color^1, castles, delta)
         }
 
 	node++
@@ -256,22 +254,6 @@ func (p *Position) saveBest(ply int, move Move) {
 
 func (p *Position) isPawnPromotion(piece Piece, target int) bool {
         return piece.isPawn() && ((piece.isWhite() && target >= A8) || (piece.isBlack() && target <= H1))
-}
-
-func (p *Position) validateRooks(color int, castles uint8, delta [64]Piece) uint8 {
-        if p.castles & castleKingside[color] != 0 {
-                rookSquare := [2]int{ H1, H8 }
-                if delta[rookSquare[color]] != Rook(color) {
-                        castles &= ^castleKingside[color]
-                }
-        }
-        if p.castles & castleQueenside[color] != 0 {
-                rookSquare := [2]int{ A1, A8 }
-                if delta[rookSquare[color]] != Rook(color) {
-                        castles &= ^castleQueenside[color]
-                }
-        }
-        return castles
 }
 
 func (p *Position) can00(color int) bool {
