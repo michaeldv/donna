@@ -143,7 +143,6 @@ func (p *Position) computeStage() *Position {
 }
 
 func (p *Position) MakeMove(move Move) *Position {
-        eight := [2]int{ 8, -8 }
         color := move.color()
         flags := Flags{}
 

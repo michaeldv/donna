@@ -46,6 +46,10 @@ func Bit(offset int) Bitmask {
 	return Bitmask(1 << uint(offset))
 }
 
+func IsBetween(from, to, between int) bool {
+        return ((maskStraight[from][to] | maskDiagonal[from][to]) & Bit(between)) != 0
+}
+
 // Integer version of math/abs.
 func Abs(n int) int {
         if n < 0 {
@@ -76,12 +80,7 @@ func Random(limit int) int {
 }
 
 func C(color int) string {
-        if color == 0 {
-                return `white`
-        } else if color == 1 {
-                return `black`
-        }
-        return `Zebra?!`
+        return [2]string{`white`, `black`}[color]
 }
 //
 //   noWe         nort         noEa
@@ -93,7 +92,7 @@ func C(color int) string {
 //   soWe         sout         soEa
 //
 func Rose(direction int) int {
-	return []int{ 8, 9, 1, -7, -8, -9, -1, 7 }[direction]
+	return [8]int{ 8, 9, 1, -7, -8, -9, -1, 7 }[direction]
 }
 
 func Lop(args ...interface{}) {

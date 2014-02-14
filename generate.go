@@ -40,11 +40,10 @@ func (p *Position) StartMoveGen(ply int) (gen *MoveGen) {
 }
 
 func (gen *MoveGen) NextMove() (move Move) {
-        if gen.head == gen.tail {
-                return 0
+        if gen.head < gen.tail {
+                move = gen.list[gen.head].move
+                gen.head++
         }
-        move = gen.list[gen.head].move
-        gen.head++
         return
 }
 
