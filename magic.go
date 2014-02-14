@@ -43,9 +43,6 @@ var (
         // Bitmask to indicate pawn attacks for a square. For example, C3 is being
         // attacked by white pawns on B2 and D2, and black pawns on B4 and D4.
         maskPawn         [2][64]Bitmask
-
-        // Array to indicate whether two squares are on the same diagonal.
-        sameDiagonal     [64][64]bool
 )
 
 func init() {
@@ -86,10 +83,6 @@ func init() {
                 for i := A1; i <= H8; i++ {
 			r, c := Coordinate(i)
 			setMasks(square, i, row, col, r, c)
-
-                        if row + col == r + c || row + c == col + r {
-                                sameDiagonal[square][i] = true
-                        }
 
                         if i == square || Abs(i - square) > 17 {
                                 continue // No king or knight can reach that far.

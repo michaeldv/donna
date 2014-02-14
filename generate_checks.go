@@ -33,7 +33,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 // Empty square: simply move a bishop to check.
                                 //
                                 gen.add(gen.p.NewMove(from, to))
-                        } else if piece.color() == color && sameDiagonal[from][square] {
+                        } else if piece.color() == color && maskDiagonal[from][square] != 0 {
                                 //
                                 // Non-empty square occupied by friendly piece on the same
                                 // diagonal: moving the piece away causes discovered check.
