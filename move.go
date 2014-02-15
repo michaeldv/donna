@@ -55,7 +55,7 @@ func (m Move) promote(kind int) Move {
         return m | Move(int(piece) << 24)
 }
 
-func (m Move) izCastle() bool {
+func (m Move) isCastle() bool {
         return m & isCastle != 0
 }
 
@@ -63,7 +63,7 @@ func (m Move) castle() Move {
         return m | isCastle
 }
 
-func (m Move) izEnpassant() bool {
+func (m Move) isEnpassant() bool {
         return m & isEnpassant != 0
 }
 
@@ -100,15 +100,15 @@ func (m Move) is000() bool {
         return (piece == King(White) && from == E1 && to == C1) || (piece == King(Black) && from == E8 && to == C8)
 }
 
-func (m Move) isCastle() bool {
-        return m.is00() || m.is000()
-}
-
 func (m Move) String() string {
         from, to, piece, capture := m.split()
         promo := m.promo().s()
 
-        if !m.isCastle() {
+        if m.is00() {
+                return `0-0`
+        } else if m.is000() {
+                return `0-0-0`
+        } else {
                 col := [2]int{ Col(from) + 'a', Col(to) + 'a' }
                 row := [2]int{ Row(from) + 1, Row(to) + 1 }
 
@@ -129,9 +129,5 @@ func (m Move) String() string {
                                 return fmt.Sprintf(`%s` + format, piece.s(), col[0], row[0], sign, col[1], row[1], promo)
                         }
                 }
-        } else if m.is00() {
-                return `0-0`
-        } else {
-                return `0-0-0`
         }
 }

@@ -103,18 +103,20 @@ func (p *Position) MakeMove(move Move) *Position {
         flags := Flags{}
 
         from, to, piece, capture := move.split()
-        delta := p.pieces
-        delta[from] = 0
-        delta[to] = piece
+        flags.irreversible = capture != 0
+
         squares := []int{ from, to }
+        delta := p.pieces
+        delta[from], delta[to] = 0, piece
 
         // Castle rights for current node are based on the castle rights from
         // the previous node.
         castles := tree[node].castles & castleRights[from] & castleRights[to]
 
-        switch kind := piece.kind(); kind {
-        case KING:
-                if move.izCastle() {
+        if piece.isKing() {
+                castles &= ^castleKingside[color]
+                castles &= ^castleQueenside[color]
+                if move.isCastle() {
                         flags.irreversible = true
                         switch to {
                         case G1:
@@ -131,11 +133,9 @@ func (p *Position) MakeMove(move Move) *Position {
                                 squares = append(squares, A8, D8)
                         }
                 }
-                castles &= ^castleKingside[color]
-                castles &= ^castleQueenside[color]
-        case PAWN:
+        } else if piece.isPawn() {
                 flags.irreversible = true
-                if move.izEnpassant() {
+                if move.isEnpassant() {
                         flags.enpassant = from + eight[color]           // Save the en-passant square.
                 } else if to == p.flags.enpassant {
                         delta[to - eight[color]] = 0                    // Take out the en-passant pawn...
@@ -143,10 +143,6 @@ func (p *Position) MakeMove(move Move) *Position {
                 } else if promo := move.promo(); promo != 0 {
                         delta[to] = promo                               // Place the promoted piece.
                 }
-        }
-
-        if capture != 0 {
-                flags.irreversible = true
         }
 
 	node++
@@ -206,10 +202,6 @@ func (p *Position) saveBest(ply int, move Move) {
                 p.game.bestLine[ply][i] = p.game.bestLine[ply + 1][i]
                 p.game.bestLength[ply]++
         }
-}
-
-func (p *Position) isPawnPromotion(piece Piece, target int) bool {
-        return piece.isPawn() && ((piece.isWhite() && target >= A8) || (piece.isBlack() && target <= H1))
 }
 
 func (p *Position) can00(color int) bool {

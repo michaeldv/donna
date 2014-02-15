@@ -83,19 +83,23 @@ func (p *Position) Perft(depth int) (total int64) {
 
         gen := p.StartMoveGen(depth)
         if p.isInCheck(p.color) {
-                gen.GenerateEvasions()
-        } else {
-                gen.GenerateMoves() // TODO: GenerateNonEvasions()
-        }
-
-        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if !p.isValid(move) {
-                        continue
+                for move := gen.GenerateEvasions().NextMove(); move != 0; move = gen.NextMove() {
+                        position := p.MakeMove(move)
+                        delta := position.Perft(depth - 1)
+                        total += delta
+                        position.TakeBack(move)
                 }
-                position := p.MakeMove(move)
-                delta := position.Perft(depth - 1)
-                total += delta
-                position.TakeBack(move)
+        } else {
+                // TODO: GenerateNonEvasions()
+                for move := gen.GenerateMoves().NextMove(); move != 0; move = gen.NextMove() {
+                        if !p.isValid(move) {
+                                continue
+                        }
+                        position := p.MakeMove(move)
+                        delta := position.Perft(depth - 1)
+                        total += delta
+                        position.TakeBack(move)
+                }
         }
         return
 }

@@ -23,18 +23,7 @@ func TestPosition010(t *testing.T) {
         expect(t, p.flags.enpassant, F6)
 }
 
-func TestPosition020(t *testing.T) {
-        game := NewGame().Setup(`Ke1,b7,e4`, `Kg8,Ra8,h2`)
-        p := game.Start(White)
-
-        expect(t, p.isPawnPromotion(Pawn(White), A8), true)
-        expect(t, p.isPawnPromotion(Pawn(White), B8), true)
-        expect(t, p.isPawnPromotion(Pawn(White), E5), false)
-        expect(t, p.isPawnPromotion(Pawn(Black), H1), true)
-}
-
 // Castle tests.
-
 func TestPosition030(t *testing.T) { // Everything is OK.
         p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
 
