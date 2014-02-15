@@ -21,7 +21,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // Generate possible king retreats first, i.e. moves to squares not
         // occupied by friendly pieces and not attacked by the opponent.
         //
-        retreats := gen.p.targets[square] & ^gen.p.attacks[enemy]
+        retreats := gen.p.targetsMask(square) & ^gen.p.attacksMask(enemy)
         //
         // If the attacking piece is bishop, rook, or queen then exclude the
         // square behind the king using evasion mask. Note that knight's
@@ -106,7 +106,7 @@ func (gen *MoveGen) addEvasion(piece Piece, block Bitmask) {
         outposts := gen.p.outposts[piece]
         for outposts != 0 {
                 from := outposts.pop()
-                targets := gen.p.targets[from] & block
+                targets := gen.p.targetsMask(from) & block
                 gen.movePiece(from, targets)
         }
 }

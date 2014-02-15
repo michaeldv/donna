@@ -46,12 +46,12 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                         if gen.p.flags.enpassant != 0 {
                                                 prohibit.set(gen.p.flags.enpassant)
                                         }
-                                        gen.movePawn(to, gen.p.targets[to] & ^gen.p.board[2] & ^prohibit)
+                                        gen.movePawn(to, gen.p.targetsMask(to) & ^gen.p.board[2] & ^prohibit)
                                 case KING:
                                         // Make sure the king steps out of attack diaginal.
-                                        gen.moveKing(to, gen.p.targets[to] & ^gen.p.board[2] & ^maskBlock[from][square])
+                                        gen.moveKing(to, gen.p.targetsMask(to) & ^gen.p.board[2] & ^maskBlock[from][square])
                                 default:
-                                        gen.movePiece(to, gen.p.targets[to] & ^gen.p.board[2])
+                                        gen.movePiece(to, gen.p.targetsMask(to) & ^gen.p.board[2])
                                 }
                         }
                 }
@@ -95,7 +95,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                        if gen.p.flags.enpassant != 0 {
 	                                                prohibit.set(gen.p.flags.enpassant)
 	                                        }
-	                                        gen.movePawn(to, gen.p.targets[to] & ^gen.p.board[2] & ^prohibit)
+	                                        gen.movePawn(to, gen.p.targetsMask(to) & ^gen.p.board[2] & ^prohibit)
 	                                case KING:
 	                                        // Make sure the king steps out of attack file or rank.
 						prohibit := maskNone
@@ -104,9 +104,9 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 						} else {
 							prohibit = maskFile[Col(square)]
 						}
-	                                        gen.moveKing(to, gen.p.targets[to] & ^gen.p.board[2] & ^prohibit)
+	                                        gen.moveKing(to, gen.p.targetsMask(to) & ^gen.p.board[2] & ^prohibit)
 	                                default:
-	                                        gen.movePiece(to, gen.p.targets[to] & ^gen.p.board[2])
+	                                        gen.movePiece(to, gen.p.targetsMask(to) & ^gen.p.board[2])
 	                                }
 				}
 			}

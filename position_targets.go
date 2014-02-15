@@ -4,6 +4,21 @@
 
 package donna
 
+func (p *Position) targetsMask(square int) Bitmask {
+        if p.targets[square] == 0 {
+                p.targets[square] = p.Targets(square, p.pieces[square])
+        }
+        return p.targets[square]
+}
+
+func (p *Position) attacksMask(color int) Bitmask {
+        if p.attacks[color] == 0 {
+                p.attacks[color] = p.pawnAttacks(color) | p.knightAttacks(color) | p.bishopAttacks(color) |
+                                   p.rookAttacks(color) | p.queenAttacks(color) | p.kingAttacks(color)
+        }
+        return p.attacks[color]
+}
+
 func (p *Position) Targets(square int, piece Piece) (bitmask Bitmask) {
         kind, color := piece.kind(), piece.color()
 

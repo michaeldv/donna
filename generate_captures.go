@@ -22,9 +22,9 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
                 // as well as promotion on empty square in front of the pawn.
                 //
                 if row := RelRow(square, color); row != 6 {
-                        gen.movePawn(square, gen.p.targets[square] & gen.p.board[enemy])
+                        gen.movePawn(square, gen.p.targetsMask(square) & gen.p.board[enemy])
                 } else {
-                        gen.movePawn(square, gen.p.targets[square])
+                        gen.movePawn(square, gen.p.targetsMask(square))
                 }
         }
         return gen
@@ -37,12 +37,12 @@ func (gen *MoveGen) pieceCaptures(color int) *MoveGen {
 	        outposts := gen.p.outposts[Piece(kind|color)]
 	        for outposts != 0 {
 	                square := outposts.pop()
-	                gen.movePiece(square, gen.p.targets[square] & gen.p.board[enemy])
+	                gen.movePiece(square, gen.p.targetsMask(square) & gen.p.board[enemy])
 	        }
         }
         if king := gen.p.outposts[King(color)]; king != 0 {
                 square := king.pop()
-                gen.moveKing(square, gen.p.targets[square] & gen.p.board[enemy])
+                gen.moveKing(square, gen.p.targetsMask(square) & gen.p.board[enemy])
         }
         return gen
 }

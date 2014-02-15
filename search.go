@@ -4,12 +4,12 @@
 
 package donna
 
-import()
+//import(`fmt`)
 
 func (p *Position) search(depth, ply int, alpha, beta int) int {
         Log("\nsearch(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         p.game.nodes++
-        if depth <= 0 && !p.inCheck {
+        if depth <= 0 && !p.isInCheck(p.color) {
                 return p.quiescence(depth, ply, alpha, beta)
         }
 
@@ -30,7 +30,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 	}
 
         // Null move pruning. TODO: skip it if we're following principal variation.
-        if !p.inCheck && p.board[p.color].count() > 5 && p.Evaluate() >= beta {
+        if !p.isInCheck(p.color) && p.board[p.color].count() > 5 && p.Evaluate() >= beta {
                 p.color ^= 1
                 score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
                 p.color ^= 1
@@ -39,7 +39,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                 }
         }
 
-        gen := p.StartMoveGen(ply).GenerateMoves()
+        gen := p.StartMoveGen(ply).GenerateMoves().rank()
         movesMade := 0
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
@@ -49,7 +49,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                         Log("Move %d: %s (%d): score: %d, alpha: %d, beta: %d\n", movesMade, C(p.color), depth, score, alpha, beta)
 
                         if score >= beta {
-                                if !p.inCheck && move.capture() == 0 && move != p.game.killers[ply][0] {
+                                if !p.isInCheck(p.color) && move.capture() == 0 && move != p.game.killers[ply][0] {
                                         p.game.killers[ply][1] = p.game.killers[ply][0]
                                         p.game.killers[ply][0] = move
                                 }
@@ -63,7 +63,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         }
 
         if movesMade == 0 { // No moves were available.
-                if p.inCheck {
+                if p.isInCheck(p.color) {
                         Lop("Checkmate")
                         return -Checkmate + ply
                 } else {
@@ -81,13 +81,21 @@ func (p *Position) Perft(depth int) (total int64) {
                 return 1
         }
 
-        gen := p.StartMoveGen(depth).GenerateMoves()
+        gen := p.StartMoveGen(depth)
+        if p.isInCheck(p.color) {
+                gen.GenerateEvasions()
+        } else {
+                gen.GenerateMoves() // TODO: GenerateNonEvasions()
+        }
+
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if position := p.MakeMove(move); position != nil {
-                        delta := position.Perft(depth - 1)
-                        total += delta
-                        position.TakeBack(move)
+                if !p.isValid(move) {
+                        continue
                 }
+                position := p.MakeMove(move)
+                delta := position.Perft(depth - 1)
+                total += delta
+                position.TakeBack(move)
         }
         return
 }

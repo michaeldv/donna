@@ -12,7 +12,7 @@ func (gen *MoveGen) GenerateMoves() *MoveGen {
 func (gen *MoveGen) pawnMoves(color int) *MoveGen {
         for pawns := gen.p.outposts[Pawn(color)]; pawns != 0; {
                 square := pawns.pop()
-                gen.movePawn(square, gen.p.targets[square])
+                gen.movePawn(square, gen.p.targetsMask(square))
         }
         return gen
 }
@@ -22,7 +22,7 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
                 outposts := gen.p.outposts[Piece(kind|color)]
                 for outposts != 0 {
                         square := outposts.pop()
-                        gen.movePiece(square, gen.p.targets[square])
+                        gen.movePiece(square, gen.p.targetsMask(square))
                 }
         }
         return gen
@@ -31,8 +31,8 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
 func (gen *MoveGen) kingMoves(color int) *MoveGen {
         if king := gen.p.outposts[King(color)]; king != 0 {
                 square := king.pop()
-                gen.moveKing(square, gen.p.targets[square])
-                if !gen.p.inCheck {
+                gen.moveKing(square, gen.p.targetsMask(square))
+                if !gen.p.isInCheck(gen.p.color) {
                         if gen.p.can00(color) {
                                 gen.moveKing(square, Bit(G1 + 56 * color))
                         }

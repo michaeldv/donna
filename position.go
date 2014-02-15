@@ -20,13 +20,12 @@ type Position struct {
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
         targets   [64]Bitmask   // Attack targets for pieces on each square of the board.
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
-        attacks   [3]Bitmask    // [0] all squares attacked by white, [1] by black, [2] either white or black.
+        attacks   [2]Bitmask    // [0] all squares attacked by white, [1] by black.
         outposts  [14]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
         color     int           // Side to make next move.
         stage     int           // Game stage (256 in the initial position).
         hash      uint64        // Polyglot hash value.
-        inCheck   bool          // Is our king under attack?
         castles   uint8         // Castle rights mask.
 }
 
@@ -51,7 +50,7 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
                 p.castles &= ^castleQueenside[Black]
         }
 
-        return p.setupPieces().setupAttacks().computeStage()
+        return p.setupPieces().computeStage()
 }
 
 func (p *Position) setupPieces() *Position {
@@ -86,23 +85,6 @@ func (p *Position) updatePieces(updates [64]Piece, squares []int) *Position {
 		}
         }
         p.board[2] = p.board[White] | p.board[Black]
-        return p
-}
-
-func (p *Position) setupAttacks() *Position {
-        board := p.board[2]
-        for board != 0 {
-                square := board.pop()
-                piece := p.pieces[square]
-                p.targets[square] = p.Targets(square, piece)
-        }
-        p.attacks[White] = p.pawnAttacks(White) | p.knightAttacks(White) | p.bishopAttacks(White) |
-                           p.rookAttacks(White) | p.queenAttacks(White) | p.kingAttacks(White)
-        p.attacks[Black] = p.pawnAttacks(Black) | p.knightAttacks(Black) | p.bishopAttacks(Black) |
-                           p.rookAttacks(Black) | p.queenAttacks(Black) | p.kingAttacks(Black)
-        p.attacks[2] = p.attacks[White] | p.attacks[Black]
-        p.inCheck = p.isCheck(p.color)
-
         return p
 }
 
@@ -179,13 +161,13 @@ func (p *Position) MakeMove(move Move) *Position {
 		castles:  castles,
 	}
 
-        position := &tree[node]
-	position.updatePieces(delta, squares).setupAttacks()
-	if position.isCheck(color) {
-                node--
+	tree[node].updatePieces(delta, squares)
+	if tree[node].isInCheck(color) {
+		node--
 		return nil
 	}
-	return position.computeStage()
+	return tree[node].computeStage()
+
 }
 
 func (p *Position) TakeBack(move Move) *Position {
@@ -193,8 +175,8 @@ func (p *Position) TakeBack(move Move) *Position {
         return &tree[node]
 }
 
-func (p *Position) isCheck(color int) bool {
-        return p.outposts[King(color)] & p.attacks[color^1] != 0
+func (p *Position) isInCheck(color int) bool {
+        return p.outposts[King(color)] & p.attacksMask(color^1) != 0
 }
 
 func (p *Position) isRepetition() bool {
@@ -233,13 +215,13 @@ func (p *Position) isPawnPromotion(piece Piece, target int) bool {
 func (p *Position) can00(color int) bool {
         return p.castles & castleKingside[color] != 0 &&
                (gapKing[color] & p.board[2] == 0) &&
-               (castleKing[color] & p.attacks[color^1] == 0)
+               (castleKing[color] & p.attacksMask(color^1) == 0)
 }
 
 func (p *Position) can000(color int) bool {
         return p.castles & castleQueenside[color] != 0 &&
                (gapQueen[color] & p.board[2] == 0) &&
-               (castleQueen[color] & p.attacks[color^1] == 0)
+               (castleQueen[color] & p.attacksMask(color^1) == 0)
 }
 
 // Compute position's polyglot hash.
@@ -275,7 +257,7 @@ func (p *Position) polyglot() (key uint64) {
 
 func (p *Position) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h")
-        if !p.inCheck {
+        if !p.isInCheck(p.color) {
                 buffer.WriteString("\n")
         } else {
                 buffer.WriteString("  Check to " + C(p.color) + "\n")

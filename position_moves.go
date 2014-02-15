@@ -27,6 +27,41 @@ func (p *Position) NewPawnJump(from, to int) Move {
         return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isPawnJump)
 }
 
+// Returns true if *non-evasion* move is valid, i.e. it is possible to make
+// the move in current position without violating chess rules. If the king is
+// in check the generator is expected to generate valid evasions where extra
+// validation is not needed.
+func (p *Position) isValid(move Move) bool {
+        color := move.color() // TODO: make color part of move split.
+        from, to, piece, capture := move.split()
+        square := p.outposts[King(color)].first()
+        pinned := p.pinnedMask(square)
+        //
+        // For rare en-passant pawn captures we validate the move by actually
+        // making it, and then taking it back.
+        //
+        if p.flags.enpassant != 0 && to == p.flags.enpassant && capture.isPawn() {
+                if position := p.MakeMove(move); position != nil {
+                        position.TakeBack(move)
+                        return true
+                }
+                return false
+        }
+        //
+        // King's move is valid when the destination square is not being
+        // attacked by the opponent or when the move is a castle.
+        //
+        if piece.isKing() {
+                return p.attacksMask(color^1).isClear(to) || (move & isCastle != 0)
+        }
+        //
+        // For all other peices the move is valid when it doesn't cause a
+        // check. For pinned sliders this includes moves along the pinning
+        // file, rank, or diagonal.
+        //
+        return pinned == 0 || pinned.isClear(from) || IsBetween(from, to, square)
+}
+
 // Returns a bitmask of all pinned pieces preventing a check for the king on
 // given square. The color of the pieces match the color of the king.
 func (p *Position) pinnedMask(square int) (mask Bitmask) {
@@ -123,7 +158,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
 		default:
 			piece = p.pieces[from] // <-- Makes piece character optional.
 		}
-                if (p.pieces[from] != piece) || (p.targets[from] & Bit(to) == 0) {
+                if (p.pieces[from] != piece) || (p.targetsMask(from) & Bit(to) == 0) {
                         move = 0 // Invalid move.
                 } else {
                         move = p.NewMove(from, to)

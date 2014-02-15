@@ -25,7 +25,7 @@ func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
 		return beta
 	}
 
-        if p.inCheck {
+        if p.isInCheck(p.color) {
                 return p.quiescenceInCheck(depth, ply, alpha, beta)
         }
         return p.quiescenceStayPat(depth, ply, alpha, beta)
@@ -35,7 +35,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         score, bestScore := 0, -Checkmate
         quietAlpha, quietBeta := alpha, beta
 
-        gen := p.StartMoveGen(ply).GenerateEvasions()
+        gen := p.StartMoveGen(ply).GenerateEvasions().rank()
         movesMade := 0
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
@@ -83,7 +83,7 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
                 quietAlpha = score
         }
 
-        gen := p.StartMoveGen(ply).GenerateCaptures() // TODO: followed by quiet checks.
+        gen := p.StartMoveGen(ply).GenerateCaptures().rank() // TODO: followed by quiet checks.
         movesMade := 0
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
