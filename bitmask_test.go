@@ -51,9 +51,9 @@ func containsMatcher(t *testing.T, actual, expected string, match bool) {
         file = file[strings.LastIndex(file, `/`) + 1:]
 
         if match {
-                passed = (actual == expected)
+                passed = strings.Contains(actual, expected)
         } else {
-                passed = (actual != expected)
+                passed = !strings.Contains(actual, expected)
         }
 
         if passed {
