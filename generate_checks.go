@@ -80,9 +80,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 //
                                 gen.add(gen.p.NewMove(from, to))
                         } else if piece.color() == color {
-				sameRow := Row(from) == Row(square)
-				sameCol := Col(from) == Col(square)
-				if sameRow || sameCol {
+				if maskStraight[from][square] != 0 {
 	                                //
 	                                // Non-empty square occupied by friendly piece on the same
 	                                // file or rank: moving the piece away causes discovered check.
@@ -99,8 +97,8 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                case KING:
 	                                        // Make sure the king steps out of attack file or rank.
 						prohibit := maskNone
-						if sameRow {
-							prohibit = maskRank[Row(square)]
+						if row := Row(from); row == Row(square) {
+							prohibit = maskRank[row]
 						} else {
 							prohibit = maskFile[Col(square)]
 						}
