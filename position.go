@@ -21,7 +21,7 @@ type Position struct {
         targets   [64]Bitmask   // Attack targets for pieces on each square of the board.
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
         attacks   [3]Bitmask    // [0] all squares attacked by white, [1] by black, [2] either white or black.
-        outposts  [16]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
+        outposts  [14]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
         color     int           // Side to make next move.
         stage     int           // Game stage (256 in the initial position).
@@ -101,34 +101,8 @@ func (p *Position) setupAttacks() *Position {
         p.attacks[Black] = p.pawnAttacks(Black) | p.knightAttacks(Black) | p.bishopAttacks(Black) |
                            p.rookAttacks(Black) | p.queenAttacks(Black) | p.kingAttacks(Black)
         p.attacks[2] = p.attacks[White] | p.attacks[Black]
-        //
-        // Now that we have attack targets for both kings adjust them to make sure the
-        // kings don't stomp on each other.
-        //
-        p.updateKingTargets()
         p.inCheck = p.isCheck(p.color)
 
-        return p
-}
-
-func (p *Position) updateKingTargets() *Position {
-	kingSquare := [2]int{ p.outposts[King(White)].first(), p.outposts[King(Black)].first() }
-
-	if kingSquare[White] >= 0 && kingSquare[Black] >= 0 {
-                p.targets[kingSquare[White]].exclude(p.targets[kingSquare[Black]])
-                p.targets[kingSquare[Black]].exclude(p.targets[kingSquare[White]])
-	}
-        //
-        // Add castle jump targets if castles are allowed.
-        //
-        if kingSquare[p.color] == homeKing[p.color] {
-                if p.can00(p.color) {
-                        p.targets[kingSquare[p.color]].set(kingSquare[p.color] + 2)
-                }
-                if p.can000(p.color) {
-                        p.targets[kingSquare[p.color]].set(kingSquare[p.color] - 2)
-                }
-        }
         return p
 }
 

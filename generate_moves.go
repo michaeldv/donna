@@ -28,10 +28,18 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
         return gen
 }
 
-func (gen *MoveGen) kingMoves(color int) *MoveGen {        
+func (gen *MoveGen) kingMoves(color int) *MoveGen {
         if king := gen.p.outposts[King(color)]; king != 0 {
                 square := king.pop()
                 gen.moveKing(square, gen.p.targets[square])
+                if !gen.p.inCheck {
+                        if gen.p.can00(color) {
+                                gen.moveKing(square, Bit(G1 + 56 * color))
+                        }
+                        if gen.p.can000(color) {
+                                gen.moveKing(square, Bit(C1 + 56 * color))
+                        }
+                }
         }
         return gen
 }
