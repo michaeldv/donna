@@ -10,10 +10,10 @@ import (`testing`)
 func TestGenCaptures000(t *testing.T) {
         game := NewGame().Setup(`Ka1,Qd1,Rh1,Bb3,Ne5`, `Ka8,Qd8,Rh8,Be6,Ng6`)
         white := game.Start(White).StartMoveGen(1).GenerateCaptures()
-        expect(t, white.allMoves(), `[Ne5xg6 Bb3xe6 Rh1xh8 Qd1xd8]`)
+        expect(t, white.allMoves(), `[Qd1xd8 Rh1xh8 Bb3xe6 Ne5xg6]`)
 
         black := game.Start(Black).StartMoveGen(1).GenerateCaptures()
-        expect(t, black.allMoves(), `[Ng6xe5 Be6xb3 Rh8xh1 Qd8xd1]`)
+        expect(t, black.allMoves(), `[Be6xb3 Ng6xe5 Qd8xd1 Rh8xh1]`)
 }
 
 // Pawn captures on rows 2-6 (no promotions).

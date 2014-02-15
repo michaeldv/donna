@@ -95,18 +95,12 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // What's left is to generate all possible knight, bishop, rook, and
         // queen moves that evade the check.
         //
-        for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
-                gen.addEvasion(Piece(kind|color), block)
-        }
-
-        return gen
-}
-
-func (gen *MoveGen) addEvasion(piece Piece, block Bitmask) {
-        outposts := gen.p.outposts[piece]
+        outposts := gen.p.board[color] & ^gen.p.outposts[Pawn(color)] & ^gen.p.outposts[King(color)]
         for outposts != 0 {
                 from := outposts.pop()
                 targets := gen.p.targetsMask(from) & block
                 gen.movePiece(from, targets)
         }
+
+        return gen
 }

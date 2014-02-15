@@ -33,12 +33,10 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
 // Generates all pseudo-legal captures by pieces other than pawn.
 func (gen *MoveGen) pieceCaptures(color int) *MoveGen {
         enemy := color^1
-        for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
-	        outposts := gen.p.outposts[Piece(kind|color)]
-	        for outposts != 0 {
-	                square := outposts.pop()
-	                gen.movePiece(square, gen.p.targetsMask(square) & gen.p.board[enemy])
-	        }
+        outposts := gen.p.board[color] & ^gen.p.outposts[Pawn(color)] & ^gen.p.outposts[King(color)]
+        for outposts != 0 {
+                square := outposts.pop()
+                gen.movePiece(square, gen.p.targetsMask(square) & gen.p.board[enemy])
         }
         if king := gen.p.outposts[King(color)]; king != 0 {
                 square := king.pop()

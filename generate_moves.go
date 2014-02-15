@@ -17,13 +17,12 @@ func (gen *MoveGen) pawnMoves(color int) *MoveGen {
         return gen
 }
 
+// Go over all pieces except pawns and the king.
 func (gen *MoveGen) pieceMoves(color int) *MoveGen {
-        for _, kind := range [4]int{ KNIGHT, BISHOP, ROOK, QUEEN } {
-                outposts := gen.p.outposts[Piece(kind|color)]
-                for outposts != 0 {
-                        square := outposts.pop()
-                        gen.movePiece(square, gen.p.targetsMask(square))
-                }
+        outposts := gen.p.board[color] & ^gen.p.outposts[Pawn(color)] & ^gen.p.outposts[King(color)]
+        for outposts != 0 {
+                square := outposts.pop()
+                gen.movePiece(square, gen.p.targetsMask(square))
         }
         return gen
 }

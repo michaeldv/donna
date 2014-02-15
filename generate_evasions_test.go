@@ -31,7 +31,7 @@ func TestGenerate290(t *testing.T) {
 func TestGenerate300(t *testing.T) {
         game := NewGame().Setup(`Ka5,Ra8`, `Kg8,Qf6,Re6,Bc6,Bg7,Na6,Nb6,f7,g6,h5`)
         black := game.Start(Black).StartMoveGen(1).GenerateEvasions()
-        expect(t, black.allMoves(), `[Kg8-h7 Na6-b8 Nb6xa8 Nb6-c8 Bc6xa8 Bc6-e8 Bg7-f8 Re6-e8 Qf6-d8]`)
+        expect(t, black.allMoves(), `[Kg8-h7 Na6-b8 Nb6xa8 Nb6-c8 Bc6xa8 Bc6-e8 Re6-e8 Qf6-d8 Bg7-f8]`)
 }
 
 // Check evasions (double check).
