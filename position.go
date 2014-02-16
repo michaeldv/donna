@@ -172,7 +172,7 @@ func (p *Position) TakeBack(move Move) *Position {
 }
 
 func (p *Position) isInCheck(color int) bool {
-        return p.outposts[King(color)] & p.attacksMask(color^1) != 0
+        return p.isAttacked(p.outposts[King(color)].first(), color^1)
 }
 
 func (p *Position) isRepetition() bool {
