@@ -14,14 +14,14 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // piece but double check is also a possibility.
         //
         checkers := maskPawn[enemy][square] & gen.p.outposts[pawn]
-        checkers |= gen.p.Targets(square, Knight(color)) & gen.p.outposts[knight]
-        checkers |= gen.p.Targets(square, Bishop(color)) & (gen.p.outposts[bishop] | gen.p.outposts[queen])
-        checkers |= gen.p.Targets(square, Rook(color)) & (gen.p.outposts[rook] | gen.p.outposts[queen])
+        checkers |= gen.p.targetsFor(square, Knight(color)) & gen.p.outposts[knight]
+        checkers |= gen.p.targetsFor(square, Bishop(color)) & (gen.p.outposts[bishop] | gen.p.outposts[queen])
+        checkers |= gen.p.targetsFor(square, Rook(color)) & (gen.p.outposts[rook] | gen.p.outposts[queen])
         //
         // Generate possible king retreats first, i.e. moves to squares not
         // occupied by friendly pieces and not attacked by the opponent.
         //
-        retreats := gen.p.targetsMask(square) & ^gen.p.attacks(enemy)
+        retreats := gen.p.targets(square) & ^gen.p.attacks(enemy)
         //
         // If the attacking piece is bishop, rook, or queen then exclude the
         // square behind the king using evasion mask. Note that knight's
@@ -98,7 +98,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         outposts := gen.p.board[color] & ^gen.p.outposts[Pawn(color)] & ^gen.p.outposts[King(color)]
         for outposts != 0 {
                 from := outposts.pop()
-                targets := gen.p.targetsMask(from) & block
+                targets := gen.p.targets(from) & block
                 gen.movePiece(from, targets)
         }
 

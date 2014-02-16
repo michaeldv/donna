@@ -18,7 +18,6 @@ type Position struct {
         game      *Game
         flags     Flags         // Flags set by last move leading to this position.
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
-        targets   [64]Bitmask   // Attack targets for pieces on each square of the board.
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
         outposts  [14]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
@@ -113,7 +112,6 @@ func (p *Position) MakeMove(move Move) *Position {
 
 	node++
 	tree[node] = tree[node - 1] // Faster that tree[node] = *p ?!
-	tree[node].targets = [64]Bitmask{}
 
         if piece.isKing() {
                 castles &= ^castleKingside[color]

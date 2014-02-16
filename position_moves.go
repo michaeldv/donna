@@ -158,7 +158,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
 		default:
 			piece = p.pieces[from] // <-- Makes piece character optional.
 		}
-                if (p.pieces[from] != piece) || (p.targetsMask(from) & Bit(to) == 0) {
+                if (p.pieces[from] != piece) || (p.targets(from) & Bit(to) == 0) {
                         move = 0 // Invalid move.
                 } else {
                         move = p.NewMove(from, to)

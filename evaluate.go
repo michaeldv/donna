@@ -56,10 +56,10 @@ func (e *Evaluator) analyzeCoordination() {
 
                 // Mobility: how many moves are available to squares not attacked by
                 // the opponent?
-                moves[color] += (e.position.targetsMask(square) & underAttack[color^1]).count()
+                moves[color] += (e.position.targets(square) & underAttack[color^1]).count()
 
                 // Agressivness: how many opponent's pieces are being attacked?
-                attacks[color] += (e.position.targetsMask(square) & e.position.board[color^1]).count()
+                attacks[color] += (e.position.targets(square) & e.position.board[color^1]).count()
 
                 // Calculate bonus or penalty for a piece being at the given square.
                 midgame, endgame := piece.bonus(flip[color][square])
