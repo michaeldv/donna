@@ -203,16 +203,16 @@ func (p *Position) saveBest(ply int, move Move) {
         }
 }
 
-func (p *Position) can00(color int) bool {
-        return p.castles & castleKingside[color] != 0 &&
-               (gapKing[color] & p.board[2] == 0) &&
-               (castleKing[color] & p.attacks(color^1) == 0)
-}
+func (p *Position) canCastle(color int) (kingside, queenside bool) {
+        attacks := p.attacks(color^1)
+        kingside = p.castles & castleKingside[color] != 0 &&
+                   (gapKing[color] & p.board[2] == 0) &&
+                   (castleKing[color] & attacks == 0)
 
-func (p *Position) can000(color int) bool {
-        return p.castles & castleQueenside[color] != 0 &&
-               (gapQueen[color] & p.board[2] == 0) &&
-               (castleQueen[color] & p.attacks(color^1) == 0)
+        queenside = p.castles & castleQueenside[color] != 0 &&
+                    (gapQueen[color] & p.board[2] == 0) &&
+                    (castleQueen[color] & attacks == 0)
+        return
 }
 
 // Compute position's polyglot hash.

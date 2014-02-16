@@ -26,90 +26,90 @@ func TestPosition010(t *testing.T) {
 // Castle tests.
 func TestPosition030(t *testing.T) { // Everything is OK.
         p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
-
-        expect(t, p.can00(p.color), true)
-        expect(t, p.can000(p.color), true)
+        kingside, queenside := p.canCastle(p.color)
+        expect(t, kingside, true)
+        expect(t, queenside, true)
 
         p = NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`).Start(Black)
-
-        expect(t, p.can00(p.color), true)
-        expect(t, p.can000(p.color), true)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, true)
+        expect(t, queenside, true)
 }
 
 
 func TestPosition040(t *testing.T) { // King checked.
         p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bg3`).Start(White)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside := p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke1,Bg6`, `Ke8,Ra8,Rh8`).Start(Black)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 }
 
 func TestPosition050(t *testing.T) { // Attacked square.
         p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bb3,Bh3`).Start(White)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside := p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke1,Bb6,Bh6`, `Ke8,Ra8,Rh8`).Start(Black)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 }
 
 func TestPosition060(t *testing.T) { // Wrong square.
         p := NewGame().Setup(`Ke1,Ra8,Rh8`, `Ke5`).Start(White)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside := p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke2,Ra1,Rh1`, `Ke8`).Start(White)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke4`, `Ke8,Ra1,Rh1`).Start(Black)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke4`, `Ke7,Ra8,Rh8`).Start(Black)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 }
 
 func TestPosition070(t *testing.T) { // Missing rooks.
         p := NewGame().Setup(`Ke1`, `Ke8`).Start(White)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside := p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke1`, `Ke8`).Start(Black)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 }
 
 func TestPosition080(t *testing.T) { // Rooks on wrong squares.
         p := NewGame().Setup(`Ke1,Rb1`, `Ke8`).Start(White)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside := p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke1,Rb1,Rh1`, `Ke8`).Start(White)
-
-        expect(t, p.can00(p.color), true)
-        expect(t, p.can000(p.color), false)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, true)
+        expect(t, queenside, false)
 
         p = NewGame().Setup(`Ke1,Ra1,Rf1`, `Ke8`).Start(White)
-
-        expect(t, p.can00(p.color), false)
-        expect(t, p.can000(p.color), true)
+        kingside, queenside = p.canCastle(p.color)
+        expect(t, kingside, false)
+        expect(t, queenside, true)
 }
 
 func TestPosition081(t *testing.T) { // Rook has moved.
@@ -118,8 +118,9 @@ func TestPosition081(t *testing.T) { // Rook has moved.
         p = p.MakeMove(p.NewMove(E8, E7))
         p = p.MakeMove(p.NewMove(A2, A1))
 
-        expect(t, p.can00(White), true)
-        expect(t, p.can000(White), false)
+        kingside, queenside := p.canCastle(White)
+        expect(t, kingside, true)
+        expect(t, queenside, false)
 }
 
 func TestPosition082(t *testing.T) { // King has moved.
@@ -128,16 +129,18 @@ func TestPosition082(t *testing.T) { // King has moved.
         p = p.MakeMove(p.NewMove(E1, E2))
         p = p.MakeMove(p.NewMove(E7, E8))
 
-        expect(t, p.can00(Black), false)
-        expect(t, p.can000(Black), false)
+        kingside, queenside := p.canCastle(Black)
+        expect(t, kingside, false)
+        expect(t, queenside, false)
 }
 
 func TestPosition083(t *testing.T) { // Rook is taken.
         p := NewGame().Setup(`Ke1,Nb6`, `Ke8,Ra8,Rh8`).Start(White)
         p = p.MakeMove(p.NewMove(B6, A8))
 
-        expect(t, p.can00(Black), true)
-        expect(t, p.can000(Black), false)
+        kingside, queenside := p.canCastle(Black)
+        expect(t, kingside, true)
+        expect(t, queenside, false)
 }
 
 // Straight repetition.
