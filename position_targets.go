@@ -11,12 +11,19 @@ func (p *Position) targetsMask(square int) Bitmask {
         return p.targets[square]
 }
 
-func (p *Position) attacksMask(color int) Bitmask {
-        if p.attacks[color] == 0 {
-                p.attacks[color] = p.pawnAttacks(color) | p.knightAttacks(color) | p.bishopAttacks(color) |
-                                   p.rookAttacks(color) | p.queenAttacks(color) | p.kingAttacks(color)
+func (p *Position) attacks(color int) (bitmask Bitmask) {
+        bitmask = p.pawnAttacks(color) | p.knightAttacks(color) | p.kingAttacks(color)
+
+        outposts := p.outposts[Bishop(color)] | p.outposts[Queen(color)]
+        for outposts != 0 {
+                bitmask |= p.bishopMoves(outposts.pop())
         }
-        return p.attacks[color]
+
+        outposts = p.outposts[Rook(color)] | p.outposts[Queen(color)]
+        for outposts != 0 {
+                bitmask |= p.rookMoves(outposts.pop())
+        }
+        return
 }
 
 func (p *Position) isAttacked(square, color int) bool {

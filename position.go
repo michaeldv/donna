@@ -20,7 +20,6 @@ type Position struct {
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
         targets   [64]Bitmask   // Attack targets for pieces on each square of the board.
         board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
-        attacks   [2]Bitmask    // [0] all squares attacked by white, [1] by black.
         outposts  [14]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
         color     int           // Side to make next move.
@@ -207,13 +206,13 @@ func (p *Position) saveBest(ply int, move Move) {
 func (p *Position) can00(color int) bool {
         return p.castles & castleKingside[color] != 0 &&
                (gapKing[color] & p.board[2] == 0) &&
-               (castleKing[color] & p.attacksMask(color^1) == 0)
+               (castleKing[color] & p.attacks(color^1) == 0)
 }
 
 func (p *Position) can000(color int) bool {
         return p.castles & castleQueenside[color] != 0 &&
                (gapQueen[color] & p.board[2] == 0) &&
-               (castleQueen[color] & p.attacksMask(color^1) == 0)
+               (castleQueen[color] & p.attacks(color^1) == 0)
 }
 
 // Compute position's polyglot hash.

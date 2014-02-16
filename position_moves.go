@@ -52,7 +52,7 @@ func (p *Position) isValid(move Move) bool {
         // attacked by the opponent or when the move is a castle.
         //
         if piece.isKing() {
-                return p.attacksMask(color^1).isClear(to) || (move & isCastle != 0)
+                return !p.isAttacked(to, color^1) || (move & isCastle != 0)
         }
         //
         // For all other peices the move is valid when it doesn't cause a
