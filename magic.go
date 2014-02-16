@@ -43,6 +43,10 @@ var (
         // Bitmask to indicate pawn attacks for a square. For example, C3 is being
         // attacked by white pawns on B2 and D2, and black pawns on B4 and D4.
         maskPawn         [2][64]Bitmask
+
+        // Two arrays to simplify incremental polyglot hash computation.
+        hashCastle       [16]uint64
+        hashEnpassant    [8]uint64
 )
 
 func init() {
@@ -129,6 +133,28 @@ func init() {
                 maskInFront[White][square].fill(square,  8, 0, 0x00FFFFFFFFFFFFFF)
                 maskInFront[Black][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
 	}
+
+
+        // Castle hash values.
+        for mask := uint8(0); mask < 16; mask++ {
+                if mask & castleKingside[White] != 0 {
+                        hashCastle[mask] ^= polyglotRandom[768]
+                }
+                if mask & castleQueenside[White] != 0 {
+                        hashCastle[mask] ^= polyglotRandom[769]
+                }
+                if mask & castleKingside[Black] != 0 {
+                        hashCastle[mask] ^= polyglotRandom[770]
+                }
+                if mask & castleQueenside[Black] != 0 {
+                        hashCastle[mask] ^= polyglotRandom[771]
+                }
+        }
+
+        // Enpassant hash values.
+        for col := A1; col <= H1; col++ {
+                hashEnpassant[col] = polyglotRandom[772 + col]
+        }
 }
 
 func indexedBitmask(index int, mask Bitmask) (bitmask Bitmask) {

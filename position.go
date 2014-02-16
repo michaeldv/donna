@@ -119,23 +119,28 @@ func (p *Position) MakeMove(move Move) *Position {
                 if move.isCastle() {
                         flags.irreversible = true
                         squares = []int{}
+                        tree[node].pieces[from], tree[node].pieces[to] = 0, piece
                         switch to {
                         case G1:
-                                tree[node].board[White] ^= gapKing[White] | Bit(E1) | Bit(H1)
-                                tree[node].outposts[Rook(White)] ^= Bit(H1) | Bit(F1)
                                 tree[node].outposts[piece] ^= Bit(E1) | Bit(G1)
+                                tree[node].outposts[Rook(White)] ^= Bit(H1) | Bit(F1)
+                                tree[node].pieces[H1], tree[node].pieces[F1] = 0, Rook(White)
+                                tree[node].board[White] ^= gapKing[White] | Bit(E1) | Bit(H1)
                         case C1:
-                                tree[node].board[White] ^= gapQueen[White] | Bit(E1) | Bit(A1)
-                                tree[node].outposts[Rook(White)] ^= Bit(A1) | Bit(D1)
                                 tree[node].outposts[piece] ^= Bit(E1) | Bit(C1)
+                                tree[node].outposts[Rook(White)] ^= Bit(A1) | Bit(D1)
+                                tree[node].pieces[A1], tree[node].pieces[D1] = 0, Rook(White)
+                                tree[node].board[White] ^= Bit(C1) | Bit(D1) | Bit(E1) | Bit(A1)
                         case G8:
-                                tree[node].board[Black] ^= gapKing[Black] | Bit(E8) | Bit(H8)
-                                tree[node].outposts[Rook(Black)] ^= Bit(H8) | Bit(F8)
                                 tree[node].outposts[piece] ^= Bit(E8) | Bit(G8)
+                                tree[node].outposts[Rook(Black)] ^= Bit(H8) | Bit(F8)
+                                tree[node].pieces[H8], tree[node].pieces[F8] = 0, Rook(Black)
+                                tree[node].board[Black] ^= gapKing[Black] | Bit(E8) | Bit(H8)
                         case C8:
-                                tree[node].board[Black] ^= gapQueen[Black] | Bit(E8) | Bit(A8)
-                                tree[node].outposts[Rook(Black)] ^= Bit(A8) | Bit(D8)
                                 tree[node].outposts[piece] ^= Bit(E8) | Bit(C8)
+                                tree[node].outposts[Rook(Black)] ^= Bit(A8) | Bit(D8)
+                                tree[node].pieces[A8], tree[node].pieces[D8] = 0, Rook(Black)
+                                tree[node].board[Black] ^= Bit(C8) | Bit(D8) | Bit(E8) | Bit(A8)
                         }
                 }
         } else if piece.isPawn() {
@@ -220,33 +225,26 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 
 // Compute position's polyglot hash.
 func (p *Position) polyglot() (key uint64) {
-        for i, piece := range p.pieces {
-                if piece != 0 {
-                        key ^= polyglotRandom[0:768][64 * piece.polyglot() + i]
-                }
+        board := p.board[2]
+        for board != 0 {
+                square := board.pop()
+                key ^= polyglotRandom[0:768][64 * p.pieces[square].polyglot() + square]
         }
 
-	if p.castles & castleKingside[White] != 0 {
-                key ^= polyglotRandom[768]
+	key ^= hashCastle[p.castles]
+
+	if p.flags.enpassant != 0 {
+                key ^= hashEnpassant[Col(p.flags.enpassant)]
 	}
-	if p.castles & castleQueenside[White] != 0 {
-                key ^= polyglotRandom[769]
-	}
-	if p.castles & castleKingside[Black] != 0 {
-                key ^= polyglotRandom[770]
-	}
-	if p.castles & castleQueenside[Black] != 0 {
-                key ^= polyglotRandom[771]
-	}
-        if p.flags.enpassant != 0 {
-                col := Col(p.flags.enpassant)
-                key ^= polyglotRandom[772 + col]
-        }
 	if p.color == White {
                 key ^= polyglotRandom[780]
 	}
 
 	return
+}
+
+func (p *Position) polyhash (square int) uint64 {
+       return polyglotRandom[0:768][64 * p.pieces[square].polyglot() + square]
 }
 
 func (p *Position) String() string {
