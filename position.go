@@ -83,7 +83,6 @@ func (p *Position) updatePieces(updates [64]Piece, squares []int) *Position {
 	                }
 		}
         }
-        p.board[2] = p.board[White] | p.board[Black]
         return p
 }
 
@@ -112,24 +111,33 @@ func (p *Position) MakeMove(move Move) *Position {
         // the previous node.
         castles := tree[node].castles & castleRights[from] & castleRights[to]
 
+	node++
+	tree[node] = tree[node - 1] // Faster that tree[node] = *p ?!
+	tree[node].targets = [64]Bitmask{}
+
         if piece.isKing() {
                 castles &= ^castleKingside[color]
                 castles &= ^castleQueenside[color]
                 if move.isCastle() {
                         flags.irreversible = true
+                        squares = []int{}
                         switch to {
                         case G1:
-                                delta[H1], delta[F1] = 0, Rook(White)
-                                squares = append(squares, H1, F1)
+                                tree[node].board[White] ^= gapKing[White] | Bit(E1) | Bit(H1)
+                                tree[node].outposts[Rook(White)] ^= Bit(H1) | Bit(F1)
+                                tree[node].outposts[piece] ^= Bit(E1) | Bit(G1)
                         case C1:
-                                delta[A1], delta[D1] = 0, Rook(White)
-                                squares = append(squares, A1, D1)
+                                tree[node].board[White] ^= gapQueen[White] | Bit(E1) | Bit(A1)
+                                tree[node].outposts[Rook(White)] ^= Bit(A1) | Bit(D1)
+                                tree[node].outposts[piece] ^= Bit(E1) | Bit(C1)
                         case G8:
-                                delta[H8], delta[F8] = 0, Rook(Black)
-                                squares = append(squares, H8, F8)
+                                tree[node].board[Black] ^= gapKing[Black] | Bit(E8) | Bit(H8)
+                                tree[node].outposts[Rook(Black)] ^= Bit(H8) | Bit(F8)
+                                tree[node].outposts[piece] ^= Bit(E8) | Bit(G8)
                         case C8:
-                                delta[A8], delta[D8] = 0, Rook(Black)
-                                squares = append(squares, A8, D8)
+                                tree[node].board[Black] ^= gapQueen[Black] | Bit(E8) | Bit(A8)
+                                tree[node].outposts[Rook(Black)] ^= Bit(A8) | Bit(D8)
+                                tree[node].outposts[piece] ^= Bit(E8) | Bit(C8)
                         }
                 }
         } else if piece.isPawn() {
@@ -144,19 +152,16 @@ func (p *Position) MakeMove(move Move) *Position {
                 }
         }
 
-	node++
-	tree[node] = Position{
-		game:     p.game,
-		board:    p.board,
-		count:    p.count,
-		pieces:   p.pieces,
-		outposts: p.outposts,
-		color:    color^1,
-		flags:    flags,
-		castles:  castles,
-	}
 
-	tree[node].updatePieces(delta, squares)
+        if len(squares) > 0 {
+	        tree[node].updatePieces(delta, squares)
+        }
+
+	tree[node].color = color^1
+	tree[node].flags = flags
+	tree[node].castles = castles
+	tree[node].board[2] = tree[node].board[White] | tree[node].board[Black]
+
 	if tree[node].isInCheck(color) {
 		node--
 		return nil
