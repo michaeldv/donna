@@ -227,8 +227,8 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 func (p *Position) polyglot() (key uint64) {
         board := p.board[2]
         for board != 0 {
-                square := board.pop()
-                key ^= polyglotRandom[0:768][64 * p.pieces[square].polyglot() + square]
+                square := board.pop() // Inline polyhash() is at lest 10% faster.
+                key ^= polyglotRandom[64 * p.pieces[square].polyglot() + square]
         }
 
 	key ^= hashCastle[p.castles]
@@ -237,14 +237,14 @@ func (p *Position) polyglot() (key uint64) {
                 key ^= hashEnpassant[Col(p.flags.enpassant)]
 	}
 	if p.color == White {
-                key ^= polyglotRandom[780]
+                key ^= polyglotRandomWhite
 	}
 
 	return
 }
 
 func (p *Position) polyhash (square int) uint64 {
-       return polyglotRandom[0:768][64 * p.pieces[square].polyglot() + square]
+       return polyglotRandom[64 * p.pieces[square].polyglot() + square]
 }
 
 func (p *Position) String() string {

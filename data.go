@@ -300,6 +300,8 @@ var penaltyIsolatedPawn = [2][8]int{
         { -25, -25, -25, -20, -20, -25, -25, -25 }, // End of the game.
 }
 
+// Default polyglot Random64 array (http://hardy.uhasselt.be/Toga/book_format.html)
+// is split in four to avoid dealing with slices.
 var polyglotRandom = [...]uint64{
 	0x9D39247E33776D41, 0x2AF7398005AAA5C7, 0x44DB015024623547, 0x9C15F73E62A76AE2,
 	0x75834465489C0C89, 0x3290AC3A203001BF, 0x0FBBAD1F61042279, 0xE83A908FF2FB60CA,
@@ -493,11 +495,27 @@ var polyglotRandom = [...]uint64{
 	0x0C335248857FA9E7, 0x0A9C32D5EAE45305, 0xE6C42178C4BBB92E, 0x71F1CE2490D20B07,
 	0xF1BCC3D275AFE51A, 0xE728E8C83C334074, 0x96FBF83A12884624, 0x81A1549FD6573DA5,
 	0x5FA7867CAF35E149, 0x56986E2EF3ED091B, 0x917F1DD5F8886C61, 0xD20D8C88C8FFE65F,
-	0x31D71DCE64B2C310, 0xF165B587DF898190, 0xA57E6339DD2CF3A0, 0x1EF6E6DBB1961EC9,
-	0x70CC73D90BC26E24, 0xE21A6B35DF0C3AD7, 0x003A93D8B2806962, 0x1C99DED33CB890A1,
-	0xCF3145DE0ADD4289, 0xD0E4427A5514FB72, 0x77C621CC9FB3A483, 0x67A34DAC4356550B,
-	0xF8D626AAAF278509,
 }
+
+var polyglotRandomCastle = [4]uint64{
+	0x31D71DCE64B2C310, // polyglotRandom[768] (white kingside)
+	0xF165B587DF898190, // polyglotRandom[769] (white queenside)
+	0xA57E6339DD2CF3A0, // polyglotRandom[770] (black kingside)
+	0x1EF6E6DBB1961EC9, // polyglotRandom[771] (black queenside)
+}
+
+var polyglotRandomEnpassant = [8]uint64{
+	0x70CC73D90BC26E24, // polyglotRandom[772 + A1]
+	0xE21A6B35DF0C3AD7, // polyglotRandom[772 + B1]
+	0x003A93D8B2806962, // polyglotRandom[772 + C1]
+	0x1C99DED33CB890A1, // polyglotRandom[772 + D1]
+	0xCF3145DE0ADD4289, // polyglotRandom[772 + E1]
+	0xD0E4427A5514FB72, // polyglotRandom[772 + F1]
+	0x77C621CC9FB3A483, // polyglotRandom[772 + G1]
+	0x67A34DAC4356550B, // polyglotRandom[772 + H1]
+}
+
+const polyglotRandomWhite = 0xF8D626AAAF278509 // polyglotRandom[780]
 
 var rookMagic = [64]Magic{
 	{ 0x000101010101017E, 0xE580008110204000 }, { 0x000202020202027C, 0x0160002008011000 },

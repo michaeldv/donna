@@ -138,22 +138,22 @@ func init() {
         // Castle hash values.
         for mask := uint8(0); mask < 16; mask++ {
                 if mask & castleKingside[White] != 0 {
-                        hashCastle[mask] ^= polyglotRandom[768]
+                        hashCastle[mask] ^= polyglotRandomCastle[0]
                 }
                 if mask & castleQueenside[White] != 0 {
-                        hashCastle[mask] ^= polyglotRandom[769]
+                        hashCastle[mask] ^= polyglotRandomCastle[1]
                 }
                 if mask & castleKingside[Black] != 0 {
-                        hashCastle[mask] ^= polyglotRandom[770]
+                        hashCastle[mask] ^= polyglotRandomCastle[2]
                 }
                 if mask & castleQueenside[Black] != 0 {
-                        hashCastle[mask] ^= polyglotRandom[771]
+                        hashCastle[mask] ^= polyglotRandomCastle[3]
                 }
         }
 
         // Enpassant hash values.
         for col := A1; col <= H1; col++ {
-                hashEnpassant[col] = polyglotRandom[772 + col]
+                hashEnpassant[col] = polyglotRandomEnpassant[col]
         }
 }
 
