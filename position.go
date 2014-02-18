@@ -95,6 +95,14 @@ func (p *Position) computeStage() *Position {
         return p
 }
 
+func (p *Position) movePiece(piece Piece, from, to int) *Position {
+        mask := Bit(from) | Bit(to)
+        p.outposts[piece] ^= mask
+        p.board[piece.color()] ^= mask // p.board[2] ^= mask
+        p.pieces[from], p.pieces[to] = 0, piece
+        return p
+}
+
 func (p *Position) MakeMove(move Move) *Position {
         color := move.color()
         flags := Flags{}
@@ -105,42 +113,30 @@ func (p *Position) MakeMove(move Move) *Position {
         squares := []int{ from, to }
         delta := p.pieces
         delta[from], delta[to] = 0, piece
-
+        //
+        // Copy over the contents of previous tree node to the current one.
+        //
+        node++
+        tree[node] = tree[node - 1] // Faster that tree[node] = *p ?!
+        //
         // Castle rights for current node are based on the castle rights from
         // the previous node.
-        castles := tree[node].castles & castleRights[from] & castleRights[to]
-
-	node++
-	tree[node] = tree[node - 1] // Faster that tree[node] = *p ?!
+        //
+        tree[node].castles &= castleRights[from] & castleRights[to]
 
         if piece.isKing() {
-                castles &= ^castleKingside[color]
-                castles &= ^castleQueenside[color]
                 if move.isCastle() {
                         flags.irreversible = true
                         squares = []int{}
-                        tree[node].pieces[from], tree[node].pieces[to] = 0, piece
                         switch to {
                         case G1:
-                                tree[node].outposts[piece] ^= Bit(E1) | Bit(G1)
-                                tree[node].outposts[Rook(White)] ^= Bit(H1) | Bit(F1)
-                                tree[node].pieces[H1], tree[node].pieces[F1] = 0, Rook(White)
-                                tree[node].board[White] ^= gapKing[White] | Bit(E1) | Bit(H1)
+                                tree[node].movePiece(King(White), E1, G1).movePiece(Rook(White), H1, F1)
                         case C1:
-                                tree[node].outposts[piece] ^= Bit(E1) | Bit(C1)
-                                tree[node].outposts[Rook(White)] ^= Bit(A1) | Bit(D1)
-                                tree[node].pieces[A1], tree[node].pieces[D1] = 0, Rook(White)
-                                tree[node].board[White] ^= Bit(C1) | Bit(D1) | Bit(E1) | Bit(A1)
+                                tree[node].movePiece(King(White), E1, C1).movePiece(Rook(White), A1, D1)
                         case G8:
-                                tree[node].outposts[piece] ^= Bit(E8) | Bit(G8)
-                                tree[node].outposts[Rook(Black)] ^= Bit(H8) | Bit(F8)
-                                tree[node].pieces[H8], tree[node].pieces[F8] = 0, Rook(Black)
-                                tree[node].board[Black] ^= gapKing[Black] | Bit(E8) | Bit(H8)
+                                tree[node].movePiece(King(Black), E8, G8).movePiece(Rook(Black), H8, F8)
                         case C8:
-                                tree[node].outposts[piece] ^= Bit(E8) | Bit(C8)
-                                tree[node].outposts[Rook(Black)] ^= Bit(A8) | Bit(D8)
-                                tree[node].pieces[A8], tree[node].pieces[D8] = 0, Rook(Black)
-                                tree[node].board[Black] ^= Bit(C8) | Bit(D8) | Bit(E8) | Bit(A8)
+                                tree[node].movePiece(King(Black), E8, C8).movePiece(Rook(Black), A8, D8)
                         }
                 }
         } else if piece.isPawn() {
@@ -162,7 +158,6 @@ func (p *Position) MakeMove(move Move) *Position {
 
 	tree[node].color = color^1
 	tree[node].flags = flags
-	tree[node].castles = castles
 	tree[node].board[2] = tree[node].board[White] | tree[node].board[Black]
 
 	if tree[node].isInCheck(color) {
