@@ -63,28 +63,6 @@ func (p *Position) setupPieces() *Position {
         return p
 }
 
-func (p *Position) updatePieces(updates [64]Piece, squares []int) *Position {
-        for _, square := range squares {
-		if newer, older := updates[square], p.pieces[square]; newer != older {
-			if older != 0 {
-				p.count[older]--
-			}
-			p.outposts[older].clear(square)
-			p.board[newer.color()^1].clear(square)
-			p.pieces[square] = newer
-	                if newer != 0 {
-	                        p.outposts[newer].set(square)
-	                        p.board[newer.color()].set(square)
-				p.count[newer]++
-	                } else {
-	                        p.outposts[newer].clear(square)
-	                        p.board[newer.color()].clear(square)
-	                }
-		}
-        }
-        return p
-}
-
 func (p *Position) computeStage() *Position {
         p.hash  = p.polyglot()
         p.stage = 2 * (p.count[Pawn(White)]   + p.count[Pawn(Black)])   +
@@ -95,11 +73,50 @@ func (p *Position) computeStage() *Position {
         return p
 }
 
-func (p *Position) movePiece(piece Piece, from, to int) *Position {
-        mask := Bit(from) | Bit(to)
-        p.outposts[piece] ^= mask
-        p.board[piece.color()] ^= mask // p.board[2] ^= mask
+func (p *Position) movePiece(from, to int) *Position {
+        piece, color := p.pieces[from], p.pieces[from].color()
+
         p.pieces[from], p.pieces[to] = 0, piece
+        p.outposts[piece] ^= Bit(from) | Bit(to)
+        p.board[color] ^= Bit(from) | Bit(to)
+
+        return p
+}
+
+func (p *Position) promotePawn(from, to int, promo Piece) *Position {
+        piece, color := p.pieces[from], p.pieces[from].color()
+
+        p.pieces[from], p.pieces[to] = 0, promo
+        p.outposts[piece] ^= Bit(from)
+        p.outposts[promo] ^= Bit(to)
+        p.board[color] ^= Bit(from) | Bit(to)
+        p.count[piece]--
+        p.count[promo]++
+
+        return p
+}
+
+func (p *Position) capturePiece(from, to int) *Position {
+        capture, enemy := p.pieces[to], p.pieces[to].color()
+
+        p.outposts[capture] ^= Bit(to)
+        p.board[enemy] ^= Bit(to)
+        p.count[capture]--
+
+        return p
+}
+
+func (p *Position) captureEnpassant(from, to int) *Position {
+        color := p.pieces[from].color()
+        enemy := color^1
+        capture := Pawn(enemy)
+        enpassant := to - eight[color]
+
+        p.pieces[enpassant] = 0
+        p.outposts[capture] ^= Bit(enpassant)
+        p.board[enemy] ^= Bit(enpassant)
+        p.count[capture]--
+
         return p
 }
 
@@ -108,52 +125,54 @@ func (p *Position) MakeMove(move Move) *Position {
         flags := Flags{}
 
         from, to, piece, capture := move.split()
-        flags.irreversible = capture != 0
-
-        squares := []int{ from, to }
-        delta := p.pieces
-        delta[from], delta[to] = 0, piece
         //
         // Copy over the contents of previous tree node to the current one.
         //
         node++
         tree[node] = tree[node - 1] // Faster that tree[node] = *p ?!
+
+        hash := tree[node].hash ^ hashCastle[tree[node].castles]
+        if tree[node].flags.enpassant != 0 {
+                hash ^= hashEnpassant[Col(tree[node].flags.enpassant)]
+        }
         //
         // Castle rights for current node are based on the castle rights from
         // the previous node.
         //
         tree[node].castles &= castleRights[from] & castleRights[to]
 
-        if piece.isKing() {
-                if move.isCastle() {
-                        flags.irreversible = true
-                        squares = []int{}
-                        switch to {
-                        case G1:
-                                tree[node].movePiece(King(White), E1, G1).movePiece(Rook(White), H1, F1)
-                        case C1:
-                                tree[node].movePiece(King(White), E1, C1).movePiece(Rook(White), A1, D1)
-                        case G8:
-                                tree[node].movePiece(King(Black), E8, G8).movePiece(Rook(Black), H8, F8)
-                        case C8:
-                                tree[node].movePiece(King(Black), E8, C8).movePiece(Rook(Black), A8, D8)
-                        }
-                }
-        } else if piece.isPawn() {
+        if capture != 0 {
                 flags.irreversible = true
-                if move.isEnpassant() {
-                        flags.enpassant = from + eight[color]           // Save the en-passant square.
-                } else if to == p.flags.enpassant {
-                        delta[to - eight[color]] = 0                    // Take out the en-passant pawn...
-                        squares = append(squares, to - eight[color])    // and decrement opponent's pawn count.
-                } else if promo := move.promo(); promo != 0 {
-                        delta[to] = promo                               // Place the promoted piece.
+                if to != 0 && to == tree[node].flags.enpassant {
+                        tree[node].captureEnpassant(from, to)
+                } else {
+                        tree[node].capturePiece(from, to)
                 }
         }
 
-
-        if len(squares) > 0 {
-	        tree[node].updatePieces(delta, squares)
+        if promo := move.promo(); promo == 0 {
+                tree[node].movePiece(from, to)
+                if move.isCastle() {
+                        flags.irreversible = true
+                        switch to {
+                        case G1:
+                                tree[node].movePiece(H1, F1)
+                        case C1:
+                                tree[node].movePiece(A1, D1)
+                        case G8:
+                                tree[node].movePiece(H8, F8)
+                        case C8:
+                                tree[node].movePiece(A8, D8)
+                        }
+                } else if piece.isPawn() {
+                        flags.irreversible = true
+                        if move.isEnpassant() {
+                                flags.enpassant = from + eight[color] // Save the en-passant square.
+                        }
+                }
+        } else {
+                flags.irreversible = true
+                tree[node].promotePawn(from, to, promo)
         }
 
 	tree[node].color = color^1
