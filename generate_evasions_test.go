@@ -105,3 +105,27 @@ func TestGenerate400(t *testing.T) {
         black := game.Start(Black).StartMoveGen(1).GenerateEvasions()
         expect(t, black.allMoves(), `[Ka5-a4 Ka5-b4 Ka5-a6 Ka5-b6 b7-b5 c7-c5 d7-d5 e7-e5 f7-f5 g7-g5]`)
 }
+
+// Check evasions (piece x piece captures).
+func TestGenerate410(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Qd1,Rc7,Bd3,Nd4,c2,f2`, `Kh8,Nb4`)
+        black := game.Start(Black)
+        white := black.MakeMove(black.NewMove(B4, C2)).StartMoveGen(1).GenerateEvasions()
+        expect(t, white.allMoves(), `[Ke1-f1 Ke1-d2 Ke1-e2 Qd1xc2 Bd3xc2 Nd4xc2 Rc7xc2]`)
+}
+
+// Check evasions (pawn x piece captures).
+func TestGenerate420(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Qd1,Rd7,Bf1,Nc1,c2,d3,f2`, `Kh8,Nb4`)
+        black := game.Start(Black)
+        white := black.MakeMove(black.NewMove(B4, D3)).StartMoveGen(1).GenerateEvasions()
+        expect(t, white.allMoves(), `[Ke1-d2 Ke1-e2 c2xd3 Nc1xd3 Qd1xd3 Bf1xd3 Rd7xd3]`)
+}
+
+// Check evasions (king x piece captures).
+func TestGenerate430(t *testing.T) {
+        game := NewGame().Setup(`Ke1,Qf7,f2`, `Kh8,Qh4`)
+        black := game.Start(Black)
+        white := black.MakeMove(black.NewMove(H4, F2)).StartMoveGen(1).GenerateEvasions()
+        expect(t, white.allMoves(), `[Ke1-d1 Ke1xf2 Qf7xf2]`)
+}
