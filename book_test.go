@@ -104,7 +104,7 @@ func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpass
         expect(t, p.castles, uint8(0x0F))
 }
 
-func TestBook080(t *testing.T) { // TODO: 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
+func TestBook080(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
         book, p := openBook()
         p = p.MakeMove(book.move(p, polyglotEntry(A2, A4)))
         p = p.MakeMove(book.move(p, polyglotEntry(B7, B5)))

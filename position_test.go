@@ -189,3 +189,100 @@ func TestPosition120(t *testing.T) {
         expect(t, p.isRepetition(), true) // <-- 3 time repetioion with lost 0-0 right.
 }
 
+// Incremental hash recalculation tests (see book_test.go).
+func TestPosition200(t *testing.T) { // 1. e4
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(E2, E4))
+
+        expect(t, p.polyglot(), uint64(0x823C9B50FD114196))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
+}
+
+func TestPosition210(t *testing.T) { // 1. e4 d5
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(E2, E4))
+        p = p.MakeMove(p.NewMove(D7, D5))
+
+        expect(t, p.polyglot(), uint64(0x0756B94461C50FB0))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
+}
+
+func TestPosition220(t *testing.T) { // 1. e4 d5 2. e5
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(E2, E4))
+        p = p.MakeMove(p.NewMove(D7, D5))
+        p = p.MakeMove(p.NewMove(E4, E5))
+
+        expect(t, p.polyglot(), uint64(0x662FAFB965DB29D4))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0x0F))
+}
+
+func TestPosition230(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(E2, E4))
+        p = p.MakeMove(p.NewMove(D7, D5))
+        p = p.MakeMove(p.NewMove(E4, E5))
+        p = p.MakeMove(p.NewMove(F7, F5))
+
+        expect(t, p.polyglot(), uint64(0x22A48B5A8E47FF78))     // <<<
+        expect(t, p.flags.enpassant, F6)                        // <<<
+        expect(t, p.castles, uint8(0x0F))
+}
+
+func TestPosition240(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(E2, E4))
+        p = p.MakeMove(p.NewMove(D7, D5))
+        p = p.MakeMove(p.NewMove(E4, E5))
+        p = p.MakeMove(p.NewMove(F7, F5))
+        p = p.MakeMove(p.NewMove(E1, E2))
+
+        expect(t, p.polyglot(), uint64(0x652A607CA3F242C1))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, castleKingside[Black] | castleQueenside[Black])
+}
+
+func TestPosition250(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(E2, E4))
+        p = p.MakeMove(p.NewMove(D7, D5))
+        p = p.MakeMove(p.NewMove(E4, E5))
+        p = p.MakeMove(p.NewMove(F7, F5))
+        p = p.MakeMove(p.NewMove(E1, E2))
+        p = p.MakeMove(p.NewMove(E8, F7))
+
+        expect(t, p.polyglot(), uint64(0x00FDD303C946BDD9))
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, uint8(0))
+}
+
+func TestPosition260(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpassant
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(A2, A4))
+        p = p.MakeMove(p.NewMove(B7, B5))
+        p = p.MakeMove(p.NewMove(H2, H4))
+        p = p.MakeMove(p.NewMove(B5, B4))
+        p = p.MakeMove(p.NewMove(C2, C4))
+
+        expect(t, p.polyglot(), uint64(0x3C8123EA7B067637))      // <<<
+        expect(t, p.flags.enpassant, C3)                         // <<<
+        expect(t, p.castles, uint8(0x0F))
+}
+
+func TestPosition270(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
+        p := NewGame().InitialPosition().Start(White)
+        p = p.MakeMove(p.NewMove(A2, A4))
+        p = p.MakeMove(p.NewMove(B7, B5))
+        p = p.MakeMove(p.NewMove(H2, H4))
+        p = p.MakeMove(p.NewMove(B5, B4))
+        p = p.MakeMove(p.NewMove(C2, C4))
+        p = p.MakeMove(p.NewMove(B4, C3))
+        p = p.MakeMove(p.NewMove(A1, A3))
+
+        expect(t, p.polyglot(), uint64(0x5C3F9B829B279560))      // <<<
+        expect(t, p.flags.enpassant, 0)
+        expect(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
+}
