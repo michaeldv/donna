@@ -232,7 +232,7 @@ func TestPosition230(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
         expect(t, p.castles, uint8(0x0F))
 }
 
-func TestPosition240(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
+func TestPosition240(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
         p := NewGame().InitialPosition().Start(White)
         p = p.MakeMove(p.NewMove(E2, E4))
         p = p.MakeMove(p.NewMove(D7, D5))
@@ -245,7 +245,7 @@ func TestPosition240(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White
         expect(t, p.castles, castleKingside[Black] | castleQueenside[Black])
 }
 
-func TestPosition250(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
+func TestPosition250(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
         p := NewGame().InitialPosition().Start(White)
         p = p.MakeMove(p.NewMove(E2, E4))
         p = p.MakeMove(p.NewMove(D7, D5))

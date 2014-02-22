@@ -64,7 +64,7 @@ func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
         expect(t, p.castles, uint8(0x0F))
 }
 
-func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
+func TestBook050(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
         book, p := openBook()
         p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
         p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
@@ -77,7 +77,7 @@ func TestBook050(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 <-- White Cas
         expect(t, p.castles, castleKingside[Black] | castleQueenside[Black])
 }
 
-func TestBook060(t *testing.T) { // TODO: 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
+func TestBook060(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
         book, p := openBook()
         p = p.MakeMove(book.move(p, polyglotEntry(E2, E4)))
         p = p.MakeMove(book.move(p, polyglotEntry(D7, D5)))
