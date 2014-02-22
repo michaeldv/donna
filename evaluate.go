@@ -18,7 +18,7 @@ type Evaluator struct {
         position  *Position
 }
 
-func (p *Position) Evaluate() (score int) {
+func (p *Position) Evaluate() int {
         evaluator := &Evaluator{ 0, 0, 0, p }
 
         evaluator.analyzeMaterial()
@@ -28,8 +28,7 @@ func (p *Position) Evaluate() (score int) {
         evaluator.analyzeKingShield()
         // evaluator.analyzeKingSafety()
 
-        score = (evaluator.midgame * p.stage + evaluator.endgame * (256 - p.stage)) / 256
-        return
+        return p.score(evaluator.midgame, evaluator.endgame)
 }
 
 func (e *Evaluator) analyzeMaterial() {

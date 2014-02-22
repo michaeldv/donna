@@ -63,7 +63,7 @@ func (gen *MoveGen) rank() *MoveGen {
                         gen.list[i].score = move.value()
                 } else {
                         endgame, midgame := move.score()
-                        gen.list[i].score = (midgame * gen.p.stage + endgame * (256 - gen.p.stage)) / 256
+                        gen.list[i].score = gen.p.score(midgame, endgame)
                 }
         }
         sort.Sort(byScore{ gen.list[gen.head : gen.tail] })

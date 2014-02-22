@@ -22,7 +22,6 @@ type Position struct {
         outposts  [14]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
         color     int           // Side to make next move.
-        stage     int           // Game stage (256 in the initial position).
         hash      uint64        // Polyglot hash value.
         castles   uint8         // Castle rights mask.
 }
@@ -48,10 +47,6 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
                 p.castles &= ^castleQueenside[Black]
         }
 
-        return p.setupPieces().computeStage()
-}
-
-func (p *Position) setupPieces() *Position {
         for square, piece := range p.pieces {
                 if piece != 0 {
                         p.outposts[piece].set(square)
@@ -59,17 +54,10 @@ func (p *Position) setupPieces() *Position {
                         p.count[piece]++
                 }
         }
+
         p.hash = p.polyglot()
         p.board[2] = p.board[White] | p.board[Black]
-        return p
-}
 
-func (p *Position) computeStage() *Position {
-        p.stage = 2 * (p.count[Pawn(White)]   + p.count[Pawn(Black)])   +
-                  6 * (p.count[Knight(White)] + p.count[Knight(Black)]) +
-                 12 * (p.count[Bishop(White)] + p.count[Bishop(Black)]) +
-                 16 * (p.count[Rook(White)]   + p.count[Rook(Black)])   +
-                 44 * (p.count[Queen(White)]  + p.count[Queen(Black)])
         return p
 }
 
@@ -204,7 +192,7 @@ func (p *Position) MakeMove(move Move) *Position {
 		node--
 		return nil
 	}
-	return tree[node].computeStage()
+	return &tree[node]
 
 }
 
@@ -256,6 +244,23 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
                     (gapQueen[color] & p.board[2] == 0) &&
                     (castleQueen[color] & attacks == 0)
         return
+}
+
+// Calculates position stage based on what pieces are on the board (256 for
+// the initial position, 0 for bare kings).
+func (p *Position) stage() int {
+        return 2 * (p.count[Pawn(White)]   + p.count[Pawn(Black)])   +
+               6 * (p.count[Knight(White)] + p.count[Knight(Black)]) +
+              12 * (p.count[Bishop(White)] + p.count[Bishop(Black)]) +
+              16 * (p.count[Rook(White)]   + p.count[Rook(Black)])   +
+              44 * (p.count[Queen(White)]  + p.count[Queen(Black)])
+}
+
+// Calculates normalized position score based on position stage and given
+// midgame/endgame values.
+func (p *Position) score(midgame, endgame int) int {
+        stage := p.stage()
+        return (midgame * stage + endgame * (256 - stage)) / 256
 }
 
 // Compute position's polyglot hash.
