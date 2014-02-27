@@ -34,7 +34,7 @@ func (p *Position) Evaluate() int {
 func (e *Evaluator) analyzeMaterial() {
         color, opposite := e.position.color, e.position.color^1
 
-        for _,piece := range []int{ PAWN, KNIGHT, BISHOP, ROOK, QUEEN } {
+        for _,piece := range []int{ WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen } {
                 count := e.position.count[Piece(piece|color)] - e.position.count[Piece(piece|opposite)]
                 midgame, endgame := Piece(piece).value()
                 e.midgame += midgame * count
@@ -90,7 +90,7 @@ func (e *Evaluator) analyzeCoordination() {
 
 func (e *Evaluator) analyzePawnStructure() {
         var bonus, penalty [2]Score
-        pawn := [2]Piece{ Pawn(White), Pawn(Black) }
+        pawn := [2]Piece{ WhitePawn, BlackPawn }
 
         for color := White; color <= Black; color++ {
                 var doubled [8]int // Number of doubled pawns in each column.

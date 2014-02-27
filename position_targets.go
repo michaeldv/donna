@@ -20,7 +20,7 @@ func (p *Position) targets(square int) Bitmask {
 
 func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
         switch kind, color := piece.kind(), piece.color(); kind {
-        case PAWN:
+        case WhitePawn:
                 bitmask = pawnMoves[color][square] & p.board[color^1]
                 //
 		// If the square in front of the pawn is empty then add it as possible
@@ -47,15 +47,15 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
                                 bitmask |= bit[p.flags.enpassant]
                         }
                 }
-        case KNIGHT:
+        case WhiteKnight:
                 bitmask = knightMoves[square] & ^p.board[color]
-        case BISHOP:
+        case WhiteBishop:
                 bitmask = p.bishopMoves(square) & ^p.board[color]
-        case ROOK:
+        case WhiteRook:
                 bitmask = p.rookMoves(square) & ^p.board[color]
-        case QUEEN:
+        case WhiteQueen:
                 bitmask = (p.bishopMoves(square) | p.rookMoves(square)) & ^p.board[color]
-        case KING:
+        case WhiteKing:
                 bitmask = kingMoves[square] & ^p.board[color]
         }
 
@@ -87,11 +87,11 @@ func (p *Position) isAttacked(square, color int) bool {
 
 func (p *Position) pawnAttacks(color int) (bitmask Bitmask) {
         if color == White {
-                bitmask  = (p.outposts[Pawn(White)] & ^maskFile[0]) << 7
-                bitmask |= (p.outposts[Pawn(White)] & ^maskFile[7]) << 9
+                bitmask  = (p.outposts[WhitePawn] & ^maskFile[0]) << 7
+                bitmask |= (p.outposts[WhitePawn] & ^maskFile[7]) << 9
         } else {
-                bitmask  = (p.outposts[Pawn(Black)] & ^maskFile[0]) >> 9
-                bitmask |= (p.outposts[Pawn(Black)] & ^maskFile[7]) >> 7
+                bitmask  = (p.outposts[BlackPawn] & ^maskFile[0]) >> 9
+                bitmask |= (p.outposts[BlackPawn] & ^maskFile[7]) >> 7
         }
         return
 }

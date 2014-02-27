@@ -92,12 +92,12 @@ func (m Move) value() int {
 
 func (m Move) is00() bool {
         from, to, piece, _ := m.split()
-        return (piece == King(White) && from == E1 && to == G1) || (piece == King(Black) && from == E8 && to == G8)
+        return (piece == WhiteKing && from == E1 && to == G1) || (piece == BlackKing && from == E8 && to == G8)
 }
 
 func (m Move) is000() bool {
         from, to, piece, _ := m.split()
-        return (piece == King(White) && from == E1 && to == C1) || (piece == King(Black) && from == E8 && to == C8)
+        return (piece == WhiteKing && from == E1 && to == C1) || (piece == BlackKing && from == E8 && to == C8)
 }
 
 func (m Move) String() string {

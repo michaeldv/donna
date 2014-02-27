@@ -39,7 +39,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 // diagonal: moving the piece away causes discovered check.
                                 //
                                 switch piece.kind() {
-                                case PAWN:
+                                case WhitePawn:
                                         // Block pawn promotions (since they are treated as
                                         // captures) and en-passant captures.
                                         prohibit := maskRank[0] | maskRank[7]
@@ -47,7 +47,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                                 prohibit.set(gen.p.flags.enpassant)
                                         }
                                         gen.movePawn(to, gen.p.targets(to) & ^gen.p.board[2] & ^prohibit)
-                                case KING:
+                                case WhiteKing:
                                         // Make sure the king steps out of attack diaginal.
                                         gen.moveKing(to, gen.p.targets(to) & ^gen.p.board[2] & ^maskBlock[from][square])
                                 default:
@@ -86,7 +86,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                // file or rank: moving the piece away causes discovered check.
 	                                //
 	                                switch piece.kind() {
-	                                case PAWN:
+	                                case WhitePawn:
 	                                        // Block pawn promotions (since they are treated as
 	                                        // captures) and en-passant captures.
 	                                        prohibit := maskRank[0] | maskRank[7]
@@ -94,7 +94,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                                prohibit.set(gen.p.flags.enpassant)
 	                                        }
 	                                        gen.movePawn(to, gen.p.targets(to) & ^gen.p.board[2] & ^prohibit)
-	                                case KING:
+	                                case WhiteKing:
 	                                        // Make sure the king steps out of attack file or rank.
 						prohibit := maskNone
 						if row := Row(from); row == Row(square) {

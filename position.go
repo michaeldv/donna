@@ -33,17 +33,17 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
         p.castles = castleKingside[White] | castleQueenside[White] |
                     castleKingside[Black] | castleQueenside[Black]
 
-        if p.pieces[E1] != King(White) || p.pieces[H1] != Rook(White) {
+        if p.pieces[E1] != WhiteKing || p.pieces[H1] != WhiteRook {
                 p.castles &= ^castleKingside[White]
         }
-        if p.pieces[E1] != King(White) || p.pieces[A1] != Rook(White) {
+        if p.pieces[E1] != WhiteKing || p.pieces[A1] != WhiteRook {
                 p.castles &= ^castleQueenside[White]
         }
 
-        if p.pieces[E8] != King(Black) || p.pieces[H8] != Rook(Black) {
+        if p.pieces[E8] != BlackKing || p.pieces[H8] != BlackRook {
                 p.castles &= ^castleKingside[Black]
         }
-        if p.pieces[E8] != King(Black) || p.pieces[A8] != Rook(Black) {
+        if p.pieces[E8] != BlackKing || p.pieces[A8] != BlackRook {
                 p.castles &= ^castleQueenside[Black]
         }
 
@@ -149,19 +149,19 @@ func (p *Position) MakeMove(move Move) *Position {
                         flags.irreversible = true
                         switch to {
                         case G1:
-                                poly = 64 * Rook(White).polyglot()
+                                poly = 64 * Piece(WhiteRook).polyglot()
                                 hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
                                 tree[node].movePiece(H1, F1)
                         case C1:
-                                poly = 64 * Rook(White).polyglot()
+                                poly = 64 * Piece(WhiteRook).polyglot()
                                 hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
                                 tree[node].movePiece(A1, D1)
                         case G8:
-                                poly = 64 * Rook(Black).polyglot()
+                                poly = 64 * Piece(BlackRook).polyglot()
                                 hash ^= polyglotRandom[poly + H8] ^ polyglotRandom[poly + F8]
                                 tree[node].movePiece(H8, F8)
                         case C8:
-                                poly = 64 * Rook(Black).polyglot()
+                                poly = 64 * Piece(BlackRook).polyglot()
                                 hash ^= polyglotRandom[poly + A8] ^ polyglotRandom[poly + D8]
                                 tree[node].movePiece(A8, D8)
                         }
@@ -249,11 +249,11 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 // Calculates position stage based on what pieces are on the board (256 for
 // the initial position, 0 for bare kings).
 func (p *Position) stage() int {
-        return 2 * (p.count[Pawn(White)]   + p.count[Pawn(Black)])   +
-               6 * (p.count[Knight(White)] + p.count[Knight(Black)]) +
-              12 * (p.count[Bishop(White)] + p.count[Bishop(Black)]) +
-              16 * (p.count[Rook(White)]   + p.count[Rook(Black)])   +
-              44 * (p.count[Queen(White)]  + p.count[Queen(Black)])
+        return 2 * (p.count[WhitePawn]   + p.count[BlackPawn])   +
+               6 * (p.count[WhiteKnight] + p.count[BlackKnight]) +
+              12 * (p.count[WhiteBishop] + p.count[BlackBishop]) +
+              16 * (p.count[WhiteRook]   + p.count[BlackRook])   +
+              44 * (p.count[WhiteQueen]  + p.count[BlackQueen])
 }
 
 // Calculates normalized position score based on position stage and given

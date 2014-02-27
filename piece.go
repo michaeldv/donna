@@ -7,52 +7,51 @@ package donna
 type Piece uint8
 
 const (
-        NONE   = iota
-        PAWN   = 1 << 1 // 2
-        KNIGHT = 2 << 1 // 4
-        BISHOP = 3 << 1 // 6
-        ROOK   = 4 << 1 // 8
-        QUEEN  = 5 << 1 // 10
-        KING   = 6 << 1 // 12
+        WhitePawn   =  2;  BlackPawn   =  3
+        WhiteKnight =  4;  BlackKnight =  5
+        WhiteBishop =  6;  BlackBishop =  7
+        WhiteRook   =  8;  BlackRook   =  9
+        WhiteQueen  = 10;  BlackQueen  = 11
+        WhiteKing   = 12;  BlackKing   = 13
 )
 
 func King(color int) Piece {
-        return Piece(color | KING)
+        return Piece(color | WhiteKing)
 }
 
 func Queen(color int) Piece {
-        return Piece(color | QUEEN)
+        return Piece(color | WhiteQueen)
 }
 
 func Rook(color int) Piece {
-        return Piece(color | ROOK)
+        return Piece(color | WhiteRook)
 }
 
 func Bishop(color int) Piece {
-        return Piece(color | BISHOP)
+        return Piece(color | WhiteBishop)
 }
 
 func Knight(color int) Piece {
-        return Piece(color | KNIGHT)
+        return Piece(color | WhiteKnight)
 }
 
 func Pawn(color int) Piece {
-        return Piece(color | PAWN)
+        return Piece(color | WhitePawn)
 }
 
 // Returns intrinsic piece value for the middlegame and
 // the endgame.
 func (p Piece) value() (int, int) {
 	switch p.kind() {
-        case PAWN:
+        case WhitePawn:
                 return valuePawn.midgame, valuePawn.endgame
-        case KNIGHT:
+        case WhiteKnight:
                 return valueKnight.midgame, valueKnight.endgame
-        case BISHOP:
+        case WhiteBishop:
                 return valueBishop.midgame, valueBishop.endgame
-        case ROOK:
+        case WhiteRook:
                 return valueRook.midgame, valueRook.endgame
-        case QUEEN:
+        case WhiteQueen:
                 return valueQueen.midgame, valueQueen.endgame
         }
         return 0, 0
@@ -61,17 +60,17 @@ func (p Piece) value() (int, int) {
 // Returns bonus points for a piece at the given square.
 func (p Piece) bonus(square int) (int, int) {
 	switch p.kind() {
-        case PAWN:
+        case WhitePawn:
                 return bonusPawn[0][square], bonusPawn[1][square]
-        case KNIGHT:
+        case WhiteKnight:
                 return bonusKnight[0][square], bonusKnight[1][square]
-        case BISHOP:
+        case WhiteBishop:
                 return bonusBishop[0][square], bonusBishop[1][square]
-        case ROOK:
+        case WhiteRook:
                 return bonusRook[0][square], bonusRook[1][square]
-        case QUEEN:
+        case WhiteQueen:
                 return bonusQueen[0][square], bonusQueen[1][square]
-        case KING:
+        case WhiteKing:
                 return bonusKing[0][square], bonusKing[1][square]
         }
         return 0, 0
@@ -100,63 +99,63 @@ func (p Piece) isBlack() bool {
 }
 
 func (p Piece) isKing() bool {
-        return p & 0xFE == KING
+        return p & 0xFE == WhiteKing
 }
 
 func (p Piece) isQueen() bool {
-        return p & 0xFE == QUEEN
+        return p & 0xFE == WhiteQueen
 }
 
 func (p Piece) isRook() bool {
-        return p & 0xFE == ROOK
+        return p & 0xFE == WhiteRook
 }
 
 func (p Piece) isBishop() bool {
-        return p & 0xFE == BISHOP
+        return p & 0xFE == WhiteBishop
 }
 
 func (p Piece) isKnight() bool {
-        return p & 0xFE == KNIGHT
+        return p & 0xFE == WhiteKnight
 }
 
 func (p Piece) isPawn() bool {
-        return p & 0xFE == PAWN
+        return p & 0xFE == WhitePawn
 }
 
 func (p Piece) String() string {
         color := p.color()
         switch(p.kind()) {
-        case KING:
+        case WhiteKing:
                 if Settings.Fancy {
                         return []string{"\u2654", "\u265A"}[color]
                 } else {
                         return []string{`K`, `k`}[color]
                 }
-        case QUEEN:
+        case WhiteQueen:
                 if Settings.Fancy {
                         return []string{"\u2655", "\u265B"}[color]
                 } else {
                         return []string{`Q`, `q`}[color]
                 }
-        case ROOK:
+        case WhiteRook:
                 if Settings.Fancy {
                         return []string{"\u2656", "\u265C"}[color]
                 } else {
                         return []string{`R`, `r`}[color]
                 }
-        case BISHOP:
+        case WhiteBishop:
                 if Settings.Fancy {
                         return []string{"\u2657", "\u265D"}[color]
                 } else {
                         return []string{`B`, `b`}[color]
                 }
-        case KNIGHT:
+        case WhiteKnight:
                 if Settings.Fancy {
                         return []string{"\u2658", "\u265E"}[color]
                 } else {
                         return []string{`N`, `n`}[color]
                 }
-        case PAWN:
+        case WhitePawn:
                 if Settings.Fancy {
                         return []string{"\u2659", "\u265F"}[color]
                 } else {
@@ -169,15 +168,15 @@ func (p Piece) String() string {
 // Colorless ASCII representation (perfect for tests).
 func (p Piece) s() string {
         switch(p.kind()) {
-        case KING:
+        case WhiteKing:
                 return `K`
-        case QUEEN:
+        case WhiteQueen:
                 return `Q`
-        case ROOK:
+        case WhiteRook:
                 return `R`
-        case BISHOP:
+        case WhiteBishop:
                 return `B`
-        case KNIGHT:
+        case WhiteKnight:
                 return `N`
         }
         return ``

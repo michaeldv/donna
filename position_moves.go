@@ -94,10 +94,10 @@ func (p *Position) pawnMove(square, target int) Move {
 }
 
 func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
-        return p.NewMove(square, target).promote(QUEEN),
-               p.NewMove(square, target).promote(ROOK),
-               p.NewMove(square, target).promote(BISHOP),
-               p.NewMove(square, target).promote(KNIGHT)
+        return p.NewMove(square, target).promote(WhiteQueen),
+               p.NewMove(square, target).promote(WhiteRook),
+               p.NewMove(square, target).promote(WhiteBishop),
+               p.NewMove(square, target).promote(WhiteKnight)
 }
 
 func (p *Position) causesEnpassant(target int) bool {
@@ -115,9 +115,9 @@ func (p *Position) causesEnpassant(target int) bool {
 
 func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
         if color == White {
-                mask = (p.outposts[Pawn(White)] << 8)
+                mask = (p.outposts[WhitePawn] << 8)
         } else {
-                mask = (p.outposts[Pawn(Black)] >> 8)
+                mask = (p.outposts[BlackPawn] >> 8)
         }
         mask &= ^p.board[2]
         return
@@ -125,9 +125,9 @@ func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
 
 func (p *Position) pawnJumpsMask(color int) (mask Bitmask) {
         if color == White {
-                mask = maskRank[3] & (p.outposts[Pawn(White)] << 16)
+                mask = maskRank[3] & (p.outposts[WhitePawn] << 16)
         } else {
-                mask = maskRank[4] & (p.outposts[Pawn(Black)] >> 16)
+                mask = maskRank[4] & (p.outposts[BlackPawn] >> 16)
         }
         mask &= ^p.board[2]
         return
@@ -165,13 +165,13 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
                         if len(promo) > 0 {
                                 switch promo {
                                 case `Q`, `q`:
-                                        move.promote(QUEEN)
+                                        move.promote(WhiteQueen)
                                 case `R`, `r`:
-                                        move.promote(ROOK)
+                                        move.promote(WhiteRook)
                                 case `B`, `b`:
-                                        move.promote(BISHOP)
+                                        move.promote(WhiteBishop)
                                 case `N`, `n`:
-                                        move.promote(KNIGHT)
+                                        move.promote(WhiteKnight)
                                 default:
                                         move = 0
                                 }

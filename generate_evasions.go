@@ -79,7 +79,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
                 to := pawns.pop(); from := to - eight[color]
                 move := gen.p.NewMove(from, to)
                 if to >= A8 || to <= H1 {
-                        move.promote(QUEEN)
+                        move.promote(WhiteQueen)
                 }
                 gen.add(move)
         }
