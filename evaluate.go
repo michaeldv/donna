@@ -20,7 +20,6 @@ type Evaluator struct {
 
 func (p *Position) Evaluate() int {
         evaluator := &Evaluator{ 0, 0, 0, p }
-
         evaluator.analyzeMaterial()
         evaluator.analyzeCoordination()
         evaluator.analyzePawnStructure()
@@ -46,7 +45,7 @@ func (e *Evaluator) analyzeCoordination() {
         var moves, attacks [2]int
         var bonus [2]Score
 
-        underAttack := [2]Bitmask{e.position.attacks(White), e.position.attacks(Black)}
+        notAttacked := [2]Bitmask{^e.position.attacks(White), ^e.position.attacks(Black)}
         for square, piece := range e.position.pieces {
                 if piece == 0 {
                         continue
@@ -55,7 +54,7 @@ func (e *Evaluator) analyzeCoordination() {
 
                 // Mobility: how many moves are available to squares not attacked by
                 // the opponent?
-                moves[color] += (e.position.targets(square) & underAttack[color^1]).count()
+                moves[color] += (e.position.targets(square) & notAttacked[color^1]).count()
 
                 // Agressivness: how many opponent's pieces are being attacked?
                 attacks[color] += (e.position.targets(square) & e.position.board[color^1]).count()
