@@ -69,10 +69,9 @@ func (e *Evaluator) analyzeCoordination() {
                 bonus[color].endgame += endgame
         }
 
-        color, opposite := e.position.color, e.position.color^1
-        e.midgame += bonus[color].midgame - bonus[opposite].midgame
-        e.endgame += bonus[color].endgame - bonus[opposite].endgame
+        e.adjust(bonus)
 
+        color, opposite := e.position.color, e.position.color^1
         mobility := moves[color] - moves[opposite]
         e.midgame += mobility * movesAvailable.midgame
         e.endgame += mobility * movesAvailable.endgame
@@ -136,11 +135,7 @@ func (e *Evaluator) analyzePawnStructure() {
                 }
         }
 
-        color, opposite := e.position.color, e.position.color^1
-        e.midgame += bonus[color].midgame   - bonus[opposite].midgame
-        e.endgame += bonus[color].endgame   - bonus[opposite].endgame
-        e.midgame += penalty[color].midgame - penalty[opposite].midgame
-        e.endgame += penalty[color].endgame - penalty[opposite].endgame
+        e.adjust(bonus).adjust(penalty)
 }
 
 func (e *Evaluator) analyzeRooks() {
@@ -177,9 +172,7 @@ func (e *Evaluator) analyzeRooks() {
                         }
                 }
         }
-        color, opposite := e.position.color, e.position.color^1
-        e.midgame += bonus[color].midgame - bonus[opposite].midgame
-        e.endgame += bonus[color].endgame - bonus[opposite].endgame
+        e.adjust(bonus)
 }
 
 func (e *Evaluator) analyzeKingShield() {
@@ -224,6 +217,15 @@ func (e *Evaluator) analyzeKingShield() {
         color, opposite := e.position.color, e.position.color^1
         e.midgame += penalty[color] - penalty[opposite]
         // No endgame bonus or penalty.
+}
+
+func (e *Evaluator) adjust(bonus [2]Score) *Evaluator {
+        color, opposite := e.position.color, e.position.color^1
+
+        e.midgame += bonus[color].midgame - bonus[opposite].midgame
+        e.endgame += bonus[color].endgame - bonus[opposite].endgame
+
+        return e
 }
 
 func (e *Evaluator) strongEnough(color int) bool {
