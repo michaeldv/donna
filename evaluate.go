@@ -27,6 +27,10 @@ func (p *Position) Evaluate() int {
         evaluator.analyzeKingShield()
         // evaluator.analyzeKingSafety()
 
+        // Right to move: positive bonus for white, and negative for black.
+        evaluator.midgame += rightToMove.midgame * (1 - 2 * p.color)
+        evaluator.endgame += rightToMove.endgame * (1 - 2 * p.color)
+
         return p.score(evaluator.midgame, evaluator.endgame)
 }
 

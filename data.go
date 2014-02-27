@@ -288,6 +288,7 @@ var (
         attackForce    = Score{    5,   10 }
         shieldMissing  = Score{   15,    0 } // Missing shield pawn penalty.
         shieldDistance = Score{    5,    0 } // Shield pawn row distance from king penalty.
+        rightToMove    = Score{    4,    2 }
 )
 
 var penaltyDoubledPawn = [2][8]int{
