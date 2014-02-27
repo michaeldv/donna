@@ -70,7 +70,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         //
         // See if the check could be blocked or the attacked piece captured.
         //
-        block := maskBlock[square][attackSquare] | Bit(attackSquare)
+        block := maskBlock[square][attackSquare] | bit[attackSquare]
         //
         // Handle one square pawn pushes: promote to Queen when reaching last rank.
         //

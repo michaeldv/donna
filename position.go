@@ -65,8 +65,8 @@ func (p *Position) movePiece(from, to int) *Position {
         piece, color := p.pieces[from], p.pieces[from].color()
 
         p.pieces[from], p.pieces[to] = 0, piece
-        p.outposts[piece] ^= Bit(from) | Bit(to)
-        p.board[color] ^= Bit(from) | Bit(to)
+        p.outposts[piece] ^= bit[from] | bit[to]
+        p.board[color] ^= bit[from] | bit[to]
 
         return p
 }
@@ -75,9 +75,9 @@ func (p *Position) promotePawn(from, to int, promo Piece) *Position {
         piece, color := p.pieces[from], p.pieces[from].color()
 
         p.pieces[from], p.pieces[to] = 0, promo
-        p.outposts[piece] ^= Bit(from)
-        p.outposts[promo] ^= Bit(to)
-        p.board[color] ^= Bit(from) | Bit(to)
+        p.outposts[piece] ^= bit[from]
+        p.outposts[promo] ^= bit[to]
+        p.board[color] ^= bit[from] | bit[to]
         p.count[piece]--
         p.count[promo]++
 
@@ -87,8 +87,8 @@ func (p *Position) promotePawn(from, to int, promo Piece) *Position {
 func (p *Position) capturePiece(from, to int) *Position {
         capture, enemy := p.pieces[to], p.pieces[to].color()
 
-        p.outposts[capture] ^= Bit(to)
-        p.board[enemy] ^= Bit(to)
+        p.outposts[capture] ^= bit[to]
+        p.board[enemy] ^= bit[to]
         p.count[capture]--
 
         return p
@@ -101,8 +101,8 @@ func (p *Position) captureEnpassant(from, to int) *Position {
         enpassant := to - eight[color]
 
         p.pieces[enpassant] = 0
-        p.outposts[capture] ^= Bit(enpassant)
-        p.board[enemy] ^= Bit(enpassant)
+        p.outposts[capture] ^= bit[enpassant]
+        p.board[enemy] ^= bit[enpassant]
         p.count[capture]--
 
         return p

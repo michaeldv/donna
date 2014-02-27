@@ -34,10 +34,10 @@ func (gen *MoveGen) kingMoves(color int) *MoveGen {
                 if !gen.p.isInCheck(gen.p.color) {
                         kingside, queenside := gen.p.canCastle(color)
                         if kingside {
-                                gen.moveKing(square, Bit(G1 + 56 * color))
+                                gen.moveKing(square, bit[G1 + 56 * color])
                         }
                         if queenside {
-                                gen.moveKing(square, Bit(C1 + 56 * color))
+                                gen.moveKing(square, bit[C1 + 56 * color])
                         }
                 }
         }

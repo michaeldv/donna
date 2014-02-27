@@ -41,13 +41,8 @@ func Square(row, column int) int {
 	return (row << 3) + column
 }
 
-// Creates a bitmask by shifting bit to the given offset.
-func Bit(offset int) Bitmask {
-	return Bitmask(1 << uint(offset))
-}
-
 func IsBetween(from, to, between int) bool {
-        return ((maskStraight[from][to] | maskDiagonal[from][to]) & Bit(between)) != 0
+        return ((maskStraight[from][to] | maskDiagonal[from][to]) & bit[between]) != 0
 }
 
 // Integer version of math/abs.

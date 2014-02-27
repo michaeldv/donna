@@ -43,8 +43,8 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
                 // to the current pawn, then add en-passant to the pawn's attack targets.
                 //
                 if row == 4 && p.flags.enpassant != 0 {
-                        if maskPawn[color][p.flags.enpassant] & Bit(square) != 0 {
-                                bitmask |= Bit(p.flags.enpassant)
+                        if maskPawn[color][p.flags.enpassant] & bit[square] != 0 {
+                                bitmask |= bit[p.flags.enpassant]
                         }
                 }
         case KNIGHT:

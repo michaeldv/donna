@@ -72,7 +72,7 @@ func (p *Position) pinnedMask(square int) (mask Bitmask) {
 
         for attackers != 0 {
                 attackSquare := attackers.pop()
-                blockers := maskBlock[square][attackSquare] & ^Bit(attackSquare) & p.board[2]
+                blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board[2]
 
                 if blockers.count() == 1 {
                         mask |= blockers & p.board[color] // Only friendly pieces are pinned.
@@ -158,7 +158,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
 		default:
 			piece = p.pieces[from] // <-- Makes piece character optional.
 		}
-                if (p.pieces[from] != piece) || (p.targets(from) & Bit(to) == 0) {
+                if (p.pieces[from] != piece) || (p.targets(from) & bit[to] == 0) {
                         move = 0 // Invalid move.
                 } else {
                         move = p.NewMove(from, to)

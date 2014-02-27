@@ -92,7 +92,7 @@ func (b *Bitmask) shift(offset int) *Bitmask {
 }
 
 func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
-        mask := Bit(square) & board
+        mask := bit[square] & board
 
         for mask.shift(direction); mask.isNotEmpty(); mask.shift(direction) {
                 b.combine(mask)
