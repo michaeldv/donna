@@ -72,10 +72,10 @@ func (p *Position) pinnedMask(square int) (mask Bitmask) {
 
         for attackers != 0 {
                 attackSquare := attackers.pop()
-                blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board[2]
+                blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
 
                 if blockers.count() == 1 {
-                        mask |= blockers & p.board[color] // Only friendly pieces are pinned.
+                        mask |= blockers & p.outposts[color] // Only friendly pieces are pinned.
                 }
         }
         return
@@ -119,7 +119,7 @@ func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
         } else {
                 mask = (p.outposts[BlackPawn] >> 8)
         }
-        mask &= ^p.board[2]
+        mask &= ^p.board
         return
 }
 
@@ -129,7 +129,7 @@ func (p *Position) pawnJumpsMask(color int) (mask Bitmask) {
         } else {
                 mask = maskRank[4] & (p.outposts[BlackPawn] >> 16)
         }
-        mask &= ^p.board[2]
+        mask &= ^p.board
         return
 }
 

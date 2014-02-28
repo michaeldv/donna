@@ -5,12 +5,12 @@
 package donna
 
 func (p *Position) rookMoves(square int) Bitmask {
-        magic := ((rookMagic[square].mask & p.board[2]) * rookMagic[square].magic) >> 52
+        magic := ((rookMagic[square].mask & p.board) * rookMagic[square].magic) >> 52
         return rookMagicMoves[square][magic]
 }
 
 func (p *Position) bishopMoves(square int) Bitmask {
-        magic := ((bishopMagic[square].mask & p.board[2]) * bishopMagic[square].magic) >> 55
+        magic := ((bishopMagic[square].mask & p.board) * bishopMagic[square].magic) >> 55
         return bishopMagicMoves[square][magic]
 }
 
@@ -21,7 +21,7 @@ func (p *Position) targets(square int) Bitmask {
 func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
         switch kind, color := piece.kind(), piece.color(); kind {
         case WhitePawn:
-                bitmask = pawnMoves[color][square] & p.board[color^1]
+                bitmask = pawnMoves[color][square] & p.outposts[color^1]
                 //
 		// If the square in front of the pawn is empty then add it as possible
 		// target.
@@ -32,9 +32,9 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
 		row := RelRow(square, color)
 		shift := eight[color]
 
-		if p.board[2].isClear(square + shift) { // Can white pawn move up one square?
+		if p.board.isClear(square + shift) { // Can white pawn move up one square?
 			bitmask.set(square + shift)
-			if row == 1 && p.board[2].isClear(square + shift * 2) { // How about two squares?
+			if row == 1 && p.board.isClear(square + shift * 2) { // How about two squares?
 				bitmask.set(square + shift * 2)
 			}
 		}
@@ -48,15 +48,15 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
                         }
                 }
         case WhiteKnight:
-                bitmask = knightMoves[square] & ^p.board[color]
+                bitmask = knightMoves[square] & ^p.outposts[color]
         case WhiteBishop:
-                bitmask = p.bishopMoves(square) & ^p.board[color]
+                bitmask = p.bishopMoves(square) & ^p.outposts[color]
         case WhiteRook:
-                bitmask = p.rookMoves(square) & ^p.board[color]
+                bitmask = p.rookMoves(square) & ^p.outposts[color]
         case WhiteQueen:
-                bitmask = (p.bishopMoves(square) | p.rookMoves(square)) & ^p.board[color]
+                bitmask = (p.bishopMoves(square) | p.rookMoves(square)) & ^p.outposts[color]
         case WhiteKing:
-                bitmask = kingMoves[square] & ^p.board[color]
+                bitmask = kingMoves[square] & ^p.outposts[color]
         }
 
         return bitmask

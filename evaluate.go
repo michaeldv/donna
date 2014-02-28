@@ -61,7 +61,7 @@ func (e *Evaluator) analyzeCoordination() {
                 moves[color] += (e.position.targets(square) & notAttacked[color^1]).count()
 
                 // Agressivness: how many opponent's pieces are being attacked?
-                attacks[color] += (e.position.targets(square) & e.position.board[color^1]).count()
+                attacks[color] += (e.position.targets(square) & e.position.outposts[color^1]).count()
 
                 // Calculate bonus or penalty for a piece being at the given square.
                 midgame, endgame := piece.bonus(flip[color][square])

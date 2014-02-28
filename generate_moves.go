@@ -19,7 +19,7 @@ func (gen *MoveGen) pawnMoves(color int) *MoveGen {
 
 // Go over all pieces except pawns and the king.
 func (gen *MoveGen) pieceMoves(color int) *MoveGen {
-        outposts := gen.p.board[color] & ^gen.p.outposts[Pawn(color)] & ^gen.p.outposts[King(color)]
+        outposts := gen.p.outposts[color] & ^gen.p.outposts[Pawn(color)] & ^gen.p.outposts[King(color)]
         for outposts != 0 {
                 square := outposts.pop()
                 gen.movePiece(square, gen.p.targets(square))

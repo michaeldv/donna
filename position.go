@@ -18,8 +18,8 @@ type Position struct {
         game      *Game
         flags     Flags         // Flags set by last move leading to this position.
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
-        board     [3]Bitmask    // [0] white pieces only, [1] black pieces, and [2] all pieces.
-        outposts  [14]Bitmask   // Bitmasks of each piece on the board, ex. white pawns, black king, etc.
+        board     Bitmask       // Bitmask of all pieces on the board.
+        outposts  [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
         color     int           // Side to make next move.
         hash      uint64        // Polyglot hash value.
@@ -50,13 +50,13 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
         for square, piece := range p.pieces {
                 if piece != 0 {
                         p.outposts[piece].set(square)
-                        p.board[piece.color()].set(square)
+                        p.outposts[piece.color()].set(square)
                         p.count[piece]++
                 }
         }
 
         p.hash = p.polyglot()
-        p.board[2] = p.board[White] | p.board[Black]
+        p.board = p.outposts[White] | p.outposts[Black]
 
         return p
 }
@@ -66,7 +66,7 @@ func (p *Position) movePiece(from, to int) *Position {
 
         p.pieces[from], p.pieces[to] = 0, piece
         p.outposts[piece] ^= bit[from] | bit[to]
-        p.board[color] ^= bit[from] | bit[to]
+        p.outposts[color] ^= bit[from] | bit[to]
 
         return p
 }
@@ -77,7 +77,7 @@ func (p *Position) promotePawn(from, to int, promo Piece) *Position {
         p.pieces[from], p.pieces[to] = 0, promo
         p.outposts[piece] ^= bit[from]
         p.outposts[promo] ^= bit[to]
-        p.board[color] ^= bit[from] | bit[to]
+        p.outposts[color] ^= bit[from] | bit[to]
         p.count[piece]--
         p.count[promo]++
 
@@ -88,7 +88,7 @@ func (p *Position) capturePiece(from, to int) *Position {
         capture, enemy := p.pieces[to], p.pieces[to].color()
 
         p.outposts[capture] ^= bit[to]
-        p.board[enemy] ^= bit[to]
+        p.outposts[enemy] ^= bit[to]
         p.count[capture]--
 
         return p
@@ -102,7 +102,7 @@ func (p *Position) captureEnpassant(from, to int) *Position {
 
         p.pieces[enpassant] = 0
         p.outposts[capture] ^= bit[enpassant]
-        p.board[enemy] ^= bit[enpassant]
+        p.outposts[enemy] ^= bit[enpassant]
         p.count[capture]--
 
         return p
@@ -186,7 +186,7 @@ func (p *Position) MakeMove(move Move) *Position {
 	tree[node].color = color^1
 	tree[node].flags = flags
 	tree[node].hash = hash
-	tree[node].board[2] = tree[node].board[White] | tree[node].board[Black]
+	tree[node].board = tree[node].outposts[White] | tree[node].outposts[Black]
 
 	if tree[node].isInCheck(color) {
 		node--
@@ -237,11 +237,11 @@ func (p *Position) saveBest(ply int, move Move) {
 func (p *Position) canCastle(color int) (kingside, queenside bool) {
         attacks := p.attacks(color^1)
         kingside = p.castles & castleKingside[color] != 0 &&
-                   (gapKing[color] & p.board[2] == 0) &&
+                   (gapKing[color] & p.board == 0) &&
                    (castleKing[color] & attacks == 0)
 
         queenside = p.castles & castleQueenside[color] != 0 &&
-                    (gapQueen[color] & p.board[2] == 0) &&
+                    (gapQueen[color] & p.board == 0) &&
                     (castleQueen[color] & attacks == 0)
         return
 }
@@ -265,7 +265,7 @@ func (p *Position) score(midgame, endgame int) int {
 
 // Compute position's polyglot hash.
 func (p *Position) polyglot() (key uint64) {
-        board := p.board[2]
+        board := p.board
         for board != 0 {
                 square := board.pop() // Inline polyhash() is at lest 10% faster.
                 key ^= polyglotRandom[64 * p.pieces[square].polyglot() + square]

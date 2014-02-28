@@ -17,7 +17,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
         outposts := gen.p.outposts[Knight(color)]
         for outposts != 0 {
                 from := outposts.pop()
-                gen.movePiece(from, knightMoves[from] & checks & ^gen.p.board[2])
+                gen.movePiece(from, knightMoves[from] & checks & ^gen.p.board)
         }
 
         // Non-capturing Bishop or Queen checks.
@@ -25,7 +25,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
         outposts = gen.p.outposts[Bishop(color)] | gen.p.outposts[Queen(color)]
         for outposts != 0 {
                 from := outposts.pop()
-                targets := gen.p.targetsFor(from, Bishop(enemy)) & checks & ^gen.p.board[enemy]
+                targets := gen.p.targetsFor(from, Bishop(enemy)) & checks & ^gen.p.outposts[enemy]
                 for targets != 0 {
                         to := targets.pop()
                         if piece := gen.p.pieces[to]; piece == 0 {
@@ -46,12 +46,12 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                         if gen.p.flags.enpassant != 0 {
                                                 prohibit.set(gen.p.flags.enpassant)
                                         }
-                                        gen.movePawn(to, gen.p.targets(to) & ^gen.p.board[2] & ^prohibit)
+                                        gen.movePawn(to, gen.p.targets(to) & ^gen.p.board & ^prohibit)
                                 case WhiteKing:
                                         // Make sure the king steps out of attack diaginal.
-                                        gen.moveKing(to, gen.p.targets(to) & ^gen.p.board[2] & ^maskBlock[from][square])
+                                        gen.moveKing(to, gen.p.targets(to) & ^gen.p.board & ^maskBlock[from][square])
                                 default:
-                                        gen.movePiece(to, gen.p.targets(to) & ^gen.p.board[2])
+                                        gen.movePiece(to, gen.p.targets(to) & ^gen.p.board)
                                 }
                         }
                 }
@@ -62,7 +62,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 			//
 			targets = (gen.p.targetsFor(from, Rook(color)) & checks) |
 			          (gen.p.targetsFor(from, Bishop(color)) & gen.p.targetsFor(square, Rook(color)))
-                        gen.movePiece(from, targets & ^gen.p.board[2])
+                        gen.movePiece(from, targets & ^gen.p.board)
 		}
         }
 
@@ -71,7 +71,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
         outposts = gen.p.outposts[Rook(color)] | gen.p.outposts[Queen(color)]
         for outposts != 0 {
                 from := outposts.pop()
-                targets := gen.p.targetsFor(from, Rook(enemy)) & checks & ^gen.p.board[enemy]
+                targets := gen.p.targetsFor(from, Rook(enemy)) & checks & ^gen.p.outposts[enemy]
                 for targets != 0 {
                         to := targets.pop()
                         if piece := gen.p.pieces[to]; piece == 0 {
@@ -93,7 +93,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                        if gen.p.flags.enpassant != 0 {
 	                                                prohibit.set(gen.p.flags.enpassant)
 	                                        }
-	                                        gen.movePawn(to, gen.p.targets(to) & ^gen.p.board[2] & ^prohibit)
+	                                        gen.movePawn(to, gen.p.targets(to) & ^gen.p.board & ^prohibit)
 	                                case WhiteKing:
 	                                        // Make sure the king steps out of attack file or rank.
 						prohibit := maskNone
@@ -102,9 +102,9 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 						} else {
 							prohibit = maskFile[Col(square)]
 						}
-	                                        gen.moveKing(to, gen.p.targets(to) & ^gen.p.board[2] & ^prohibit)
+	                                        gen.moveKing(to, gen.p.targets(to) & ^gen.p.board & ^prohibit)
 	                                default:
-	                                        gen.movePiece(to, gen.p.targets(to) & ^gen.p.board[2])
+	                                        gen.movePiece(to, gen.p.targets(to) & ^gen.p.board)
 	                                }
 				}
 			}

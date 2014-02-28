@@ -30,7 +30,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
 	}
 
         // Null move pruning. TODO: skip it if we're following principal variation.
-        if !p.isInCheck(p.color) && p.board[p.color].count() > 5 && p.Evaluate() >= beta {
+        if !p.isInCheck(p.color) && p.outposts[p.color].count() > 5 && p.Evaluate() >= beta {
                 p.color ^= 1
                 score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
                 p.color ^= 1
