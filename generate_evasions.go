@@ -7,16 +7,15 @@ package donna
 func (gen *MoveGen) GenerateEvasions() *MoveGen {
         color := gen.p.color
         enemy := gen.p.color^1
-        square := gen.p.outposts[King(color)].first()
-        pawn, knight, bishop, rook, queen := Pawn(enemy), Knight(enemy), Bishop(enemy), Rook(enemy), Queen(enemy)
+        square := gen.p.outposts[king(color)].first()
         //
         // Find out what pieces are checking the king. Usually it's a single
         // piece but double check is also a possibility.
         //
-        checkers := maskPawn[enemy][square] & gen.p.outposts[pawn]
-        checkers |= gen.p.targetsFor(square, Knight(color)) & gen.p.outposts[knight]
-        checkers |= gen.p.targetsFor(square, Bishop(color)) & (gen.p.outposts[bishop] | gen.p.outposts[queen])
-        checkers |= gen.p.targetsFor(square, Rook(color)) & (gen.p.outposts[rook] | gen.p.outposts[queen])
+        checkers := maskPawn[enemy][square] & gen.p.outposts[pawn(enemy)]
+        checkers |= gen.p.targetsFor(square, knight(color)) & gen.p.outposts[knight(enemy)]
+        checkers |= gen.p.targetsFor(square, bishop(color)) & (gen.p.outposts[bishop(enemy)] | gen.p.outposts[queen(enemy)])
+        checkers |= gen.p.targetsFor(square, rook(color)) & (gen.p.outposts[rook(enemy)] | gen.p.outposts[queen(enemy)])
         //
         // Generate possible king retreats first, i.e. moves to squares not
         // occupied by friendly pieces and not attacked by the opponent.
@@ -29,7 +28,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // is not a pawn.
         //
         attackSquare := checkers.pop()
-        if gen.p.pieces[attackSquare] != pawn {
+        if gen.p.pieces[attackSquare] != pawn(enemy) {
                 retreats &= maskEvade[square][attackSquare]
         }
         //
@@ -38,7 +37,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         //
         if checkers != 0 {
                 attackSquare = checkers.first()
-                if gen.p.pieces[attackSquare] != pawn {
+                if gen.p.pieces[attackSquare] != pawn(enemy) {
                         retreats &= maskEvade[square][attackSquare]
                 }
                 return gen.movePiece(square, retreats)
@@ -52,7 +51,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // Pawn captures: do we have any pawns available that could capture
         // the attacking piece?
         //
-        pawns := maskPawn[color][attackSquare] & gen.p.outposts[Pawn(color)]
+        pawns := maskPawn[color][attackSquare] & gen.p.outposts[pawn(color)]
         for pawns != 0 {
                 gen.add(gen.p.NewMove(pawns.pop(), attackSquare))
         }
@@ -62,7 +61,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // evaded by c5xd6 or e5xd6 en-passant captures.
         //
         if enpassant := attackSquare + eight[color]; gen.p.flags.enpassant == enpassant {
-                pawns := maskPawn[color][enpassant] & gen.p.outposts[Pawn(color)]
+                pawns := maskPawn[color][enpassant] & gen.p.outposts[pawn(color)]
                 for pawns != 0 {
                         gen.add(gen.p.NewEnpassant(pawns.pop(), attackSquare + eight[color]))
                 }
@@ -79,7 +78,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
                 to := pawns.pop(); from := to - eight[color]
                 move := gen.p.NewMove(from, to)
                 if to >= A8 || to <= H1 {
-                        move.promote(WhiteQueen)
+                        move.promote(Queen)
                 }
                 gen.add(move)
         }
@@ -95,7 +94,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         // What's left is to generate all possible knight, bishop, rook, and
         // queen moves that evade the check.
         //
-        outposts := gen.p.outposts[color] & ^gen.p.outposts[Pawn(color)] & ^gen.p.outposts[King(color)]
+        outposts := gen.p.outposts[color] & ^gen.p.outposts[pawn(color)] & ^gen.p.outposts[king(color)]
         for outposts != 0 {
                 from := outposts.pop()
                 targets := gen.p.targets(from) & block

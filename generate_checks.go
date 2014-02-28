@@ -10,22 +10,22 @@ import()
 func (gen *MoveGen) GenerateChecks() *MoveGen {
         color := gen.p.color
         enemy := gen.p.color^1
-        square := gen.p.outposts[King(enemy)].first()
+        square := gen.p.outposts[king(enemy)].first()
 
         // Non-capturing Knight checks.
         checks := knightMoves[square]
-        outposts := gen.p.outposts[Knight(color)]
+        outposts := gen.p.outposts[knight(color)]
         for outposts != 0 {
                 from := outposts.pop()
                 gen.movePiece(from, knightMoves[from] & checks & ^gen.p.board)
         }
 
         // Non-capturing Bishop or Queen checks.
-        checks = gen.p.targetsFor(square, Bishop(enemy))
-        outposts = gen.p.outposts[Bishop(color)] | gen.p.outposts[Queen(color)]
+        checks = gen.p.targetsFor(square, bishop(enemy))
+        outposts = gen.p.outposts[bishop(color)] | gen.p.outposts[queen(color)]
         for outposts != 0 {
                 from := outposts.pop()
-                targets := gen.p.targetsFor(from, Bishop(enemy)) & checks & ^gen.p.outposts[enemy]
+                targets := gen.p.targetsFor(from, bishop(enemy)) & checks & ^gen.p.outposts[enemy]
                 for targets != 0 {
                         to := targets.pop()
                         if piece := gen.p.pieces[to]; piece == 0 {
@@ -39,7 +39,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                 // diagonal: moving the piece away causes discovered check.
                                 //
                                 switch piece.kind() {
-                                case WhitePawn:
+                                case Pawn:
                                         // Block pawn promotions (since they are treated as
                                         // captures) and en-passant captures.
                                         prohibit := maskRank[0] | maskRank[7]
@@ -47,7 +47,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                                 prohibit.set(gen.p.flags.enpassant)
                                         }
                                         gen.movePawn(to, gen.p.targets(to) & ^gen.p.board & ^prohibit)
-                                case WhiteKing:
+                                case King:
                                         // Make sure the king steps out of attack diaginal.
                                         gen.moveKing(to, gen.p.targets(to) & ^gen.p.board & ^maskBlock[from][square])
                                 default:
@@ -60,18 +60,18 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 			// Queen could move straight as a rook and check diagonally as a bishop
 			// or move diagonally as a bishop and check straight as a rook.
 			//
-			targets = (gen.p.targetsFor(from, Rook(color)) & checks) |
-			          (gen.p.targetsFor(from, Bishop(color)) & gen.p.targetsFor(square, Rook(color)))
+			targets = (gen.p.targetsFor(from, rook(color)) & checks) |
+			          (gen.p.targetsFor(from, bishop(color)) & gen.p.targetsFor(square, rook(color)))
                         gen.movePiece(from, targets & ^gen.p.board)
 		}
         }
 
         // Non-capturing Rook or Queen checks.
-        checks = gen.p.targetsFor(square, Rook(enemy))
-        outposts = gen.p.outposts[Rook(color)] | gen.p.outposts[Queen(color)]
+        checks = gen.p.targetsFor(square, rook(enemy))
+        outposts = gen.p.outposts[rook(color)] | gen.p.outposts[queen(color)]
         for outposts != 0 {
                 from := outposts.pop()
-                targets := gen.p.targetsFor(from, Rook(enemy)) & checks & ^gen.p.outposts[enemy]
+                targets := gen.p.targetsFor(from, rook(enemy)) & checks & ^gen.p.outposts[enemy]
                 for targets != 0 {
                         to := targets.pop()
                         if piece := gen.p.pieces[to]; piece == 0 {
@@ -86,7 +86,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                // file or rank: moving the piece away causes discovered check.
 	                                //
 	                                switch piece.kind() {
-	                                case WhitePawn:
+	                                case Pawn:
 	                                        // Block pawn promotions (since they are treated as
 	                                        // captures) and en-passant captures.
 	                                        prohibit := maskRank[0] | maskRank[7]
@@ -94,7 +94,7 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                                prohibit.set(gen.p.flags.enpassant)
 	                                        }
 	                                        gen.movePawn(to, gen.p.targets(to) & ^gen.p.board & ^prohibit)
-	                                case WhiteKing:
+	                                case King:
 	                                        // Make sure the king steps out of attack file or rank.
 						prohibit := maskNone
 						if row := Row(from); row == Row(square) {

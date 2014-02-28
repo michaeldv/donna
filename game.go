@@ -44,17 +44,17 @@ func (g *Game) SetupSide(moves []string, color int) *Game {
 		var piece Piece
 		switch name {
 		case `K`:
-			piece = King(color)
+			piece = king(color)
 		case `Q`:
-			piece = Queen(color)
+			piece = queen(color)
 		case `R`:
-			piece = Rook(color)
+			piece = rook(color)
 		case `B`:
-			piece = Bishop(color)
+			piece = bishop(color)
 		case `N`:
-			piece = Knight(color)
+			piece = knight(color)
 		default:
-			piece = Pawn(color)
+			piece = pawn(color)
 		}
 		g.Set(int(row), int(col), piece)
 	}

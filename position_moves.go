@@ -9,7 +9,7 @@ func (p *Position) NewMove(from, to int) Move {
         piece, capture := p.pieces[from], p.pieces[to]
 
         if p.flags.enpassant != 0 && to == p.flags.enpassant {
-                capture = Pawn(piece.color()^1)
+                capture = pawn(piece.color()^1)
         }
 
         return Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
@@ -34,7 +34,7 @@ func (p *Position) NewPawnJump(from, to int) Move {
 func (p *Position) isValid(move Move) bool {
         color := move.color() // TODO: make color part of move split.
         from, to, piece, capture := move.split()
-        square := p.outposts[King(color)].first()
+        square := p.outposts[king(color)].first()
         pinned := p.pinnedMask(square)
         //
         // For rare en-passant pawn captures we validate the move by actually
@@ -67,8 +67,8 @@ func (p *Position) isValid(move Move) bool {
 func (p *Position) pinnedMask(square int) (mask Bitmask) {
         color := p.pieces[square].color()
         enemy := color^1
-        attackers := (p.outposts[Bishop(enemy)] | p.outposts[Queen(enemy)]) & bishopMagicMoves[square][0]
-        attackers |= (p.outposts[Rook(enemy)] | p.outposts[Queen(enemy)]) & rookMagicMoves[square][0]
+        attackers := (p.outposts[bishop(enemy)] | p.outposts[queen(enemy)]) & bishopMagicMoves[square][0]
+        attackers |= (p.outposts[rook(enemy)] | p.outposts[queen(enemy)]) & rookMagicMoves[square][0]
 
         for attackers != 0 {
                 attackSquare := attackers.pop()
@@ -94,14 +94,14 @@ func (p *Position) pawnMove(square, target int) Move {
 }
 
 func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
-        return p.NewMove(square, target).promote(WhiteQueen),
-               p.NewMove(square, target).promote(WhiteRook),
-               p.NewMove(square, target).promote(WhiteBishop),
-               p.NewMove(square, target).promote(WhiteKnight)
+        return p.NewMove(square, target).promote(Queen),
+               p.NewMove(square, target).promote(Rook),
+               p.NewMove(square, target).promote(Bishop),
+               p.NewMove(square, target).promote(Knight)
 }
 
 func (p *Position) causesEnpassant(target int) bool {
-        pawns := p.outposts[Pawn(p.color^1)] // Opposite color pawns.
+        pawns := p.outposts[pawn(p.color^1)] // Opposite color pawns.
         switch col := Col(target); col {
         case 0:
                 return pawns.isSet(target + 1)
@@ -115,7 +115,7 @@ func (p *Position) causesEnpassant(target int) bool {
 
 func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
         if color == White {
-                mask = (p.outposts[WhitePawn] << 8)
+                mask = (p.outposts[Pawn] << 8)
         } else {
                 mask = (p.outposts[BlackPawn] >> 8)
         }
@@ -125,7 +125,7 @@ func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
 
 func (p *Position) pawnJumpsMask(color int) (mask Bitmask) {
         if color == White {
-                mask = maskRank[3] & (p.outposts[WhitePawn] << 16)
+                mask = maskRank[3] & (p.outposts[Pawn] << 16)
         } else {
                 mask = maskRank[4] & (p.outposts[BlackPawn] >> 16)
         }
@@ -146,15 +146,15 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
 		var piece Piece
 		switch name {
 		case `K`, `k`:
-			piece = King(p.color)
+			piece = king(p.color)
 		case `Q`, `q`:
-			piece = Queen(p.color)
+			piece = queen(p.color)
 		case `R`, `r`:
-			piece = Rook(p.color)
+			piece = rook(p.color)
 		case `B`, `b`:
-			piece = Bishop(p.color)
+			piece = bishop(p.color)
 		case `N`, `n`:
-			piece = Knight(p.color)
+			piece = knight(p.color)
 		default:
 			piece = p.pieces[from] // <-- Makes piece character optional.
 		}
@@ -165,20 +165,20 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
                         if len(promo) > 0 {
                                 switch promo {
                                 case `Q`, `q`:
-                                        move.promote(WhiteQueen)
+                                        move.promote(Queen)
                                 case `R`, `r`:
-                                        move.promote(WhiteRook)
+                                        move.promote(Rook)
                                 case `B`, `b`:
-                                        move.promote(WhiteBishop)
+                                        move.promote(Bishop)
                                 case `N`, `n`:
-                                        move.promote(WhiteKnight)
+                                        move.promote(Knight)
                                 default:
                                         move = 0
                                 }
                         }
                 }
 	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
-                from := p.outposts[King(p.color)].first()
+                from := p.outposts[king(p.color)].first()
                 to := G1
                 if e2e4 == `0-0-0` {
                         to = C1

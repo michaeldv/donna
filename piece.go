@@ -7,51 +7,51 @@ package donna
 type Piece uint8
 
 const (
-        WhitePawn   =  2;  BlackPawn   =  3
-        WhiteKnight =  4;  BlackKnight =  5
-        WhiteBishop =  6;  BlackBishop =  7
-        WhiteRook   =  8;  BlackRook   =  9
-        WhiteQueen  = 10;  BlackQueen  = 11
-        WhiteKing   = 12;  BlackKing   = 13
+        Pawn   =  2;  BlackPawn   = Pawn   | 1;
+        Knight =  4;  BlackKnight = Knight | 1;
+        Bishop =  6;  BlackBishop = Bishop | 1;
+        Rook   =  8;  BlackRook   = Rook   | 1;
+        Queen  = 10;  BlackQueen  = Queen  | 1;
+        King   = 12;  BlackKing   = King   | 1;
 )
 
-func King(color int) Piece {
-        return Piece(color | WhiteKing)
+func king(color int) Piece {
+        return Piece(color | King)
 }
 
-func Queen(color int) Piece {
-        return Piece(color | WhiteQueen)
+func queen(color int) Piece {
+        return Piece(color | Queen)
 }
 
-func Rook(color int) Piece {
-        return Piece(color | WhiteRook)
+func rook(color int) Piece {
+        return Piece(color | Rook)
 }
 
-func Bishop(color int) Piece {
-        return Piece(color | WhiteBishop)
+func bishop(color int) Piece {
+        return Piece(color | Bishop)
 }
 
-func Knight(color int) Piece {
-        return Piece(color | WhiteKnight)
+func knight(color int) Piece {
+        return Piece(color | Knight)
 }
 
-func Pawn(color int) Piece {
-        return Piece(color | WhitePawn)
+func pawn(color int) Piece {
+        return Piece(color | Pawn)
 }
 
 // Returns intrinsic piece value for the middlegame and
 // the endgame.
 func (p Piece) value() (int, int) {
 	switch p.kind() {
-        case WhitePawn:
+        case Pawn:
                 return valuePawn.midgame, valuePawn.endgame
-        case WhiteKnight:
+        case Knight:
                 return valueKnight.midgame, valueKnight.endgame
-        case WhiteBishop:
+        case Bishop:
                 return valueBishop.midgame, valueBishop.endgame
-        case WhiteRook:
+        case Rook:
                 return valueRook.midgame, valueRook.endgame
-        case WhiteQueen:
+        case Queen:
                 return valueQueen.midgame, valueQueen.endgame
         }
         return 0, 0
@@ -60,17 +60,17 @@ func (p Piece) value() (int, int) {
 // Returns bonus points for a piece at the given square.
 func (p Piece) bonus(square int) (int, int) {
 	switch p.kind() {
-        case WhitePawn:
+        case Pawn:
                 return bonusPawn[0][square], bonusPawn[1][square]
-        case WhiteKnight:
+        case Knight:
                 return bonusKnight[0][square], bonusKnight[1][square]
-        case WhiteBishop:
+        case Bishop:
                 return bonusBishop[0][square], bonusBishop[1][square]
-        case WhiteRook:
+        case Rook:
                 return bonusRook[0][square], bonusRook[1][square]
-        case WhiteQueen:
+        case Queen:
                 return bonusQueen[0][square], bonusQueen[1][square]
-        case WhiteKing:
+        case King:
                 return bonusKing[0][square], bonusKing[1][square]
         }
         return 0, 0
@@ -99,63 +99,63 @@ func (p Piece) isBlack() bool {
 }
 
 func (p Piece) isKing() bool {
-        return p & 0xFE == WhiteKing
+        return p & 0xFE == King
 }
 
 func (p Piece) isQueen() bool {
-        return p & 0xFE == WhiteQueen
+        return p & 0xFE == Queen
 }
 
 func (p Piece) isRook() bool {
-        return p & 0xFE == WhiteRook
+        return p & 0xFE == Rook
 }
 
 func (p Piece) isBishop() bool {
-        return p & 0xFE == WhiteBishop
+        return p & 0xFE == Bishop
 }
 
 func (p Piece) isKnight() bool {
-        return p & 0xFE == WhiteKnight
+        return p & 0xFE == Knight
 }
 
 func (p Piece) isPawn() bool {
-        return p & 0xFE == WhitePawn
+        return p & 0xFE == Pawn
 }
 
 func (p Piece) String() string {
         color := p.color()
         switch(p.kind()) {
-        case WhiteKing:
+        case King:
                 if Settings.Fancy {
                         return []string{"\u2654", "\u265A"}[color]
                 } else {
                         return []string{`K`, `k`}[color]
                 }
-        case WhiteQueen:
+        case Queen:
                 if Settings.Fancy {
                         return []string{"\u2655", "\u265B"}[color]
                 } else {
                         return []string{`Q`, `q`}[color]
                 }
-        case WhiteRook:
+        case Rook:
                 if Settings.Fancy {
                         return []string{"\u2656", "\u265C"}[color]
                 } else {
                         return []string{`R`, `r`}[color]
                 }
-        case WhiteBishop:
+        case Bishop:
                 if Settings.Fancy {
                         return []string{"\u2657", "\u265D"}[color]
                 } else {
                         return []string{`B`, `b`}[color]
                 }
-        case WhiteKnight:
+        case Knight:
                 if Settings.Fancy {
                         return []string{"\u2658", "\u265E"}[color]
                 } else {
                         return []string{`N`, `n`}[color]
                 }
-        case WhitePawn:
+        case Pawn:
                 if Settings.Fancy {
                         return []string{"\u2659", "\u265F"}[color]
                 } else {
@@ -168,15 +168,15 @@ func (p Piece) String() string {
 // Colorless ASCII representation (perfect for tests).
 func (p Piece) s() string {
         switch(p.kind()) {
-        case WhiteKing:
+        case King:
                 return `K`
-        case WhiteQueen:
+        case Queen:
                 return `Q`
-        case WhiteRook:
+        case Rook:
                 return `R`
-        case WhiteBishop:
+        case Bishop:
                 return `B`
-        case WhiteKnight:
+        case Knight:
                 return `N`
         }
         return ``

@@ -37,7 +37,7 @@ func (p *Position) Evaluate() int {
 func (e *Evaluator) analyzeMaterial() {
         color, opposite := e.position.color, e.position.color^1
 
-        for _,piece := range []int{ WhitePawn, WhiteKnight, WhiteBishop, WhiteRook, WhiteQueen } {
+        for _,piece := range []int{ Pawn, Knight, Bishop, Rook, Queen } {
                 count := e.position.count[Piece(piece|color)] - e.position.count[Piece(piece|opposite)]
                 midgame, endgame := Piece(piece).value()
                 e.midgame += midgame * count
@@ -80,11 +80,11 @@ func (e *Evaluator) analyzeCoordination() {
         e.midgame += aggression * attackForce.midgame
         e.endgame += aggression * attackForce.endgame
 
-        if bishops := e.position.count[Bishop(color)]; bishops >= 2 {
+        if bishops := e.position.count[bishop(color)]; bishops >= 2 {
                 e.midgame += bishopPair.midgame
                 e.endgame += bishopPair.endgame
         }
-        if bishops := e.position.count[Bishop(opposite)]; bishops >= 2 {
+        if bishops := e.position.count[bishop(opposite)]; bishops >= 2 {
                 e.midgame -= bishopPair.midgame
                 e.endgame -= bishopPair.endgame
         }
@@ -92,7 +92,7 @@ func (e *Evaluator) analyzeCoordination() {
 
 func (e *Evaluator) analyzePawnStructure() {
         var bonus, penalty [2]Score
-        pawn := [2]Piece{ WhitePawn, BlackPawn }
+        pawn := [2]Piece{ Pawn, BlackPawn }
 
         for color := White; color <= Black; color++ {
                 var doubled [8]int // Number of doubled pawns in each column.
@@ -143,7 +143,7 @@ func (e *Evaluator) analyzeRooks() {
         seventh := [2]Bitmask{ 0x00FF000000000000, 0x000000000000FF00 }
 
         for color := White; color <= Black; color++ {
-                rook := Rook(color)
+                rook := rook(color)
                 if e.position.outposts[rook] == 0 {
                         continue
                 }
@@ -161,8 +161,8 @@ func (e *Evaluator) analyzeRooks() {
                 for rooks != 0 {
                         square := rooks.pop()
                         column := Col(square)
-                        if e.position.outposts[Pawn(color)] & maskFile[column] == 0 {
-                                if e.position.outposts[Pawn(color^1)] & maskFile[column] == 0 {
+                        if e.position.outposts[pawn(color)] & maskFile[column] == 0 {
+                                if e.position.outposts[pawn(color^1)] & maskFile[column] == 0 {
                                         bonus[color].midgame += rookOnOpen.midgame
                                         bonus[color].endgame += rookOnOpen.endgame
                                 } else {
@@ -179,7 +179,7 @@ func (e *Evaluator) analyzeKingShield() {
         var penalty [2]int
 
         for color := White; color <= Black; color++ {
-                king, pawn := King(color), Pawn(color)
+                king, pawn := king(color), pawn(color)
                 //
                 // Pass if a) the king is missing, b) the king is on the initial square
                 // or c) the opposite side doesn't have a queen with one major piece.
@@ -229,6 +229,6 @@ func (e *Evaluator) adjust(bonus [2]Score) *Evaluator {
 }
 
 func (e *Evaluator) strongEnough(color int) bool {
-        return e.position.count[Queen(color)] > 0 &&
-               (e.position.count[Rook(color)] > 0 || e.position.count[Bishop(color)] > 0 || e.position.count[Knight(color)] > 0)
+        return e.position.count[queen(color)] > 0 &&
+               (e.position.count[rook(color)] > 0 || e.position.count[bishop(color)] > 0 || e.position.count[knight(color)] > 0)
 }

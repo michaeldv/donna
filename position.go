@@ -33,10 +33,10 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
         p.castles = castleKingside[White] | castleQueenside[White] |
                     castleKingside[Black] | castleQueenside[Black]
 
-        if p.pieces[E1] != WhiteKing || p.pieces[H1] != WhiteRook {
+        if p.pieces[E1] != King || p.pieces[H1] != Rook {
                 p.castles &= ^castleKingside[White]
         }
-        if p.pieces[E1] != WhiteKing || p.pieces[A1] != WhiteRook {
+        if p.pieces[E1] != King || p.pieces[A1] != Rook {
                 p.castles &= ^castleQueenside[White]
         }
 
@@ -97,7 +97,7 @@ func (p *Position) capturePiece(from, to int) *Position {
 func (p *Position) captureEnpassant(from, to int) *Position {
         color := p.pieces[from].color()
         enemy := color^1
-        capture := Pawn(enemy)
+        capture := pawn(enemy)
         enpassant := to - eight[color]
 
         p.pieces[enpassant] = 0
@@ -133,7 +133,7 @@ func (p *Position) MakeMove(move Move) *Position {
         if capture != 0 {
                 flags.irreversible = true
                 if to != 0 && to == tree[node].flags.enpassant {
-                        hash ^= polyglotRandom[64 * Pawn(color^1).polyglot() + to - eight[color]]
+                        hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
                         tree[node].captureEnpassant(from, to)
                 } else {
                         hash ^= polyglotRandom[64 * p.pieces[to].polyglot() + to]
@@ -149,11 +149,11 @@ func (p *Position) MakeMove(move Move) *Position {
                         flags.irreversible = true
                         switch to {
                         case G1:
-                                poly = 64 * Piece(WhiteRook).polyglot()
+                                poly = 64 * Piece(Rook).polyglot()
                                 hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
                                 tree[node].movePiece(H1, F1)
                         case C1:
-                                poly = 64 * Piece(WhiteRook).polyglot()
+                                poly = 64 * Piece(Rook).polyglot()
                                 hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
                                 tree[node].movePiece(A1, D1)
                         case G8:
@@ -174,7 +174,7 @@ func (p *Position) MakeMove(move Move) *Position {
                 }
         } else {
                 flags.irreversible = true
-                hash ^= polyglotRandom[64 * Pawn(color).polyglot() + from]
+                hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
                 hash ^= polyglotRandom[64 * promo.polyglot() + to]
                 tree[node].promotePawn(from, to, promo)
         }
@@ -202,7 +202,7 @@ func (p *Position) TakeBack(move Move) *Position {
 }
 
 func (p *Position) isInCheck(color int) bool {
-        return p.isAttacked(p.outposts[King(color)].first(), color^1)
+        return p.isAttacked(p.outposts[king(color)].first(), color^1)
 }
 
 func (p *Position) isRepetition() bool {
@@ -249,11 +249,11 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 // Calculates position stage based on what pieces are on the board (256 for
 // the initial position, 0 for bare kings).
 func (p *Position) stage() int {
-        return 2 * (p.count[WhitePawn]   + p.count[BlackPawn])   +
-               6 * (p.count[WhiteKnight] + p.count[BlackKnight]) +
-              12 * (p.count[WhiteBishop] + p.count[BlackBishop]) +
-              16 * (p.count[WhiteRook]   + p.count[BlackRook])   +
-              44 * (p.count[WhiteQueen]  + p.count[BlackQueen])
+        return 2 * (p.count[Pawn]   + p.count[BlackPawn])   +
+               6 * (p.count[Knight] + p.count[BlackKnight]) +
+              12 * (p.count[Bishop] + p.count[BlackBishop]) +
+              16 * (p.count[Rook]   + p.count[BlackRook])   +
+              44 * (p.count[Queen]  + p.count[BlackQueen])
 }
 
 // Calculates normalized position score based on position stage and given
