@@ -117,53 +117,54 @@ func (p *Position) MakeMove(move Move) *Position {
         // Copy over the contents of previous tree node to the current one.
         //
         node++
-        tree[node] = tree[node - 1] // Faster that tree[node] = *p ?!
+        tree[node] = *p // tree[node - 1]
+        p = &tree[node]
 
-        hash := tree[node].hash ^ hashCastle[tree[node].castles]
-        if tree[node].flags.enpassant != 0 {
-                hash ^= hashEnpassant[Col(tree[node].flags.enpassant)]
+        hash := p.hash ^ hashCastle[p.castles]
+        if p.flags.enpassant != 0 {
+                hash ^= hashEnpassant[Col(p.flags.enpassant)]
         }
         //
         // Castle rights for current node are based on the castle rights from
         // the previous node.
         //
-        tree[node].castles &= castleRights[from] & castleRights[to]
-        hash ^= hashCastle[tree[node].castles]
+        p.castles &= castleRights[from] & castleRights[to]
+        hash ^= hashCastle[p.castles]
 
         if capture != 0 {
                 flags.irreversible = true
-                if to != 0 && to == tree[node].flags.enpassant {
+                if to != 0 && to == p.flags.enpassant {
                         hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
-                        tree[node].captureEnpassant(from, to)
+                        p.captureEnpassant(from, to)
                 } else {
-                        hash ^= polyglotRandom[64 * p.pieces[to].polyglot() + to]
-                        tree[node].capturePiece(from, to)
+                        hash ^= polyglotRandom[64 * tree[node - 1].pieces[to].polyglot() + to]
+                        p.capturePiece(from, to)
                 }
         }
 
         if promo := move.promo(); promo == 0 {
-                poly := 64 * p.pieces[from].polyglot()
+                poly := 64 * tree[node - 1].pieces[from].polyglot()
                 hash ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
-                tree[node].movePiece(from, to)
+                p.movePiece(from, to)
                 if move.isCastle() {
                         flags.irreversible = true
                         switch to {
                         case G1:
                                 poly = 64 * Piece(Rook).polyglot()
                                 hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
-                                tree[node].movePiece(H1, F1)
+                                p.movePiece(H1, F1)
                         case C1:
                                 poly = 64 * Piece(Rook).polyglot()
                                 hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
-                                tree[node].movePiece(A1, D1)
+                                p.movePiece(A1, D1)
                         case G8:
                                 poly = 64 * Piece(BlackRook).polyglot()
                                 hash ^= polyglotRandom[poly + H8] ^ polyglotRandom[poly + F8]
-                                tree[node].movePiece(H8, F8)
+                                p.movePiece(H8, F8)
                         case C8:
                                 poly = 64 * Piece(BlackRook).polyglot()
                                 hash ^= polyglotRandom[poly + A8] ^ polyglotRandom[poly + D8]
-                                tree[node].movePiece(A8, D8)
+                                p.movePiece(A8, D8)
                         }
                 } else if piece.isPawn() {
                         flags.irreversible = true
@@ -176,23 +177,23 @@ func (p *Position) MakeMove(move Move) *Position {
                 flags.irreversible = true
                 hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
                 hash ^= polyglotRandom[64 * promo.polyglot() + to]
-                tree[node].promotePawn(from, to, promo)
+                p.promotePawn(from, to, promo)
         }
 
 	if color == White {
                 hash ^= polyglotRandomWhite
 	}
 
-	tree[node].color = color^1
-	tree[node].flags = flags
-	tree[node].hash = hash
-	tree[node].board = tree[node].outposts[White] | tree[node].outposts[Black]
+	p.color = color^1
+	p.flags = flags
+	p.hash = hash
+	p.board = p.outposts[White] | p.outposts[Black]
 
-	if tree[node].isInCheck(color) {
+	if p.isInCheck(color) {
 		node--
 		return nil
 	}
-	return &tree[node]
+	return p // &tree[node]
 
 }
 
