@@ -90,12 +90,11 @@ func perft(depth int) (total int64){
         start := time.Now()
         gen := p.StartMoveGen(depth).GenerateMoves()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if position := p.MakeMove(move); position != nil {
-                        delta := position.Perft(depth - 1)
-                        total += delta
-                        position.TakeBack(move)
-                        fmt.Printf("%7s - %d\n", move, delta)
-                }
+                position := p.MakeMove(move)
+                delta := position.Perft(depth - 1)
+                total += delta
+                position.TakeBack(move)
+                fmt.Printf("%7s - %d\n", move, delta)
         }
         finish := time.Since(start).Seconds()
         fmt.Printf("\n  Nodes: %d\n", total)

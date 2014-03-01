@@ -75,31 +75,3 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         Log("End of search(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
         return alpha
 }
-
-func (p *Position) Perft(depth int) (total int64) {
-        if depth == 0 {
-                return 1
-        }
-
-        gen := p.StartMoveGen(depth)
-        if p.isInCheck(p.color) {
-                for move := gen.GenerateEvasions().NextMove(); move != 0; move = gen.NextMove() {
-                        position := p.MakeMove(move)
-                        delta := position.Perft(depth - 1)
-                        total += delta
-                        position.TakeBack(move)
-                }
-        } else {
-                // TODO: GenerateNonEvasions()
-                for move := gen.GenerateMoves().NextMove(); move != 0; move = gen.NextMove() {
-                        if !p.isValid(move) {
-                                continue
-                        }
-                        position := p.MakeMove(move)
-                        delta := position.Perft(depth - 1)
-                        total += delta
-                        position.TakeBack(move)
-                }
-        }
-        return
-}
