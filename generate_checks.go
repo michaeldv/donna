@@ -112,5 +112,13 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	}
 
         // Non-capturing Pawn checks.
+        outposts = gen.p.outposts[pawn(color)] & maskIsolated[Col(square)]
+        for outposts != 0 {
+                from := outposts.pop()
+                if target := maskPawn[color][square] & gen.p.targets(from); target != 0 {
+                        gen.add(gen.p.pawnMove(from, target.pop()))
+                }
+        }
+
         return gen
 }

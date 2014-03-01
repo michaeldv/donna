@@ -123,3 +123,30 @@ func TestGenChecks110(t *testing.T) {
         expect(t, black.allMoves(), `[Qa7-b6 Qa7-h7 Qa7-b7]`)
 }
 
+// Pawns.
+func TestGenChecks120(t *testing.T) {
+        game := NewGame().Setup(`Kb5,f2,g2,h2`, `Kg4,a7,b7,c7`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[f2-f3 h2-h3]`)
+
+        black := game.Start(Black).StartMoveGen(1).GenerateChecks()
+        expect(t, black.allMoves(), `[a7-a6 c7-c6]`)
+}
+
+func TestGenChecks130(t *testing.T) {
+        game := NewGame().Setup(`Kb4,f2,g2,h2`, `Kg5,a7,b7,c7`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[f2-f4 h2-h4]`)
+
+        black := game.Start(Black).StartMoveGen(1).GenerateChecks()
+        expect(t, black.allMoves(), `[a7-a5 c7-c5]`)
+}
+
+func TestGenChecks140(t *testing.T) {
+        game := NewGame().Setup(`Kb4,c5,f2,g2,h2`, `Kg5,a7,b7,c7,h4`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[f2-f4]`)
+
+        black := game.Start(Black).StartMoveGen(1).GenerateChecks()
+        expect(t, black.allMoves(), `[a7-a5]`)
+}
