@@ -19,12 +19,12 @@ var Settings Globals
 
 // Returns row number for the given bit index.
 func Row(n int) int {
-	return n / 8 // n >> 3
+	return n >> 3 // n / 8
 }
 
 // Returns column number for the given bit index.
 func Col(n int) int {
-	return n % 8 // n & 7
+	return n & 7 // n % 8
 }
 
 // Returns row and column numbers for the given bit index.

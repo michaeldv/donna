@@ -61,48 +61,39 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
         return p
 }
 
-func (p *Position) movePiece(from, to int) *Position {
-        piece, color := p.pieces[from], p.pieces[from].color()
-
+func (p *Position) movePiece(piece Piece, from, to int) *Position {
         p.pieces[from], p.pieces[to] = 0, piece
         p.outposts[piece] ^= bit[from] | bit[to]
-        p.outposts[color] ^= bit[from] | bit[to]
+        p.outposts[piece.color()] ^= bit[from] | bit[to]
 
         return p
 }
 
-func (p *Position) promotePawn(from, to int, promo Piece) *Position {
-        piece, color := p.pieces[from], p.pieces[from].color()
-
+func (p *Position) promotePawn(piece Piece, from, to int, promo Piece) *Position {
         p.pieces[from], p.pieces[to] = 0, promo
         p.outposts[piece] ^= bit[from]
         p.outposts[promo] ^= bit[to]
-        p.outposts[color] ^= bit[from] | bit[to]
+        p.outposts[piece.color()] ^= bit[from] | bit[to]
         p.count[piece]--
         p.count[promo]++
 
         return p
 }
 
-func (p *Position) capturePiece(from, to int) *Position {
-        capture, enemy := p.pieces[to], p.pieces[to].color()
-
+func (p *Position) capturePiece(capture Piece, from, to int) *Position {
         p.outposts[capture] ^= bit[to]
-        p.outposts[enemy] ^= bit[to]
+        p.outposts[capture.color()] ^= bit[to]
         p.count[capture]--
 
         return p
 }
 
-func (p *Position) captureEnpassant(from, to int) *Position {
-        color := p.pieces[from].color()
-        enemy := color^1
-        capture := pawn(enemy)
-        enpassant := to - eight[color]
+func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
+        enpassant := to - eight[capture.color()^1]
 
         p.pieces[enpassant] = 0
         p.outposts[capture] ^= bit[enpassant]
-        p.outposts[enemy] ^= bit[enpassant]
+        p.outposts[capture.color()] ^= bit[enpassant]
         p.count[capture]--
 
         return p
@@ -110,90 +101,87 @@ func (p *Position) captureEnpassant(from, to int) *Position {
 
 func (p *Position) MakeMove(move Move) *Position {
         color := move.color()
-        flags := Flags{}
-
         from, to, piece, capture := move.split()
         //
         // Copy over the contents of previous tree node to the current one.
         //
         node++
-        tree[node] = *p // tree[node - 1]
-        p = &tree[node]
+        tree[node] = *p // => tree[node] = tree[node - 1]
+        pp := &tree[node]
 
-        hash := p.hash ^ hashCastle[p.castles]
-        if p.flags.enpassant != 0 {
-                hash ^= hashEnpassant[Col(p.flags.enpassant)]
+        pp.hash ^= hashCastle[pp.castles]
+        if pp.flags.enpassant != 0 {
+                pp.hash ^= hashEnpassant[Col(pp.flags.enpassant)]
         }
+        pp.flags.enpassant, pp.flags.irreversible = 0, false
         //
         // Castle rights for current node are based on the castle rights from
         // the previous node.
         //
-        p.castles &= castleRights[from] & castleRights[to]
-        hash ^= hashCastle[p.castles]
+        pp.castles &= castleRights[from] & castleRights[to]
+        pp.hash ^= hashCastle[pp.castles]
 
         if capture != 0 {
-                flags.irreversible = true
+                pp.flags.irreversible = true
                 if to != 0 && to == p.flags.enpassant {
-                        hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
-                        p.captureEnpassant(from, to)
+                        pp.hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
+                        pp.captureEnpassant(pawn(color^1), from, to)
                 } else {
-                        hash ^= polyglotRandom[64 * tree[node - 1].pieces[to].polyglot() + to]
-                        p.capturePiece(from, to)
+                        pp.hash ^= polyglotRandom[64 * p.pieces[to].polyglot() + to]
+                        pp.capturePiece(capture, from, to)
                 }
         }
 
         if promo := move.promo(); promo == 0 {
-                poly := 64 * tree[node - 1].pieces[from].polyglot()
-                hash ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
-                p.movePiece(from, to)
+                poly := 64 * p.pieces[from].polyglot()
+                pp.hash ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
+                pp.movePiece(piece, from, to)
                 if move.isCastle() {
-                        flags.irreversible = true
+                        pp.flags.irreversible = true
                         switch to {
                         case G1:
                                 poly = 64 * Piece(Rook).polyglot()
-                                hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
-                                p.movePiece(H1, F1)
+                                pp.hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
+                                pp.movePiece(Rook, H1, F1)
                         case C1:
                                 poly = 64 * Piece(Rook).polyglot()
-                                hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
-                                p.movePiece(A1, D1)
+                                pp.hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
+                                pp.movePiece(Rook, A1, D1)
                         case G8:
                                 poly = 64 * Piece(BlackRook).polyglot()
-                                hash ^= polyglotRandom[poly + H8] ^ polyglotRandom[poly + F8]
-                                p.movePiece(H8, F8)
+                                pp.hash ^= polyglotRandom[poly + H8] ^ polyglotRandom[poly + F8]
+                                pp.movePiece(BlackRook, H8, F8)
                         case C8:
                                 poly = 64 * Piece(BlackRook).polyglot()
-                                hash ^= polyglotRandom[poly + A8] ^ polyglotRandom[poly + D8]
-                                p.movePiece(A8, D8)
+                                pp.hash ^= polyglotRandom[poly + A8] ^ polyglotRandom[poly + D8]
+                                pp.movePiece(BlackRook, A8, D8)
                         }
                 } else if piece.isPawn() {
-                        flags.irreversible = true
+                        pp.flags.irreversible = true
                         if move.isEnpassant() {
-                                flags.enpassant = from + eight[color] // Save the en-passant square.
-                                hash ^= hashEnpassant[Col(flags.enpassant)]
+                                pp.flags.enpassant = from + eight[color] // Save the en-passant square.
+                                pp.hash ^= hashEnpassant[Col(pp.flags.enpassant)]
                         }
                 }
         } else {
-                flags.irreversible = true
-                hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
-                hash ^= polyglotRandom[64 * promo.polyglot() + to]
-                p.promotePawn(from, to, promo)
+                pp.flags.irreversible = true
+                pp.hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
+                pp.hash ^= polyglotRandom[64 * promo.polyglot() + to]
+                pp.promotePawn(piece, from, to, promo)
         }
 
-	if color == White {
-                hash ^= polyglotRandomWhite
-	}
-
-	p.color = color^1
-	p.flags = flags
-	p.hash = hash
-	p.board = p.outposts[White] | p.outposts[Black]
-
-	if p.isInCheck(color) {
+	pp.board = pp.outposts[White] | pp.outposts[Black]
+	if pp.isInCheck(color) {
 		node--
 		return nil
 	}
-	return p // &tree[node]
+
+	if color == White {
+                pp.hash ^= polyglotRandomWhite
+	}
+	pp.color = color^1
+
+	return pp // => &tree[node]
 
 }
 
