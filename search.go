@@ -49,9 +49,9 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                         Log("Move %d: %s (%d): score: %d, alpha: %d, beta: %d\n", movesMade, C(p.color), depth, score, alpha, beta)
 
                         if score >= beta {
-                                if !p.isInCheck(p.color) && move.capture() == 0 && move != p.game.killers[ply][0] {
-                                        p.game.killers[ply][1] = p.game.killers[ply][0]
-                                        p.game.killers[ply][0] = move
+                                if !p.isInCheck(p.color) && move.capture() == 0 && move != p.killers[0] {
+                                        p.killers[1] = p.killers[0]
+                                        p.killers[0] = move
                                 }
                                 return score
                         }

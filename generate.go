@@ -55,9 +55,9 @@ func (gen *MoveGen) rank() *MoveGen {
                 move := gen.list[i].move
                 if move == gen.p.game.bestLine[0][gen.ply] {
                         gen.list[i].score = 0xFFFF
-                } else if move == gen.p.game.killers[gen.ply][0] {
+                } else if move == gen.p.killers[0] {
                         gen.list[i].score = 0xFFFE
-                } else if move == gen.p.game.killers[gen.ply][1] {
+                } else if move == gen.p.killers[1] {
                         gen.list[i].score = 0xFFFD
                 } else if move & isCapture != 0 {
                         gen.list[i].score = move.value()

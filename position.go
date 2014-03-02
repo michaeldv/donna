@@ -21,6 +21,7 @@ type Position struct {
         board     Bitmask       // Bitmask of all pieces on the board.
         outposts  [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
         count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
+        killers   [2]Move       // Killer moves.
         color     int           // Side to make next move.
         hash      uint64        // Polyglot hash value.
         castles   uint8         // Castle rights mask.
