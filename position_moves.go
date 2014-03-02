@@ -165,13 +165,13 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
                         if len(promo) > 0 {
                                 switch promo {
                                 case `Q`, `q`:
-                                        move.promote(Queen)
+                                        move = move.promote(Queen)
                                 case `R`, `r`:
-                                        move.promote(Rook)
+                                        move = move.promote(Rook)
                                 case `B`, `b`:
-                                        move.promote(Bishop)
+                                        move = move.promote(Bishop)
                                 case `N`, `n`:
-                                        move.promote(Knight)
+                                        move = move.promote(Knight)
                                 default:
                                         move = 0
                                 }
