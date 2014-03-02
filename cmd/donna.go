@@ -45,16 +45,18 @@ func repl() {
                                 game = donna.NewGame().InitialPosition()
                                 position = game.Start(donna.White)
                         }
-                        move = position.NewMoveFromString(command)
-                        if move != 0 {
-                                position = position.MakeMove(move)
-                                fmt.Printf("%s\n", position)
-                                move = game.Think(3, position)
-                                position = position.MakeMove(move)
-                                fmt.Printf("%s\n", position)
-                        } else {
-                                fmt.Printf("%s appears to be an invalid move.\n", command)
+                        if move = position.NewMoveFromString(command); move != 0 {
+                                if advance := position.MakeMove(move); advance != nil {
+                                        position = advance
+                                        fmt.Printf("%s\n", position)
+                                        move = game.Think(3, position)
+                                        position = position.MakeMove(move)
+                                        fmt.Printf("%s\n", position)
+                                        continue
+                                }
                         }
+                        // Invalid move (typo) or non-evasion of check.
+                        fmt.Printf("%s appears to be an invalid move.\n", command)
                 }
         }
 }

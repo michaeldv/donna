@@ -50,9 +50,10 @@ func TestMoves050(t *testing.T) {
         expect(t, pinned, bit[C6])
 }
 
+// Correctly handle pawn promotion.
 func TestMoves100(t *testing.T) {
         position := NewGame().Setup(`Ke4,a7`, `Kh8`).Start(White)
-        move := position.NewMoveFromString(`a7-a8Q`)
+        move := position.NewMoveFromString(`a7a8Q`)
         position = position.MakeMove(move)
 
         expect(t, position.outposts[Pawn], maskNone)
