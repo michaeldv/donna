@@ -13,7 +13,21 @@ import (
 func repl() {
         var game *donna.Game
         var position *donna.Position
-        var move donna.Move
+
+        setup := func() {
+                if game == nil || position == nil {
+                        game = donna.NewGame().InitialPosition()
+                        position = game.Start(donna.White)
+                        fmt.Printf("%s\n", position)
+                }
+        }
+
+        think := func() {
+                if move := game.Think(3, position); move != 0 {
+                        position = position.MakeMove(move)
+                        fmt.Printf("%s\n", position)
+                }
+        }
 
         for command := ``; ; command = `` {
                 fmt.Print(`donna> `)
@@ -29,29 +43,17 @@ func repl() {
                 case `help`:
                         fmt.Println(`help: not implemented yet.`)
                 case `new`:
-                        game = donna.NewGame().InitialPosition()
-                        position = game.Start(donna.White)
-                        fmt.Printf("%s\n", position)
+                        game, position = nil, nil
+                        setup()
                 case `go`:
-                        if game == nil || position == nil {
-                                game = donna.NewGame().InitialPosition()
-                                position = game.Start(donna.White)
-                        }
-                        move = game.Think(3, position)
-                        position = position.MakeMove(move)
-                        fmt.Printf("%s\n", position)
+                        setup()
+                        think()
                 default:
-                        if game == nil || position == nil {
-                                game = donna.NewGame().InitialPosition()
-                                position = game.Start(donna.White)
-                        }
-                        if move = position.NewMoveFromString(command); move != 0 {
+                        setup()
+                        if move := position.NewMoveFromString(command); move != 0 {
                                 if advance := position.MakeMove(move); advance != nil {
                                         position = advance
-                                        fmt.Printf("%s\n", position)
-                                        move = game.Think(3, position)
-                                        position = position.MakeMove(move)
-                                        fmt.Printf("%s\n", position)
+                                        think()
                                         continue
                                 }
                         }

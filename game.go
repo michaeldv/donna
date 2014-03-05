@@ -72,38 +72,62 @@ func (g *Game) InitialPosition() *Game {
 }
 
 func (g *Game) Think(maxDepth int, position *Position) Move {
-        book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
         if position == nil {
                 position = g.Start(White)
         }
-        move := book.pickMove(position)
-        if move != 0 {
+
+        book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
+        if move := book.pickMove(position); move != 0 {
                 fmt.Printf("Book move: %s\n", move)
                 return move
         }
 
-        // fmt.Printf("%s", position)
         fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
         for depth := 1; depth <= maxDepth; depth++ {
                 g.nodes, g.qnodes = 0, 0
                 start := time.Now()
                 score := g.Analyze(depth, position)
                 finish := time.Since(start).Seconds()
-                fmt.Printf(" %d %02d:%02d    %8d    %8d    %8.1f   %5s   %v\n",
-                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                        float64(g.nodes + g.qnodes) / finish, score,
-                        g.bestLine[0][0 : g.bestLength[0]])
+                g.Print(depth, score, finish)
+                if g.IsOver(score) {
+                        return 0
+                }
         }
         fmt.Printf("Best move: %s\n", g.bestLine[0][0])
         return g.bestLine[0][0]
 }
 
-func (g *Game) Analyze(depth int, position *Position) string {
+func (g *Game) Print(depth, score int, finish float64) {
+        if absScore := Abs(score); absScore > 32500 {
+                movesLeft := (Checkmate - absScore) / 2
+                if movesLeft > 0 {
+                        fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   x%-4d   %v\n",
+                                depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                                float64(g.nodes + g.qnodes) / finish, movesLeft,
+                                g.bestLine[0][0 : g.bestLength[0]])
+                } else {
+                        fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   Checkmate\n",
+                                depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                                float64(g.nodes + g.qnodes) / finish)
+                }
+        } else {
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
+                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                        float64(g.nodes + g.qnodes) / finish, float64(score) / 100.0,
+                        g.bestLine[0][0 : g.bestLength[0]])
+        }
+}
+
+func (g *Game) IsOver(score int) bool {
+        return Abs(score) == Checkmate
+}
+
+func (g *Game) Analyze(depth int, position *Position) int {
         score := position.search(depth*2, 0, -Checkmate, Checkmate)
         if position.color == Black {
-                score = -score
+                return -score
         }
-        return fmt.Sprintf(`%.2f`, float64(score) / 100.0)
+        return score
 }
 
 func (g *Game) Start(color int) *Position {
