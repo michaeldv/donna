@@ -88,38 +88,57 @@ func (g *Game) Think(maxDepth int, position *Position) Move {
                 start := time.Now()
                 score := g.Analyze(depth, position)
                 finish := time.Since(start).Seconds()
-                g.Print(depth, score, finish)
-                if g.IsOver(score) {
+                if g.isOver(depth, score, finish) {
                         return 0
                 }
         }
-        fmt.Printf("Best move: %s\n", g.bestLine[0][0])
+        fmt.Printf("\nDonna's move: %s\n\n", g.bestLine[0][0])
         return g.bestLine[0][0]
 }
 
-func (g *Game) Print(depth, score int, finish float64) {
-        if absScore := Abs(score); absScore > 32500 {
-                movesLeft := (Checkmate - absScore) / 2
-                if movesLeft > 0 {
-                        fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   x%-4d   %v\n",
-                                depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                                float64(g.nodes + g.qnodes) / finish, movesLeft,
-                                g.bestLine[0][0 : g.bestLength[0]])
-                } else {
-                        fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   Checkmate\n",
-                                depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                                float64(g.nodes + g.qnodes) / finish)
+func (g *Game) isOver(depth, score int, finish float64) bool {
+        gameOver := 0
+        absScore := Abs(score)
+        movesLeft := (Checkmate - absScore) / 2
+
+        if absScore > 32500 && movesLeft > 0 {
+                gameOver = 1 // Checkmate in X moves.
+        } else if absScore == Checkmate {
+                gameOver = 2 // Checkmate.
+        } else if score == 0 {
+                if g.bestLength[0] == 0 {
+                        gameOver = 4 // Stalemate.
+                } else if g.bestLength[0] == -1 {
+                        gameOver = 8 // Repetition.
                 }
-        } else {
+        }
+
+        switch gameOver {
+        case 1:
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   X%-4d   %v\n",
+                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                        float64(g.nodes + g.qnodes) / finish, movesLeft,
+                        g.bestLine[0][0 : g.bestLength[0]])
+        case 2:
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   Checkmate\n",
+                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                        float64(g.nodes + g.qnodes) / finish)
+        case 4:
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Stalemate\n",
+                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                        float64(g.nodes + g.qnodes) / finish)
+        case 8:
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
+                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
+                        float64(g.nodes + g.qnodes) / finish)
+        default:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
                         depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
                         float64(g.nodes + g.qnodes) / finish, float64(score) / 100.0,
                         g.bestLine[0][0 : g.bestLength[0]])
         }
-}
 
-func (g *Game) IsOver(score int) bool {
-        return Abs(score) == Checkmate
+        return gameOver > 1
 }
 
 func (g *Game) Analyze(depth int, position *Position) int {

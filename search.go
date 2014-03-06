@@ -14,6 +14,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         }
 
         if p.isRepetition() {
+                p.game.bestLength[ply] = -1
                 return 0
         }
 
@@ -63,6 +64,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
         }
 
         if movesMade == 0 { // No moves were available.
+                p.game.bestLength[ply] = 0
                 if p.isInCheck(p.color) {
                         Lop("Checkmate")
                         return -Checkmate + ply
