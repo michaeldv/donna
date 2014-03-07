@@ -285,7 +285,7 @@ var (
         rookOnOpen     = Score{    2,    2 }
         rookOnSemiOpen = Score{    1,    1 }
         movesAvailable = Score{    5,   10 }
-        attackForce    = Score{    5,   10 }
+        attackForce    = Score{    3,    6 }
         shieldMissing  = Score{   15,    0 } // Missing shield pawn penalty.
         shieldDistance = Score{    5,    0 } // Shield pawn row distance from king penalty.
         rightToMove    = Score{    4,    2 }

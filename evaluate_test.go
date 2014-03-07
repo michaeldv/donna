@@ -30,7 +30,7 @@ func TestEvaluate030(t *testing.T) { // After 1. e2-e4 e7-e5 2. Ng1-f3
         game := NewGame().Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Nf3,Rh1,a2,b2,c2,d2,e4,f2,g2,h2`,
                                 `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e5,f7,g7,h7`)
         score := game.Start(Black).Evaluate()
-        expect(t, score, -49) // +49 for White.
+        expect(t, score, -47) // +47 for White.
 }
 
 func TestEvaluate035(t *testing.T) { // After 1. e2-e4 e7-e5 2. Ng1-f3 Ng8-f6
@@ -44,7 +44,7 @@ func TestEvaluate040(t *testing.T) { // After 1. e2-e4 e7-e5 2. Ng1-f3 Nb8-c6
         game := NewGame().Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Nf3,Rh1,a2,b2,c2,d2,e4,f2,g2,h2`,
                                 `Ra8,Nc6,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e5,f7,g7,h7`)
         score := game.Start(White).Evaluate()
-        expect(t, score, -16) // +16 for White.
+        expect(t, score, -18) // +18 for White.
 }
 
 func TestEvaluate050(t *testing.T) { // After 1. e2-e4 e7-e5 2. Ng1-f3 Nb8-c6 3. Nb1-c3 Ng8-f6
@@ -146,14 +146,14 @@ func TestEvaluate410(t *testing.T) {
         game := NewGame().Setup(`Ke1,Rb1,Ng2,a2`, `Ke8,Rh8,Nb7,h7`) // White on open file.
         score := game.Start(White).Evaluate()
 
-        expect(t, score, 68)
+        expect(t, score, 64)
 }
 
 func TestEvaluate420(t *testing.T) {
         game := NewGame().Setup(`Ke1,Rb1,a2,g2`, `Ke8,Rh8,h7,b7`) // White on semi-open file.
         score := game.Start(White).Evaluate()
 
-        expect(t, score, 95)
+        expect(t, score, 92)
 }
 
 // King shield.
