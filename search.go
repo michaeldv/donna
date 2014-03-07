@@ -7,7 +7,7 @@ package donna
 //import(`fmt`)
 
 func (p *Position) search(depth, ply int, alpha, beta int) int {
-        Log("\nsearch(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
+        // Log("\nsearch(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         p.game.nodes++
         if depth <= 0 && !p.isInCheck(p.color) {
                 return p.quiescence(depth, ply, alpha, beta)
@@ -47,7 +47,7 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                         movesMade++
                         score := -position.search(depth - 1, ply + 1, -beta, -alpha)
                         position.TakeBack(move)
-                        Log("Move %d: %s (%d): score: %d, alpha: %d, beta: %d\n", movesMade, C(p.color), depth, score, alpha, beta)
+                        // Log("Move %d: %s (%d): score: %d, alpha: %d, beta: %d\n", movesMade, C(p.color), depth, score, alpha, beta)
 
                         if score >= beta {
                                 if !p.isInCheck(p.color) && move.capture() == 0 && move != p.killers[0] {
@@ -74,6 +74,6 @@ func (p *Position) search(depth, ply int, alpha, beta int) int {
                 }
         }
 
-        Log("End of search(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
+        // Log("End of search(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
         return alpha
 }

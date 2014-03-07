@@ -91,132 +91,155 @@ func (e *Evaluator) analyzeCoordination() {
 }
 
 func (e *Evaluator) analyzePawnStructure() {
-        var bonus, penalty [2]Score
-        pawn := [2]Piece{ Pawn, BlackPawn }
+        whiteBonus, whitePenalty := e.pawnsScore(White)
+        blackBonus, blackPenalty := e.pawnsScore(Black)
+        if e.position.color == White {
+                e.midgame += whiteBonus.midgame + whitePenalty.midgame - blackBonus.midgame - blackPenalty.midgame
+                e.endgame += whiteBonus.endgame + whitePenalty.endgame - blackBonus.endgame - blackPenalty.endgame
+        } else {
+                e.midgame += blackBonus.midgame + blackPenalty.midgame - whiteBonus.midgame - whitePenalty.midgame
+                e.endgame += blackBonus.endgame + blackPenalty.endgame - whiteBonus.endgame - whitePenalty.endgame
+        }
+}
 
-        for color := White; color <= Black; color++ {
-                var doubled [8]int // Number of doubled pawns in each column.
+func (e *Evaluator) pawnsScore(color int) (bonus, penalty Score){
+        var doubled [8]int // Number of doubled pawns in each column.
+        hisPawns := e.position.outposts[pawn(color)]
+        herPawns := e.position.outposts[pawn(color^1)]
 
-                pawns := e.position.outposts[pawn[color]]
-                for pawns != 0 {
-                        square := pawns.pop()
-                        column := Col(square)
-                        //
-                        // count doubled pawns in the column as they carry a penalty.
-                        //
-                        doubled[column] = (maskFile[column] & e.position.outposts[pawn[color]]).count()
-                        //
-                        // The pawn is passed if a) there are no enemy pawns in the
-                        // same and adjacent columns; and b) there is no same color
-                        // pawns in front of us.
-                        //
-                        if maskPassed[color][square] & e.position.outposts[pawn[color^1]] == 0 &&
-                           maskInFront[color][square] & e.position.outposts[pawn[color]] == 0 {
-                                   bonus[color].midgame += bonusPassedPawn[0][flip[color][square]]
-                                   bonus[color].endgame += bonusPassedPawn[1][flip[color][square]]
-                        }
-                        //
-                        // Check if the pawn is isolated, i.e. has no pawns of the
-                        // same color on either sides.
-                        //
-                        if maskIsolated[column] & e.position.outposts[pawn[color]] == 0 {
-                                penalty[color].midgame += penaltyIsolatedPawn[0][column]
-                                penalty[color].endgame += penaltyIsolatedPawn[1][column]
-                        }
+        pawns := hisPawns
+        for pawns != 0 {
+                square := pawns.pop()
+                column := Col(square)
+                //
+                // count doubled pawns in the column as they carry a penalty.
+                //
+                doubled[column] = (maskFile[column] & hisPawns).count()
+                //
+                // The pawn is passed if a) there are no enemy pawns in the
+                // same and adjacent columns; and b) there is no same color
+                // pawns in front of us.
+                //
+                if maskPassed[color][square] & herPawns == 0 &&
+                   maskInFront[color][square] & hisPawns == 0 {
+                           bonus.midgame += bonusPassedPawn[0][flip[color][square]]
+                           bonus.endgame += bonusPassedPawn[1][flip[color][square]]
                 }
                 //
-                // Penalties for doubled pawns.
+                // Check if the pawn is isolated, i.e. has no pawns of the
+                // same color on either sides.
                 //
-                for i := 0;  i < len(doubled); i++ {
-                        if doubled[i] > 0 {
-                                penalty[color].midgame += (doubled[i] - 1) * penaltyDoubledPawn[0][i]
-                                penalty[color].endgame += (doubled[i] - 1) * penaltyDoubledPawn[1][i]
-                        }
+                if maskIsolated[column] & hisPawns == 0 {
+                        penalty.midgame += penaltyIsolatedPawn[0][column]
+                        penalty.endgame += penaltyIsolatedPawn[1][column]
                 }
         }
-
-        e.adjust(bonus).adjust(penalty)
+        //
+        // Penalties for doubled pawns.
+        //
+        for i := 0;  i < len(doubled); i++ {
+                if doubled[i] > 0 {
+                        penalty.midgame += (doubled[i] - 1) * penaltyDoubledPawn[0][i]
+                        penalty.endgame += (doubled[i] - 1) * penaltyDoubledPawn[1][i]
+                }
+        }
+        return
 }
 
 func (e *Evaluator) analyzeRooks() {
-        var bonus [2]Score
-        seventh := [2]Bitmask{ 0x00FF000000000000, 0x000000000000FF00 }
+        white := e.rooksScore(White)
+        black := e.rooksScore(Black)
+        if e.position.color == White {
+                e.midgame += white.midgame - black.midgame
+                e.endgame += white.endgame - black.endgame
+        } else {
+                e.midgame += black.midgame - white.midgame
+                e.endgame += black.endgame - white.endgame
+        }
+}
 
-        for color := White; color <= Black; color++ {
-                rook := rook(color)
-                if e.position.outposts[rook] == 0 {
-                        continue
-                }
-                //
-                // Bonus if rooks are on 7th rank.
-                //
-                if count := (e.position.outposts[rook] & seventh[color]).count(); count > 0 {
-                        bonus[color].midgame += count * rookOn7th.midgame
-                        bonus[color].endgame += count * rookOn7th.endgame
-                }
-                //
-                // Bonuses if rooks are on open or semi-open files.
-                //
-                rooks := e.position.outposts[rook]
-                for rooks != 0 {
-                        square := rooks.pop()
-                        column := Col(square)
-                        if e.position.outposts[pawn(color)] & maskFile[column] == 0 {
-                                if e.position.outposts[pawn(color^1)] & maskFile[column] == 0 {
-                                        bonus[color].midgame += rookOnOpen.midgame
-                                        bonus[color].endgame += rookOnOpen.endgame
-                                } else {
-                                        bonus[color].midgame += rookOnSemiOpen.midgame
-                                        bonus[color].endgame += rookOnSemiOpen.endgame
-                                }
+func (e *Evaluator) rooksScore(color int) (bonus Score) {
+        rooks := e.position.outposts[rook(color)]
+        if rooks == 0 {
+                return bonus
+        }
+        //
+        // Bonus if rooks are on 7th rank.
+        //
+        seventh := [2]Bitmask{ maskRank[6], maskRank[1] }
+        if count := (rooks & seventh[color]).count(); count > 0 {
+                bonus.midgame += count * rookOn7th.midgame
+                bonus.endgame += count * rookOn7th.endgame
+        }
+        //
+        // Bonuses if rooks are on open or semi-open files.
+        //
+        hisPawns := e.position.outposts[pawn(color)]
+        herPawns := e.position.outposts[pawn(color^1)]
+        for rooks != 0 {
+                square := rooks.pop()
+                column := Col(square)
+                if hisPawns & maskFile[column] == 0 {
+                        if herPawns & maskFile[column] == 0 {
+                                bonus.midgame += rookOnOpen.midgame
+                                bonus.endgame += rookOnOpen.endgame
+                        } else {
+                                bonus.midgame += rookOnSemiOpen.midgame
+                                bonus.endgame += rookOnSemiOpen.endgame
                         }
                 }
         }
-        e.adjust(bonus)
+        return
 }
 
 func (e *Evaluator) analyzeKingShield() {
-        var penalty [2]int
+        white := e.kingShieldScore(White)
+        black := e.kingShieldScore(Black)
 
-        for color := White; color <= Black; color++ {
-                king, pawn := king(color), pawn(color)
-                //
-                // Pass if a) the king is missing, b) the king is on the initial square
-                // or c) the opposite side doesn't have a queen with one major piece.
-                //
-                if e.position.outposts[king] == 0 || e.position.pieces[homeKing[color]] == king || !e.strongEnough(color^1) {
-                        continue
-                }
-                //
-                // Calculate relative square for the king so we could treat black king
-                // as white. Don't bother with the shield if the king is too far.
-                //
-                square := flip[color^1][e.position.outposts[king].first()]
-                if square > H3 {
-                        continue
-                }
-                row, col := Coordinate(square)
-                from, to := Max(0, col - 1), Min(7, col + 1)
-                //
-                // For each of the shield columns find the closest same color pawn. The
-                // penalty is carried if the pawn is missing or is too far from the king
-                // (more than one row apart).
-                //
-                for column := from; column <= to; column++ {
-                        if shield := (e.position.outposts[pawn] & maskFile[column]); shield != 0 {
-                                closest := flip[color^1][shield.first()] // Make it relative.
-                                if distance := Abs(Row(closest) - row); distance > 1 {
-                                        penalty[color] += distance * -shieldDistance.midgame
-                                }
-                        } else {
-                                penalty[color] += -shieldMissing.midgame
-                        }
-                }
-                Log("penalty[%s] => %d\n", C(color), penalty[color])
-        }
-        color, opposite := e.position.color, e.position.color^1
-        e.midgame += penalty[color] - penalty[opposite]
         // No endgame bonus or penalty.
+        if e.position.color == White {
+                e.midgame += white - black
+        } else {
+                e.midgame += black - white
+        }
+}
+
+func (e *Evaluator) kingShieldScore(color int) (penalty int) {
+        kings, pawns := e.position.outposts[king(color)], e.position.outposts[pawn(color)]
+        //
+        // Pass if a) the king is missing, b) the king is on the initial square
+        // or c) the opposite side doesn't have a queen with one major piece.
+        //
+        if kings == 0 || kings == bit[homeKing[color]] || !e.strongEnough(color^1) {
+                return
+        }
+        //
+        // Calculate relative square for the king so we could treat black king
+        // as white. Don't bother with the shield if the king is too far.
+        //
+        square := flip[color^1][kings.first()]
+        if square > H3 {
+                return
+        }
+        row, col := Coordinate(square)
+        from, to := Max(0, col - 1), Min(7, col + 1)
+        //
+        // For each of the shield columns find the closest same color pawn. The
+        // penalty is carried if the pawn is missing or is too far from the king
+        // (more than one row apart).
+        //
+        for column := from; column <= to; column++ {
+                if shield := (pawns & maskFile[column]); shield != 0 {
+                        closest := flip[color^1][shield.first()] // Make it relative.
+                        if distance := Abs(Row(closest) - row); distance > 1 {
+                                penalty += distance * -shieldDistance.midgame
+                        }
+                } else {
+                        penalty += -shieldMissing.midgame
+                }
+        }
+        // Log("penalty[%s] => %d\n", C(color), penalty)
+        return
 }
 
 func (e *Evaluator) adjust(bonus [2]Score) *Evaluator {
