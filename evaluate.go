@@ -19,7 +19,7 @@ type Evaluator struct {
 }
 
 func (p *Position) Evaluate() int {
-        evaluator := &Evaluator{ 0, 0, 0, p }
+        evaluator := &Evaluator{ 0, rightToMove.midgame, rightToMove.endgame, p }
         evaluator.analyzeMaterial()
         evaluator.analyzeCoordination()
         evaluator.analyzePawnStructure()
@@ -27,18 +27,16 @@ func (p *Position) Evaluate() int {
         evaluator.analyzeKingShield()
         // evaluator.analyzeKingSafety()
 
-        // Right to move: positive bonus for white, and negative for black.
-        evaluator.midgame += rightToMove.midgame * (1 - 2 * p.color)
-        evaluator.endgame += rightToMove.endgame * (1 - 2 * p.color)
-
+        if p.color == Black {
+                evaluator.midgame = -evaluator.midgame
+                evaluator.endgame = -evaluator.endgame
+        }
         return p.score(evaluator.midgame, evaluator.endgame)
 }
 
 func (e *Evaluator) analyzeMaterial() {
-        color, opposite := e.position.color, e.position.color^1
-
         for _,piece := range []int{ Pawn, Knight, Bishop, Rook, Queen } {
-                count := e.position.count[Piece(piece|color)] - e.position.count[Piece(piece|opposite)]
+                count := e.position.count[piece] - e.position.count[piece|Black]
                 midgame, endgame := Piece(piece).value()
                 e.midgame += midgame * count
                 e.endgame += endgame * count
@@ -49,19 +47,20 @@ func (e *Evaluator) analyzeCoordination() {
         var moves, attacks [2]int
         var bonus [2]Score
 
-        notAttacked := [2]Bitmask{^e.position.attacks(White), ^e.position.attacks(Black)}
-        for square, piece := range e.position.pieces {
-                if piece == 0 {
-                        continue
-                }
+        notAttacked := [2]Bitmask{ ^e.position.attacks(White), ^e.position.attacks(Black) }
+        board := e.position.board
+        for board != 0 {
+                square := board.pop()
+                piece := e.position.pieces[square]
                 color := piece.color()
+                targets := e.position.targets(square)
 
                 // Mobility: how many moves are available to squares not attacked by
                 // the opponent?
-                moves[color] += (e.position.targets(square) & notAttacked[color^1]).count()
+                moves[color] += (targets & notAttacked[color^1]).count()
 
                 // Agressivness: how many opponent's pieces are being attacked?
-                attacks[color] += (e.position.targets(square) & e.position.outposts[color^1]).count()
+                attacks[color] += (targets & e.position.outposts[color^1]).count()
 
                 // Calculate bonus or penalty for a piece being at the given square.
                 midgame, endgame := piece.bonus(flip[color][square])
@@ -69,22 +68,22 @@ func (e *Evaluator) analyzeCoordination() {
                 bonus[color].endgame += endgame
         }
 
-        e.adjust(bonus)
+        e.midgame += bonus[White].midgame - bonus[Black].midgame
+        e.endgame += bonus[White].endgame - bonus[Black].endgame
 
-        color, opposite := e.position.color, e.position.color^1
-        mobility := moves[color] - moves[opposite]
+        mobility := moves[White] - moves[Black]
         e.midgame += mobility * movesAvailable.midgame
         e.endgame += mobility * movesAvailable.endgame
 
-        aggression := attacks[color] - attacks[opposite]
+        aggression := attacks[White] - attacks[Black]
         e.midgame += aggression * attackForce.midgame
         e.endgame += aggression * attackForce.endgame
 
-        if bishops := e.position.count[bishop(color)]; bishops >= 2 {
+        if bishops := e.position.count[Bishop]; bishops >= 2 {
                 e.midgame += bishopPair.midgame
                 e.endgame += bishopPair.endgame
         }
-        if bishops := e.position.count[bishop(opposite)]; bishops >= 2 {
+        if bishops := e.position.count[BlackBishop]; bishops >= 2 {
                 e.midgame -= bishopPair.midgame
                 e.endgame -= bishopPair.endgame
         }
@@ -93,17 +92,11 @@ func (e *Evaluator) analyzeCoordination() {
 func (e *Evaluator) analyzePawnStructure() {
         whiteBonus, whitePenalty := e.pawnsScore(White)
         blackBonus, blackPenalty := e.pawnsScore(Black)
-        if e.position.color == White {
-                e.midgame += whiteBonus.midgame + whitePenalty.midgame - blackBonus.midgame - blackPenalty.midgame
-                e.endgame += whiteBonus.endgame + whitePenalty.endgame - blackBonus.endgame - blackPenalty.endgame
-        } else {
-                e.midgame += blackBonus.midgame + blackPenalty.midgame - whiteBonus.midgame - whitePenalty.midgame
-                e.endgame += blackBonus.endgame + blackPenalty.endgame - whiteBonus.endgame - whitePenalty.endgame
-        }
+        e.midgame += whiteBonus.midgame + whitePenalty.midgame - blackBonus.midgame - blackPenalty.midgame
+        e.endgame += whiteBonus.endgame + whitePenalty.endgame - blackBonus.endgame - blackPenalty.endgame
 }
 
 func (e *Evaluator) pawnsScore(color int) (bonus, penalty Score){
-        var doubled [8]int // Number of doubled pawns in each column.
         hisPawns := e.position.outposts[pawn(color)]
         herPawns := e.position.outposts[pawn(color^1)]
 
@@ -111,10 +104,6 @@ func (e *Evaluator) pawnsScore(color int) (bonus, penalty Score){
         for pawns != 0 {
                 square := pawns.pop()
                 column := Col(square)
-                //
-                // count doubled pawns in the column as they carry a penalty.
-                //
-                doubled[column] = (maskFile[column] & hisPawns).count()
                 //
                 // The pawn is passed if a) there are no enemy pawns in the
                 // same and adjacent columns; and b) there is no same color
@@ -137,10 +126,10 @@ func (e *Evaluator) pawnsScore(color int) (bonus, penalty Score){
         //
         // Penalties for doubled pawns.
         //
-        for i := 0;  i < len(doubled); i++ {
-                if doubled[i] > 0 {
-                        penalty.midgame += (doubled[i] - 1) * penaltyDoubledPawn[0][i]
-                        penalty.endgame += (doubled[i] - 1) * penaltyDoubledPawn[1][i]
+        for col := 0;  col <= 7; col++ {
+                if doubled := (maskFile[col] & hisPawns).count(); doubled > 1 {
+                        penalty.midgame += (doubled - 1) * penaltyDoubledPawn[0][col]
+                        penalty.endgame += (doubled - 1) * penaltyDoubledPawn[1][col]
                 }
         }
         return
@@ -149,13 +138,8 @@ func (e *Evaluator) pawnsScore(color int) (bonus, penalty Score){
 func (e *Evaluator) analyzeRooks() {
         white := e.rooksScore(White)
         black := e.rooksScore(Black)
-        if e.position.color == White {
-                e.midgame += white.midgame - black.midgame
-                e.endgame += white.endgame - black.endgame
-        } else {
-                e.midgame += black.midgame - white.midgame
-                e.endgame += black.endgame - white.endgame
-        }
+        e.midgame += white.midgame - black.midgame
+        e.endgame += white.endgame - black.endgame
 }
 
 func (e *Evaluator) rooksScore(color int) (bonus Score) {
@@ -193,15 +177,8 @@ func (e *Evaluator) rooksScore(color int) (bonus Score) {
 }
 
 func (e *Evaluator) analyzeKingShield() {
-        white := e.kingShieldScore(White)
-        black := e.kingShieldScore(Black)
-
         // No endgame bonus or penalty.
-        if e.position.color == White {
-                e.midgame += white - black
-        } else {
-                e.midgame += black - white
-        }
+        e.midgame += e.kingShieldScore(White) - e.kingShieldScore(Black)
 }
 
 func (e *Evaluator) kingShieldScore(color int) (penalty int) {
@@ -240,15 +217,6 @@ func (e *Evaluator) kingShieldScore(color int) (penalty int) {
         }
         // Log("penalty[%s] => %d\n", C(color), penalty)
         return
-}
-
-func (e *Evaluator) adjust(bonus [2]Score) *Evaluator {
-        color, opposite := e.position.color, e.position.color^1
-
-        e.midgame += bonus[color].midgame - bonus[opposite].midgame
-        e.endgame += bonus[color].endgame - bonus[opposite].endgame
-
-        return e
 }
 
 func (e *Evaluator) strongEnough(color int) bool {
