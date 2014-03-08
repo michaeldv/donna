@@ -7,7 +7,7 @@ package donna
 import()
 
 func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
-        Log("\nquiescence(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
+        // Log("\nquiescence(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
         p.game.qnodes++
 
         if p.isRepetition() {
@@ -40,7 +40,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
-                        Log("%d: evasion %s for %s\n", movesMade, move, C(move.color()))
+                        // Log("%d: evasion %s for %s\n", movesMade, move, C(move.color()))
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                         if alpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
@@ -67,7 +67,7 @@ func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
                 return -Checkmate + ply
         }
 
-        Log("End of quiescenceInCheck(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
+        // Log("End of quiescenceInCheck(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
         return bestScore
 }
 
@@ -88,7 +88,7 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         movesMade++
-                        Log("%d: capture %s for %s\n", movesMade, move, C(move.color()))
+                        // Log("%d: capture %s for %s\n", movesMade, move, C(move.color()))
 
                         score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
                         if quietAlpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
@@ -110,6 +110,6 @@ func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
                 }
         }
 
-        Log("End of quiescenceStayPat(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
+        // Log("End of quiescenceStayPat(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
         return bestScore
 }
