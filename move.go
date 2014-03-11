@@ -14,7 +14,7 @@ const (
         isPawnJump  = 0x40000000
 )
 
-// Bits 00:00:00:FF => Dource square (0 .. 63).
+// Bits 00:00:00:FF => Source square (0 .. 63).
 // Bits 00:00:FF:00 => Destination square (0 .. 63).
 // Bits 00:0F:00:00 => Piece making the move.
 // Bits 00:F0:00:00 => Captured piece if any.
@@ -90,23 +90,13 @@ func (m Move) value() int {
         return int(m.capture().kind()) * 16 - m.piece().kind() + 1024
 }
 
-func (m Move) is00() bool {
-        from, to, piece, _ := m.split()
-        return (piece == King && from == E1 && to == G1) || (piece == BlackKing && from == E8 && to == G8)
-}
-
-func (m Move) is000() bool {
-        from, to, piece, _ := m.split()
-        return (piece == King && from == E1 && to == C1) || (piece == BlackKing && from == E8 && to == C8)
-}
-
 func (m Move) String() string {
         from, to, piece, capture := m.split()
         promo := m.promo().s()
 
-        if m.is00() {
+        if (piece == King && from == E1 && to == G1) || (piece == BlackKing && from == E8 && to == G8) {
                 return `0-0`
-        } else if m.is000() {
+        } else if (piece == King && from == E1 && to == C1) || (piece == BlackKing && from == E8 && to == C8) {
                 return `0-0-0`
         } else {
                 col := [2]int{ Col(from) + 'a', Col(to) + 'a' }

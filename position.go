@@ -257,7 +257,7 @@ func (p *Position) score(midgame, endgame int) int {
 func (p *Position) polyglot() (key uint64) {
         board := p.board
         for board != 0 {
-                square := board.pop() // Inline polyhash() is at lest 10% faster.
+                square := board.pop() // Inline polyhash() is at least 10% faster.
                 key ^= polyglotRandom[64 * p.pieces[square].polyglot() + square]
         }
 
