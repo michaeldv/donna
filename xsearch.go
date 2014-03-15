@@ -24,6 +24,7 @@ func (p *Position) xSearch() Move {
 
         //>> prevScore := p.Evaluate()
 
+        rootNode = node
         for depth := 1; depth <= maxDepth; depth++ {
                 alpha, bestScore := -Checkmate, -Checkmate
 

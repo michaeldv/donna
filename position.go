@@ -7,7 +7,7 @@ package donna
 import(`bytes`)
 
 var tree [1024]Position
-var node int
+var node, rootNode int
 
 type Flags struct {
         enpassant     int       // En-passant square caused by previous move.

@@ -45,6 +45,10 @@ func IsBetween(from, to, between int) bool {
         return ((maskStraight[from][to] | maskDiagonal[from][to]) & bit[between]) != 0
 }
 
+func Ply() int {
+        return rootNode - node
+}
+
 // Integer version of math/abs.
 func Abs(n int) int {
         if n < 0 {
