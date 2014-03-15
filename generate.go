@@ -4,7 +4,7 @@
 
 package donna
 
-import(`sort`; `fmt`)
+import(`sort`)
 
 const (
         stepPrincipal = iota
@@ -53,13 +53,13 @@ func (gen *MoveGen) theOnlyMove() bool {
 
 func (gen *MoveGen) makeFirst() *MoveGen {
         if gen.head > 1 {
-                fmt.Printf("head: %d, tail: %d, => %v, move: %s\n", gen.head, gen.tail, gen.list[gen.head-1], gen.list[gen.head-1].move)
+                //fmt.Printf("head: %d, tail: %d, => %v, move: %s\n", gen.head, gen.tail, gen.list[gen.head-1], gen.list[gen.head-1].move)
                 best := gen.list[gen.head-1]
-                fmt.Printf("==> %v\n", gen.list)
+                //fmt.Printf("==> %v\n", gen.list)
                 copy(gen.list[1:gen.head], gen.list[0:gen.head])
                 gen.list[0] = best
         }
-        fmt.Printf("--> %v\n", gen.list)
+        //fmt.Printf("--> %v\n", gen.list)
         return gen
 }
 

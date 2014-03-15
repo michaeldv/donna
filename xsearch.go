@@ -62,11 +62,11 @@ func (p *Position) xSearch() Move {
                                                         break
                                                 }
                                         }
-                                        //>> printBestLine(depth, bestScore, gen.list[0])
+                                        printBestLine(depth, bestScore, gen.list[0].move)
                                 }
                         } // if position
                 } // next move.
-                //>> printBestLine(depth, bestScore, gen.list[0])
+                printBestLine(depth, bestScore, gen.list[0].move)
                 //>> prevScore = bestScore
 
                 if bestScore < -32000 || bestScore > 32000 {
@@ -77,4 +77,8 @@ func (p *Position) xSearch() Move {
         } // next depth.
 
         return gen.list[0].move
+}
+
+func printBestLine(depth, bestScore int, move Move) {
+        fmt.Printf("=> %d) %d %s\n", depth, bestScore, move)
 }
