@@ -46,7 +46,7 @@ func IsBetween(from, to, between int) bool {
 }
 
 func Ply() int {
-        return rootNode - node
+        return node - rootNode
 }
 
 // Integer version of math/abs.

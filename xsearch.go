@@ -29,8 +29,8 @@ func (p *Position) xSearch() Move {
                 alpha, bestScore := -Checkmate, -Checkmate
 
                 for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                        fmt.Printf("depth: %d, move: %s\n", depth, move)
                         if position := p.MakeMove(move); position != nil {
+                                fmt.Printf("%*sroot/%s> depth: %d, ply: %d, move: %s\n", depth*2, ` `, C(p.color), depth, Ply(), move)
                                 inCheck := p.isInCheck(p.color)
                                 reducedDepth := depth - 1
                                 if inCheck {
@@ -62,11 +62,11 @@ func (p *Position) xSearch() Move {
                                                         break
                                                 }
                                         }
-                                        printBestLine(depth, bestScore, gen.list[0].move)
+                                        fmt.Printf("-> %d) %d %s\n", depth, bestScore, gen.list[0].move)
                                 }
                         } // if position
                 } // next move.
-                printBestLine(depth, bestScore, gen.list[0].move)
+                fmt.Printf("=> %d) %d %s\n", depth, bestScore, gen.list[0].move)
                 //>> prevScore = bestScore
 
                 if bestScore < -32000 || bestScore > 32000 {
@@ -77,8 +77,4 @@ func (p *Position) xSearch() Move {
         } // next depth.
 
         return gen.list[0].move
-}
-
-func printBestLine(depth, bestScore int, move Move) {
-        fmt.Printf("=> %d) %d %s\n", depth, bestScore, move)
 }

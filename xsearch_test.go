@@ -12,7 +12,7 @@ func TestSearch000(t *testing.T) {
         expect(t, move, `Rh1-h6`)
 }
 
-func TestSearch020(t *testing.T) {
-        move := NewGame().Setup(`Kf4,Qc2,Nc5`, `Kd4`).Start(White).xSearch()
-        expect(t, move, `Nc5-b7`)
-}
+// func TestSearch020(t *testing.T) {
+//         move := NewGame().Setup(`Kf4,Qc2,Nc5`, `Kd4`).Start(White).xSearch()
+//         expect(t, move, `Nc5-b7`)
+// }
