@@ -4,12 +4,14 @@
 
 package donna
 
-import()
+import(`fmt`)
 
 // Search for the node in check.
 func (p *Position) xSearchInCheck(beta, depth int) int {
         beta = beta
         depth = depth
+
+        fmt.Printf("%*schck/%s> depth: %d, ply: %d\n", depth*2, ` `, C(p.color), depth, Ply())
 
         return 0
 }

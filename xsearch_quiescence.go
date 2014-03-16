@@ -4,13 +4,15 @@
 
 package donna
 
-import()
+import(`fmt`)
 
 // Quiescence search.
 func (p *Position) xSearchQuiescence(alpha, beta, depth int) int {
         alpha = alpha
         beta = beta
         depth = depth
+
+        fmt.Printf("%*squie/%s> depth: %d, ply: %d\n", depth*2, ` `, C(p.color), depth, Ply())
 
         return 0
 }
