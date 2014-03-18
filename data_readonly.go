@@ -6,7 +6,7 @@ package donna
 
 import (`math`)
 
-const Checkmate = math.MaxInt16
+const Checkmate = math.MaxInt16 // = 32,767
 const MaxPly = 32
 
 const (
