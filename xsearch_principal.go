@@ -9,13 +9,11 @@ import(`fmt`)
 // Search principal variation.
 func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
         if depth == 0 {
-                return p.xSearchQuiescence(alpha, beta, 1)
+                return p.xSearchQuiescence(alpha, beta, true)
         }
 
         if Ply() > maxDepth {
-                score := p.Evaluate()
-                fmt.Printf("%*sprin/%s> DEPTH: %d, PLY: %d, SCORE: %d\n", depth*2, ` `, C(p.color), depth, Ply(), score)
-                return score
+                return p.Evaluate()
         }
 
         if p.isRepetition() {
@@ -38,8 +36,8 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
         firstMove := true
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        fmt.Printf("%*sprin/%s> depth: %d, ply: %d, move: %s\n", depth*2, ` `, C(p.color), depth, Ply(), move)
-                        inCheck := p.isInCheck(p.color)
+                        fmt.Printf("%*sprin/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        inCheck := position.isInCheck(position.color)
                         reducedDepth := depth - 1
                         if inCheck {
                                 reducedDepth++
@@ -50,7 +48,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
                                 moveScore = -position.xSearchPrincipal(-beta, -alpha, reducedDepth)
                         } else {
                                 if reducedDepth == 0 {
-                                        moveScore = -position.xSearchQuiescence(-alpha - 1, -alpha, reducedDepth)
+                                        moveScore = -position.xSearchQuiescence(-alpha - 1, -alpha, true)
                                 } else if inCheck {
                                         moveScore = -position.xSearchInCheck(-alpha, reducedDepth)
                                 } else {

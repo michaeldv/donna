@@ -21,8 +21,8 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
         gen := p.StartMoveGen(Ply()).GenerateMoves().rank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        fmt.Printf("%*szero/%s> depth: %d, ply: %d, move: %s\n", depth*2, ` `, C(p.color), depth, Ply(), move)
-                        inCheck := p.isInCheck(p.color)
+                        fmt.Printf("%*szero/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        inCheck := position.isInCheck(position.color)
                         reducedDepth := depth - 1
                         if inCheck {
                                 reducedDepth++
@@ -30,7 +30,7 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
 
                         moveScore := 0
                         if reducedDepth == 0 {
-                                moveScore = -position.xSearchQuiescence(-beta, 1 - beta, 1)
+                                moveScore = -position.xSearchQuiescence(-beta, 1 - beta, true)
                         } else if inCheck {
                                 moveScore = -position.xSearchInCheck(1 - beta, reducedDepth)
                         } else {

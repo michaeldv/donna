@@ -6,7 +6,7 @@ package donna
 
 import(`fmt`)
 
-const maxDepth = 4
+const maxDepth = 5
 
 // Root node search.
 func (p *Position) xSearch() Move {
@@ -30,8 +30,8 @@ func (p *Position) xSearch() Move {
 
                 for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                         if position := p.MakeMove(move); position != nil {
-                                fmt.Printf("%*sroot/%s> depth: %d, ply: %d, move: %s\n", depth*2, ` `, C(p.color), depth, Ply(), move)
-                                inCheck := p.isInCheck(p.color)
+                                fmt.Printf("%*sroot/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                                inCheck := position.isInCheck(position.color)
                                 reducedDepth := depth - 1
                                 if inCheck {
                                         reducedDepth++
@@ -40,15 +40,15 @@ func (p *Position) xSearch() Move {
                                 moveScore := 0
                                 if bestScore != -Checkmate && reducedDepth > 0 {
                                         if inCheck {
-                                                moveScore = -p.xSearchInCheck(-alpha, reducedDepth)
+                                                moveScore = -position.xSearchInCheck(-alpha, reducedDepth)
                                         } else {
-                                                moveScore = -p.xSearchWithZeroWindow(-alpha, reducedDepth)
+                                                moveScore = -position.xSearchWithZeroWindow(-alpha, reducedDepth)
                                         }
                                         if moveScore > alpha {
-                                                moveScore = -p.xSearchPrincipal(-Checkmate, -alpha, reducedDepth)
+                                                moveScore = -position.xSearchPrincipal(-Checkmate, -alpha, reducedDepth)
                                         }
                                 } else {
-                                        moveScore = -p.xSearchPrincipal(-Checkmate, Checkmate, reducedDepth)
+                                        moveScore = -position.xSearchPrincipal(-Checkmate, Checkmate, reducedDepth)
                                 }
 
                                 position.TakeBack(move)
@@ -58,9 +58,9 @@ func (p *Position) xSearch() Move {
                                                 alpha = bestScore
                                                 fmt.Printf("make first => depth: %d, move: %s\n", depth, move)
                                                 gen.makeFirst()
-                                                if alpha > 32000 {
-                                                        break
-                                                }
+                                                // if alpha > 32000 { // Not in puzzle solving mode.
+                                                //         break
+                                                // }
                                         }
                                         fmt.Printf("-> %d) %d %s\n", depth, bestScore, gen.list[0].move)
                                 }
@@ -69,9 +69,9 @@ func (p *Position) xSearch() Move {
                 fmt.Printf("=> %d) %d %s\n", depth, bestScore, gen.list[0].move)
                 //>> prevScore = bestScore
 
-                if bestScore < -32000 || bestScore > 32000 {
-                    break // from next depth loop.
-            }
+                // if bestScore < -32000 || bestScore > 32000 { // Not in puzzle solving mode.
+                //         break // from next depth loop.
+                // }
 
             gen.head = 0
         } // next depth.
