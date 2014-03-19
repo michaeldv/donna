@@ -40,6 +40,7 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
                         moveCount++
 
                         if moveScore > bestScore {
+                                position.saveBest(Ply(), move)
                                 if moveScore >= beta {
                                         return moveScore
                                 }

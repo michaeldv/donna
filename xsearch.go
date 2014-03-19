@@ -54,6 +54,7 @@ func (p *Position) xSearch(requestedDepth int) Move {
                                 position = position.TakeBack(move)
                                 if moveScore > bestScore {
                                         bestScore = moveScore
+                                        position.saveBest(Ply(), move)
                                         if bestScore > alpha {
                                                 alpha = bestScore
                                                 gen.makeFirst()
@@ -65,7 +66,7 @@ func (p *Position) xSearch(requestedDepth int) Move {
                                 }
                         } // if position
                 } // next move.
-                //Log("=> %d) %d %s\n", depth, bestScore, gen.list[0].move)
+                Log("=> %d) %d %s => %v\n", depth, bestScore, gen.list[0].move, p.game.bestLine[0][0 : p.game.bestLength[0]])
                 //>> prevScore = bestScore
 
                 // if bestScore < -32000 || bestScore > 32000 { // Not in puzzle solving mode.

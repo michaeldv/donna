@@ -63,6 +63,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
                         position.TakeBack(move)
 
                         if moveScore > bestScore {
+                                position.saveBest(Ply(), move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
                                                 return moveScore

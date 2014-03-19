@@ -33,6 +33,7 @@ func (p *Position) xSearchQuiescence(alpha, beta int, checks bool) int {
 
                         position.TakeBack(move)
                         if moveScore > bestScore {
+                                position.saveBest(Ply(), move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
                                                 return moveScore
@@ -53,6 +54,7 @@ func (p *Position) xSearchQuiescence(alpha, beta int, checks bool) int {
 
                                 position.TakeBack(move)
                                 if moveScore > bestScore {
+                                        position.saveBest(Ply(), move)
                                         if moveScore > alpha {
                                                 if moveScore >= beta {
                                                         return moveScore
@@ -91,6 +93,7 @@ func (p *Position) xSearchQuiescenceInCheck(alpha, beta int) int {
 
                         position.TakeBack(move)
                         if moveScore > bestScore {
+                                position.saveBest(Ply(), move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
                                                 return moveScore

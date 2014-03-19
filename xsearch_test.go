@@ -152,6 +152,8 @@ func TestSearch250(t *testing.T) { // Pawn promotion
 // Mate in 4.
 
 func TestSearch260(t *testing.T) { // Pawn promotion
+        Settings.Log = true
         move := NewGame().Setup(`Kf6,Nf8,Nh6`, `Kh8,f7,h7`).Start(White).xSearch(7)
         expect(t, move, `Nf8-e6`)
+        Settings.Log = false
 }
