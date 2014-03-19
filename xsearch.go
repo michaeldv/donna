@@ -4,12 +4,12 @@
 
 package donna
 
-import(`fmt`)
+import()
 
-const maxDepth = 5
+const maxDepth = 7
 
 // Root node search.
-func (p *Position) xSearch() Move {
+func (p *Position) xSearch(requestedDepth int) Move {
         gen := p.StartMoveGen(0)
         if !p.isInCheck(p.color) {
                 gen.GenerateMoves()
@@ -25,12 +25,12 @@ func (p *Position) xSearch() Move {
         //>> prevScore := p.Evaluate()
 
         rootNode = node
-        for depth := 1; depth <= maxDepth; depth++ {
+        for depth := 1; depth <= Min(maxDepth, requestedDepth); depth++ {
                 alpha, bestScore := -Checkmate, -Checkmate
 
                 for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                         if position := p.MakeMove(move); position != nil {
-                                fmt.Printf("%*sroot/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                                //Log("%*sroot/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
                                 inCheck := position.isInCheck(position.color)
                                 reducedDepth := depth - 1
                                 if inCheck {
@@ -51,22 +51,21 @@ func (p *Position) xSearch() Move {
                                         moveScore = -position.xSearchPrincipal(-Checkmate, Checkmate, reducedDepth)
                                 }
 
-                                position.TakeBack(move)
+                                position = position.TakeBack(move)
                                 if moveScore > bestScore {
                                         bestScore = moveScore
                                         if bestScore > alpha {
                                                 alpha = bestScore
-                                                fmt.Printf("make first => depth: %d, move: %s\n", depth, move)
                                                 gen.makeFirst()
                                                 // if alpha > 32000 { // Not in puzzle solving mode.
                                                 //         break
                                                 // }
                                         }
-                                        fmt.Printf("-> %d) %d %s\n", depth, bestScore, gen.list[0].move)
+                                        //Log("-> %d) %d %s\n", depth, bestScore, gen.list[0].move)
                                 }
                         } // if position
                 } // next move.
-                fmt.Printf("=> %d) %d %s\n", depth, bestScore, gen.list[0].move)
+                //Log("=> %d) %d %s\n", depth, bestScore, gen.list[0].move)
                 //>> prevScore = bestScore
 
                 // if bestScore < -32000 || bestScore > 32000 { // Not in puzzle solving mode.

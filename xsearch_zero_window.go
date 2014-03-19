@@ -4,7 +4,7 @@
 
 package donna
 
-import(`fmt`)
+import()
 
 // Search with zero window.
 func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
@@ -21,7 +21,7 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
         gen := p.StartMoveGen(Ply()).GenerateMoves().rank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        fmt.Printf("%*szero/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        //Log("%*szero/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
                         inCheck := position.isInCheck(position.color)
                         reducedDepth := depth - 1
                         if inCheck {

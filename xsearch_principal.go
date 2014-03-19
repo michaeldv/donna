@@ -4,7 +4,7 @@
 
 package donna
 
-import(`fmt`)
+import()
 
 // Search principal variation.
 func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
@@ -36,7 +36,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
         firstMove := true
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        fmt.Printf("%*sprin/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        //Log("%*sprin/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
                         inCheck := position.isInCheck(position.color)
                         reducedDepth := depth - 1
                         if inCheck {

@@ -4,7 +4,7 @@
 
 package donna
 
-import(`fmt`)
+import()
 
 // Quiescence search.
 func (p *Position) xSearchQuiescence(alpha, beta int, checks bool) int {
@@ -23,7 +23,7 @@ func (p *Position) xSearchQuiescence(alpha, beta int, checks bool) int {
         gen := p.StartMoveGen(Ply()).GenerateCaptures().rank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        fmt.Printf("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+                        //Log("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
                         moveScore := 0
                         if position.isInCheck(position.color) {
                                 moveScore = -position.xSearchQuiescenceInCheck(-beta, -alpha)
@@ -48,7 +48,7 @@ func (p *Position) xSearchQuiescence(alpha, beta int, checks bool) int {
                 gen := p.StartMoveGen(Ply()).GenerateChecks().rank()
                 for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                         if position := p.MakeMove(move); position != nil {
-                                fmt.Printf("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+                                //Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
                                 moveScore := -position.xSearchQuiescenceInCheck(-beta, -alpha)
 
                                 position.TakeBack(move)
@@ -81,7 +81,7 @@ func (p *Position) xSearchQuiescenceInCheck(alpha, beta int) int {
         gen := p.StartMoveGen(Ply()).GenerateEvasions().rank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        fmt.Printf("%*squic/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+                        //Log("%*squic/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
                         moveScore := 0
                         if position.isInCheck(position.color) {
                                 moveScore = -position.xSearchQuiescenceInCheck(-beta, -alpha)

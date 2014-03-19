@@ -4,7 +4,7 @@
 
 package donna
 
-import(`fmt`)
+import()
 
 // Search for the node in check.
 func (p *Position) xSearchInCheck(beta, depth int) int {
@@ -20,7 +20,7 @@ func (p *Position) xSearchInCheck(beta, depth int) int {
         gen := p.StartMoveGen(Ply()).GenerateEvasions().rank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        fmt.Printf("%*schck/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        //Log("%*schck/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
                         inCheck := position.isInCheck(position.color)
                         reducedDepth := depth - 1
                         if inCheck {
