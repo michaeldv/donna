@@ -92,6 +92,21 @@ func TestGenerate380(t *testing.T) {
         expect(t, black.allMoves(), `[Ka5xb4 Ka5-b5 Ka5-a6 Ka5-b6 c5xb4 a4xb3 c4xb3]`)
 }
 
+// Check evasions (en-passant pawn capture).
+func TestGenerate385(t *testing.T) {
+        game := NewGame().Setup(`Ke4,c5,e5`, `Ke7,d7`)
+        black := game.Start(Black)
+        white := black.MakeMove(black.NewEnpassant(D7, D5)).StartMoveGen(1).GenerateEvasions()
+        for move := white.NextMove(); move != 0; move = white.NextMove() {
+                if move.piece() == Pawn {
+                        expect(t, move.to(), D6)
+                        expect(t, move.color(), White)
+                        expect(t, Piece(move.capture()), Piece(BlackPawn))
+                        expect(t, Piece(move.promo()), Piece(0))
+                }
+        }
+}
+
 // Check evasions (pawn jumps).
 func TestGenerate390(t *testing.T) {
         game := NewGame().Setup(`Kh4,a2,b2,c2,d2,e2,f2,g2`, `Kd8,Ra4`)

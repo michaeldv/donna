@@ -63,7 +63,7 @@ func (gen *MoveGen) GenerateEvasions() *MoveGen {
         if enpassant := attackSquare + eight[color]; gen.p.flags.enpassant == enpassant {
                 pawns := maskPawn[color][enpassant] & gen.p.outposts[pawn(color)]
                 for pawns != 0 {
-                        gen.add(gen.p.NewEnpassant(pawns.pop(), attackSquare + eight[color]))
+                        gen.add(gen.p.NewMove(pawns.pop(), attackSquare + eight[color]))
                 }
         }
         //
