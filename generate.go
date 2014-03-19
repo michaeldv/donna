@@ -51,15 +51,6 @@ func (gen *MoveGen) theOnlyMove() bool {
         return gen.tail - gen.head <= 1
 }
 
-func (gen *MoveGen) makeFirst() *MoveGen {
-        if gen.head > 1 {
-                best := gen.list[gen.head-1]
-                copy(gen.list[1:gen.head], gen.list[0:gen.head])
-                gen.list[0] = best
-        }
-        return gen
-}
-
 func (gen *MoveGen) rank() *MoveGen {
         if gen.tail - gen.head < 2 {
                 return gen
