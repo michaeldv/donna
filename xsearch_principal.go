@@ -33,7 +33,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
         }
         gen.rank()
 
-        firstMove := true
+        moveCount := 0
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*sprin/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
@@ -44,7 +44,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
                         }
 
                         moveScore := 0
-                        if firstMove {
+                        if moveCount == 0 { // First move: follow principal variation.
                                 moveScore = -position.xSearchPrincipal(-beta, -alpha, reducedDepth)
                         } else {
                                 if reducedDepth == 0 {
@@ -59,7 +59,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
                                 }
                         }
 
-                        firstMove = false
+                        moveCount++
                         position.TakeBack(move)
 
                         if moveScore > bestScore {
@@ -75,7 +75,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
                 }
         } // next move.
 
-        if firstMove { // Checkmate
+        if moveCount == 0 { // Checkmate
                 if p.isInCheck(p.color) {
                         return bestScore
                 } else { // Stalemate

@@ -38,7 +38,6 @@ func (p *Position) xSearchInCheck(beta, depth int) int {
 
                         position.TakeBack(move)
                         if moveScore > bestScore {
-                                position.saveBest(Ply(), move)
                                 if moveScore >= beta {
                                         return moveScore
                                 }

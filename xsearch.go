@@ -50,7 +50,7 @@ func (p *Position) xSearch(requestedDepth int) Move {
                                         moveScore = -position.xSearchPrincipal(-Checkmate, Checkmate, reducedDepth)
                                 }
 
-                                position = position.TakeBack(move)
+                                position.TakeBack(move)
                                 if moveScore > bestScore {
                                         bestScore = moveScore
                                         position.saveBest(Ply(), move)
