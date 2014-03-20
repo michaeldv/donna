@@ -17,13 +17,13 @@ func (p *Position) xSearch(requestedDepth int) Move {
                 gen.GenerateEvasions()
         }
 
+        bestMove := gen.list[0].move
         if gen.theOnlyMove() {
-                return gen.list[0].move
+                return bestMove
         }
         gen.rank()
 
         rootNode = node
-        bestMoveIdx := 0
         for depth := 1; depth <= Min(maxDepth, requestedDepth); depth++ {
                 alpha, bestScore := -Checkmate, -Checkmate
 
@@ -56,7 +56,7 @@ func (p *Position) xSearch(requestedDepth int) Move {
                                         position.saveBest(Ply(), move)
                                         if bestScore > alpha {
                                                 alpha = bestScore
-                                                bestMoveIdx = gen.head - 1
+                                                bestMove = move
                                                 // if alpha > 32000 { // Not in puzzle solving mode.
                                                 //         break
                                                 // }
@@ -74,5 +74,5 @@ func (p *Position) xSearch(requestedDepth int) Move {
             gen.head = 0
         } // next depth.
 
-        return gen.list[bestMoveIdx].move
+        return bestMove
 }
