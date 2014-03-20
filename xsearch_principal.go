@@ -66,6 +66,10 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
                                 position.saveBest(Ply(), move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
+                                                if move.capture() == 0 && move.promo() == 0 && move != p.killers[0] {
+                                                        p.killers[1] = p.killers[0]
+                                                        p.killers[0] = move
+                                                }
                                                 return moveScore
                                         }
                                         alpha = moveScore

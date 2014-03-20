@@ -107,7 +107,8 @@ func (p *Position) MakeMove(move Move) *Position {
         // Copy over the contents of previous tree node to the current one.
         //
         node++
-        tree[node] = *p // => tree[node] = tree[node - 1]
+        p.killers = tree[node].killers  // Preserve the killers.
+        tree[node] = *p                 // => tree[node] = tree[node - 1]
         pp := &tree[node]
 
         pp.hash ^= hashCastle[pp.castles]

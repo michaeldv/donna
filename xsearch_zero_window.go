@@ -41,6 +41,10 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
 
                         if moveScore > bestScore {
                                 if moveScore >= beta {
+                                        if move.capture() == 0 && move.promo() == 0 && move != p.killers[0] {
+                                                p.killers[1] = p.killers[0]
+                                                p.killers[0] = move
+                                        }
                                         return moveScore
                                 }
                                 bestScore = moveScore
