@@ -20,9 +20,11 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
                 return 0
         }
 
-        bestScore := Ply() - Checkmate
-        if bestScore >= beta {
-                return bestScore
+        // Checkmate pruning.
+        if Checkmate - Ply() <= alpha {
+                return alpha
+        } else if Ply() - Checkmate >= beta {
+                return beta
         }
 
         gen := p.StartMoveGen(Ply())
@@ -34,6 +36,7 @@ func (p *Position) xSearchPrincipal(alpha, beta, depth int) int {
         gen.rank()
 
         moveCount := 0
+        bestScore := Ply() - Checkmate
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*sprin/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)

@@ -12,6 +12,13 @@ func (p *Position) xSearchQuiescence(alpha, beta int, checks bool) int {
                 return 0
         }
 
+        // Checkmate pruning.
+        if Checkmate - Ply() <= alpha {
+                return alpha
+        } else if Ply() - Checkmate >= beta {
+                return beta
+        }
+
         bestScore := p.Evaluate()
         if bestScore > alpha {
                 if bestScore >= beta {
