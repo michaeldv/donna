@@ -20,6 +20,10 @@ func (p *Position) xSearchQuiescence(alpha, beta int, checks bool) int {
         }
 
         bestScore := p.Evaluate()
+        if Ply() > maxDepth {
+                return bestScore
+        }
+
         if bestScore > alpha {
                 if bestScore >= beta {
                         return bestScore
