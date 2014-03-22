@@ -17,6 +17,28 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
                 return bestScore
         }
 
+        score := p.Evaluate()
+
+        // Null move pruning.
+        if depth > 1 && score >= beta && p.outposts[p.color].count() > 5 {
+                reduction := 3 + depth / 4
+                if score - 100 > beta {
+                        reduction++
+                }
+
+                position := p.MakeNullMove()
+                if depth <= reduction {
+                        score = -position.xSearchQuiescence(-beta, 1 - beta, true)
+                } else {
+                        score = -position.xSearchWithZeroWindow(1 - beta, depth - reduction)
+                }
+                position.TakeBackNullMove()
+
+                if score >= beta {
+                        return score
+                }
+        }
+
         moveCount := 0
         gen := p.StartMoveGen(Ply()).GenerateMoves().rank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {

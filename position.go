@@ -187,9 +187,27 @@ func (p *Position) MakeMove(move Move) *Position {
 
 }
 
+// Make null move by copying over previous node and flipping the color.
+func (p *Position) MakeNullMove() *Position {
+        node++
+        tree[node] = *p // => tree[node] = tree[node - 1]
+
+	if tree[node].color == White {
+                tree[node].hash ^= polyglotRandomWhite
+	}
+	tree[node].color ^= 1
+
+	return &tree[node]
+}
+
 func (p *Position) TakeBack(move Move) *Position {
         node--
         return &tree[node]
+}
+
+func (p *Position) TakeBackNullMove() *Position {
+        p.color ^= 1
+        return p.TakeBack(Move(0))
 }
 
 func (p *Position) isInCheck(color int) bool {
