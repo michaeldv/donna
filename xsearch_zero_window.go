@@ -6,6 +6,8 @@ package donna
 
 import()
 
+var razoringMargin = [4]int{ 0, 250, 450, 650 }
+
 // Search with zero window.
 func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
         if p.isRepetition() {
@@ -19,8 +21,20 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
 
         score := p.Evaluate()
 
+        // Razoring.
+        if depth < len(razoringMargin) {
+                if margin := beta - razoringMargin[depth]; beta < 31000 && score < margin {
+                        if p.outposts[pawn(p.color)] & mask7th[p.color] == 0 { // No pawns on 7th.
+                                razorScore := p.xSearchQuiescence(margin - 1, margin, true)
+                                if razorScore < margin {
+                                        return razorScore
+                                }
+                        }
+                }
+        }
+
         // Null move pruning.
-        if depth > 1 && score >= beta && p.outposts[p.color].count() > 5 {
+        if depth > 1 && beta > -31000 && score >= beta && p.outposts[p.color].count() > 5 {
                 reduction := 3 + depth / 4
                 if score - 100 > beta {
                         reduction++

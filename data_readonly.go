@@ -247,6 +247,7 @@ var maskIsolated = [8]Bitmask{
 	0x2828282828282828, 0x5050505050505050, 0xA0A0A0A0A0A0A0A0, 0x4040404040404040,
 }
 
+var mask7th = [2]Bitmask{ maskRank[6], maskRank[1] }
 var eight = [2]int{ 8, -8 }
 var homeKing = [2]int{ E1, E8 }
 

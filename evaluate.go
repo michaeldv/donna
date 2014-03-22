@@ -150,8 +150,7 @@ func (e *Evaluator) rooksScore(color int) (bonus Score) {
         //
         // Bonus if rooks are on 7th rank.
         //
-        seventh := [2]Bitmask{ maskRank[6], maskRank[1] }
-        if count := (rooks & seventh[color]).count(); count > 0 {
+        if count := (rooks & mask7th[color]).count(); count > 0 {
                 bonus.midgame += count * rookOn7th.midgame
                 bonus.endgame += count * rookOn7th.endgame
         }
