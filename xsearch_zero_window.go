@@ -6,7 +6,8 @@ package donna
 
 import()
 
-var razoringMargin = [4]int{ 0, 250, 450, 650 }
+var razoringMargin = [4]int{ 0, 240, 450, 660 }
+var futilityMargin = [4]int{ 0, 400, 500, 600 }
 
 // Search with zero window.
 func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
@@ -21,14 +22,20 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
 
         score := p.Evaluate()
 
-        // Razoring.
+        // Razoring and futility pruning. TODO: disable or tune up in puzzle solving mode.
         if depth < len(razoringMargin) {
-                if margin := beta - razoringMargin[depth]; beta < 31000 && score < margin {
+                if margin := beta - razoringMargin[depth]; score < margin && beta < 31000 {
                         if p.outposts[pawn(p.color)] & mask7th[p.color] == 0 { // No pawns on 7th.
                                 razorScore := p.xSearchQuiescence(margin - 1, margin, true)
                                 if razorScore < margin {
                                         return razorScore
                                 }
+                        }
+                }
+
+                if margin := score - futilityMargin[depth]; margin >= beta && beta > -31000 {
+                        if p.outposts[p.color] & ^p.outposts[king(p.color)] & ^p.outposts[pawn(p.color)] != 0 {
+                                return margin
                         }
                 }
         }
