@@ -161,3 +161,30 @@ func TestGame260(t *testing.T) { // Pawn promotion
         move := NewGame().Setup(`Kf6,Nf8,Nh6`, `Kh8,f7,h7`).Search(4)
         expect(t, move, `Nf8-e6`)
 }
+
+func TestGame270(t *testing.T) { // Pawn promotion/stalemate
+        move := NewGame().Setup(`Kf2,e7`, `Kh1,d2`).Search(4)
+        expect(t, move, `e7-e8R`)
+}
+
+func TestGame280(t *testing.T) { // Stalemate
+        move := NewGame().Setup(`Kc1,Nb4,a2`, `Ka1,b5`).Search(4)
+        expect(t, move, `a2-a4`)
+}
+
+func TestGame290(t *testing.T) { // Stalemate
+        move := NewGame().Setup(`Kh6,Rd3,h7`, `Kh8,Bd7`).Search(4)
+        expect(t, move, `Rd3-d6`)
+}
+
+func TestGame300(t *testing.T) {
+        move := NewGame().Setup(`Kc6,Bc1,Ne5`, `Kc8,Ra8,a7,a6`).Search(4)
+        expect(t, move, `Ne5-f7`)
+}
+
+// // Bobby Fischer vs. James Sherwin benchmark.
+// func TestSearch999(t *testing.T) {
+//         move := NewGame().Setup(`Kg1,Qc2,Ra1,Re1,Bc1,Bg2,Ng5,a2,b2,c3,d4,f2,g3,h2`,
+//                                 `Kg8,Qd6,Ra8,Rf8,Bc8,Nd5,Ng6,a7,b6,c4,e6,f7,g7,h7`).Search(3)
+//         expect(t, move, `Bc1-f4`)
+// }
