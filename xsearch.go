@@ -6,7 +6,7 @@ package donna
 
 import()
 
-const maxDepth = 7
+const maxDepth = 10
 
 // Root node search.
 func (p *Position) xSearch(requestedDepth int) Move {
@@ -65,7 +65,7 @@ func (p *Position) xSearch(requestedDepth int) Move {
                         } // if position
                 } // next move.
 
-                Log("=> %d) %d %s => %v\n", depth, bestScore, gen.list[0].move, p.game.bestLine[0][0 : p.game.bestLength[0]])
+                // Log("=> %d) %5d %s => %v\n", depth, bestScore, bestMove, p.game.bestLine[0][0 : Min(depth, p.game.bestLength[0])])
 
                 // if bestScore < -32000 || bestScore > 32000 { // Not in puzzle solving mode.
                 //         break // from next depth loop.
