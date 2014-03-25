@@ -237,9 +237,11 @@ func (p *Position) isRepetition() bool {
 func (p *Position) saveBest(ply int, move Move) {
         p.game.bestLine[ply][ply] = move
         p.game.bestLength[ply] = ply + 1
-        for i := ply + 1; i < p.game.bestLength[ply + 1]; i++ {
-                p.game.bestLine[ply][i] = p.game.bestLine[ply + 1][i]
-                p.game.bestLength[ply]++
+
+        if length := p.game.bestLength[ply+1]; length > 0 {
+                copy(p.game.bestLine[ply]  [ply+1 : length],
+                     p.game.bestLine[ply+1][ply+1 : length])
+                p.game.bestLength[ply] = length
         }
 }
 
