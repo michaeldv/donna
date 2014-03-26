@@ -39,6 +39,23 @@ func (p *Position) StartMoveGen(ply int) (gen *MoveGen) {
         return
 }
 
+func (p *Position) UseMoveGen(ply int) (gen *MoveGen) {
+        return &moveList[ply]
+}
+
+func (gen *MoveGen) reset() *MoveGen {
+        gen.head = 0
+        return gen
+}
+
+func (gen *MoveGen) listSize() int {
+        return gen.tail - gen.head
+}
+
+func (gen *MoveGen) theOnlyMove() bool {
+        return gen.listSize() <= 1
+}
+
 func (gen *MoveGen) NextMove() (move Move) {
         if gen.head < gen.tail {
                 move = gen.list[gen.head].move
@@ -47,12 +64,24 @@ func (gen *MoveGen) NextMove() (move Move) {
         return
 }
 
-func (gen *MoveGen) theOnlyMove() bool {
-        return gen.tail - gen.head <= 1
+func (gen *MoveGen) quickRank() *MoveGen {
+        if gen.listSize() < 2 {
+                return gen
+        }
+        for i := gen.head; i < gen.tail; i++ {
+                if move := gen.list[i].move; move & isCapture != 0 {
+                        gen.list[i].score = move.value()
+                } else {
+                        endgame, midgame := move.score()
+                        gen.list[i].score = gen.p.score(midgame, endgame)
+                }
+        }
+        sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
+        return gen
 }
 
 func (gen *MoveGen) rank() *MoveGen {
-        if gen.tail - gen.head < 2 {
+        if gen.listSize() < 2 {
                 return gen
         }
         for i := gen.head; i < gen.tail; i++ {
