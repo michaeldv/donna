@@ -6,8 +6,10 @@ package donna
 
 import (`math`)
 
-const Checkmate = math.MaxInt16 // = 32,767
+const Checkmate = math.MaxInt16 // = 32,767 = 0x7FFF
 const MaxPly = 32
+const MaxDepth = 16
+
 
 const (
         White = iota

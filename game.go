@@ -17,28 +17,29 @@ type Game struct {
         qnodes       int
         bestLine     [MaxPly][MaxPly]Move
         bestLength   [MaxPly]int
+        goodMoves      [14][64]int
 }
 
 func NewGame() *Game {
         return new(Game)
 }
 
-func (g *Game) Setup(white, black string) *Game {
+func (game *Game) Setup(white, black string) *Game {
 	re := regexp.MustCompile(`\W+`)
-	whitePieces, blackPieces := re.Split(white, -1), re.Split(black, -1)
-	return g.SetupSide(whitePieces, 0).SetupSide(blackPieces, 1)
+	whiteSide, blackSide := re.Split(white, -1), re.Split(black, -1)
+	return game.SetupSide(whiteSide, 0).SetupSide(blackSide, 1)
 }
 
-func (g *Game) SetupSide(moves []string, color int) *Game {
+func (game *Game) SetupSide(moves []string, color int) *Game {
 	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])`)
 
 	for _, move := range moves {
 		arr := re.FindStringSubmatch(move)
 		if len(arr) == 0 {
 			fmt.Printf("Invalid move '%s' for %s\n", move, C(color))
-			return g
+			return game
 		}
-		name, col, row := arr[1], arr[2][0]-'a', arr[3][0]-'1'
+		name, col, row := arr[1], int(arr[2][0]-'a'), int(arr[3][0]-'1')
 
 		var piece Piece
 		switch name {
@@ -55,25 +56,30 @@ func (g *Game) SetupSide(moves []string, color int) *Game {
 		default:
 			piece = pawn(color)
 		}
-		g.Set(int(row), int(col), piece)
+                game.pieces[Square(row, col)] = piece
 	}
-	return g
+	return game
 }
 
-func (g *Game) Set(row, col int, piece Piece) *Game {
-        g.pieces[Square(row, col)] = piece
-
-        return g
+func (game *Game) InitialPosition() *Game {
+        return game.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
+                          `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 }
 
-func (g *Game) InitialPosition() *Game {
-        return g.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
-                       `Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
+
+func (game *Game) Start(color int) *Position {
+        tree = [1024]Position{}
+        rootNode, node = 0, 0
+        game.bestLine = [MaxPly][MaxPly]Move{}
+        game.bestLength = [MaxPly]int{}
+        game.goodMoves = [14][64]int{}
+
+        return NewPosition(game, game.pieces, color, Flags{})
 }
 
-func (g *Game) Think(maxDepth int, position *Position) Move {
+func (game *Game) Think(requestedDepth int, position *Position) Move {
         if position == nil {
-                position = g.Start(White)
+                position = game.Start(White)
         }
 
         book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
@@ -82,21 +88,28 @@ func (g *Game) Think(maxDepth int, position *Position) Move {
                 return move
         }
 
+        rootNode = node
+        game.goodMoves = [14][64]int{}
+        move, score := Move(0), 0
+
         fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
-        for depth := 1; depth <= maxDepth; depth++ {
-                g.nodes, g.qnodes = 0, 0
+        for depth := 1; depth <= Min(MaxDepth, requestedDepth); depth++ {
+                game.nodes, game.qnodes = 0, 0
                 start := time.Now()
-                score := g.Analyze(depth, position)
+                move, score = position.searchRoot(depth)
                 finish := time.Since(start).Seconds()
-                if g.isOver(depth, score, finish) {
+                if position.color == Black {
+                        score = -score
+                }
+                if game.isOver(depth, score, finish) {
                         return 0
                 }
         }
-        fmt.Printf("\nDonna's move: %s\n\n", g.bestLine[0][0])
-        return g.bestLine[0][0]
+        fmt.Printf("\nDonna's move: %s\n\n", move)
+        return move
 }
 
-func (g *Game) isOver(depth, score int, finish float64) bool {
+func (game *Game) isOver(depth, score int, finish float64) bool {
         gameOver := 0
         absScore := Abs(score)
         movesLeft := (Checkmate - absScore) / 2
@@ -106,9 +119,9 @@ func (g *Game) isOver(depth, score int, finish float64) bool {
         } else if absScore == Checkmate {
                 gameOver = 2 // Checkmate.
         } else if score == 0 {
-                if g.bestLength[0] == 0 {
+                if game.bestLength[0] == 0 {
                         gameOver = 4 // Stalemate.
-                } else if g.bestLength[0] == -1 {
+                } else if game.bestLength[0] == -1 {
                         gameOver = 8 // Repetition.
                 }
         }
@@ -116,61 +129,39 @@ func (g *Game) isOver(depth, score int, finish float64) bool {
         switch gameOver {
         case 1:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   X%-4d   %v\n",
-                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                        float64(g.nodes + g.qnodes) / finish, movesLeft,
-                        g.bestLine[0][0 : g.bestLength[0]])
+                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
+                        float64(game.nodes + game.qnodes) / finish, movesLeft,
+                        game.bestLine[0][0 : Min(depth, game.bestLength[0])])
         case 2:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   Checkmate\n",
-                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                        float64(g.nodes + g.qnodes) / finish)
+                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
+                        float64(game.nodes + game.qnodes) / finish)
         case 4:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Stalemate\n",
-                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                        float64(g.nodes + g.qnodes) / finish)
+                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
+                        float64(game.nodes + game.qnodes) / finish)
         case 8:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
-                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                        float64(g.nodes + g.qnodes) / finish)
+                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
+                        float64(game.nodes + game.qnodes) / finish)
         default:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
-                        depth, int(finish) / 60, int(finish) % 60, g.nodes, g.qnodes,
-                        float64(g.nodes + g.qnodes) / finish, float64(score) / 100.0,
-                        g.bestLine[0][0 : g.bestLength[0]])
+                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
+                        float64(game.nodes + game.qnodes) / finish, float64(score) / 100.0,
+                        game.bestLine[0][0 : Min(depth, game.bestLength[0])])
         }
 
         return gameOver > 1
 }
 
-func (g *Game) Analyze(depth int, position *Position) int {
-        score := position.search(depth*2, 0, -Checkmate, Checkmate)
-        if position.color == Black {
-                return -score
-        }
-        return score
-}
-
-func (g *Game) Start(color int) *Position {
-        tree = [1024]Position{}
-        node = 0
-        g.bestLine   = [MaxPly][MaxPly]Move{}
-        g.bestLength = [MaxPly]int{}
-
-        return NewPosition(g, g.pieces, color, Flags{})
-}
-
-func (g *Game) Search(depth int) Move {
-        g.Analyze(depth, NewPosition(g, g.pieces, White, Flags{}))
-        return g.bestLine[0][0]
-}
-
-func (g *Game)String() string {
+func (game *Game)String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h\n")
 	for row := 7;  row >= 0;  row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0;  col <= 7; col++ {
 			square := Square(row, col)
 			buffer.WriteByte(' ')
-			if piece := g.pieces[square]; piece != 0 {
+			if piece := game.pieces[square]; piece != 0 {
 				buffer.WriteString(piece.String())
 			} else {
 				buffer.WriteString("\u22C5")

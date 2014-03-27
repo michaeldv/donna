@@ -23,7 +23,7 @@ func repl() {
         }
 
         think := func() {
-                if move := game.Think(3, position); move != 0 {
+                if move := game.Think(6, position); move != 0 {
                         position = position.MakeMove(move)
                         fmt.Printf("%s\n", position)
                 }
@@ -82,7 +82,7 @@ func benchmark() {
         game := donna.NewGame().Setup(`Kg1,Qc2,Ra1,Re1,Bc1,Bg2,Ng5,a2,b2,c3,d4,f2,g3,h2`,
                                       `Kg8,Qd6,Ra8,Rf8,Bc8,Nd5,Ng6,a7,b6,c4,e6,f7,g7,h7`)
         fmt.Printf("%s\n", game)
-        game.Think(3, game.Start(donna.White))
+        game.Think(6, game.Start(donna.White))
 }
 
 func perft(depth int) (total int64){

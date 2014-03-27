@@ -7,7 +7,8 @@ package donna
 import()
 
 // Search for the node in check.
-func (p *Position) xSearchInCheck(beta, depth int) int {
+func (p *Position) searchInCheck(beta, depth int) int {
+        p.game.nodes++
         if p.isRepetition() {
                 return 0
         }
@@ -17,7 +18,7 @@ func (p *Position) xSearchInCheck(beta, depth int) int {
                 return bestScore
         }
 
-        gen := p.StartMoveGen(Ply()).GenerateEvasions().rank()
+        gen := p.StartMoveGen(Ply()).GenerateEvasions().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*schck/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
@@ -29,11 +30,11 @@ func (p *Position) xSearchInCheck(beta, depth int) int {
 
                         moveScore := 0
                         if reducedDepth == 0 {
-                                moveScore = -position.xSearchQuiescence(-beta, 1 - beta, true)
+                                moveScore = -position.searchQuiescence(-beta, 1 - beta, true)
                         } else if inCheck {
-                                moveScore = -position.xSearchInCheck(1 - beta, reducedDepth)
+                                moveScore = -position.searchInCheck(1 - beta, reducedDepth)
                         } else {
-                                moveScore = -position.xSearchWithZeroWindow(1 - beta, reducedDepth)
+                                moveScore = -position.searchWithZeroWindow(1 - beta, reducedDepth)
                         }
 
                         position.TakeBack(move)

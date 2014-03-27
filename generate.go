@@ -97,13 +97,10 @@ func (gen *MoveGen) rank() *MoveGen {
                 } else {
                         endgame, midgame := move.score()
                         gen.list[i].score = gen.p.score(midgame, endgame)
+                        gen.list[i].score += gen.p.game.goodMoves[move.piece()][move.to()]
                 }
         }
         sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
-        return gen
-}
-
-func (gen *MoveGen) GenerateQuiets() *MoveGen {
         return gen
 }
 

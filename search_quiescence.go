@@ -6,110 +6,113 @@ package donna
 
 import()
 
-func (p *Position) quiescence(depth, ply int, alpha, beta int) int {
-        // Log("\nquiescence(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
+// Quiescence search.
+func (p *Position) searchQuiescence(alpha, beta int, checks bool) int {
         p.game.qnodes++
-
         if p.isRepetition() {
                 return 0
         }
 
-        if ply > MaxPly - 2 {
-                return p.Evaluate()
+        // Checkmate pruning.
+        if Checkmate - Ply() <= alpha {
+                return alpha
+        } else if Ply() - Checkmate >= beta {
+                return beta
         }
 
-	// Checkmate pruning.
-	if Checkmate - ply <= alpha {
-		return alpha
-	} else if -Checkmate + ply >= beta {
-		return beta
-	}
-
-        if p.isInCheck(p.color) {
-                return p.quiescenceInCheck(depth, ply, alpha, beta)
+        bestScore := p.Evaluate()
+        if Ply() > MaxDepth {
+                return bestScore
         }
-        return p.quiescenceStayPat(depth, ply, alpha, beta)
-}
 
-func (p *Position) quiescenceInCheck(depth, ply int, alpha, beta int) int {
-        score, bestScore := 0, -Checkmate
-        quietAlpha, quietBeta := alpha, beta
+        if bestScore > alpha {
+                if bestScore >= beta {
+                        return bestScore
+                }
+                alpha = bestScore
+        }
 
-        gen := p.StartMoveGen(ply).GenerateEvasions().rank()
-        movesMade := 0
+        gen := p.StartMoveGen(Ply()).GenerateCaptures().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        movesMade++
-                        // Log("%d: evasion %s for %s\n", movesMade, move, C(move.color()))
-
-                        score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
-                        if alpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
-                                score = -position.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
+                        //Log("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+                        moveScore := 0
+                        if position.isInCheck(position.color) {
+                                moveScore = -position.searchQuiescenceInCheck(-beta, -alpha)
+                        } else {
+                                moveScore = -position.searchQuiescence(-beta, -alpha, false)
                         }
+
                         position.TakeBack(move)
-
-                        if score >= beta {
-                                return score
-                        }
-                        if score > bestScore {
-                                bestScore = score
-                                if score > quietAlpha {
-                                        quietAlpha = score
-                                        p.saveBest(ply, move)
+                        if moveScore > bestScore {
+                                if moveScore > alpha {
+                                        if moveScore >= beta {
+                                                return moveScore
+                                        }
+                                        alpha = moveScore
                                 }
+                                beta = moveScore
                         }
-                        quietBeta = quietAlpha + 1
                 }
         }
 
-        if movesMade == 0 {
-                p.game.bestLength[ply] = ply
-                return -Checkmate + ply
-        }
+        if checks {
+                gen := p.StartMoveGen(Ply()).GenerateChecks().rank()
+                for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+                        if position := p.MakeMove(move); position != nil {
+                                //Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+                                moveScore := -position.searchQuiescenceInCheck(-beta, -alpha)
 
-        // Log("End of quiescenceInCheck(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
+                                position.TakeBack(move)
+                                if moveScore > bestScore {
+                                        if moveScore > alpha {
+                                                if moveScore >= beta {
+                                                        return moveScore
+                                                }
+                                                alpha = moveScore
+                                        }
+                                        beta = moveScore
+                                }
+                        }
+                }
+        }
         return bestScore
 }
 
-func (p *Position) quiescenceStayPat(depth, ply int, alpha, beta int) int {
-        score := p.Evaluate()
-        if score >= beta {
-                return score
+// Quiescence search (in check).
+func (p *Position) searchQuiescenceInCheck(alpha, beta int) int {
+        if p.isRepetition() {
+                return 0
         }
 
-        bestScore, quietAlpha, quietBeta := score, alpha, beta
-        if score > alpha {
-                p.game.bestLength[ply] = ply
-                quietAlpha = score
+        bestScore := Ply() - Checkmate
+        if bestScore >= beta {
+                return bestScore
         }
 
-        gen := p.StartMoveGen(ply).GenerateCaptures().rank() // TODO: followed by quiet checks.
-        movesMade := 0
+        gen := p.StartMoveGen(Ply()).GenerateEvasions().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        movesMade++
-                        // Log("%d: capture %s for %s\n", movesMade, move, C(move.color()))
-
-                        score = -position.quiescence(depth - 1, ply + 1, -quietBeta, -quietAlpha)
-                        if quietAlpha + 1 != beta && score > quietAlpha && quietAlpha + 1 == quietBeta {
-                                score = -position.quiescence(depth - 1, ply + 1, -beta, -quietAlpha)
+                        //Log("%*squic/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+                        moveScore := 0
+                        if position.isInCheck(position.color) {
+                                moveScore = -position.searchQuiescenceInCheck(-beta, -alpha)
+                        } else {
+                                moveScore = -position.searchQuiescence(-beta, -alpha, false)
                         }
+
                         position.TakeBack(move)
-
-                        if score >= beta {
-                                return score
-                        }
-                        if score > bestScore {
-                                bestScore = score
-                                if score > quietAlpha {
-                                        quietAlpha = score
-                                        p.saveBest(ply, move)
+                        if moveScore > bestScore {
+                                if moveScore > alpha {
+                                        if moveScore >= beta {
+                                                return moveScore
+                                        }
+                                        alpha = moveScore
                                 }
+                                beta = moveScore
                         }
-                        quietBeta = quietAlpha + 1
                 }
         }
 
-        // Log("End of quiescenceStayPat(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
         return bestScore
 }

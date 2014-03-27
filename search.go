@@ -4,76 +4,100 @@
 
 package donna
 
-//import(`fmt`)
+import()
 
-func (p *Position) search(depth, ply int, alpha, beta int) int {
-        // Log("\nsearch(depth: %d/%d, color: %s, alpha: %d, beta: %d)\n", depth, ply, C(p.color), alpha, beta)
-        p.game.nodes++
-        if depth <= 0 && !p.isInCheck(p.color) {
-                return p.quiescence(depth, ply, alpha, beta)
+// Root node search.
+func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
+        gen := p.rootMoveGen(depth)
+
+        if gen.theOnlyMove() {
+                return gen.list[0].move, p.Evaluate()
         }
 
-        if p.isRepetition() {
-                p.game.bestLength[ply] = -1
-                return 0
-        }
+        alpha := -Checkmate
+        bestMove, bestScore = gen.list[0].move, -Checkmate
 
-        if ply > MaxPly - 2 {
-                p.game.bestLength[ply] = ply
-                return p.Evaluate()
-        }
-
-	// Checkmate pruning.
-	if Checkmate - ply <= alpha {
-		return alpha
-	} else if -Checkmate + ply >= beta {
-		return beta
-	}
-
-        // Null move pruning. TODO: skip it if we're following principal variation.
-        if !p.isInCheck(p.color) && p.outposts[p.color].count() > 5 && p.Evaluate() >= beta {
-                p.color ^= 1
-                score := -p.search(depth - 4, ply + 1, -beta, -beta + 1)
-                p.color ^= 1
-                if score >= beta {
-                        return score
-                }
-        }
-
-        gen := p.StartMoveGen(ply).GenerateMoves().rank()
-        movesMade := 0
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        movesMade++
-                        score := -position.search(depth - 1, ply + 1, -beta, -alpha)
-                        position.TakeBack(move)
-                        // Log("Move %d: %s (%d): score: %d, alpha: %d, beta: %d\n", movesMade, C(p.color), depth, score, alpha, beta)
+                        //Log("%*sroot/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        inCheck := position.isInCheck(position.color)
+                        reducedDepth := depth - 1
+                        if inCheck {
+                                reducedDepth++
+                        }
 
-                        if score >= beta {
-                                if !p.isInCheck(p.color) && move.capture() == 0 && move != p.killers[0] {
-                                        p.killers[1] = p.killers[0]
-                                        p.killers[0] = move
+                        moveScore := 0
+                        if bestScore != -Checkmate && reducedDepth > 0 {
+                                if inCheck {
+                                        moveScore = -position.searchInCheck(-alpha, reducedDepth)
+                                } else {
+                                        moveScore = -position.searchWithZeroWindow(-alpha, reducedDepth)
                                 }
-                                return score
+                                if moveScore > alpha {
+                                        moveScore = -position.searchPrincipal(-Checkmate, -alpha, reducedDepth)
+                                }
+                        } else {
+                                moveScore = -position.searchPrincipal(-Checkmate, Checkmate, reducedDepth)
                         }
-                        if score > alpha {
-                                alpha = score
-                                p.saveBest(ply, move)
-                        }
-                }
-        }
 
-        if movesMade == 0 { // No moves were available.
-                p.game.bestLength[ply] = 0
+                        position.TakeBack(move)
+                        if moveScore > bestScore {
+                                bestScore = moveScore
+                                position.saveBest(Ply(), move)
+                                if bestScore > alpha {
+                                        alpha = bestScore
+                                        bestMove = move
+                                        // if alpha > 32000 { // <-- Not in puzzle solving mode.
+                                        //         break
+                                        // }
+                                }
+                        }
+                } // if position
+        } // next move.
+
+        // if bestScore < -32000 || bestScore > 32000 { // <-- Not in puzzle solving mode.
+        //         break // from next depth loop.
+        // }
+
+        gen.reset()
+
+        return
+}
+
+// Initializes move generator for the initial step of iterative deepening (depth == 1)
+// and returns existing generator for subsequent iterations (depth > 1).
+func (p *Position) rootMoveGen(depth int) (gen *MoveGen) {
+        if depth > 1 {
+                gen = p.UseMoveGen(0).rank()
+        } else {
+                gen = p.StartMoveGen(0)
                 if p.isInCheck(p.color) {
-                        Lop("Checkmate")
-                        return -Checkmate + ply
+                        gen.GenerateEvasions()
                 } else {
-                        Lop("Stalemate")
-                        return 0
+                        gen.GenerateMoves()
                 }
+                gen.quickRank() // No best move/killers yet.
         }
 
-        // Log("End of search(depth: %d/%d, color: %s, alpha: %d, beta: %d) => %d\n", depth, ply, C(p.color), alpha, beta, alpha)
-        return alpha
+        // fmt.Printf("depth: %d, node: %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
+        // for i := gen.head; i < gen.tail; i++ {
+        //         fmt.Printf("\t%d: %s (%d)\n", i, gen.list[i].move, gen.list[i].score)
+        // }
+        return
+}
+
+// Helps with testing root search by initializing move genarator at given depth and
+// bypassing iterative deepening altogether.
+func (p *Position) search(depth int) Move {
+        gen := p.StartMoveGen(0)
+        if p.isInCheck(p.color) {
+                gen.GenerateEvasions()
+        } else {
+                gen.GenerateMoves()
+        }
+        gen.quickRank()
+
+        move, _ := p.searchRoot(depth)
+
+        return move
 }

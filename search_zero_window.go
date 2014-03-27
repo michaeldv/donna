@@ -10,7 +10,8 @@ var razoringMargin = [4]int{ 0, 240, 450, 660 }
 var futilityMargin = [4]int{ 0, 400, 500, 600 }
 
 // Search with zero window.
-func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
+func (p *Position) searchWithZeroWindow(beta, depth int) int {
+        p.game.nodes++
         if p.isRepetition() {
                 return 0
         }
@@ -22,11 +23,11 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
 
         score := p.Evaluate()
 
-        // Razoring and futility pruning. TODO: disable or tune up in puzzle solving mode.
+        // Razoring and futility pruning. TODO: disable or tune-up in puzzle solving mode.
         if depth < len(razoringMargin) {
                 if margin := beta - razoringMargin[depth]; score < margin && beta < 31000 {
                         if p.outposts[pawn(p.color)] & mask7th[p.color] == 0 { // No pawns on 7th.
-                                razorScore := p.xSearchQuiescence(margin - 1, margin, true)
+                                razorScore := p.searchQuiescence(margin - 1, margin, true)
                                 if razorScore < margin {
                                         return razorScore
                                 }
@@ -49,9 +50,9 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
 
                 position := p.MakeNullMove()
                 if depth <= reduction {
-                        score = -position.xSearchQuiescence(-beta, 1 - beta, true)
+                        score = -position.searchQuiescence(-beta, 1 - beta, true)
                 } else {
-                        score = -position.xSearchWithZeroWindow(1 - beta, depth - reduction)
+                        score = -position.searchWithZeroWindow(1 - beta, depth - reduction)
                 }
                 position.TakeBackNullMove()
 
@@ -73,11 +74,11 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
 
                         moveScore := 0
                         if reducedDepth == 0 {
-                                moveScore = -position.xSearchQuiescence(-beta, 1 - beta, true)
+                                moveScore = -position.searchQuiescence(-beta, 1 - beta, true)
                         } else if inCheck {
-                                moveScore = -position.xSearchInCheck(1 - beta, reducedDepth)
+                                moveScore = -position.searchInCheck(1 - beta, reducedDepth)
                         } else {
-                                moveScore = -position.xSearchWithZeroWindow(1 - beta, reducedDepth)
+                                moveScore = -position.searchWithZeroWindow(1 - beta, reducedDepth)
                         }
                         position.TakeBack(move)
                         moveCount++
@@ -87,6 +88,8 @@ func (p *Position) xSearchWithZeroWindow(beta, depth int) int {
                                         if move.capture() == 0 && move.promo() == 0 && move != p.killers[0] {
                                                 p.killers[1] = p.killers[0]
                                                 p.killers[0] = move
+                                        	p.game.goodMoves[move.piece()][move.to()] += depth * depth;
+                                                //Log(">>> depth: %d, node: %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
                                         }
                                         return moveScore
                                 }
