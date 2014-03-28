@@ -27,7 +27,7 @@ func (p *Position) searchQuiescence(alpha, beta int, checks bool) int {
 
         if bestScore > alpha {
                 if bestScore >= beta {
-                        return bestScore
+                        return beta//bestScore
                 }
                 alpha = bestScore
         }
@@ -87,7 +87,7 @@ func (p *Position) searchQuiescenceInCheck(alpha, beta int) int {
 
         bestScore := Ply() - Checkmate
         if bestScore >= beta {
-                return bestScore
+                return beta//bestScore
         }
 
         gen := p.StartMoveGen(Ply()).GenerateEvasions().quickRank()
