@@ -7,7 +7,11 @@ package donna
 import()
 
 // Quiescence search.
-func (p *Position) searchQuiescence(alpha, beta int, checks bool) int {
+func (p *Position) searchQuiescence(alpha, beta int) int {
+        return p.quiescence(alpha, beta, false)
+}
+
+func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
         p.game.qnodes++
         if p.isRepetition() {
                 return 0
@@ -38,9 +42,9 @@ func (p *Position) searchQuiescence(alpha, beta int, checks bool) int {
                         //Log("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
                         moveScore := 0
                         if position.isInCheck(position.color) {
-                                moveScore = -position.searchQuiescenceInCheck(-beta, -alpha)
+                                moveScore = -position.quiescenceInCheck(-beta, -alpha)
                         } else {
-                                moveScore = -position.searchQuiescence(-beta, -alpha, false)
+                                moveScore = -position.quiescence(-beta, -alpha, true)
                         }
 
                         position.TakeBack(move)
@@ -56,31 +60,34 @@ func (p *Position) searchQuiescence(alpha, beta int, checks bool) int {
                 }
         }
 
-        if checks {
-                gen := p.StartMoveGen(Ply()).GenerateChecks().rank()
-                for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                        if position := p.MakeMove(move); position != nil {
-                                //Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
-                                moveScore := -position.searchQuiescenceInCheck(-beta, -alpha)
+        if capturesOnly {
+                return bestScore
+        }
 
-                                position.TakeBack(move)
-                                if moveScore > bestScore {
-                                        if moveScore > alpha {
-                                                if moveScore >= beta {
-                                                        return moveScore
-                                                }
-                                                alpha = moveScore
+        gen = p.StartMoveGen(Ply()).GenerateChecks().quickRank()
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+                if position := p.MakeMove(move); position != nil {
+                        //Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+                        moveScore := -position.quiescenceInCheck(-beta, -alpha)
+
+                        position.TakeBack(move)
+                        if moveScore > bestScore {
+                                if moveScore > alpha {
+                                        if moveScore >= beta {
+                                                return moveScore
                                         }
-                                        beta = moveScore
+                                        alpha = moveScore
                                 }
+                                beta = moveScore
                         }
                 }
         }
+
         return bestScore
 }
 
 // Quiescence search (in check).
-func (p *Position) searchQuiescenceInCheck(alpha, beta int) int {
+func (p *Position) quiescenceInCheck(alpha, beta int) int {
         if p.isRepetition() {
                 return 0
         }
@@ -96,9 +103,9 @@ func (p *Position) searchQuiescenceInCheck(alpha, beta int) int {
                         //Log("%*squic/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
                         moveScore := 0
                         if position.isInCheck(position.color) {
-                                moveScore = -position.searchQuiescenceInCheck(-beta, -alpha)
+                                moveScore = -position.quiescenceInCheck(-beta, -alpha)
                         } else {
-                                moveScore = -position.searchQuiescence(-beta, -alpha, false)
+                                moveScore = -position.quiescence(-beta, -alpha, true)
                         }
 
                         position.TakeBack(move)

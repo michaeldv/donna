@@ -30,7 +30,7 @@ func (p *Position) searchInCheck(beta, depth int) int {
 
                         moveScore := 0
                         if reducedDepth == 0 {
-                                moveScore = -position.searchQuiescence(-beta, 1 - beta, true)
+                                moveScore = -position.searchQuiescence(-beta, 1 - beta)
                         } else if inCheck {
                                 moveScore = -position.searchInCheck(1 - beta, reducedDepth)
                         } else {

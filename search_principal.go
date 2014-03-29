@@ -10,7 +10,7 @@ import()
 func (p *Position) searchPrincipal(alpha, beta, depth int) int {
         p.game.nodes++
         if depth == 0 {
-                return p.searchQuiescence(alpha, beta, true)
+                return p.searchQuiescence(alpha, beta)
         }
 
         if Ply() > MaxDepth {
@@ -52,7 +52,7 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                                 moveScore = -position.searchPrincipal(-beta, -alpha, reducedDepth)
                         } else {
                                 if reducedDepth == 0 {
-                                        moveScore = -position.searchQuiescence(-alpha - 1, -alpha, true)
+                                        moveScore = -position.searchQuiescence(-alpha - 1, -alpha)
                                 } else if inCheck {
                                         moveScore = -position.searchInCheck(-alpha, reducedDepth)
                                 } else {

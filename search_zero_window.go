@@ -27,7 +27,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
         if depth < len(razoringMargin) {
                 if margin := beta - razoringMargin[depth]; score < margin && beta < 31000 {
                         if p.outposts[pawn(p.color)] & mask7th[p.color] == 0 { // No pawns on 7th.
-                                razorScore := p.searchQuiescence(margin - 1, margin, true)
+                                razorScore := p.searchQuiescence(margin - 1, margin)
                                 if razorScore < margin {
                                         return razorScore
                                 }
@@ -42,7 +42,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
         }
 
         // Null move pruning.
-        if depth > 1 && beta > -31000 && score >= beta && p.outposts[p.color].count() > 5 {
+        if depth > 1 && score >= beta && p.outposts[p.color].count() > 5 /*&& beta > -31000*/ {
                 reduction := 3 + depth / 4
                 if score - 100 > beta {
                         reduction++
@@ -50,7 +50,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 
                 position := p.MakeNullMove()
                 if depth <= reduction {
-                        score = -position.searchQuiescence(-beta, 1 - beta, true)
+                        score = -position.searchQuiescence(-beta, 1 - beta)
                 } else {
                         score = -position.searchWithZeroWindow(1 - beta, depth - reduction)
                 }
@@ -74,12 +74,13 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 
                         moveScore := 0
                         if reducedDepth == 0 {
-                                moveScore = -position.searchQuiescence(-beta, 1 - beta, true)
+                                moveScore = -position.searchQuiescence(-beta, 1 - beta)
                         } else if inCheck {
                                 moveScore = -position.searchInCheck(1 - beta, reducedDepth)
                         } else {
                                 moveScore = -position.searchWithZeroWindow(1 - beta, reducedDepth)
                         }
+
                         position.TakeBack(move)
                         moveCount++
 
