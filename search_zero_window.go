@@ -66,10 +66,19 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*szero/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
-                        inCheck := position.isInCheck(position.color)
-                        reducedDepth := depth - 1
-                        if inCheck {
-                                reducedDepth++
+                        inCheck, giveCheck := position.isInCheck(position.color), position.isInCheck(position.color^1)
+
+                        reducedDepth := depth
+                        if !inCheck && !giveCheck && move.capture() == 0 && move.promo() == 0 && depth >= 3 && moveCount >= 8 {
+                                reducedDepth = depth - 2 // Late move reduction. TODO: disable or tune-up in puzzle solving mode.
+                                if reducedDepth > 0 && moveCount >= 16 {
+                                        reducedDepth--
+                                        if reducedDepth > 0 && moveCount >= 32 {
+                                                reducedDepth--
+                                        }
+                                }
+                        } else if !inCheck {
+                                reducedDepth = depth - 1
                         }
 
                         moveScore := 0
@@ -79,6 +88,11 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
                                 moveScore = -position.searchInCheck(1 - beta, reducedDepth)
                         } else {
                                 moveScore = -position.searchWithZeroWindow(1 - beta, reducedDepth)
+
+                                // Verify late move reduction.
+                                if reducedDepth < depth - 1 && moveScore >= beta {
+                                        moveScore = -position.searchWithZeroWindow(1 - beta, depth - 1)
+                                }
                         }
 
                         position.TakeBack(move)
