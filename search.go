@@ -58,17 +58,19 @@ func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
         //         break // from next depth loop.
         // }
 
+        // fmt.Printf("depth: %d, node: %d\nbestline %v\nkillers %v\n", depth, node, p.game.bestLine, p.game.killers)
+
         return
 }
 
 // Initializes move generator for the initial step of iterative deepening (depth == 1)
 // and returns existing generator for subsequent iterations (depth > 1).
-func (p *Position) rootMoveGen(depth int) (gen *MoveGen) {
+func (p *Position) rootMoveGen(depth int) *MoveGen {
         if depth > 1 {
                 return p.UseMoveGen(0).rank()
         }
 
-        gen = p.StartMoveGen(0)
+        gen := p.StartMoveGen(0)
         if p.isInCheck(p.color) {
                 gen.GenerateEvasions()
         } else {
@@ -76,14 +78,7 @@ func (p *Position) rootMoveGen(depth int) (gen *MoveGen) {
         }
 
         // Get rid of invalid moves so that we don't do it on each iteration.
-        gen.validOnly(p).quickRank() // No best move/killers yet.
-
-        // fmt.Printf("depth: %d, node: %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
-        // for i := gen.head; i < gen.tail; i++ {
-        //         fmt.Printf("\t%d: %s (%d)\n", i, gen.list[i].move, gen.list[i].score)
-        // }
-
-        return
+        return gen.validOnly(p).quickRank() // No best move/killers yet.
 }
 
 // Helps with testing root search by initializing move genarator at given depth and

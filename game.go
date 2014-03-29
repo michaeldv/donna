@@ -17,7 +17,8 @@ type Game struct {
         qnodes       int
         bestLine     [MaxPly][MaxPly]Move
         bestLength   [MaxPly]int
-        goodMoves      [14][64]int
+        goodMoves    [14][64]int
+        killers      [MaxPly][2]Move
 }
 
 func NewGame() *Game {
@@ -73,6 +74,7 @@ func (game *Game) Start(color int) *Position {
         game.bestLine = [MaxPly][MaxPly]Move{}
         game.bestLength = [MaxPly]int{}
         game.goodMoves = [14][64]int{}
+        game.killers = [MaxPly][2]Move{}
 
         return NewPosition(game, game.pieces, color, Flags{})
 }

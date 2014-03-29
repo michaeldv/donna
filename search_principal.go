@@ -13,7 +13,8 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                 return p.searchQuiescence(alpha, beta)
         }
 
-        if Ply() > MaxDepth {
+        ply := Ply()
+        if ply > MaxDepth {
                 return p.Evaluate()
         }
 
@@ -22,13 +23,13 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
         }
 
         // Checkmate pruning.
-        if Checkmate - Ply() <= alpha {
+        if Checkmate - ply <= alpha {
                 return alpha
-        } else if Ply() - Checkmate >= beta {
+        } else if ply - Checkmate >= beta {
                 return beta
         }
 
-        gen := p.StartMoveGen(Ply())
+        gen := p.StartMoveGen(ply)
         if !p.isInCheck(p.color) {
                 gen.GenerateMoves()
         } else {
@@ -37,10 +38,10 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
         gen.rank()
 
         moveCount := 0
-        bestMove, bestScore := Move(0), Ply() - Checkmate
+        bestMove, bestScore := Move(0), ply - Checkmate
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        //Log("%*sprin/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        //Log("%*sprin/%s> depth: %d, ply: %d, move: %s\n", ply*2, ` `, C(p.color), depth, ply, move)
                         inCheck := position.isInCheck(position.color)
                         reducedDepth := depth - 1
                         if inCheck {
@@ -67,12 +68,12 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                         position.TakeBack(move)
 
                         if moveScore > bestScore {
-                                position.saveBest(Ply(), move)
+                                position.saveBest(ply, move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
-                                                if move.capture() == 0 && move.promo() == 0 && move != p.killers[0] {
-                                                        p.killers[1] = p.killers[0]
-                                                        p.killers[0] = move
+                                                if move & isCapture == 0 && move & isPromo == 0 && move != p.game.killers[ply][0] {
+                                                        p.game.killers[ply][1] = p.game.killers[ply][0]
+                                                        p.game.killers[ply][0] = move
                                                 	p.game.goodMoves[move.piece()][move.to()] += depth * depth;
                                                         //Log("==> depth: %d, node %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
                                                 }
@@ -92,11 +93,11 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                 } else { // Stalemate
                         return 0
                 }
-        } else if bestMove != Move(0) && bestMove.capture() == 0 && bestMove.promo() == 0 && bestMove != p.killers[0] {
-                p.killers[1] = p.killers[0]
-                p.killers[0] = bestMove
+        } else if bestMove != Move(0) && bestMove & isCapture == 0 && bestMove & isPromo == 0 && bestMove != p.game.killers[ply][0] {
+                p.game.killers[ply][1] = p.game.killers[ply][0]
+                p.game.killers[ply][0] = bestMove
         	p.game.goodMoves[bestMove.piece()][bestMove.to()] += depth * depth;
-                //Log("--> depth: %d, node %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
+                //Log("--> depth: %d, node %d, killers %s/%s\n", depth, node, p.game.killers[ply][0], p.game.killers[ply][1])
         }
 
         return bestScore

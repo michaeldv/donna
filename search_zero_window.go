@@ -16,7 +16,8 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
                 return 0
         }
 
-        bestScore := Ply() - Checkmate
+        ply := Ply()
+        bestScore := ply - Checkmate
         if bestScore >= beta {
                 return beta//bestScore
         }
@@ -62,14 +63,14 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
         }
 
         moveCount := 0
-        gen := p.StartMoveGen(Ply()).GenerateMoves().rank()
+        gen := p.StartMoveGen(ply).GenerateMoves().rank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        //Log("%*szero/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        //Log("%*szero/%s> depth: %d, ply: %d, move: %s\n", ply*2, ` `, C(p.color), depth, ply, move)
                         inCheck, giveCheck := position.isInCheck(position.color), position.isInCheck(position.color^1)
 
                         reducedDepth := depth
-                        if !inCheck && !giveCheck && move.capture() == 0 && move.promo() == 0 && depth >= 3 && moveCount >= 8 {
+                        if !inCheck && !giveCheck && move & (isCapture|isPromo) == 0 && depth >= 3 && moveCount >= 8 {
                                 reducedDepth = depth - 2 // Late move reduction. TODO: disable or tune-up in puzzle solving mode.
                                 if reducedDepth > 0 && moveCount >= 16 {
                                         reducedDepth--
@@ -100,9 +101,9 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 
                         if moveScore > bestScore {
                                 if moveScore >= beta {
-                                        if move.capture() == 0 && move.promo() == 0 && move != p.killers[0] {
-                                                p.killers[1] = p.killers[0]
-                                                p.killers[0] = move
+                                        if move & isCapture == 0 && move & isPromo == 0 && move != p.game.killers[ply][0] {
+                                                p.game.killers[ply][1] = p.game.killers[ply][0]
+                                                p.game.killers[ply][0] = move
                                         	p.game.goodMoves[move.piece()][move.to()] += depth * depth;
                                                 //Log(">>> depth: %d, node: %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
                                         }

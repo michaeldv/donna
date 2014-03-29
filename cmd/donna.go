@@ -80,7 +80,7 @@ func benchmark() {
         game := donna.NewGame().Setup(`Kg1,Qc2,Ra1,Re1,Bc1,Bg2,Ng5,a2,b2,c3,d4,f2,g3,h2`,
                                       `Kg8,Qd6,Ra8,Rf8,Bc8,Nd5,Ng6,a7,b6,c4,e6,f7,g7,h7`)
         fmt.Printf("%s\n", game)
-        game.Think(6, game.Start(donna.White))
+        game.Think(7, game.Start(donna.White))
 
         // Mikhail Botvinnik vs. Jose Raul Capablanca, AVRO 1936 after 29 moves.
         // Botvinnik played 30. Bb2-a3!

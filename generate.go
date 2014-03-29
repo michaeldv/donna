@@ -21,6 +21,7 @@ type MoveWithScore struct {
 
 type MoveGen struct {
         p     *Position
+        game  *Game
         list  [256]MoveWithScore
         head  int
         tail  int
@@ -33,6 +34,7 @@ var moveList [MaxPly]MoveGen
 func (p *Position) StartMoveGen(ply int) (gen *MoveGen) {
         gen = &moveList[ply]
         gen.p = p
+        gen.game = p.game
         gen.list = [256]MoveWithScore{}
         gen.head, gen.tail = 0, 0
         gen.ply = ply
@@ -83,18 +85,18 @@ func (gen *MoveGen) rank() *MoveGen {
         }
         for i := gen.head; i < gen.tail; i++ {
                 move := gen.list[i].move
-                if move == gen.p.game.bestLine[0][gen.ply] {
+                if move == gen.game.bestLine[0][gen.ply] {
                         gen.list[i].score = 0xFFFF
-                } else if move == gen.p.killers[0] {
+                } else if move == gen.game.killers[gen.ply][0] {
                         gen.list[i].score = 0xFFFE
-                } else if move == gen.p.killers[1] {
+                } else if move == gen.game.killers[gen.ply][1] {
                         gen.list[i].score = 0xFFFD
                 } else if move & isCapture != 0 {
                         gen.list[i].score = move.value()
                 } else {
                         endgame, midgame := move.score()
                         gen.list[i].score = gen.p.score(midgame, endgame)
-                        gen.list[i].score += gen.p.game.goodMoves[move.piece()][move.to()]
+                        gen.list[i].score += gen.game.goodMoves[move.piece()][move.to()]
                 }
         }
         sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
