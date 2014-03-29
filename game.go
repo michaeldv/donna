@@ -156,6 +156,27 @@ func (game *Game) isOver(depth, score int, finish float64) bool {
         return gameOver > 1
 }
 
+func (game *Game) saveBest(ply int, move Move) *Game {
+        game.bestLine[ply][ply] = move
+        game.bestLength[ply] = ply + 1
+
+        if length := game.bestLength[ply+1]; length > 0 {
+                copy(game.bestLine[ply]  [ply+1 : length],
+                     game.bestLine[ply+1][ply+1 : length])
+                game.bestLength[ply] = length
+        }
+        return game
+}
+
+func (game *Game) saveGood(depth int, move Move) *Game {
+        if ply := Ply(); move & (isCapture|isPromo) == 0 && move != game.killers[ply][0] {
+                game.killers[ply][1] = game.killers[ply][0]
+                game.killers[ply][0] = move
+                game.goodMoves[move.piece()][move.to()] += depth * depth
+        }
+        return game
+}
+
 func (game *Game)String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h\n")
 	for row := 7;  row >= 0;  row-- {

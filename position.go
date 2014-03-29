@@ -232,17 +232,6 @@ func (p *Position) isRepetition() bool {
         return false
 }
 
-func (p *Position) saveBest(ply int, move Move) {
-        p.game.bestLine[ply][ply] = move
-        p.game.bestLength[ply] = ply + 1
-
-        if length := p.game.bestLength[ply+1]; length > 0 {
-                copy(p.game.bestLine[ply]  [ply+1 : length],
-                     p.game.bestLine[ply+1][ply+1 : length])
-                p.game.bestLength[ply] = length
-        }
-}
-
 func (p *Position) canCastle(color int) (kingside, queenside bool) {
         attacks := p.attacks(color^1)
         kingside = p.castles & castleKingside[color] != 0 &&

@@ -101,12 +101,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 
                         if moveScore > bestScore {
                                 if moveScore >= beta {
-                                        if move & isCapture == 0 && move & isPromo == 0 && move != p.game.killers[ply][0] {
-                                                p.game.killers[ply][1] = p.game.killers[ply][0]
-                                                p.game.killers[ply][0] = move
-                                        	p.game.goodMoves[move.piece()][move.to()] += depth * depth;
-                                                //Log(">>> depth: %d, node: %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
-                                        }
+                                        p.game.saveGood(depth, move)
                                         return moveScore
                                 }
                                 bestScore = moveScore

@@ -43,7 +43,7 @@ func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
                 position.TakeBack(move)
                 if moveScore > bestScore {
                         bestScore = moveScore
-                        position.saveBest(Ply(), move)
+                        position.game.saveBest(Ply(), move)
                         if bestScore > alpha {
                                 alpha = bestScore
                                 bestMove = move

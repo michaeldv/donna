@@ -68,15 +68,11 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                         position.TakeBack(move)
 
                         if moveScore > bestScore {
-                                position.saveBest(ply, move)
+                                p.game.saveBest(ply, move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
-                                                if move & isCapture == 0 && move & isPromo == 0 && move != p.game.killers[ply][0] {
-                                                        p.game.killers[ply][1] = p.game.killers[ply][0]
-                                                        p.game.killers[ply][0] = move
-                                                	p.game.goodMoves[move.piece()][move.to()] += depth * depth;
-                                                        //Log("==> depth: %d, node %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
-                                                }
+                                                p.game.saveGood(depth, move)
+                                                //Log("==> depth: %d, node %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
                                                 return moveScore
                                         }
                                         alpha = moveScore
@@ -93,10 +89,8 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                 } else { // Stalemate
                         return 0
                 }
-        } else if bestMove != Move(0) && bestMove & isCapture == 0 && bestMove & isPromo == 0 && bestMove != p.game.killers[ply][0] {
-                p.game.killers[ply][1] = p.game.killers[ply][0]
-                p.game.killers[ply][0] = bestMove
-        	p.game.goodMoves[bestMove.piece()][bestMove.to()] += depth * depth;
+        } else if bestMove != Move(0) {
+                p.game.saveGood(depth, bestMove)
                 //Log("--> depth: %d, node %d, killers %s/%s\n", depth, node, p.game.killers[ply][0], p.game.killers[ply][1])
         }
 
