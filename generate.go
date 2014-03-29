@@ -40,7 +40,7 @@ func (p *Position) StartMoveGen(ply int) (gen *MoveGen) {
 }
 
 func (p *Position) UseMoveGen(ply int) (gen *MoveGen) {
-        return &moveList[ply]
+        return moveList[ply].reset()
 }
 
 func (gen *MoveGen) reset() *MoveGen {
@@ -48,12 +48,12 @@ func (gen *MoveGen) reset() *MoveGen {
         return gen
 }
 
-func (gen *MoveGen) listSize() int {
+func (gen *MoveGen) size() int {
         return gen.tail - gen.head
 }
 
-func (gen *MoveGen) theOnlyMove() bool {
-        return gen.listSize() <= 1
+func (gen *MoveGen) onlyMove() bool {
+        return gen.size() == 1
 }
 
 func (gen *MoveGen) NextMove() (move Move) {
@@ -64,24 +64,21 @@ func (gen *MoveGen) NextMove() (move Move) {
         return
 }
 
-func (gen *MoveGen) quickRank() *MoveGen {
-        if gen.listSize() < 2 {
-                return gen
-        }
-        for i := gen.head; i < gen.tail; i++ {
-                if move := gen.list[i].move; move & isCapture != 0 {
-                        gen.list[i].score = move.value()
+// Removes invalid moves from the generated list. We use in iterative deepening
+// to avoid stumbling upon invalid moves on each iteration.
+func (gen *MoveGen) validOnly(p *Position) *MoveGen {
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+                if position := p.MakeMove(move); position == nil {
+                        gen.remove()
                 } else {
-                        endgame, midgame := move.score()
-                        gen.list[i].score = gen.p.score(midgame, endgame)
+                        position.TakeBack(move)
                 }
         }
-        sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
-        return gen
+        return gen.reset()
 }
 
 func (gen *MoveGen) rank() *MoveGen {
-        if gen.listSize() < 2 {
+        if gen.size() < 2 {
                 return gen
         }
         for i := gen.head; i < gen.tail; i++ {
@@ -104,13 +101,37 @@ func (gen *MoveGen) rank() *MoveGen {
         return gen
 }
 
+func (gen *MoveGen) quickRank() *MoveGen {
+        if gen.size() < 2 {
+                return gen
+        }
+        for i := gen.head; i < gen.tail; i++ {
+                if move := gen.list[i].move; move & isCapture != 0 {
+                        gen.list[i].score = move.value()
+                } else {
+                        endgame, midgame := move.score()
+                        gen.list[i].score = gen.p.score(midgame, endgame)
+                }
+        }
+        sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
+        return gen
+}
+
 func (gen *MoveGen) add(move Move) *MoveGen {
         gen.list[gen.tail].move = move
         gen.tail++
         return gen
 }
 
-// Return a list of generated moves by continuously calling the next move
+// Removes current move from the list by copying over the ramaining moves. Head and
+// tail pointers get decremented so that calling NexMove() works as expected.
+func (gen *MoveGen) remove() *MoveGen {
+        copy(gen.list[gen.head-1:], gen.list[gen.head:])
+        gen.head--; gen.tail--
+        return gen;
+}
+
+// Returns an array of generated moves by continuously appending the NextMove()
 // until the list is empty.
 func (gen *MoveGen) allMoves() (moves []Move) {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
