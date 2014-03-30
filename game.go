@@ -68,13 +68,19 @@ func (game *Game) InitialPosition() *Game {
 }
 
 
-func (game *Game) Start(color int) *Position {
-        tree = [1024]Position{}
-        rootNode, node = 0, 0
+func (game *Game) getReady() *Game {
+        rootNode = node
         game.bestLine = [MaxPly][MaxPly]Move{}
         game.bestLength = [MaxPly]int{}
         game.goodMoves = [14][64]int{}
         game.killers = [MaxPly][2]Move{}
+
+        return game;
+}
+
+func (game *Game) Start(color int) *Position {
+        tree, node = [1024]Position{}, 0
+        game.getReady()
 
         return NewPosition(game, game.pieces, color, Flags{})
 }
@@ -90,8 +96,7 @@ func (game *Game) Think(requestedDepth int, position *Position) Move {
                 return move
         }
 
-        rootNode = node
-        game.goodMoves = [14][64]int{}
+        game.getReady()
         move, score := Move(0), 0
 
         fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
