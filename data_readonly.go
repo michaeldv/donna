@@ -22,13 +22,13 @@ const (
 
 const (
         InProgress = iota
-        WhiteWinning
-        BlackWinning
-        WhiteWon
-        BlackWon
-        Stalemate
-        Repetition
-        MaterialDraw
+        WhiteWinning    // White mates in X moves.
+        BlackWinning    // Black mates in X moves.
+        WhiteWon        // White checkmated.
+        BlackWon        // Black checkmated.
+        Stalemate       // Draw by stalemate, forced or self-imposed.
+        Repetition      // Draw by repetition.
+        Insufficient    // Draw by insufficient material.
 )
 
 const (

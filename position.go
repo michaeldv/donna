@@ -228,7 +228,10 @@ func (p *Position) isRepetition() bool {
                         }
                 }
         }
+        return false
+}
 
+func (p *Position) isInsufficient() bool {
         return false
 }
 
@@ -242,6 +245,46 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
                     (gapQueen[color] & p.board == 0) &&
                     (castleQueen[color] & attacks == 0)
         return
+}
+
+// Reports game status for current position or after the given move. The status
+// help to determine whether to continue with search or if the game is over.
+func (p *Position) status(move Move, score int) int {
+        if move != Move(0) {
+                p = p.MakeMove(move)
+                defer func() { p = p.TakeBack(move) }()
+        }
+
+        switch ply, score := Ply(), Abs(score); score {
+        case 0:
+                if ply == 1 {
+                        if p.isRepetition() {
+                                return Repetition
+                        } else if p.isInsufficient() {
+                                return Insufficient
+                        }
+                }
+                gen := p.StartMoveGen(ply + 1).GenerateMoves().validOnly(p)
+                if gen.size() == 0 {
+                        return Stalemate
+                }
+        case Checkmate - ply:
+                if p.isInCheck(p.color) {
+                        if p.color == White {
+                                return BlackWon
+                        }
+                        return WhiteWon
+                }
+                return Stalemate
+        default:
+                if score > Checkmate - MaxDepth && (score + ply) / 2 > 0 {
+                        if p.color == White {
+                                return BlackWinning
+                        }
+                        return WhiteWinning
+                }
+        }
+        return InProgress
 }
 
 // Calculates position stage based on what pieces are on the board (256 for

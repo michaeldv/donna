@@ -147,11 +147,14 @@ func TestPosition083(t *testing.T) { // Rook is taken.
 func TestPosition100(t *testing.T) {
         p := NewGame().InitialPosition().Start(White) // Initial 1.
         p = p.MakeMove(p.NewMove(G1, F3));  p = p.MakeMove(p.NewMove(G8, F6)) // 1.
+        expect(t, p.isRepetition(), false)
         p = p.MakeMove(p.NewMove(F3, G1));  p = p.MakeMove(p.NewMove(F6, G8)) // Initial 2.
+        expect(t, p.isRepetition(), false)
         p = p.MakeMove(p.NewMove(G1, F3));  p = p.MakeMove(p.NewMove(G8, F6)) // 2.
+        expect(t, p.isRepetition(), false)
         p = p.MakeMove(p.NewMove(F3, G1));  p = p.MakeMove(p.NewMove(F6, G8)) // Initial 3.
+        expect(t, p.isRepetition(), true)
         p = p.MakeMove(p.NewMove(G1, F3));  p = p.MakeMove(p.NewMove(G8, F6)) // 3.
-
         expect(t, p.isRepetition(), true)
 }
 
@@ -165,6 +168,8 @@ func TestPosition110(t *testing.T) {
         p = p.MakeMove(p.NewMove(F1, C4));  p = p.MakeMove(p.NewMove(F8, C5))
         p = p.MakeMove(p.NewMove(C3, B1));  p = p.MakeMove(p.NewMove(C6, B8))
         p = p.MakeMove(p.NewMove(C4, F1));  p = p.MakeMove(p.NewMove(C5, F8)) // 2.
+
+        expect(t, p.isRepetition(), false)
 
         p = p.MakeMove(p.NewMove(F1, C4));  p = p.MakeMove(p.NewMove(F8, C5))
         p = p.MakeMove(p.NewMove(B1, C3));  p = p.MakeMove(p.NewMove(B8, C6))
@@ -285,4 +290,45 @@ func TestPosition270(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 
         expect(t, p.polyglot(), uint64(0x5C3F9B829B279560))
         expect(t, p.flags.enpassant, 0)
         expect(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
+}
+
+// Position status.
+func TestPosition300(t *testing.T) {
+        p := NewGame().InitialPosition().Start(White)
+        expect(t, p.status(p.NewMove(E2, E4), p.Evaluate()), InProgress)
+}
+
+// Mate in 1 move.
+func TestPosition310(t *testing.T) {
+        p := NewGame().Setup(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).Start(White)
+        rootNode = node // Reset Ply().
+        expect(t, p.status(p.NewMove(H1, H6), Checkmate - Ply()), WhiteWinning)
+}
+
+// Forced stalemate.
+func TestPosition320(t *testing.T) {
+        p := NewGame().Setup(`Kf7,b2,b4,h6`, `Kh8,Ba4,b3,b5,h7`).Start(White)
+        expect(t, p.status(p.NewMove(F7, F8), 0), Stalemate)
+}
+
+// Self-imposed stalemate.
+func TestPosition330(t *testing.T) {
+        p := NewGame().Setup(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black)
+        p = p.MakeMove(p.NewMove(H7, H6))
+        expect(t, p.status(p.NewMove(A1, B2), 0), Stalemate)
+}
+
+// Draw by repetition.
+func TestPosition340(t *testing.T) {
+        p := NewGame().Setup(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black) // Initial.
+
+        p = p.MakeMove(p.NewMove(H5, H6)); p = p.MakeMove(p.NewMove(A1, A2))
+        p = p.MakeMove(p.NewMove(H6, H5)); p = p.MakeMove(p.NewMove(A2, A1)) // Rep #2.
+        expect(t, p.status(p.NewMove(H5, H6), 0), InProgress)
+
+        p = p.MakeMove(p.NewMove(H5, H6)); p = p.MakeMove(p.NewMove(A1, A2))
+        p = p.MakeMove(p.NewMove(H6, H5)) // -- No p.NewMove(A2, A1) here --
+
+        rootNode = node // Reset Ply().
+        expect(t, p.status(p.NewMove(A2, A1), 0), Repetition) // <-- Ka2-a1 causes rep #3.
 }
