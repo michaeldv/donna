@@ -97,7 +97,7 @@ func (game *Game) Think(requestedDepth int, position *Position) Move {
         }
 
         game.getReady()
-        move, score := Move(0), 0
+        move, score, status := Move(0), 0, InProgress
 
         fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
         for depth := 1; depth <= Min(MaxDepth, requestedDepth); depth++ {
@@ -108,57 +108,56 @@ func (game *Game) Think(requestedDepth int, position *Position) Move {
                 if position.color == Black {
                         score = -score
                 }
-                if game.isOver(depth, score, finish) {
-                        return 0
+
+                status = position.status(move, score)
+                game.printBestLine(depth, score, status, finish)
+
+                // No reason to search deeper if no moves are available at current depth.
+                if move == Move(0) {
+                        return move
                 }
+
+                // No reason to search deeper if the game is over or mate in X moves was
+                // found at current depth.
+                if status != InProgress {
+                        break
+                }
+
         }
         fmt.Printf("\nDonna's move: %s\n\n", move)
         return move
 }
 
-func (game *Game) isOver(depth, score int, finish float64) bool {
-        gameOver := 0
-        absScore := Abs(score)
-        movesLeft := (Checkmate - absScore) / 2
-
-        if absScore > 32500 && movesLeft > 0 {
-                gameOver = 1 // Checkmate in X moves.
-        } else if absScore == Checkmate {
-                gameOver = 2 // Checkmate.
-        } else if score == 0 {
-                if game.bestLength[0] == 0 {
-                        gameOver = 4 // Stalemate.
-                } else if game.bestLength[0] == -1 {
-                        gameOver = 8 // Repetition.
-                }
-        }
-
-        switch gameOver {
-        case 1:
-                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   X%-4d   %v\n",
-                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
-                        float64(game.nodes + game.qnodes) / finish, movesLeft,
-                        game.bestLine[0][0 : Min(depth, game.bestLength[0])])
-        case 2:
-                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   Checkmate\n",
+func (game *Game) printBestLine(depth, score, status int, finish float64) {
+        switch status {
+        case WhiteWon:
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1-0 White Checkmates\n",
                         depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
                         float64(game.nodes + game.qnodes) / finish)
-        case 4:
+        case BlackWon:
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   0-1 Black Checkmates\n",
+                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
+                        float64(game.nodes + game.qnodes) / finish)
+        case Stalemate:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Stalemate\n",
                         depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
                         float64(game.nodes + game.qnodes) / finish)
-        case 8:
+        case Repetition:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
                         depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
                         float64(game.nodes + game.qnodes) / finish)
+        case WhiteWinning, BlackWinning:
+                movesLeft := Checkmate - Abs(score)
+                fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
+                        depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
+                        float64(game.nodes + game.qnodes) / finish, movesLeft / 2,
+                        game.bestLine[0][0 : Min(movesLeft, game.bestLength[0])])
         default:
                 fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
                         depth, int(finish) / 60, int(finish) % 60, game.nodes, game.qnodes,
                         float64(game.nodes + game.qnodes) / finish, float64(score) / 100.0,
-                        game.bestLine[0][0 : Min(depth, game.bestLength[0])])
+                        game.bestLine[0][0 : game.bestLength[0]])
         }
-
-        return gameOver > 1
 }
 
 func (game *Game) saveBest(ply int, move Move) *Game {
