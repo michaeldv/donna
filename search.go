@@ -11,6 +11,7 @@ func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
         gen := p.rootMoveGen(depth)
 
         if gen.onlyMove() {
+                p.game.saveBest(Ply(), gen.list[0].move)
                 return gen.list[0].move, p.Evaluate()
         }
 
