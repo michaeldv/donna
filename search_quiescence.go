@@ -17,13 +17,6 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
                 return 0
         }
 
-        // Checkmate pruning.
-        if Checkmate - Ply() <= alpha {
-                return alpha
-        } else if Ply() - Checkmate >= beta {
-                return beta
-        }
-
         bestScore := p.Evaluate()
         if Ply() > MaxDepth {
                 return bestScore
