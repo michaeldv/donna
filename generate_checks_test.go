@@ -150,3 +150,37 @@ func TestGenChecks140(t *testing.T) {
         black := game.Start(Black).StartMoveGen(1).GenerateChecks()
         expect(t, black.allMoves(), `[a7-a5]`)
 }
+
+// Rook with pawn on the same rank (discovered check).
+func TestGenChecks150(t *testing.T) {
+        game := NewGame().Setup(`Ka4,Ra5,e5`, `Kh5,Rh4,c4`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[e5-e6]`)
+
+        black := game.Start(Black).StartMoveGen(1).GenerateChecks()
+        expect(t, black.allMoves(), `[c4-c3]`)
+}
+
+// Rook with pawn on the same file (no check).
+func TestGenChecks160(t *testing.T) {
+        game := NewGame().Setup(`Kh8,Ra8,a6`, `Ka3,Rh1,h5`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[]`)
+
+        black := game.Start(Black).StartMoveGen(1).GenerateChecks()
+        expect(t, black.allMoves(), `[]`)
+}
+
+// Rook with king on the same rank (discovered check).
+func TestGenChecks170(t *testing.T) {
+        game := NewGame().Setup(`Ke5,Ra5,d4,e4,f4`, `Kh5`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[Ke5-d6 Ke5-e6 Ke5-f6]`)
+}
+
+// Rook with king on the same file (discovered check).
+func TestGenChecks180(t *testing.T) {
+        game := NewGame().Setup(`Kb5,Rb8,c4,c5,c6`, `Kb1`)
+        white := game.Start(White).StartMoveGen(1).GenerateChecks()
+        expect(t, white.allMoves(), `[Kb5-a4 Kb5-a5 Kb5-a6]`)
+}

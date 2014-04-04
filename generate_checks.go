@@ -87,15 +87,27 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 	                                //
 	                                switch piece.kind() {
 	                                case Pawn:
-	                                        // Block pawn promotions (since they are treated as
-	                                        // captures) and en-passant captures.
+						//
+						// If pawn and rook share the same file then non-capturing
+						// discovered check is not possible since the pawn is going
+						// to stay on the same file no matter what.
+						//
+						if Col(from) == Col(to) {
+                                                        continue;
+						}
+						//
+						// Block pawn promotions (since they are treated as captures)
+						// and en-passant captures.
+						//
 	                                        prohibit := maskRank[0] | maskRank[7]
 	                                        if gen.p.flags.enpassant != 0 {
 	                                                prohibit.set(gen.p.flags.enpassant)
 	                                        }
 	                                        gen.movePawn(to, gen.p.targets(to) & ^gen.p.board & ^prohibit)
 	                                case King:
-	                                        // Make sure the king steps out of attack file or rank.
+						//
+						// Make sure the king steps out of attack file or rank.
+						//
 						prohibit := maskNone
 						if row := Row(from); row == Row(square) {
 							prohibit = maskRank[row]
