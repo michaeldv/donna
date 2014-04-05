@@ -29,7 +29,7 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                 return beta
         }
 
-        gen := p.StartMoveGen(ply)
+        gen := NewGen(p, ply)
         if !p.isInCheck(p.color) {
                 gen.GenerateMoves()
         } else {

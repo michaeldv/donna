@@ -18,7 +18,7 @@ func (p *Position) searchInCheck(beta, depth int) int {
                 return beta//bestScore
         }
 
-        gen := p.StartMoveGen(Ply()).GenerateEvasions().quickRank()
+        gen := NewGen(p, Ply()).GenerateEvasions().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*schck/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)

@@ -8,7 +8,7 @@ import()
 
 // Root node search.
 func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
-        gen := p.rootMoveGen(depth)
+        gen := NewRootGen(p, depth)
 
         if gen.onlyMove() {
                 p.game.saveBest(Ply(), gen.list[0].move)
@@ -64,28 +64,10 @@ func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
         return
 }
 
-// Initializes move generator for the initial step of iterative deepening (depth == 1)
-// and returns existing generator for subsequent iterations (depth > 1).
-func (p *Position) rootMoveGen(depth int) *MoveGen {
-        if depth > 1 {
-                return p.UseMoveGen(0).rank()
-        }
-
-        gen := p.StartMoveGen(0)
-        if p.isInCheck(p.color) {
-                gen.GenerateEvasions()
-        } else {
-                gen.GenerateMoves()
-        }
-
-        // Get rid of invalid moves so that we don't do it on each iteration.
-        return gen.validOnly(p).quickRank() // No best move/killers yet.
-}
-
 // Helps with testing root search by initializing move genarator at given depth and
 // bypassing iterative deepening altogether.
 func (p *Position) search(depth int) Move {
-        gen := p.StartMoveGen(0)
+        gen := NewGen(p, 0)
         if p.isInCheck(p.color) {
                 gen.GenerateEvasions()
         } else {

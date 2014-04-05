@@ -96,7 +96,7 @@ func perft(depth int) (total int64){
         p := donna.NewGame().InitialPosition().Start(donna.White)
 
         start := time.Now()
-        gen := p.StartMoveGen(depth).GenerateMoves()
+        gen := donna.NewGen(p, depth).GenerateMoves()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 position := p.MakeMove(move)
                 delta := position.Perft(depth - 1)
