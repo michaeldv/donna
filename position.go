@@ -20,7 +20,7 @@ type Position struct {
         pieces    [64]Piece     // Array of 64 squares with pieces on them.
         board     Bitmask       // Bitmask of all pieces on the board.
         outposts  [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
-        count     [16]int       // counts of each piece on the board, ex. white pawns: 6, etc.
+        count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
         color     int           // Side to make next move.
         hash      uint64        // Polyglot hash value.
         castles   uint8         // Castle rights mask.
@@ -109,17 +109,12 @@ func (p *Position) MakeMove(move Move) *Position {
         tree[node] = *p                 // => tree[node] = tree[node - 1]
         pp := &tree[node]
 
-        pp.hash ^= hashCastle[pp.castles]
-        if pp.flags.enpassant != 0 {
-                pp.hash ^= hashEnpassant[Col(pp.flags.enpassant)]
-        }
         pp.flags.enpassant, pp.flags.irreversible = 0, false
         //
         // Castle rights for current node are based on the castle rights from
         // the previous node.
         //
         pp.castles &= castleRights[from] & castleRights[to]
-        pp.hash ^= hashCastle[pp.castles]
 
         if capture != 0 {
                 pp.flags.irreversible = true
@@ -176,13 +171,17 @@ func (p *Position) MakeMove(move Move) *Position {
 		return nil
 	}
 
+        pp.hash ^= hashCastle[pp.castles]
+        if pp.flags.enpassant != 0 {
+                pp.hash ^= hashEnpassant[Col(pp.flags.enpassant)]
+        }
+
 	if color == White {
                 pp.hash ^= polyglotRandomWhite
 	}
 	pp.color = color^1
 
 	return pp // => &tree[node]
-
 }
 
 // Make null move by copying over previous node and flipping the color.
@@ -264,8 +263,7 @@ func (p *Position) status(move Move, score int) int {
                                 return Insufficient
                         }
                 }
-                gen := p.StartMoveGen(ply + 1).GenerateMoves().validOnly(p)
-                if gen.size() == 0 {
+                if !NewGen(p, ply + 1).GenerateMoves().anyValid(p) {
                         return Stalemate
                 }
         case Checkmate - ply:
