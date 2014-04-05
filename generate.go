@@ -6,14 +6,6 @@ package donna
 
 import(`sort`)
 
-const (
-        stepPrincipal = iota
-        stepCaptures
-        stepPromotions
-        stepKillers
-        stepRemaining
-)
-
 type MoveWithScore struct {
         move   Move
         score  int
@@ -25,24 +17,47 @@ type MoveGen struct {
         list  [256]MoveWithScore
         head  int
         tail  int
-        step  int
         ply   int
 }
 
+// Pre-allocate move generator array (one entry per ply) to avoid garbage
+// collection overhead.
 var moveList [MaxPly]MoveGen
 
-func (p *Position) StartMoveGen(ply int) (gen *MoveGen) {
+// Returns "new" move generator for the given ply. Since move generator array
+// has been pre-allocated already we simply return a pointer to the existing
+// array element re-initializing all its data.
+func NewGen(p *Position, ply int) (gen *MoveGen) {
         gen = &moveList[ply]
         gen.p = p
         gen.game = p.game
         gen.list = [256]MoveWithScore{}
         gen.head, gen.tail = 0, 0
         gen.ply = ply
-        return
+        return gen
 }
 
-func (p *Position) UseMoveGen(ply int) (gen *MoveGen) {
-        return moveList[ply].reset()
+// Returns "new" move generator for the initial step of iterative deepening
+// (depth == 1) and existing one for subsequent iterations (depth > 1). This
+// is used in iterative deepening search when all the moves are being generated
+// at depth one, and reused later as the search deepens.
+func NewRootGen(p *Position, depth int) (gen *MoveGen) {
+        if depth > 1 {
+                return moveList[0].reset().rank()
+        }
+
+        gen = NewGen(p, 0)
+        if p.isInCheck(p.color) {
+                gen.GenerateEvasions()
+        } else {
+                gen.GenerateMoves()
+        }
+        //
+        // Get rid of invalid moves so that we don't do it on each iteration.
+        // At depth one we haven't collected info on best/killer moves yet so
+        // we do quick ranking.
+        //
+        return gen.validOnly(p).quickRank()
 }
 
 func (gen *MoveGen) reset() *MoveGen {
@@ -77,6 +92,18 @@ func (gen *MoveGen) validOnly(p *Position) *MoveGen {
                 }
         }
         return gen.reset()
+}
+
+// Probes a list of generated moves and returns true if it contains at least
+// one valid move.
+func (gen *MoveGen) anyValid(p *Position) bool {
+        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+                if position := p.MakeMove(move); position != nil {
+                        position.TakeBack(move)
+                        return true
+                }
+        }
+        return false
 }
 
 func (gen *MoveGen) rank() *MoveGen {
