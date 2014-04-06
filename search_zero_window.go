@@ -19,7 +19,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
         ply := Ply()
         bestScore := ply - Checkmate
         if bestScore >= beta {
-                return beta//bestScore
+                return bestScore//beta
         }
 
         score := p.Evaluate()

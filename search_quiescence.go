@@ -25,7 +25,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 
         if bestScore > alpha {
                 if bestScore >= beta {
-                        return beta//bestScore
+                        return bestScore//beta
                 }
                 alpha = bestScore
         }
@@ -49,7 +49,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
                                         }
                                         alpha = moveScore
                                 }
-                                beta = moveScore
+                                bestScore = moveScore
                         }
                 }
         }
@@ -72,7 +72,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
                                         }
                                         alpha = moveScore
                                 }
-                                beta = moveScore
+                                bestScore = moveScore
                         }
                 }
         }
@@ -89,7 +89,7 @@ func (p *Position) quiescenceInCheck(alpha, beta int) int {
 
         bestScore := Ply() - Checkmate
         if bestScore >= beta {
-                return beta//bestScore
+                return bestScore//beta
         }
 
         gen := NewGen(p, Ply()).GenerateEvasions().quickRank()
@@ -111,7 +111,7 @@ func (p *Position) quiescenceInCheck(alpha, beta int) int {
                                         }
                                         alpha = moveScore
                                 }
-                                beta = moveScore
+                                bestScore = moveScore
                         }
                 }
         }

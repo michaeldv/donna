@@ -15,7 +15,7 @@ func (p *Position) searchInCheck(beta, depth int) int {
 
         bestScore := Ply() - Checkmate
         if bestScore >= beta {
-                return beta//bestScore
+                return bestScore//beta
         }
 
         gen := NewGen(p, Ply()).GenerateEvasions().quickRank()
