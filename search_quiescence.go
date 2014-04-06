@@ -66,6 +66,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 
                         position.TakeBack(move)
                         if moveScore > bestScore {
+                                p.game.saveBest(Ply(), move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
                                                 return moveScore
