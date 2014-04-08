@@ -8,19 +8,19 @@ import (`testing`)
 
 func TestPosition010(t *testing.T) {
         p := NewGame().Setup(`Ke1,e2`, `Kg8,d7,f7`).Start(White)
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
 
         p = p.MakeMove(p.NewMove(E2, E4))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
 
         p = p.MakeMove(p.NewMove(D7, D5))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
 
         p = p.MakeMove(p.NewMove(E4, E5))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
 
         p = p.MakeMove(p.NewEnpassant(F7, F5))
-        expect(t, p.flags.enpassant, F6)
+        expect(t, p.enpassant, F6)
 }
 
 // Castle tests.
@@ -200,7 +200,7 @@ func TestPosition200(t *testing.T) { // 1. e4
         p = p.MakeMove(p.NewMove(E2, E4))
 
         expect(t, p.polyglot(), uint64(0x823C9B50FD114196))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
         expect(t, p.castles, uint8(0x0F))
 }
 
@@ -210,7 +210,7 @@ func TestPosition210(t *testing.T) { // 1. e4 d5
         p = p.MakeMove(p.NewMove(D7, D5))
 
         expect(t, p.polyglot(), uint64(0x0756B94461C50FB0))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
         expect(t, p.castles, uint8(0x0F))
 }
 
@@ -221,7 +221,7 @@ func TestPosition220(t *testing.T) { // 1. e4 d5 2. e5
         p = p.MakeMove(p.NewMove(E4, E5))
 
         expect(t, p.polyglot(), uint64(0x662FAFB965DB29D4))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
         expect(t, p.castles, uint8(0x0F))
 }
 
@@ -233,7 +233,7 @@ func TestPosition230(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
         p = p.MakeMove(p.NewEnpassant(F7, F5))
 
         expect(t, p.polyglot(), uint64(0x22A48B5A8E47FF78))
-        expect(t, p.flags.enpassant, F6)
+        expect(t, p.enpassant, F6)
         expect(t, p.castles, uint8(0x0F))
 }
 
@@ -246,7 +246,7 @@ func TestPosition240(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castl
         p = p.MakeMove(p.NewMove(E1, E2))
 
         expect(t, p.polyglot(), uint64(0x652A607CA3F242C1))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
         expect(t, p.castles, castleKingside[Black] | castleQueenside[Black])
 }
 
@@ -260,7 +260,7 @@ func TestPosition250(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black C
         p = p.MakeMove(p.NewMove(E8, F7))
 
         expect(t, p.polyglot(), uint64(0x00FDD303C946BDD9))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
         expect(t, p.castles, uint8(0))
 }
 
@@ -273,7 +273,7 @@ func TestPosition260(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- En
         p = p.MakeMove(p.NewEnpassant(C2, C4))
 
         expect(t, p.polyglot(), uint64(0x3C8123EA7B067637))
-        expect(t, p.flags.enpassant, C3)
+        expect(t, p.enpassant, C3)
         expect(t, p.castles, uint8(0x0F))
 }
 
@@ -288,7 +288,7 @@ func TestPosition270(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 
         p = p.MakeMove(p.NewMove(A1, A3))
 
         expect(t, p.polyglot(), uint64(0x5C3F9B829B279560))
-        expect(t, p.flags.enpassant, 0)
+        expect(t, p.enpassant, 0)
         expect(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
 }
 

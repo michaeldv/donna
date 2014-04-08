@@ -9,25 +9,21 @@ import(`bytes`)
 var tree [1024]Position
 var node, rootNode int
 
-type Flags struct {
-        enpassant     int       // En-passant square caused by previous move.
-        irreversible  bool      // Is this position reversible?
-}
-
 type Position struct {
-        game      *Game
-        flags     Flags         // Flags set by last move leading to this position.
-        color     int           // Side to make next move.
-        castles   uint8         // Castle rights mask.
-        hash      uint64        // Polyglot hash value.
-        board     Bitmask       // Bitmask of all pieces on the board.
-        pieces    [64]Piece     // Array of 64 squares with pieces on them.
-        outposts  [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
-        king      [2]int        // King's square for both colors.
-        count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
+        game       *Game
+        enpassant   int           // En-passant square caused by previous move.
+        color       int           // Side to make next move.
+        reversible  bool          // Is this position reversible?
+        castles     uint8         // Castle rights mask.
+        hash        uint64        // Polyglot hash value.
+        board       Bitmask       // Bitmask of all pieces on the board.
+        king        [2]int        // King's square for both colors.
+        count       [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
+        pieces      [64]Piece     // Array of 64 squares with pieces on them.
+        outposts    [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
 }
 
-func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position {
+func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
         tree[node] = Position{ game: game, pieces: pieces, color: color }
         p := &tree[node]
 
@@ -59,6 +55,7 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
                 }
         }
 
+        p.reversible = true
         p.hash = p.polyglot()
         p.board = p.outposts[White] | p.outposts[Black]
 
@@ -113,7 +110,7 @@ func (p *Position) MakeMove(move Move) *Position {
         tree[node] = *p                 // => tree[node] = tree[node - 1]
         pp := &tree[node]
 
-        pp.flags.enpassant, pp.flags.irreversible = 0, false
+        pp.enpassant, pp.reversible = 0, true
         //
         // Castle rights for current node are based on the castle rights from
         // the previous node.
@@ -121,8 +118,8 @@ func (p *Position) MakeMove(move Move) *Position {
         pp.castles &= castleRights[from] & castleRights[to]
 
         if capture != 0 {
-                pp.flags.irreversible = true
-                if to != 0 && to == p.flags.enpassant {
+                pp.reversible = false
+                if to != 0 && to == p.enpassant {
                         pp.hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
                         pp.captureEnpassant(pawn(color^1), from, to)
                 } else {
@@ -139,7 +136,7 @@ func (p *Position) MakeMove(move Move) *Position {
                 if piece.isKing() {
                         pp.king[color] = to
                         if move.isCastle() {
-                                pp.flags.irreversible = true
+                                pp.reversible = false
                                 switch to {
                                 case G1:
                                         poly = 64 * Piece(Rook).polyglot()
@@ -160,14 +157,14 @@ func (p *Position) MakeMove(move Move) *Position {
                                 }
                         }
                 } else if piece.isPawn() {
-                        pp.flags.irreversible = true
+                        pp.reversible = false
                         if move.isEnpassant() {
-                                pp.flags.enpassant = from + eight[color] // Save the en-passant square.
-                                pp.hash ^= hashEnpassant[Col(pp.flags.enpassant)]
+                                pp.enpassant = from + eight[color] // Save the en-passant square.
+                                pp.hash ^= hashEnpassant[Col(pp.enpassant)]
                         }
                 }
         } else {
-                pp.flags.irreversible = true
+                pp.reversible = false
                 pp.hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
                 pp.hash ^= polyglotRandom[64 * promo.polyglot() + to]
                 pp.promotePawn(piece, from, to, promo)
@@ -180,8 +177,8 @@ func (p *Position) MakeMove(move Move) *Position {
 	}
 
         pp.hash ^= hashCastle[pp.castles]
-        if pp.flags.enpassant != 0 {
-                pp.hash ^= hashEnpassant[Col(pp.flags.enpassant)]
+        if pp.enpassant != 0 {
+                pp.hash ^= hashEnpassant[Col(pp.enpassant)]
         }
 
 	if color == White {
@@ -220,12 +217,12 @@ func (p *Position) isInCheck(color int) bool {
 }
 
 func (p *Position) isRepetition() bool {
-        if p.flags.irreversible {
+        if !p.reversible {
                 return false
         }
 
         for reps, prevNode := 1, node - 1; prevNode >= 0; prevNode-- {
-                if tree[prevNode].flags.irreversible {
+                if !tree[prevNode].reversible {
                         return false
                 }
                 if tree[prevNode].color == p.color && tree[prevNode].hash == p.hash {
@@ -320,8 +317,8 @@ func (p *Position) polyglot() (key uint64) {
 
 	key ^= hashCastle[p.castles]
 
-	if p.flags.enpassant != 0 {
-                key ^= hashEnpassant[Col(p.flags.enpassant)]
+	if p.enpassant != 0 {
+                key ^= hashEnpassant[Col(p.enpassant)]
 	}
 	if p.color == White {
                 key ^= polyglotRandomWhite

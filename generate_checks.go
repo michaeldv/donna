@@ -43,8 +43,8 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
                                         // Block pawn promotions (since they are treated as
                                         // captures) and en-passant captures.
                                         prohibit := maskRank[0] | maskRank[7]
-                                        if p.flags.enpassant != 0 {
-                                                prohibit.set(p.flags.enpassant)
+                                        if p.enpassant != 0 {
+                                                prohibit.set(p.enpassant)
                                         }
                                         gen.movePawn(to, p.targets(to) & ^p.board & ^prohibit)
                                 case King:
@@ -100,8 +100,8 @@ func (gen *MoveGen) GenerateChecks() *MoveGen {
 						// and en-passant captures.
 						//
 	                                        prohibit := maskRank[0] | maskRank[7]
-	                                        if p.flags.enpassant != 0 {
-	                                                prohibit.set(p.flags.enpassant)
+	                                        if p.enpassant != 0 {
+	                                                prohibit.set(p.enpassant)
 	                                        }
 	                                        gen.movePawn(to, p.targets(to) & ^p.board & ^prohibit)
 	                                case King:

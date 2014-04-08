@@ -82,7 +82,7 @@ func (game *Game) Start(color int) *Position {
         tree, node = [1024]Position{}, 0
         game.getReady()
 
-        return NewPosition(game, game.pieces, color, Flags{})
+        return NewPosition(game, game.pieces, color)
 }
 
 func (game *Game) Think(requestedDepth int, position *Position) Move {

@@ -8,7 +8,7 @@ import(`regexp`)
 func (p *Position) NewMove(from, to int) Move {
         piece, capture := p.pieces[from], p.pieces[to]
 
-        if p.flags.enpassant != 0 && to == p.flags.enpassant {
+        if p.enpassant != 0 && to == p.enpassant {
                 capture = pawn(piece.color()^1)
         }
 
@@ -40,7 +40,7 @@ func (p *Position) isValid(move Move) bool {
         // For rare en-passant pawn captures we validate the move by actually
         // making it, and then taking it back.
         //
-        if p.flags.enpassant != 0 && to == p.flags.enpassant && capture.isPawn() {
+        if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
                 if position := p.MakeMove(move); position != nil {
                         position.TakeBack(move)
                         return true
