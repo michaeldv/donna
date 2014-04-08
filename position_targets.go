@@ -130,5 +130,5 @@ func (p *Position) queenAttacks(color int) (bitmask Bitmask) {
 }
 
 func (p *Position) kingAttacks(color int) Bitmask {
-         return kingMoves[p.outposts[king(color)].first()]
+         return kingMoves[p.king[color]]
 }

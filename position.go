@@ -17,13 +17,14 @@ type Flags struct {
 type Position struct {
         game      *Game
         flags     Flags         // Flags set by last move leading to this position.
-        pieces    [64]Piece     // Array of 64 squares with pieces on them.
-        board     Bitmask       // Bitmask of all pieces on the board.
-        outposts  [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
-        count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
         color     int           // Side to make next move.
-        hash      uint64        // Polyglot hash value.
         castles   uint8         // Castle rights mask.
+        hash      uint64        // Polyglot hash value.
+        board     Bitmask       // Bitmask of all pieces on the board.
+        pieces    [64]Piece     // Array of 64 squares with pieces on them.
+        outposts  [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
+        king      [2]int        // King's square for both colors.
+        count     [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position {
@@ -52,6 +53,9 @@ func NewPosition(game *Game, pieces [64]Piece, color int, flags Flags) *Position
                         p.outposts[piece].set(square)
                         p.outposts[piece.color()].set(square)
                         p.count[piece]++
+                        if piece.isKing() {
+                                p.king[piece.color()] = square
+                        }
                 }
         }
 
@@ -131,25 +135,29 @@ func (p *Position) MakeMove(move Move) *Position {
                 poly := 64 * p.pieces[from].polyglot()
                 pp.hash ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
                 pp.movePiece(piece, from, to)
-                if move.isCastle() {
-                        pp.flags.irreversible = true
-                        switch to {
-                        case G1:
-                                poly = 64 * Piece(Rook).polyglot()
-                                pp.hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
-                                pp.movePiece(Rook, H1, F1)
-                        case C1:
-                                poly = 64 * Piece(Rook).polyglot()
-                                pp.hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
-                                pp.movePiece(Rook, A1, D1)
-                        case G8:
-                                poly = 64 * Piece(BlackRook).polyglot()
-                                pp.hash ^= polyglotRandom[poly + H8] ^ polyglotRandom[poly + F8]
-                                pp.movePiece(BlackRook, H8, F8)
-                        case C8:
-                                poly = 64 * Piece(BlackRook).polyglot()
-                                pp.hash ^= polyglotRandom[poly + A8] ^ polyglotRandom[poly + D8]
-                                pp.movePiece(BlackRook, A8, D8)
+
+                if piece.isKing() {
+                        pp.king[color] = to
+                        if move.isCastle() {
+                                pp.flags.irreversible = true
+                                switch to {
+                                case G1:
+                                        poly = 64 * Piece(Rook).polyglot()
+                                        pp.hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
+                                        pp.movePiece(Rook, H1, F1)
+                                case C1:
+                                        poly = 64 * Piece(Rook).polyglot()
+                                        pp.hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
+                                        pp.movePiece(Rook, A1, D1)
+                                case G8:
+                                        poly = 64 * Piece(BlackRook).polyglot()
+                                        pp.hash ^= polyglotRandom[poly + H8] ^ polyglotRandom[poly + F8]
+                                        pp.movePiece(BlackRook, H8, F8)
+                                case C8:
+                                        poly = 64 * Piece(BlackRook).polyglot()
+                                        pp.hash ^= polyglotRandom[poly + A8] ^ polyglotRandom[poly + D8]
+                                        pp.movePiece(BlackRook, A8, D8)
+                                }
                         }
                 } else if piece.isPawn() {
                         pp.flags.irreversible = true
@@ -208,7 +216,7 @@ func (p *Position) TakeBackNullMove() *Position {
 }
 
 func (p *Position) isInCheck(color int) bool {
-        return p.isAttacked(p.outposts[king(color)].first(), color^1)
+        return p.isAttacked(p.king[color], color^1)
 }
 
 func (p *Position) isRepetition() bool {

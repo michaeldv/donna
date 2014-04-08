@@ -193,7 +193,7 @@ func (e *Evaluator) kingShieldScore(color int) (penalty int) {
         // Calculate relative square for the king so we could treat black king
         // as white. Don't bother with the shield if the king is too far.
         //
-        square := flip[color^1][kings.first()]
+        square := flip[color^1][e.position.king[color]]
         if square > H3 {
                 return
         }

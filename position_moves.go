@@ -34,7 +34,7 @@ func (p *Position) NewPawnJump(from, to int) Move {
 func (p *Position) isValid(move Move) bool {
         color := move.color() // TODO: make color part of move split.
         from, to, piece, capture := move.split()
-        square := p.outposts[king(color)].first()
+        square := p.king[color]
         pinned := p.pinnedMask(square)
         //
         // For rare en-passant pawn captures we validate the move by actually
@@ -178,7 +178,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
                         }
                 }
 	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
-                from := p.outposts[king(p.color)].first()
+                from := p.king[p.color]
                 to := G1
                 if e2e4 == `0-0-0` {
                         to = C1

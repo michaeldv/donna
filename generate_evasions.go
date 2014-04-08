@@ -7,7 +7,7 @@ package donna
 func (gen *MoveGen) GenerateEvasions() *MoveGen {
         p := gen.p
         color, enemy := p.color, p.color^1
-        square := p.outposts[king(color)].first()
+        square := p.king[color]
         //
         // Find out what pieces are checking the king. Usually it's a single
         // piece but double check is also a possibility.

@@ -10,7 +10,7 @@ import()
 func (gen *MoveGen) GenerateChecks() *MoveGen {
         p := gen.p
         color, enemy := p.color, p.color^1
-        square := p.outposts[king(enemy)].first()
+        square := p.king[enemy]
 
         // Non-capturing Knight checks.
         checks := knightMoves[square]
