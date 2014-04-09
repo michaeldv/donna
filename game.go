@@ -12,13 +12,15 @@ import (
 )
 
 type Game struct {
-	pieces	     [64]Piece
-        nodes        int
-        qnodes       int
-        bestLine     [MaxPly][MaxPly]Move
-        bestLength   [MaxPly]int
-        goodMoves    [14][64]int
-        killers      [MaxPly][2]Move
+        nodes       int
+        qnodes      int
+        token       uint8
+        cache       Cache
+        pieces      [64]Piece
+        bestLine    [MaxPly][MaxPly]Move
+        bestLength  [MaxPly]int
+        killers     [MaxPly][2]Move
+        goodMoves   [14][64]int
 }
 
 func NewGame() *Game {
@@ -29,6 +31,11 @@ func (game *Game) Setup(white, black string) *Game {
 	re := regexp.MustCompile(`\W+`)
 	whiteSide, blackSide := re.Split(white, -1), re.Split(black, -1)
 	return game.SetupSide(whiteSide, 0).SetupSide(blackSide, 1)
+}
+
+func (game *Game) CacheSize(megaBytes float32) *Game {
+        game.cache = NewCache(megaBytes)
+        return game
 }
 
 func (game *Game) SetupSide(moves []string, color int) *Game {
@@ -70,6 +77,7 @@ func (game *Game) InitialPosition() *Game {
 
 func (game *Game) getReady() *Game {
         rootNode = node
+        game.token++ // <-- Wraps around: ...254, 255, 0, 1...
         game.bestLine = [MaxPly][MaxPly]Move{}
         game.bestLength = [MaxPly]int{}
         game.goodMoves = [14][64]int{}
