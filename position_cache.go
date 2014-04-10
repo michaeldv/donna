@@ -28,7 +28,7 @@ func NewCache(megaBytes float32) Cache {
         return make(Cache, cacheSize)
 }
 
-func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Position {
+func (p *Position) cache(move Move, score, depth int, flags uint8) *Position {
         if cacheSize := len(p.game.cache); cacheSize > 0 {
                 index := p.hash % uint64(cacheSize)
                 // fmt.Printf("cache size %d entries, index %d\n", len(p.game.cache), index)
@@ -36,9 +36,9 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 
                 if depth > entry.depth || p.game.token != entry.token {
                         if score > Checkmate - MaxPly && score <= Checkmate {
-                                entry.score = score + ply
+                                entry.score = score + Ply()
                         } else if score >= -Checkmate && score < -Checkmate + MaxPly {
-                                entry.score = score - ply
+                                entry.score = score - Ply()
                         } else {
                                 entry.score = score
                         }
@@ -61,4 +61,11 @@ func (p *Position) probeCache() *CacheEntry {
                 }
         }
         return nil
+}
+
+func (p *Position) cachedMove() Move {
+        if cached := p.probeCache(); cached != nil {
+                return cached.move
+        }
+        return Move(0)
 }
