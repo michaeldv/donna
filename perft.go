@@ -9,12 +9,7 @@ func (p *Position) Perft(depth int) (total int64) {
                 return 1
         }
 
-        gen := NewGen(p, depth)
-        if p.isInCheck(p.color) {
-                gen.GenerateEvasions()
-        } else {
-                gen.GenerateMoves() // TODO: GenerateNonEvasions()
-        }
+        gen := NewGen(p, depth).GenerateAllMoves()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         total += position.Perft(depth - 1)

@@ -4,6 +4,13 @@
 
 package donna
 
+func (gen *MoveGen) GenerateAllMoves() *MoveGen {
+        if gen.p.isInCheck(gen.p.color) {
+                return gen.GenerateEvasions()
+        }
+        return gen.GenerateMoves()
+}
+
 func (gen *MoveGen) GenerateMoves() *MoveGen {
         color := gen.p.color
         return gen.pawnMoves(color).pieceMoves(color).kingMoves(color)
