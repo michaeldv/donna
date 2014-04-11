@@ -8,11 +8,11 @@ import()
 
 // Quiescence search.
 func (p *Position) searchQuiescence(alpha, beta int) int {
+        p.game.bestLength[Ply()] = Ply()
         return p.quiescence(alpha, beta, false)
 }
 
 func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
-        // defer func() { p.game.bestLength[Ply()] = Ply() }()
         p.game.qnodes++
         if p.isRepetition() {
                 return 0
@@ -83,7 +83,6 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 
 // Quiescence search (in check).
 func (p *Position) quiescenceInCheck(alpha, beta int) int {
-        // defer func() { p.game.bestLength[Ply()] = Ply() }()
         if p.isRepetition() {
                 return 0
         }
