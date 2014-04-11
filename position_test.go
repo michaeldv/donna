@@ -332,3 +332,15 @@ func TestPosition340(t *testing.T) {
         rootNode = node // Reset Ply().
         expect(t, p.status(p.NewMove(A2, A1), 0), Repetition) // <-- Ka2-a1 causes rep #3.
 }
+
+// Position after null move.
+func TestPosition350(t *testing.T) {
+        p := NewGame().Setup(`Ke1,Qd1,d2,e2`, `Kg8,Qf8,f7,g7`).Start(White)
+
+        p = p.MakeNullMove()
+        expect(t, p.isNull(), true)
+
+        p = p.TakeBackNullMove()
+        p = p.MakeMove(p.NewMove(E2, E4))
+        expect(t, p.isNull(), false)
+}

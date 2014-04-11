@@ -209,11 +209,18 @@ func (p *Position) TakeBack(move Move) *Position {
 
 func (p *Position) TakeBackNullMove() *Position {
         p.color ^= 1
+        if p.color == White {
+                p.hash ^= polyglotRandomWhite
+        }
         return p.TakeBack(Move(0))
 }
 
 func (p *Position) isInCheck(color int) bool {
         return p.isAttacked(p.king[color], color^1)
+}
+
+func (p *Position) isNull() bool {
+        return node > 0 && tree[node].board == tree[node-1].board
 }
 
 func (p *Position) isRepetition() bool {
