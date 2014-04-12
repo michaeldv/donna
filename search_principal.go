@@ -8,11 +8,11 @@ import()
 
 // Search principal variation.
 func (p *Position) searchPrincipal(alpha, beta, depth int) int {
-        p.game.nodes++
         if depth == 0 {
                 return p.searchQuiescence(alpha, beta)
         }
 
+        p.game.nodes++
         ply := Ply()
         if ply > MaxDepth {
                 return p.Evaluate()
@@ -29,13 +29,7 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                 return beta
         }
 
-        gen := NewGen(p, ply)
-        if !p.isInCheck(p.color) {
-                gen.GenerateMoves()
-        } else {
-                gen.GenerateEvasions()
-        }
-        gen.rank()
+        gen := NewGen(p, ply).GenerateAllMoves().rank(p.cachedMove())
 
         moveCount := 0
         bestMove, bestScore := Move(0), ply - Checkmate
@@ -71,6 +65,7 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                                 p.game.saveBest(ply, move)
                                 if moveScore > alpha {
                                         if moveScore >= beta {
+                                                p.cache(move, moveScore, depth, cacheBeta)
                                                 p.game.saveGood(depth, move)
                                                 //Log("==> depth: %d, node %d, killers %s/%s\n", depth, node, p.killers[0], p.killers[1])
                                                 return moveScore
@@ -90,9 +85,10 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                         return 0
                 }
         } else if bestMove != Move(0) {
+                p.cache(bestMove, bestScore, depth, cacheExact)
                 p.game.saveGood(depth, bestMove)
-                //Log("--> depth: %d, node %d, killers %s/%s\n", depth, node, p.game.killers[ply][0], p.game.killers[ply][1])
         }
 
+        //Log("--> depth: %d, node %d, killers %s/%s\n", depth, node, p.game.killers[ply][0], p.game.killers[ply][1])
         return bestScore
 }

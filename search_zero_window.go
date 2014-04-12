@@ -22,11 +22,31 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
                 return bestScore//beta
         }
 
+        // Probe cache.
+        cachedMove := Move(0)
+        if cached := p.probeCache(); cached != nil {
+                cachedMove = cached.move
+                if cached.depth >= depth {
+                        score := cached.score
+                        if score > Checkmate - MaxPly && score <= Checkmate {
+                                score -= ply
+                        } else if score >= -Checkmate && score < -Checkmate + MaxPly {
+                                score += ply
+                        }
+
+                        if (cached.flags == cacheExact) ||
+                           (cached.flags == cacheBeta && score >= beta) ||
+                           (cached.flags == cacheAlpha && score <= beta) {
+                                return score
+                        }
+                }
+        }
+
         score := p.Evaluate()
 
         // Razoring and futility pruning. TODO: disable or tune-up in puzzle solving mode.
         if depth < len(razoringMargin) {
-                if margin := beta - razoringMargin[depth]; score < margin && beta < 31000 {
+                if margin := beta - razoringMargin[depth]; score < margin && beta < 31000 && cachedMove == Move(0) {
                         if p.outposts[pawn(p.color)] & mask7th[p.color] == 0 { // No pawns on 7th.
                                 razorScore := p.searchQuiescence(margin - 1, margin)
                                 if razorScore < margin {
@@ -63,7 +83,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
         }
 
         moveCount := 0
-        gen := NewGen(p, ply).GenerateMoves().rank()
+        gen := NewGen(p, ply).GenerateMoves().rank(cachedMove)
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*szero/%s> depth: %d, ply: %d, move: %s\n", ply*2, ` `, C(p.color), depth, ply, move)
@@ -101,6 +121,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 
                         if moveScore > bestScore {
                                 if moveScore >= beta {
+                                        p.cache(move, moveScore, depth, cacheBeta)
                                         p.game.saveGood(depth, move)
                                         return moveScore
                                 }

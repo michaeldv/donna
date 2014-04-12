@@ -13,15 +13,34 @@ func (p *Position) searchInCheck(beta, depth int) int {
                 return 0
         }
 
-        bestScore := Ply() - Checkmate
+        ply := Ply()
+        bestScore := ply - Checkmate
         if bestScore >= beta {
                 return bestScore//beta
         }
 
-        gen := NewGen(p, Ply()).GenerateEvasions().quickRank()
+        // Probe cache.
+        if cached := p.probeCache(); cached != nil {
+                if cached.depth >= depth {
+                        score := cached.score
+                        if score > Checkmate - MaxPly && score <= Checkmate {
+                                score -= ply
+                        } else if score >= -Checkmate && score < -Checkmate + MaxPly {
+                                score += ply
+                        }
+
+                        if (cached.flags == cacheExact) ||
+                           (cached.flags == cacheBeta && score >= beta) ||
+                           (cached.flags == cacheAlpha && score <= beta) {
+                                return score
+                        }
+                }
+        }
+
+        gen := NewGen(p, ply).GenerateEvasions().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
-                        //Log("%*schck/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+                        //Log("%*schck/%s> depth: %d, ply: %d, move: %s\n", ply*2, ` `, C(p.color), depth, ply, move)
                         inCheck := position.isInCheck(position.color)
                         reducedDepth := depth - 1
                         if inCheck {
@@ -40,6 +59,7 @@ func (p *Position) searchInCheck(beta, depth int) int {
                         position.TakeBack(move)
                         if moveScore > bestScore {
                                 if moveScore >= beta {
+                                        p.cache(move, moveScore, depth, cacheBeta)
                                         return moveScore
                                 }
                                 bestScore = moveScore

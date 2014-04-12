@@ -41,21 +41,17 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 // at depth one, and reused later as the search deepens.
 func NewRootGen(p *Position, depth int) (gen *MoveGen) {
         if depth > 1 {
-                return moveList[0].reset().rank()
+                return moveList[0].reset().rank(p.cachedMove())
         }
 
-        gen = NewGen(p, 0)
-        if p.isInCheck(p.color) {
-                gen.GenerateEvasions()
-        } else {
-                gen.GenerateMoves()
+        gen = NewGen(p, 0).GenerateAllMoves()
+        if gen.onlyMove() {
+                return gen
         }
         //
         // Get rid of invalid moves so that we don't do it on each iteration.
-        // At depth one we haven't collected info on best/killer moves yet so
-        // we do quick ranking.
         //
-        return gen.validOnly(p).quickRank()
+        return gen.validOnly(p).rank(p.cachedMove())
 }
 
 func (gen *MoveGen) reset() *MoveGen {
@@ -104,14 +100,22 @@ func (gen *MoveGen) anyValid(p *Position) bool {
         return false
 }
 
-func (gen *MoveGen) rank() *MoveGen {
+func (gen *MoveGen) rank(bestMove Move) *MoveGen {
         if gen.size() < 2 {
                 return gen
         }
+        //
+        // If the cache is disabled or we couldn't determine best move so far
+        // then use principal variation table as backup.
+        //
+        game := gen.p.game
+        if len(game.cache) == 0 && bestMove == Move(0) {
+                bestMove = game.bestLine[0][gen.ply]
+        }
 
-        for i, game := gen.head, gen.p.game; i < gen.tail; i++ {
+        for i := gen.head; i < gen.tail; i++ {
                 move := gen.list[i].move
-                if move == game.bestLine[0][gen.ply] {
+                if move == bestMove {
                         gen.list[i].score = 0xFFFF
                 } else if move == game.killers[gen.ply][0] {
                         gen.list[i].score = 0xFFFE
