@@ -4,14 +4,28 @@
 
 package donna
 
-func (p *Position) rookMoves(square int) Bitmask {
-        magic := ((rookMagic[square].mask & p.board) * rookMagic[square].magic) >> 52
-        return rookMagicMoves[square][magic]
+// Returns a bitmask of possible Bishop moves from the given square for current position.
+func (p *Position) bishopMoves(square int) Bitmask {
+        return p.bishopMovesAt(square, p.board)
 }
 
-func (p *Position) bishopMoves(square int) Bitmask {
-        magic := ((bishopMagic[square].mask & p.board) * bishopMagic[square].magic) >> 55
+// Returns a bitmask of possible Rook moves from the given square for current position.
+func (p *Position) rookMoves(square int) Bitmask {
+        return p.rookMovesAt(square, p.board)
+}
+
+// Returns a bitmask of possible Bishop moves from the given square wherees other pieces
+// on the board are represented by the explicit parameter.
+func (p *Position) bishopMovesAt(square int, board Bitmask) Bitmask {
+        magic := ((bishopMagic[square].mask & board) * bishopMagic[square].magic) >> 55
         return bishopMagicMoves[square][magic]
+}
+
+// Returns a bitmask of possible Rook moves from the given square wherees other pieces
+// on the board are represented by the explicit parameter.
+func (p *Position) rookMovesAt(square int, board Bitmask) Bitmask {
+        magic := ((rookMagic[square].mask & board) * rookMagic[square].magic) >> 52
+        return rookMagicMoves[square][magic]
 }
 
 func (p *Position) targets(square int) Bitmask {
