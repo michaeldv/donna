@@ -17,13 +17,13 @@ func repl() {
         setup := func() {
                 if game == nil || position == nil {
                         game = donna.NewGame().InitialPosition()
-                        position = game.Start(donna.White)
+                        position = game.CacheSize(32).Start(donna.White)
                         fmt.Printf("%s\n", position)
                 }
         }
 
         think := func() {
-                if move := game.Think(6, position); move != 0 {
+                if move := game.Think(8, position); move != 0 {
                         position = position.MakeMove(move)
                         fmt.Printf("%s\n", position)
                 }
@@ -80,7 +80,8 @@ func benchmark() {
         game := donna.NewGame().Setup(`Kg1,Qc2,Ra1,Re1,Bc1,Bg2,Ng5,a2,b2,c3,d4,f2,g3,h2`,
                                       `Kg8,Qd6,Ra8,Rf8,Bc8,Nd5,Ng6,a7,b6,c4,e6,f7,g7,h7`)
         fmt.Printf("%s\n", game)
-        game.Think(7, game.Start(donna.White))
+        // game.Think(8, game.Start(donna.White))
+        game.CacheSize(32).Think(9, game.Start(donna.White))
 
         // Mikhail Botvinnik vs. Jose Raul Capablanca, AVRO 1936 after 29 moves.
         // Botvinnik played 30. Bb2-a3!
@@ -88,7 +89,8 @@ func benchmark() {
                                      `Kg7,Qe7,Nb3,Nf6,a7,b6,c4,d5,g6,h7`)
 
         fmt.Printf("%s\n", game)
-        game.Think(8, game.Start(donna.White))
+        // game.Think(9, game.Start(donna.White))
+        game.CacheSize(32).Think(9, game.Start(donna.White))
 
 }
 
