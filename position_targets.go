@@ -91,6 +91,22 @@ func (p *Position) attacks(color int) (bitmask Bitmask) {
         return
 }
 
+// Returns a bitmask of pieces that attack given square. The resulting bitmask
+// only counts pieces of requested color.
+//
+// This method is used in static exchange evaluation so instead of using current
+// board bitmask (p.board) we pass the one that gets continuously updated during
+// the evaluation.
+func (p *Position) attackers(square, color int, board Bitmask) Bitmask {
+	attackers := knightMoves[square] & p.outposts[knight(color)]
+	attackers |= maskPawn[color][square] & p.outposts[pawn(color)]
+	attackers |= kingMoves[square] & p.outposts[king(color)]
+	attackers |= p.rookMovesAt(square, board) & (p.outposts[rook(color)] | p.outposts[queen(color)])
+	attackers |= p.bishopMovesAt(square, board) & (p.outposts[bishop(color)] | p.outposts[queen(color)])
+
+	return attackers
+}
+
 func (p *Position) isAttacked(square, color int) bool {
         return (knightMoves[square] & p.outposts[knight(color)]) != 0 ||
                (maskPawn[color][square] & p.outposts[pawn(color)]) != 0 ||
