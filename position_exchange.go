@@ -41,7 +41,7 @@ func (p *Position) exchange(move Move) int {
 	from, to, piece, capture := move.split()
 	color := move.piece().color()
 
-	score := exchangeScores[capture]
+	score := exchangeScores[capture.kind() / 2 - 1]
 	if promo := move.promo(); promo != 0 {
 		score += exchangeScores[promo] - exchangeScores[0] // Pawn
 		piece = promo
