@@ -32,26 +32,28 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 
         gen := NewGen(p, Ply()).GenerateCaptures().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if position := p.MakeMove(move); position != nil {
-                        //Log("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
-                        moveScore := 0
-                        if position.isInCheck(position.color) {
-                                moveScore = -position.quiescenceInCheck(-beta, -alpha)
-                        } else {
-                                moveScore = -position.quiescence(-beta, -alpha, true)
-                        }
+		if p.exchange(move) >= 0 {
+	                if position := p.MakeMove(move); position != nil {
+	                        //Log("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+	                        moveScore := 0
+	                        if position.isInCheck(position.color) {
+	                                moveScore = -position.quiescenceInCheck(-beta, -alpha)
+	                        } else {
+	                                moveScore = -position.quiescence(-beta, -alpha, true)
+	                        }
 
-                        position.TakeBack(move)
-                        if moveScore > bestScore {
-                                if moveScore > alpha {
-                                        if moveScore >= beta {
-                                                return moveScore
-                                        }
-                                        alpha = moveScore
-                                }
-                                bestScore = moveScore
-                        }
-                }
+	                        position.TakeBack(move)
+	                        if moveScore > bestScore {
+	                                if moveScore > alpha {
+	                                        if moveScore >= beta {
+	                                                return moveScore
+	                                        }
+	                                        alpha = moveScore
+	                                }
+	                                bestScore = moveScore
+	                        }
+	                }
+		}
         }
 
         if capturesOnly {
@@ -60,22 +62,24 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 
         gen = NewGen(p, Ply()).GenerateChecks().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if position := p.MakeMove(move); position != nil {
-                        //Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
-                        moveScore := -position.quiescenceInCheck(-beta, -alpha)
+		if p.exchange(move) >= 0 {
+	                if position := p.MakeMove(move); position != nil {
+	                        //Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+	                        moveScore := -position.quiescenceInCheck(-beta, -alpha)
 
-                        position.TakeBack(move)
-                        if moveScore > bestScore {
-                                p.game.saveBest(Ply(), move)
-                                if moveScore > alpha {
-                                        if moveScore >= beta {
-                                                return moveScore
-                                        }
-                                        alpha = moveScore
-                                }
-                                bestScore = moveScore
-                        }
-                }
+	                        position.TakeBack(move)
+	                        if moveScore > bestScore {
+	                                p.game.saveBest(Ply(), move)
+	                                if moveScore > alpha {
+	                                        if moveScore >= beta {
+	                                                return moveScore
+	                                        }
+	                                        alpha = moveScore
+	                                }
+	                                bestScore = moveScore
+	                        }
+	                }
+		}
         }
 
         return bestScore

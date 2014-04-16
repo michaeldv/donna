@@ -12,6 +12,7 @@ var exchangeScores = []int{
 	valueBishop.midgame, 	// 6->2
 	valueRook.midgame, 	// 8->3
 	valueQueen.midgame, 	//10->4
+	valueQueen.midgame * 8, //12->5
 }
 
 func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int {
@@ -39,11 +40,13 @@ func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int
 
 func (p *Position) exchange(move Move) int {
 	from, to, piece, capture := move.split()
-	color := move.piece().color()
 
-	score := exchangeScores[capture.kind() / 2 - 1]
+	score, color := 0, move.piece().color()
+	if capture != 0 {
+		score = exchangeScores[capture.kind() / 2 - 1]
+	}
 	if promo := move.promo(); promo != 0 {
-		score += exchangeScores[promo] - exchangeScores[0] // Pawn
+		score += exchangeScores[promo / 2 - 1] - exchangeScores[0] // Pawn
 		piece = promo
 	}
 
