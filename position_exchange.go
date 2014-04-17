@@ -7,14 +7,30 @@ package donna
 import ()
 
 var exchangeScores = []int{
-	valuePawn.midgame, 	// 2->0
-	valueKnight.midgame, 	// 4->1
-	valueBishop.midgame, 	// 6->2
-	valueRook.midgame, 	// 8->3
-	valueQueen.midgame, 	//10->4
-	valueQueen.midgame * 8, //12->5
+	0, 0, 						// Zero score for non-capture moves.
+	valuePawn.midgame, valuePawn.midgame, 		// Pawn/BlackPawn captures.
+	valueKnight.midgame, valueKnight.midgame, 	// Knight/BlackKinght captures.
+	valueBishop.midgame, valueBishop.midgame, 	// Bishop/BlackBishop captures.
+	valueRook.midgame, valueRook.midgame, 		// Rook/BlackRook captures.
+	valueQueen.midgame, valueQueen.midgame, 	// Queen/BlackQueen captures.
+	valueQueen.midgame * 8, valueQueen.midgame * 8, // King/BlackKing specials.
 }
 
+// Static exchange evaluation.
+func (p *Position) exchange(move Move) int {
+	from, to, piece, capture := move.split()
+
+	score := exchangeScores[capture]
+	if promo := move.promo(); promo != 0 {
+		score += exchangeScores[promo] - exchangeScores[Pawn]
+		piece = promo
+	}
+
+	board := p.board ^ bit[from]
+	return -p.exchangeScore(to, piece.color()^1, -score, exchangeScores[piece], board)
+}
+
+// Recursive helper method for the static exchange evaluation.
 func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int {
 	attackers := p.attackers(to, color, board) & board
 	if attackers == 0 {
@@ -24,8 +40,7 @@ func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int
 	from, best := 0, Checkmate
 	for attackers != 0 {
 		square := attackers.pop()
-		index := p.pieces[square].kind() / 2 - 1
-		if exchangeScores[index] < best {
+		if index := p.pieces[square]; exchangeScores[index] < best {
 			from = square
 			best = exchangeScores[index]
 		}
@@ -38,18 +53,3 @@ func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int
 	return Max(score, -p.exchangeScore(to, color^1, -(score + extra), best, board))
 }
 
-func (p *Position) exchange(move Move) int {
-	from, to, piece, capture := move.split()
-
-	score, color := 0, move.piece().color()
-	if capture != 0 {
-		score = exchangeScores[capture.kind() / 2 - 1]
-	}
-	if promo := move.promo(); promo != 0 {
-		score += exchangeScores[promo / 2 - 1] - exchangeScores[0] // Pawn
-		piece = promo
-	}
-
-	board := p.board ^ bit[from]
-	return -p.exchangeScore(to, color^1, -score, exchangeScores[piece.kind() / 2 - 1], board)
-}
