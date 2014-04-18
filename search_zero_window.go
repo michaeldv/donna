@@ -83,7 +83,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
         }
 
         moveCount := 0
-        gen := NewGen(p, ply).GenerateMoves().rank(cachedMove)
+        gen := NewGen(p, ply).generateMoves().rank(cachedMove)
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*szero/%s> depth: %d, ply: %d, move: %s\n", ply*2, ` `, C(p.color), depth, ply, move)

@@ -30,7 +30,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
                 alpha = bestScore
         }
 
-        gen := NewGen(p, Ply()).GenerateCaptures().quickRank()
+        gen := NewGen(p, Ply()).generateCaptures().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if p.exchange(move) >= 0 {
 	                if position := p.MakeMove(move); position != nil {
@@ -60,7 +60,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
                 return bestScore
         }
 
-        gen = NewGen(p, Ply()).GenerateChecks().quickRank()
+        gen = NewGen(p, Ply()).generateChecks().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if p.exchange(move) >= 0 {
 	                if position := p.MakeMove(move); position != nil {
@@ -96,7 +96,7 @@ func (p *Position) quiescenceInCheck(alpha, beta int) int {
                 return bestScore//beta
         }
 
-        gen := NewGen(p, Ply()).GenerateEvasions().quickRank()
+        gen := NewGen(p, Ply()).generateEvasions().quickRank()
         for move := gen.NextMove(); move != 0; move = gen.NextMove() {
                 if position := p.MakeMove(move); position != nil {
                         //Log("%*squic/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)

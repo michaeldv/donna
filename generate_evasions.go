@@ -4,7 +4,7 @@
 
 package donna
 
-func (gen *MoveGen) GenerateEvasions() *MoveGen {
+func (gen *MoveGen) generateEvasions() *MoveGen {
         p := gen.p
         color, enemy := p.color, p.color^1
         square := p.king[color]

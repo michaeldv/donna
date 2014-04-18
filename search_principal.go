@@ -29,7 +29,7 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
                 return beta
         }
 
-        gen := NewGen(p, ply).GenerateAllMoves().rank(p.cachedMove())
+        gen := NewGen(p, ply).generateAllMoves().rank(p.cachedMove())
 
         moveCount := 0
         bestMove, bestScore := Move(0), ply - Checkmate

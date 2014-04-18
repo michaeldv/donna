@@ -275,7 +275,7 @@ func (p *Position) status(move Move, score int) int {
                                 return Insufficient
                         }
                 }
-                if !NewGen(p, ply + 1).GenerateMoves().anyValid(p) {
+                if !NewGen(p, ply + 1).generateMoves().anyValid(p) {
                         return Stalemate
                 }
         case Checkmate - ply:

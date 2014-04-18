@@ -4,7 +4,7 @@
 
 package donna
 
-func (gen *MoveGen) GenerateCaptures() *MoveGen {
+func (gen *MoveGen) generateCaptures() *MoveGen {
         color := gen.p.color
         return gen.pawnCaptures(color).pieceCaptures(color)
 }

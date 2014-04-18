@@ -44,7 +44,7 @@ func NewRootGen(p *Position, depth int) (gen *MoveGen) {
                 return moveList[0].reset().rank(p.cachedMove())
         }
 
-        gen = NewGen(p, 0).GenerateAllMoves()
+        gen = NewGen(p, 0).generateAllMoves()
         if gen.onlyMove() {
                 return gen
         }

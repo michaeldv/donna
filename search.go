@@ -62,7 +62,7 @@ func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
 // Helps with testing root search by initializing move genarator at given depth and
 // bypassing iterative deepening altogether.
 func (p *Position) search(depth int) Move {
-        NewGen(p, 0).GenerateAllMoves().validOnly(p)
+        NewGen(p, 0).generateAllMoves().validOnly(p)
         move, _ := p.searchRoot(depth)
 
         return move

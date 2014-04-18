@@ -7,7 +7,7 @@ package donna
 import()
 
 // Non-capturing checks.
-func (gen *MoveGen) GenerateChecks() *MoveGen {
+func (gen *MoveGen) generateChecks() *MoveGen {
         p := gen.p
         color, enemy := p.color, p.color^1
         square := p.king[enemy]
