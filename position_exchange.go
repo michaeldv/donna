@@ -50,6 +50,5 @@ func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int
 		board ^= bit[from]
 	}
 
-	return Max(score, -p.exchangeScore(to, color^1, -(score + extra), best, board))
+	return Max(score, -p.exchangeScore(to, color^1, -(score+extra), best, board))
 }
-

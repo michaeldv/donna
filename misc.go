@@ -5,14 +5,14 @@
 package donna
 
 import (
-        `fmt`
-        `math/rand`
-        `time`
+	`fmt`
+	`math/rand`
+	`time`
 )
 
 type Globals struct {
-        Log   bool // Enable logging.
-        Fancy bool // Represent pieces as UTF-8 characters.
+	Log   bool // Enable logging.
+	Fancy bool // Represent pieces as UTF-8 characters.
 }
 
 var Settings Globals
@@ -29,11 +29,11 @@ func Col(n int) int {
 
 // Returns row and column numbers for the given bit index.
 func Coordinate(n int) (int, int) {
-        return Row(n), Col(n)
+	return Row(n), Col(n)
 }
 
 func RelRow(square, color int) int {
-        return Row(square) ^ (color * 7)
+	return Row(square) ^ (color * 7)
 }
 
 // Returns n for the given the given row/column coordinate.
@@ -42,45 +42,46 @@ func Square(row, column int) int {
 }
 
 func IsBetween(from, to, between int) bool {
-        return ((maskStraight[from][to] | maskDiagonal[from][to]) & bit[between]) != 0
+	return ((maskStraight[from][to] | maskDiagonal[from][to]) & bit[between]) != 0
 }
 
 func Ply() int {
-        return node - rootNode
+	return node - rootNode
 }
 
 // Integer version of math/abs.
 func Abs(n int) int {
-        if n < 0 {
-                return -n
-        }
-        return n
+	if n < 0 {
+		return -n
+	}
+	return n
 }
 
 func Min(x, y int) int {
-        if x < y {
-                return x
-        }
-        return y
+	if x < y {
+		return x
+	}
+	return y
 }
 
 func Max(x, y int) int {
-        if x > y {
-                return x
-        }
-        return y
+	if x > y {
+		return x
+	}
+	return y
 }
 
 // Returns, as an integer, a non-negative pseudo-random number
 // in [0, limit) range. It panics if limit <= 0.
 func Random(limit int) int {
-        rand.Seed(time.Now().Unix())
-        return rand.Intn(limit)
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(limit)
 }
 
 func C(color int) string {
-        return [2]string{`white`, `black`}[color]
+	return [2]string{`white`, `black`}[color]
 }
+
 //
 //   noWe         nort         noEa
 //           +7    +8    +9
@@ -91,17 +92,17 @@ func C(color int) string {
 //   soWe         sout         soEa
 //
 func Rose(direction int) int {
-	return [8]int{ 8, 9, 1, -7, -8, -9, -1, 7 }[direction]
+	return [8]int{8, 9, 1, -7, -8, -9, -1, 7}[direction]
 }
 
 func Lop(args ...interface{}) {
-        if Settings.Log {
-                fmt.Println(args...)
-        }
+	if Settings.Log {
+		fmt.Println(args...)
+	}
 }
 
 func Log(format string, args ...interface{}) {
-        if Settings.Log {
-                fmt.Printf(format, args...)
-        }
+	if Settings.Log {
+		fmt.Printf(format, args...)
+	}
 }

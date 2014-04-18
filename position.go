@@ -4,171 +4,173 @@
 
 package donna
 
-import(`bytes`)
+import (
+	`bytes`
+)
 
 var tree [1024]Position
 var node, rootNode int
 
 type Position struct {
-        game       *Game
-        enpassant   int           // En-passant square caused by previous move.
-        color       int           // Side to make next move.
-        reversible  bool          // Is this position reversible?
-        castles     uint8         // Castle rights mask.
-        hash        uint64        // Polyglot hash value.
-        board       Bitmask       // Bitmask of all pieces on the board.
-        king        [2]int        // King's square for both colors.
-        count       [16]int       // Counts of each piece on the board, ex. white pawns: 6, etc.
-        pieces      [64]Piece     // Array of 64 squares with pieces on them.
-        outposts    [14]Bitmask   // Bitmasks of each piece on the board; [0] all white, [1] all black.
+	game       *Game
+	enpassant  int         // En-passant square caused by previous move.
+	color      int         // Side to make next move.
+	reversible bool        // Is this position reversible?
+	castles    uint8       // Castle rights mask.
+	hash       uint64      // Polyglot hash value.
+	board      Bitmask     // Bitmask of all pieces on the board.
+	king       [2]int      // King's square for both colors.
+	count      [16]int     // Counts of each piece on the board, ex. white pawns: 6, etc.
+	pieces     [64]Piece   // Array of 64 squares with pieces on them.
+	outposts   [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
-        tree[node] = Position{ game: game, pieces: pieces, color: color }
-        p := &tree[node]
+	tree[node] = Position{game: game, pieces: pieces, color: color}
+	p := &tree[node]
 
-        p.castles = castleKingside[White] | castleQueenside[White] |
-                    castleKingside[Black] | castleQueenside[Black]
+	p.castles = castleKingside[White] | castleQueenside[White] |
+		castleKingside[Black] | castleQueenside[Black]
 
-        if p.pieces[E1] != King || p.pieces[H1] != Rook {
-                p.castles &= ^castleKingside[White]
-        }
-        if p.pieces[E1] != King || p.pieces[A1] != Rook {
-                p.castles &= ^castleQueenside[White]
-        }
+	if p.pieces[E1] != King || p.pieces[H1] != Rook {
+		p.castles &= ^castleKingside[White]
+	}
+	if p.pieces[E1] != King || p.pieces[A1] != Rook {
+		p.castles &= ^castleQueenside[White]
+	}
 
-        if p.pieces[E8] != BlackKing || p.pieces[H8] != BlackRook {
-                p.castles &= ^castleKingside[Black]
-        }
-        if p.pieces[E8] != BlackKing || p.pieces[A8] != BlackRook {
-                p.castles &= ^castleQueenside[Black]
-        }
+	if p.pieces[E8] != BlackKing || p.pieces[H8] != BlackRook {
+		p.castles &= ^castleKingside[Black]
+	}
+	if p.pieces[E8] != BlackKing || p.pieces[A8] != BlackRook {
+		p.castles &= ^castleQueenside[Black]
+	}
 
-        for square, piece := range p.pieces {
-                if piece != 0 {
-                        p.outposts[piece].set(square)
-                        p.outposts[piece.color()].set(square)
-                        p.count[piece]++
-                        if piece.isKing() {
-                                p.king[piece.color()] = square
-                        }
-                }
-        }
+	for square, piece := range p.pieces {
+		if piece != 0 {
+			p.outposts[piece].set(square)
+			p.outposts[piece.color()].set(square)
+			p.count[piece]++
+			if piece.isKing() {
+				p.king[piece.color()] = square
+			}
+		}
+	}
 
-        p.reversible = true
-        p.hash = p.polyglot()
-        p.board = p.outposts[White] | p.outposts[Black]
+	p.reversible = true
+	p.hash = p.polyglot()
+	p.board = p.outposts[White] | p.outposts[Black]
 
-        return p
+	return p
 }
 
 func (p *Position) movePiece(piece Piece, from, to int) *Position {
-        p.pieces[from], p.pieces[to] = 0, piece
-        p.outposts[piece] ^= bit[from] | bit[to]
-        p.outposts[piece.color()] ^= bit[from] | bit[to]
+	p.pieces[from], p.pieces[to] = 0, piece
+	p.outposts[piece] ^= bit[from] | bit[to]
+	p.outposts[piece.color()] ^= bit[from] | bit[to]
 
-        return p
+	return p
 }
 
 func (p *Position) promotePawn(piece Piece, from, to int, promo Piece) *Position {
-        p.pieces[from], p.pieces[to] = 0, promo
-        p.outposts[piece] ^= bit[from]
-        p.outposts[promo] ^= bit[to]
-        p.outposts[piece.color()] ^= bit[from] | bit[to]
-        p.count[piece]--
-        p.count[promo]++
+	p.pieces[from], p.pieces[to] = 0, promo
+	p.outposts[piece] ^= bit[from]
+	p.outposts[promo] ^= bit[to]
+	p.outposts[piece.color()] ^= bit[from] | bit[to]
+	p.count[piece]--
+	p.count[promo]++
 
-        return p
+	return p
 }
 
 func (p *Position) capturePiece(capture Piece, from, to int) *Position {
-        p.outposts[capture] ^= bit[to]
-        p.outposts[capture.color()] ^= bit[to]
-        p.count[capture]--
+	p.outposts[capture] ^= bit[to]
+	p.outposts[capture.color()] ^= bit[to]
+	p.count[capture]--
 
-        return p
+	return p
 }
 
 func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
-        enpassant := to - eight[capture.color()^1]
+	enpassant := to - eight[capture.color()^1]
 
-        p.pieces[enpassant] = 0
-        p.outposts[capture] ^= bit[enpassant]
-        p.outposts[capture.color()] ^= bit[enpassant]
-        p.count[capture]--
+	p.pieces[enpassant] = 0
+	p.outposts[capture] ^= bit[enpassant]
+	p.outposts[capture.color()] ^= bit[enpassant]
+	p.count[capture]--
 
-        return p
+	return p
 }
 
 func (p *Position) MakeMove(move Move) *Position {
-        color := move.color()
-        from, to, piece, capture := move.split()
-        //
-        // Copy over the contents of previous tree node to the current one.
-        //
-        node++
-        tree[node] = *p                 // => tree[node] = tree[node - 1]
-        pp := &tree[node]
+	color := move.color()
+	from, to, piece, capture := move.split()
+	//
+	// Copy over the contents of previous tree node to the current one.
+	//
+	node++
+	tree[node] = *p // => tree[node] = tree[node - 1]
+	pp := &tree[node]
 
-        pp.enpassant, pp.reversible = 0, true
-        //
-        // Castle rights for current node are based on the castle rights from
-        // the previous node.
-        //
-        pp.castles &= castleRights[from] & castleRights[to]
+	pp.enpassant, pp.reversible = 0, true
+	//
+	// Castle rights for current node are based on the castle rights from
+	// the previous node.
+	//
+	pp.castles &= castleRights[from] & castleRights[to]
 
-        if capture != 0 {
-                pp.reversible = false
-                if to != 0 && to == p.enpassant {
-                        pp.hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
-                        pp.captureEnpassant(pawn(color^1), from, to)
-                } else {
-                        pp.hash ^= polyglotRandom[64 * p.pieces[to].polyglot() + to]
-                        pp.capturePiece(capture, from, to)
-                }
-        }
+	if capture != 0 {
+		pp.reversible = false
+		if to != 0 && to == p.enpassant {
+			pp.hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
+			pp.captureEnpassant(pawn(color^1), from, to)
+		} else {
+			pp.hash ^= polyglotRandom[64 * p.pieces[to].polyglot() + to]
+			pp.capturePiece(capture, from, to)
+		}
+	}
 
-        if promo := move.promo(); promo == 0 {
-                poly := 64 * p.pieces[from].polyglot()
-                pp.hash ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
-                pp.movePiece(piece, from, to)
+	if promo := move.promo(); promo == 0 {
+		poly := 64 * p.pieces[from].polyglot()
+		pp.hash ^= polyglotRandom[poly+from] ^ polyglotRandom[poly+to]
+		pp.movePiece(piece, from, to)
 
-                if piece.isKing() {
-                        pp.king[color] = to
-                        if move.isCastle() {
-                                pp.reversible = false
-                                switch to {
-                                case G1:
-                                        poly = 64 * Piece(Rook).polyglot()
-                                        pp.hash ^= polyglotRandom[poly + H1] ^ polyglotRandom[poly + F1]
-                                        pp.movePiece(Rook, H1, F1)
-                                case C1:
-                                        poly = 64 * Piece(Rook).polyglot()
-                                        pp.hash ^= polyglotRandom[poly + A1] ^ polyglotRandom[poly + D1]
-                                        pp.movePiece(Rook, A1, D1)
-                                case G8:
-                                        poly = 64 * Piece(BlackRook).polyglot()
-                                        pp.hash ^= polyglotRandom[poly + H8] ^ polyglotRandom[poly + F8]
-                                        pp.movePiece(BlackRook, H8, F8)
-                                case C8:
-                                        poly = 64 * Piece(BlackRook).polyglot()
-                                        pp.hash ^= polyglotRandom[poly + A8] ^ polyglotRandom[poly + D8]
-                                        pp.movePiece(BlackRook, A8, D8)
-                                }
-                        }
-                } else if piece.isPawn() {
-                        pp.reversible = false
-                        if move.isEnpassant() {
-                                pp.enpassant = from + eight[color] // Save the en-passant square.
-                                pp.hash ^= hashEnpassant[Col(pp.enpassant)]
-                        }
-                }
-        } else {
-                pp.reversible = false
-                pp.hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
-                pp.hash ^= polyglotRandom[64 * promo.polyglot() + to]
-                pp.promotePawn(piece, from, to, promo)
-        }
+		if piece.isKing() {
+			pp.king[color] = to
+			if move.isCastle() {
+				pp.reversible = false
+				switch to {
+				case G1:
+					poly = 64 * Piece(Rook).polyglot()
+					pp.hash ^= polyglotRandom[poly+H1] ^ polyglotRandom[poly+F1]
+					pp.movePiece(Rook, H1, F1)
+				case C1:
+					poly = 64 * Piece(Rook).polyglot()
+					pp.hash ^= polyglotRandom[poly+A1] ^ polyglotRandom[poly+D1]
+					pp.movePiece(Rook, A1, D1)
+				case G8:
+					poly = 64 * Piece(BlackRook).polyglot()
+					pp.hash ^= polyglotRandom[poly+H8] ^ polyglotRandom[poly+F8]
+					pp.movePiece(BlackRook, H8, F8)
+				case C8:
+					poly = 64 * Piece(BlackRook).polyglot()
+					pp.hash ^= polyglotRandom[poly+A8] ^ polyglotRandom[poly+D8]
+					pp.movePiece(BlackRook, A8, D8)
+				}
+			}
+		} else if piece.isPawn() {
+			pp.reversible = false
+			if move.isEnpassant() {
+				pp.enpassant = from + eight[color] // Save the en-passant square.
+				pp.hash ^= hashEnpassant[Col(pp.enpassant)]
+			}
+		}
+	} else {
+		pp.reversible = false
+		pp.hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
+		pp.hash ^= polyglotRandom[64 * promo.polyglot() + to]
+		pp.promotePawn(piece, from, to, promo)
+	}
 
 	pp.board = pp.outposts[White] | pp.outposts[Black]
 	if pp.isInCheck(color) {
@@ -176,26 +178,26 @@ func (p *Position) MakeMove(move Move) *Position {
 		return nil
 	}
 
-        pp.hash ^= hashCastle[pp.castles]
-        if pp.enpassant != 0 {
-                pp.hash ^= hashEnpassant[Col(pp.enpassant)]
-        }
+	pp.hash ^= hashCastle[pp.castles]
+	if pp.enpassant != 0 {
+		pp.hash ^= hashEnpassant[Col(pp.enpassant)]
+	}
 
 	if color == White {
-                pp.hash ^= polyglotRandomWhite
+		pp.hash ^= polyglotRandomWhite
 	}
-	pp.color = color^1
+	pp.color = color ^ 1
 
 	return pp // => &tree[node]
 }
 
 // Make null move by copying over previous node and flipping the color.
 func (p *Position) MakeNullMove() *Position {
-        node++
-        tree[node] = *p // => tree[node] = tree[node - 1]
+	node++
+	tree[node] = *p // => tree[node] = tree[node - 1]
 
 	if tree[node].color == White {
-                tree[node].hash ^= polyglotRandomWhite
+		tree[node].hash ^= polyglotRandomWhite
 	}
 	tree[node].color ^= 1
 
@@ -203,151 +205,151 @@ func (p *Position) MakeNullMove() *Position {
 }
 
 func (p *Position) TakeBack(move Move) *Position {
-        node--
-        return &tree[node]
+	node--
+	return &tree[node]
 }
 
 func (p *Position) TakeBackNullMove() *Position {
-        p.color ^= 1
-        if p.color == White {
-                p.hash ^= polyglotRandomWhite
-        }
-        return p.TakeBack(Move(0))
+	p.color ^= 1
+	if p.color == White {
+		p.hash ^= polyglotRandomWhite
+	}
+	return p.TakeBack(Move(0))
 }
 
 func (p *Position) isInCheck(color int) bool {
-        return p.isAttacked(p.king[color], color^1)
+	return p.isAttacked(p.king[color], color^1)
 }
 
 func (p *Position) isNull() bool {
-        return node > 0 && tree[node].board == tree[node-1].board
+	return node > 0 && tree[node].board == tree[node-1].board
 }
 
 func (p *Position) isRepetition() bool {
-        if !p.reversible {
-                return false
-        }
+	if !p.reversible {
+		return false
+	}
 
-        for reps, prevNode := 1, node - 1; prevNode >= 0; prevNode-- {
-                if !tree[prevNode].reversible {
-                        return false
-                }
-                if tree[prevNode].color == p.color && tree[prevNode].hash == p.hash {
-                        reps++
-                        if reps == 3 {
-                                return true
-                        }
-                }
-        }
-        return false
+	for reps, prevNode := 1, node-1; prevNode >= 0; prevNode-- {
+		if !tree[prevNode].reversible {
+			return false
+		}
+		if tree[prevNode].color == p.color && tree[prevNode].hash == p.hash {
+			reps++
+			if reps == 3 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (p *Position) isInsufficient() bool {
-        return false
+	return false
 }
 
 func (p *Position) canCastle(color int) (kingside, queenside bool) {
-        attacks := p.attacks(color^1)
-        kingside = p.castles & castleKingside[color] != 0 &&
-                   (gapKing[color] & p.board == 0) &&
-                   (castleKing[color] & attacks == 0)
+	attacks := p.attacks(color ^ 1)
+	kingside = p.castles & castleKingside[color] != 0 &&
+		(gapKing[color] & p.board == 0) &&
+		(castleKing[color] & attacks == 0)
 
-        queenside = p.castles & castleQueenside[color] != 0 &&
-                    (gapQueen[color] & p.board == 0) &&
-                    (castleQueen[color] & attacks == 0)
-        return
+	queenside = p.castles&castleQueenside[color] != 0 &&
+		(gapQueen[color] & p.board == 0) &&
+		(castleQueen[color] & attacks == 0)
+	return
 }
 
 // Reports game status for current position or after the given move. The status
 // help to determine whether to continue with search or if the game is over.
 func (p *Position) status(move Move, score int) int {
-        if move != Move(0) {
-                p = p.MakeMove(move)
-                defer func() { p = p.TakeBack(move) }()
-        }
+	if move != Move(0) {
+		p = p.MakeMove(move)
+		defer func() { p = p.TakeBack(move) }()
+	}
 
-        switch ply, score := Ply(), Abs(score); score {
-        case 0:
-                if ply == 1 {
-                        if p.isRepetition() {
-                                return Repetition
-                        } else if p.isInsufficient() {
-                                return Insufficient
-                        }
-                }
-                if !NewGen(p, ply + 1).generateMoves().anyValid(p) {
-                        return Stalemate
-                }
-        case Checkmate - ply:
-                if p.isInCheck(p.color) {
-                        if p.color == White {
-                                return BlackWon
-                        }
-                        return WhiteWon
-                }
-                return Stalemate
-        default:
-                if score > Checkmate - MaxDepth && (score + ply) / 2 > 0 {
-                        if p.color == White {
-                                return BlackWinning
-                        }
-                        return WhiteWinning
-                }
-        }
-        return InProgress
+	switch ply, score := Ply(), Abs(score); score {
+	case 0:
+		if ply == 1 {
+			if p.isRepetition() {
+				return Repetition
+			} else if p.isInsufficient() {
+				return Insufficient
+			}
+		}
+		if !NewGen(p, ply+1).generateMoves().anyValid(p) {
+			return Stalemate
+		}
+	case Checkmate - ply:
+		if p.isInCheck(p.color) {
+			if p.color == White {
+				return BlackWon
+			}
+			return WhiteWon
+		}
+		return Stalemate
+	default:
+		if score > Checkmate-MaxDepth && (score+ply)/2 > 0 {
+			if p.color == White {
+				return BlackWinning
+			}
+			return WhiteWinning
+		}
+	}
+	return InProgress
 }
 
 // Calculates position stage based on what pieces are on the board (256 for
 // the initial position, 0 for bare kings).
 func (p *Position) stage() int {
-        return 2 * (p.count[Pawn]   + p.count[BlackPawn])   +
-               6 * (p.count[Knight] + p.count[BlackKnight]) +
-              12 * (p.count[Bishop] + p.count[BlackBishop]) +
-              16 * (p.count[Rook]   + p.count[BlackRook])   +
-              44 * (p.count[Queen]  + p.count[BlackQueen])
+	return 2 * (p.count[Pawn] + p.count[BlackPawn]) +
+		6 * (p.count[Knight] + p.count[BlackKnight]) +
+		12 * (p.count[Bishop] + p.count[BlackBishop]) +
+		16 * (p.count[Rook] + p.count[BlackRook]) +
+		44 * (p.count[Queen] + p.count[BlackQueen])
 }
 
 // Calculates normalized position score based on position stage and given
 // midgame/endgame values.
 func (p *Position) score(midgame, endgame int) int {
-        stage := p.stage()
-        return (midgame * stage + endgame * (256 - stage)) / 256
+	stage := p.stage()
+	return (midgame * stage + endgame * (256-stage)) / 256
 }
 
 // Compute position's polyglot hash.
 func (p *Position) polyglot() (key uint64) {
-        board := p.board
-        for board != 0 {
-                square := board.pop() // Inline polyhash() is at least 10% faster.
-                key ^= polyglotRandom[64 * p.pieces[square].polyglot() + square]
-        }
+	board := p.board
+	for board != 0 {
+		square := board.pop() // Inline polyhash() is at least 10% faster.
+		key ^= polyglotRandom[64 * p.pieces[square].polyglot() + square]
+	}
 
 	key ^= hashCastle[p.castles]
 
 	if p.enpassant != 0 {
-                key ^= hashEnpassant[Col(p.enpassant)]
+		key ^= hashEnpassant[Col(p.enpassant)]
 	}
 	if p.color == White {
-                key ^= polyglotRandomWhite
+		key ^= polyglotRandomWhite
 	}
 
 	return
 }
 
-func (p *Position) polyhash (square int) uint64 {
-       return polyglotRandom[64 * p.pieces[square].polyglot() + square]
+func (p *Position) polyhash(square int) uint64 {
+	return polyglotRandom[64 * p.pieces[square].polyglot() + square]
 }
 
 func (p *Position) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h")
-        if !p.isInCheck(p.color) {
-                buffer.WriteString("\n")
-        } else {
-                buffer.WriteString("  Check to " + C(p.color) + "\n")
-        }
-	for row := 7;  row >= 0;  row-- {
+	if !p.isInCheck(p.color) {
+		buffer.WriteString("\n")
+	} else {
+		buffer.WriteString("  Check to " + C(p.color) + "\n")
+	}
+	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))
-		for col := 0;  col <= 7; col++ {
+		for col := 0; col <= 7; col++ {
 			square := Square(row, col)
 			buffer.WriteByte(' ')
 			if piece := p.pieces[square]; piece != 0 {
