@@ -4,7 +4,10 @@
 
 package donna
 
-import (`bytes`; `fmt`)
+import (
+	`bytes`
+	`fmt`
+)
 
 type Bitmask uint64
 
@@ -27,86 +30,85 @@ func (b Bitmask) isClear(position int) bool {
 	return !b.isSet(position)
 }
 
-
 // Finds least significant bit set (LSB) in non-zero bitmask. Returns
 // an integer in 0..63 range.
 func (b Bitmask) first() int {
-	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
+	return deBruijn[((b ^ (b-1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
 // Finds *and clears* least significant bit set (LSB) in non-zero
 // bitmask. Returns an integer in 0..63 range.
 func (b *Bitmask) pop() int {
-        magic := (*b - 1)
-        index := deBruijn[((*b ^ magic) * 0x03F79D71B4CB0A89) >> 58]
-        *b &= magic
-        return index
+	magic := (*b - 1)
+	index := deBruijn[((*b ^ magic) * 0x03F79D71B4CB0A89) >> 58]
+	*b &= magic
+	return index
 }
 
 // Returns number of bits set.
 func (b Bitmask) count() int {
-        mask := b
-        mask -= (mask >> 1) & 0x5555555555555555
-        mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
-        mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
-        return int((mask * 0x0101010101010101) >> 56)
+	mask := b
+	mask -= (mask >> 1) & 0x5555555555555555
+	mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
+	mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
+	return int((mask * 0x0101010101010101) >> 56)
 }
 
 // Sets a bit at given position.
 func (b *Bitmask) set(position int) *Bitmask {
 	*b |= 1 << uint(position)
-        return b
+	return b
 }
 
 // Clears a bit at given position.
 func (b *Bitmask) clear(position int) *Bitmask {
 	*b &= ^(1 << uint(position))
-        return b
+	return b
 }
 
 // Combines two bitmasks using bitwise OR operator.
 func (b *Bitmask) combine(bitmask Bitmask) *Bitmask {
 	*b |= bitmask
-        return b
+	return b
 }
 
 // Intersects two bitmasks using bitwise AND operator.
 func (b *Bitmask) intersect(bitmask Bitmask) *Bitmask {
 	*b &= bitmask
-        return b
+	return b
 }
 
 // Excludes bits of one bitmask from another using bitwise XOR operator.
 func (b *Bitmask) exclude(bitmask Bitmask) *Bitmask {
 	*b ^= (bitmask & *b)
-        return b
+	return b
 }
 
 func (b *Bitmask) shift(offset int) *Bitmask {
-        if offset > 0 {
-                *b <<= uint(offset)
-        } else {
-                *b >>= -uint(offset)
-        }
-        return b
+	if offset > 0 {
+		*b <<= uint(offset)
+	} else {
+		*b >>= -uint(offset)
+	}
+	return b
 }
 
 func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
-        mask := bit[square] & board
+	mask := bit[square] & board
 
-        for mask.shift(direction); mask.isNotEmpty(); mask.shift(direction) {
-                b.combine(mask)
-                if (mask & occupied).isNotEmpty() {
-                        break
-                }
-                mask.intersect(board)
-        }
-        return b
+	for mask.shift(direction); mask.isNotEmpty(); mask.shift(direction) {
+		b.combine(mask)
+		if (mask & occupied).isNotEmpty() {
+			break
+		}
+		mask.intersect(board)
+	}
+	return b
 }
 
 func (b Bitmask) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h  ")
-        buffer.WriteString(fmt.Sprintf("0x%016X\n", uint64(b)))
+	buffer.WriteString(fmt.Sprintf("0x%016X\n", uint64(b)))
 	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0; col <= 7; col++ {
@@ -122,7 +124,6 @@ func (b Bitmask) String() string {
 	}
 	return buffer.String()
 }
-
 
 // 0x0123456789ABCDEF
 //   a b c d e f g h
