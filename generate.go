@@ -4,19 +4,21 @@
 
 package donna
 
-import(`sort`)
+import (
+	`sort`
+)
 
 type MoveWithScore struct {
-        move   Move
-        score  int
+	move  Move
+	score int
 }
 
 type MoveGen struct {
-        p     *Position
-        list  [256]MoveWithScore
-        head  int
-        tail  int
-        ply   int
+	p    *Position
+	list [256]MoveWithScore
+	head int
+	tail int
+	ply  int
 }
 
 // Pre-allocate move generator array (one entry per ply) to avoid garbage
@@ -27,12 +29,12 @@ var moveList [MaxPly]MoveGen
 // has been pre-allocated already we simply return a pointer to the existing
 // array element re-initializing all its data.
 func NewGen(p *Position, ply int) (gen *MoveGen) {
-        gen = &moveList[ply]
-        gen.p = p
-        gen.list = [256]MoveWithScore{}
-        gen.head, gen.tail = 0, 0
-        gen.ply = ply
-        return gen
+	gen = &moveList[ply]
+	gen.p = p
+	gen.list = [256]MoveWithScore{}
+	gen.head, gen.tail = 0, 0
+	gen.ply = ply
+	return gen
 }
 
 // Returns "new" move generator for the initial step of iterative deepening
@@ -40,127 +42,128 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 // is used in iterative deepening search when all the moves are being generated
 // at depth one, and reused later as the search deepens.
 func NewRootGen(p *Position, depth int) (gen *MoveGen) {
-        if depth > 1 {
-                return moveList[0].reset().rank(p.cachedMove())
-        }
+	if depth > 1 {
+		return moveList[0].reset().rank(p.cachedMove())
+	}
 
-        gen = NewGen(p, 0).generateAllMoves()
-        if gen.onlyMove() {
-                return gen
-        }
-        //
-        // Get rid of invalid moves so that we don't do it on each iteration.
-        //
-        return gen.validOnly(p).rank(p.cachedMove())
+	gen = NewGen(p, 0).generateAllMoves()
+	if gen.onlyMove() {
+		return gen
+	}
+	//
+	// Get rid of invalid moves so that we don't do it on each iteration.
+	//
+	return gen.validOnly(p).rank(p.cachedMove())
 }
 
 func (gen *MoveGen) reset() *MoveGen {
-        gen.head = 0
-        return gen
+	gen.head = 0
+	return gen
 }
 
 func (gen *MoveGen) size() int {
-        return gen.tail - gen.head
+	return gen.tail - gen.head
 }
 
 func (gen *MoveGen) onlyMove() bool {
-        return gen.size() == 1
+	return gen.size() == 1
 }
 
 func (gen *MoveGen) NextMove() (move Move) {
-        if gen.head < gen.tail {
-                move = gen.list[gen.head].move
-                gen.head++
-        }
-        return
+	if gen.head < gen.tail {
+		move = gen.list[gen.head].move
+		gen.head++
+	}
+	return
 }
 
 // Removes invalid moves from the generated list. We use in iterative deepening
 // to avoid stumbling upon invalid moves on each iteration.
 func (gen *MoveGen) validOnly(p *Position) *MoveGen {
-        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if position := p.MakeMove(move); position == nil {
-                        gen.remove()
-                } else {
-                        position.TakeBack(move)
-                }
-        }
-        return gen.reset()
+	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+		if position := p.MakeMove(move); position == nil {
+			gen.remove()
+		} else {
+			position.TakeBack(move)
+		}
+	}
+	return gen.reset()
 }
 
 // Probes a list of generated moves and returns true if it contains at least
 // one valid move.
 func (gen *MoveGen) anyValid(p *Position) bool {
-        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if position := p.MakeMove(move); position != nil {
-                        position.TakeBack(move)
-                        return true
-                }
-        }
-        return false
+	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+		if position := p.MakeMove(move); position != nil {
+			position.TakeBack(move)
+			return true
+		}
+	}
+	return false
 }
 
 func (gen *MoveGen) rank(bestMove Move) *MoveGen {
-        if gen.size() < 2 {
-                return gen
-        }
-        //
-        // If the cache is disabled or we couldn't determine best move so far
-        // then use principal variation table as backup.
-        //
-        game := gen.p.game
-        if len(game.cache) == 0 && bestMove == Move(0) {
-                bestMove = game.bestLine[0][gen.ply]
-        }
+	if gen.size() < 2 {
+		return gen
+	}
+	//
+	// If the cache is disabled or we couldn't determine best move so far
+	// then use principal variation table as backup.
+	//
+	game := gen.p.game
+	if len(game.cache) == 0 && bestMove == Move(0) {
+		bestMove = game.bestLine[0][gen.ply]
+	}
 
-        for i := gen.head; i < gen.tail; i++ {
-                move := gen.list[i].move
-                if move == bestMove {
-                        gen.list[i].score = 0xFFFF
-                } else if move == game.killers[gen.ply][0] {
-                        gen.list[i].score = 0xFFFE
-                } else if move == game.killers[gen.ply][1] {
-                        gen.list[i].score = 0xFFFD
-                } else if move & isCapture != 0 {
-                        gen.list[i].score = move.value()
-                } else {
-                        endgame, midgame := move.score()
-                        gen.list[i].score = gen.p.score(midgame, endgame)
-                        gen.list[i].score += game.goodMoves[move.piece()][move.to()]
-                }
-        }
-        sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
-        return gen
+	for i := gen.head; i < gen.tail; i++ {
+		move := gen.list[i].move
+		if move == bestMove {
+			gen.list[i].score = 0xFFFF
+		} else if move == game.killers[gen.ply][0] {
+			gen.list[i].score = 0xFFFE
+		} else if move == game.killers[gen.ply][1] {
+			gen.list[i].score = 0xFFFD
+		} else if move&isCapture != 0 {
+			gen.list[i].score = move.value()
+		} else {
+			endgame, midgame := move.score()
+			gen.list[i].score = gen.p.score(midgame, endgame)
+			gen.list[i].score += game.goodMoves[move.piece()][move.to()]
+		}
+	}
+	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
+	return gen
 }
 
 func (gen *MoveGen) quickRank() *MoveGen {
-        if gen.size() < 2 {
-                return gen
-        }
-        for i := gen.head; i < gen.tail; i++ {
-                if move := gen.list[i].move; move & isCapture != 0 {
-                        gen.list[i].score = move.value()
-                } else {
-                        endgame, midgame := move.score()
-                        gen.list[i].score = gen.p.score(midgame, endgame)
-                }
-        }
-        sort.Sort(byScore{ gen.list[gen.head : gen.tail] })
-        return gen
+	if gen.size() < 2 {
+		return gen
+	}
+	for i := gen.head; i < gen.tail; i++ {
+		if move := gen.list[i].move; move&isCapture != 0 {
+			gen.list[i].score = move.value()
+		} else {
+			endgame, midgame := move.score()
+			gen.list[i].score = gen.p.score(midgame, endgame)
+		}
+	}
+	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
+	return gen
 }
 
 func (gen *MoveGen) add(move Move) *MoveGen {
-        gen.list[gen.tail].move = move
-        gen.tail++
-        return gen
+	gen.list[gen.tail].move = move
+	gen.tail++
+	return gen
 }
 
 // Removes current move from the list by copying over the ramaining moves. Head and
 // tail pointers get decremented so that calling NexMove() works as expected.
 func (gen *MoveGen) remove() *MoveGen {
-        copy(gen.list[gen.head-1:], gen.list[gen.head:])
-        gen.head--; gen.tail--
-        return gen;
+	copy(gen.list[gen.head-1:], gen.list[gen.head:])
+	gen.head--
+	gen.tail--
+	return gen
 }
 
 // Returns an array of generated moves by continuously appending the NextMove()
@@ -175,8 +178,9 @@ func (gen *MoveGen) allMoves() (moves []Move) {
 // Sorting moves by their relative score based on piece/square for regular moves
 // or least valuaeable attacker/most valueable victim for captures.
 type byScore struct {
-        list []MoveWithScore
+	list []MoveWithScore
 }
-func (her byScore) Len() int           { return len(her.list)}
+
+func (her byScore) Len() int           { return len(her.list) }
 func (her byScore) Swap(i, j int)      { her.list[i], her.list[j] = her.list[j], her.list[i] }
 func (her byScore) Less(i, j int) bool { return her.list[i].score > her.list[j].score }
