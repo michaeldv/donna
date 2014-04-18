@@ -4,121 +4,121 @@
 
 package donna
 
-import()
+import ()
 
 // Quiescence search.
 func (p *Position) searchQuiescence(alpha, beta int) int {
-        p.game.bestLength[Ply()] = Ply()
-        return p.quiescence(alpha, beta, false)
+	p.game.bestLength[Ply()] = Ply()
+	return p.quiescence(alpha, beta, false)
 }
 
 func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
-        p.game.qnodes++
-        if p.isRepetition() {
-                return 0
-        }
+	p.game.qnodes++
+	if p.isRepetition() {
+		return 0
+	}
 
-        bestScore := p.Evaluate()
-        if Ply() > MaxDepth {
-                return bestScore
-        }
+	bestScore := p.Evaluate()
+	if Ply() > MaxDepth {
+		return bestScore
+	}
 
-        if bestScore > alpha {
-                if bestScore >= beta {
-                        return bestScore//beta
-                }
-                alpha = bestScore
-        }
-
-        gen := NewGen(p, Ply()).generateCaptures().quickRank()
-        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if p.exchange(move) >= 0 {
-	                if position := p.MakeMove(move); position != nil {
-	                        //Log("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
-	                        moveScore := 0
-	                        if position.isInCheck(position.color) {
-	                                moveScore = -position.quiescenceInCheck(-beta, -alpha)
-	                        } else {
-	                                moveScore = -position.quiescence(-beta, -alpha, true)
-	                        }
-
-	                        position.TakeBack(move)
-	                        if moveScore > bestScore {
-	                                if moveScore > alpha {
-	                                        if moveScore >= beta {
-	                                                return moveScore
-	                                        }
-	                                        alpha = moveScore
-	                                }
-	                                bestScore = moveScore
-	                        }
-	                }
+	if bestScore > alpha {
+		if bestScore >= beta {
+			return bestScore //beta
 		}
-        }
+		alpha = bestScore
+	}
 
-        if capturesOnly {
-                return bestScore
-        }
-
-        gen = NewGen(p, Ply()).generateChecks().quickRank()
-        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+	gen := NewGen(p, Ply()).generateCaptures().quickRank()
+	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if p.exchange(move) >= 0 {
-	                if position := p.MakeMove(move); position != nil {
-	                        //Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
-	                        moveScore := -position.quiescenceInCheck(-beta, -alpha)
+			if position := p.MakeMove(move); position != nil {
+				//Log("%*squie/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+				moveScore := 0
+				if position.isInCheck(position.color) {
+					moveScore = -position.quiescenceInCheck(-beta, -alpha)
+				} else {
+					moveScore = -position.quiescence(-beta, -alpha, true)
+				}
 
-	                        position.TakeBack(move)
-	                        if moveScore > bestScore {
-	                                p.game.saveBest(Ply(), move)
-	                                if moveScore > alpha {
-	                                        if moveScore >= beta {
-	                                                return moveScore
-	                                        }
-	                                        alpha = moveScore
-	                                }
-	                                bestScore = moveScore
-	                        }
-	                }
+				position.TakeBack(move)
+				if moveScore > bestScore {
+					if moveScore > alpha {
+						if moveScore >= beta {
+							return moveScore
+						}
+						alpha = moveScore
+					}
+					bestScore = moveScore
+				}
+			}
 		}
-        }
+	}
 
-        return bestScore
+	if capturesOnly {
+		return bestScore
+	}
+
+	gen = NewGen(p, Ply()).generateChecks().quickRank()
+	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+		if p.exchange(move) >= 0 {
+			if position := p.MakeMove(move); position != nil {
+				//Log("%*squix/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+				moveScore := -position.quiescenceInCheck(-beta, -alpha)
+
+				position.TakeBack(move)
+				if moveScore > bestScore {
+					p.game.saveBest(Ply(), move)
+					if moveScore > alpha {
+						if moveScore >= beta {
+							return moveScore
+						}
+						alpha = moveScore
+					}
+					bestScore = moveScore
+				}
+			}
+		}
+	}
+
+	return bestScore
 }
 
 // Quiescence search (in check).
 func (p *Position) quiescenceInCheck(alpha, beta int) int {
-        if p.isRepetition() {
-                return 0
-        }
+	if p.isRepetition() {
+		return 0
+	}
 
-        bestScore := Ply() - Checkmate
-        if bestScore >= beta {
-                return bestScore//beta
-        }
+	bestScore := Ply() - Checkmate
+	if bestScore >= beta {
+		return bestScore //beta
+	}
 
-        gen := NewGen(p, Ply()).generateEvasions().quickRank()
-        for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-                if position := p.MakeMove(move); position != nil {
-                        //Log("%*squic/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
-                        moveScore := 0
-                        if position.isInCheck(position.color) {
-                                moveScore = -position.quiescenceInCheck(-beta, -alpha)
-                        } else {
-                                moveScore = -position.quiescence(-beta, -alpha, true)
-                        }
+	gen := NewGen(p, Ply()).generateEvasions().quickRank()
+	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+		if position := p.MakeMove(move); position != nil {
+			//Log("%*squic/%s> ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), Ply(), move)
+			moveScore := 0
+			if position.isInCheck(position.color) {
+				moveScore = -position.quiescenceInCheck(-beta, -alpha)
+			} else {
+				moveScore = -position.quiescence(-beta, -alpha, true)
+			}
 
-                        position.TakeBack(move)
-                        if moveScore > bestScore {
-                                if moveScore > alpha {
-                                        if moveScore >= beta {
-                                                return moveScore
-                                        }
-                                        alpha = moveScore
-                                }
-                                bestScore = moveScore
-                        }
-                }
-        }
+			position.TakeBack(move)
+			if moveScore > bestScore {
+				if moveScore > alpha {
+					if moveScore >= beta {
+						return moveScore
+					}
+					alpha = moveScore
+				}
+				bestScore = moveScore
+			}
+		}
+	}
 
-        return bestScore
+	return bestScore
 }
