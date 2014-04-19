@@ -17,7 +17,8 @@ type Position struct {
 	color      int         // Side to make next move.
 	reversible bool        // Is this position reversible?
 	castles    uint8       // Castle rights mask.
-	hash       uint64      // Polyglot hash value.
+	hash       uint64      // Polyglot hash value for the entire board.
+	hashPawn   uint64      // Polyglot hash value for pawns only.
 	board      Bitmask     // Bitmask of all pieces on the board.
 	king       [2]int      // King's square for both colors.
 	count      [16]int     // Counts of each piece on the board, ex. white pawns: 6, etc.
@@ -58,7 +59,7 @@ func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
 	}
 
 	p.reversible = true
-	p.hash = p.polyglot()
+	p.hash, p.hashPawn = p.polyglot()
 	p.board = p.outposts[White] | p.outposts[Black]
 
 	return p
@@ -319,21 +320,26 @@ func (p *Position) score(midgame, endgame int) int {
 	return (midgame * stage + endgame * (256-stage)) / 256
 }
 
-// Compute position's polyglot hash.
-func (p *Position) polyglot() (key uint64) {
+// Computes initial values of position's polyglot hash (entire board) and pawn
+// hash (pawns only). When making a move the values get updated incrementally.
+func (p *Position) polyglot() (hash, hashPawn uint64) {
 	board := p.board
 	for board != 0 {
 		square := board.pop()
-		key ^= polyglotRandom[64 * p.pieces[square].polyglot() + square]
+		piece := p.pieces[square]
+		seed := polyglotRandom[64 * piece.polyglot() + square]
+		hash ^= seed
+		if piece.isPawn() {
+			hashPawn ^= seed
+		}
 	}
 
-	key ^= hashCastle[p.castles]
-
+	hash ^= hashCastle[p.castles]
 	if p.enpassant != 0 {
-		key ^= hashEnpassant[Col(p.enpassant)]
+		hash ^= hashEnpassant[Col(p.enpassant)]
 	}
 	if p.color == White {
-		key ^= polyglotRandomWhite
+		hash ^= polyglotRandomWhite
 	}
 
 	return

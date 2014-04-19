@@ -221,8 +221,10 @@ func TestPosition120(t *testing.T) {
 func TestPosition200(t *testing.T) { // 1. e4
 	p := NewGame().InitialPosition().Start(White)
 	p = p.MakeMove(p.NewMove(E2, E4))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x823C9B50FD114196))
+	expect(t, hash, uint64(0x823C9B50FD114196))
+	expect(t, hashPawn, uint64(0x0B2D6B38C0B92E91))
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -231,8 +233,10 @@ func TestPosition210(t *testing.T) { // 1. e4 d5
 	p := NewGame().InitialPosition().Start(White)
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(D7, D5))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x0756B94461C50FB0))
+	expect(t, hash, uint64(0x0756B94461C50FB0))
+	expect(t, hashPawn, uint64(0x76916F86F34AE5BE))
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -242,8 +246,10 @@ func TestPosition220(t *testing.T) { // 1. e4 d5 2. e5
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, E5))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x662FAFB965DB29D4))
+	expect(t, hash, uint64(0x662FAFB965DB29D4))
+	expect(t, hashPawn, uint64(0xEF3E5FD1587346D3))
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -254,8 +260,10 @@ func TestPosition230(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 	p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, E5))
 	p = p.MakeMove(p.NewEnpassant(F7, F5))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x22A48B5A8E47FF78))
+	expect(t, hash, uint64(0x22A48B5A8E47FF78))
+	expect(t, hashPawn, uint64(0x83871FE249DCEE04))
 	expect(t, p.enpassant, F6)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -267,8 +275,10 @@ func TestPosition240(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castl
 	p = p.MakeMove(p.NewMove(E4, E5))
 	p = p.MakeMove(p.NewMove(F7, F5))
 	p = p.MakeMove(p.NewMove(E1, E2))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x652A607CA3F242C1))
+	expect(t, hash, uint64(0x652A607CA3F242C1))
+	expect(t, hashPawn, uint64(0x83871FE249DCEE04))
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, castleKingside[Black]|castleQueenside[Black])
 }
@@ -281,8 +291,10 @@ func TestPosition250(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black C
 	p = p.MakeMove(p.NewMove(F7, F5))
 	p = p.MakeMove(p.NewMove(E1, E2))
 	p = p.MakeMove(p.NewMove(E8, F7))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x00FDD303C946BDD9))
+	expect(t, hash, uint64(0x00FDD303C946BDD9))
+	expect(t, hashPawn, uint64(0x83871FE249DCEE04))
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0))
 }
@@ -294,8 +306,10 @@ func TestPosition260(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- En
 	p = p.MakeMove(p.NewMove(H2, H4))
 	p = p.MakeMove(p.NewMove(B5, B4))
 	p = p.MakeMove(p.NewEnpassant(C2, C4))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x3C8123EA7B067637))
+	expect(t, hash, uint64(0x3C8123EA7B067637))
+	expect(t, hashPawn, uint64(0xB5AA405AF42E7052))
 	expect(t, p.enpassant, C3)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -309,10 +323,12 @@ func TestPosition270(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 
 	p = p.MakeMove(p.NewEnpassant(C2, C4))
 	p = p.MakeMove(p.NewMove(B4, C3))
 	p = p.MakeMove(p.NewMove(A1, A3))
+	hash, hashPawn := p.polyglot()
 
-	expect(t, p.polyglot(), uint64(0x5C3F9B829B279560))
+	expect(t, hash, uint64(0x5C3F9B829B279560))
+	expect(t, hashPawn, uint64(0xE214F040EAA135A0))
 	expect(t, p.enpassant, 0)
-	expect(t, p.castles, castleKingside[White]|castleKingside[Black]|castleQueenside[Black])
+	expect(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
 }
 
 // Position status.
