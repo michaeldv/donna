@@ -69,6 +69,10 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	p.outposts[piece] ^= bit[from] | bit[to]
 	p.outposts[piece.color()] ^= bit[from] | bit[to]
 
+	// Update position's hash.
+	poly := 64 * piece.polyglot()
+	p.hash ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
+
 	return p
 }
 
@@ -131,8 +135,6 @@ func (p *Position) MakeMove(move Move) *Position {
 	}
 
 	if promo := move.promo(); promo == 0 {
-		poly := 64 * p.pieces[from].polyglot()
-		pp.hash ^= polyglotRandom[poly+from] ^ polyglotRandom[poly+to]
 		pp.movePiece(piece, from, to)
 
 		if piece.isKing() {
@@ -141,20 +143,12 @@ func (p *Position) MakeMove(move Move) *Position {
 				pp.reversible = false
 				switch to {
 				case G1:
-					poly = 64 * Piece(Rook).polyglot()
-					pp.hash ^= polyglotRandom[poly+H1] ^ polyglotRandom[poly+F1]
 					pp.movePiece(Rook, H1, F1)
 				case C1:
-					poly = 64 * Piece(Rook).polyglot()
-					pp.hash ^= polyglotRandom[poly+A1] ^ polyglotRandom[poly+D1]
 					pp.movePiece(Rook, A1, D1)
 				case G8:
-					poly = 64 * Piece(BlackRook).polyglot()
-					pp.hash ^= polyglotRandom[poly+H8] ^ polyglotRandom[poly+F8]
 					pp.movePiece(BlackRook, H8, F8)
 				case C8:
-					poly = 64 * Piece(BlackRook).polyglot()
-					pp.hash ^= polyglotRandom[poly+A8] ^ polyglotRandom[poly+D8]
 					pp.movePiece(BlackRook, A8, D8)
 				}
 			}
@@ -329,7 +323,7 @@ func (p *Position) score(midgame, endgame int) int {
 func (p *Position) polyglot() (key uint64) {
 	board := p.board
 	for board != 0 {
-		square := board.pop() // Inline polyhash() is at least 10% faster.
+		square := board.pop()
 		key ^= polyglotRandom[64 * p.pieces[square].polyglot() + square]
 	}
 
@@ -343,10 +337,6 @@ func (p *Position) polyglot() (key uint64) {
 	}
 
 	return
-}
-
-func (p *Position) polyhash(square int) uint64 {
-	return polyglotRandom[64 * p.pieces[square].polyglot() + square]
 }
 
 func (p *Position) String() string {
