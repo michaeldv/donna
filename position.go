@@ -191,19 +191,28 @@ func (p *Position) MakeMove(move Move) *Position {
 	return pp // => &tree[node]
 }
 
-// Make null move by copying over previous node and flipping the color.
+// Makes "null" move by copying over previous node position (i.e. preserving all pieces
+// intact) and flipping the color.
 func (p *Position) MakeNullMove() *Position {
 	node++
 	tree[node] = *p // => tree[node] = tree[node - 1]
+	pp := &tree[node]
 
-	if tree[node].color == White {
-		tree[node].hash ^= polyglotRandomWhite
+	// Flipping side to move obviously invalidates the enpassant square.
+	if pp.enpassant != 0 {
+		pp.hash ^= hashEnpassant[Col(pp.enpassant)]
+		pp.enpassant = 0
 	}
-	tree[node].color ^= 1
 
-	return &tree[node]
+	if pp.color == White {
+		pp.hash ^= polyglotRandomWhite
+	}
+	pp.color ^= 1
+
+	return pp // => &tree[node]
 }
 
+// Restores previous position effectively taking back the last move made.
 func (p *Position) TakeBack(move Move) *Position {
 	node--
 	return &tree[node]
