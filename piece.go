@@ -82,14 +82,14 @@ func (p Piece) bonus(square int) (int, int) {
 	return 0, 0
 }
 
-// return Piece - 1 when color is White(0)
-//        Piece - 3 when color is Black(1)
+// Converts a piece to "official" polyglot representation, i.e. returns (Piece - 1)
+// when the color is 0 and (Piece - 3) when color is 1.
 func (p Piece) polyglot() int {
-	return int(p) - 1 - 2*p.color()
+	return int(p) - 1 - (int(p) & 1) << 1 // Fast int(p) - 1 - 2 * p.color()
 }
 
 func (p Piece) color() int {
-	return int(p) & 0x01
+	return int(p) & 1
 }
 
 func (p Piece) kind() int {
