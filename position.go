@@ -172,15 +172,20 @@ func (p *Position) MakeMove(move Move) *Position {
 		return nil
 	}
 	//
-	// OK, the position after making the move is valid: update castle rights and
-	// flip the color.
+	// OK, the position after making the move is valid: all that's left is updating
+	// castle rights, finishing off incremental hash value, and flipping the color.
 	//
 	pp.castles &= castleRights[from] & castleRights[to]
-	pp.hash ^= hashCastle[pp.castles]
+	pp.hash ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
+
+	if p.enpassant != 0 {
+		pp.hash ^= hashEnpassant[Col(p.enpassant)]
+	}
+
 	pp.hash ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
 
-	return pp // => &tree[node]
+	return &tree[node] // pp
 }
 
 // Makes "null" move by copying over previous node position (i.e. preserving all pieces
@@ -198,7 +203,7 @@ func (p *Position) MakeNullMove() *Position {
 	pp.hash ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
 
-	return pp // => &tree[node]
+	return &tree[node] // pp
 }
 
 // Restores previous position effectively taking back the last move made.
