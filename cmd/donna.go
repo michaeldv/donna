@@ -79,20 +79,20 @@ func benchmark() {
 	// 8.Qb6+ Ke7 9.Qc7+ Kf8 10.Qc8+ Ke7 11.Qd7+ Kf8 12.Qe8+ Kg7 13.Qg8+ Kxg8 14.Kxf6+
 	game := donna.NewGame().Setup(`Kd1,Qh2,Nh6,a4,g3,h7`, `Kg7,Qe4,Bf6,b7,e6,g6`)
 	fmt.Printf("%s\n", game)
-	game.CacheSize(32).Think(8, game.Start(donna.White))
+	game.CacheSize(64).Think(8, game.Start(donna.White))
 
 	// Bobby Fischer vs. James Sherwin, New Jersey Open 1957 after 16 moves.
 	// http://www.chessgames.com/perl/chessgame?gid=1008366
 	// Fischer played 17. h2-h4!
 	game = donna.NewGame().Setup(`Kg1,Qc2,Ra1,Re1,Bc1,Bg2,Ng5,a2,b2,c3,d4,f2,g3,h2`, `Kg8,Qd6,Ra8,Rf8,Bc8,Nd5,Ng6,a7,b6,c4,e6,f7,g7,h7`)
 	fmt.Printf("%s\n", game)
-	game.CacheSize(32).Think(9, game.Start(donna.White))
+	game.CacheSize(64).Think(9, game.Start(donna.White))
 
 	// Mikhail Botvinnik vs. Jose Raul Capablanca, AVRO 1936 after 29 moves.
 	// Botvinnik played 30. Bb2-a3!
 	game = donna.NewGame().Setup(`Kg1,Qe5,Bb2,Ng3,c3,d4,e6,g2,h2`, `Kg7,Qe7,Nb3,Nf6,a7,b6,c4,d5,g6,h7`)
 	fmt.Printf("%s\n", game)
-	game.CacheSize(32).Think(9, game.Start(donna.White))
+	game.CacheSize(64).Think(9, game.Start(donna.White))
 
 }
 
