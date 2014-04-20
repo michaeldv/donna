@@ -59,8 +59,8 @@ func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
 	}
 
 	p.reversible = true
-	p.hash, p.hashPawn = p.polyglot()
 	p.board = p.outposts[White] | p.outposts[Black]
+	p.hash, p.hashPawn = p.polyglot()
 
 	return p
 }
@@ -118,11 +118,6 @@ func (p *Position) MakeMove(move Move) *Position {
 	pp := &tree[node]
 
 	pp.enpassant, pp.reversible = 0, true
-	//
-	// Castle rights for current node are based on the castle rights from
-	// the previous node.
-	//
-	pp.castles &= castleRights[from] & castleRights[to]
 
 	if capture != 0 {
 		pp.reversible = false
@@ -168,20 +163,22 @@ func (p *Position) MakeMove(move Move) *Position {
 	}
 
 	pp.board = pp.outposts[White] | pp.outposts[Black]
+	//
+	// Ready to validate new position we have after making the move: if it is not
+	// valid then revert back the node pointer and return nil.
+	//
 	if pp.isInCheck(color) {
 		node--
 		return nil
 	}
-
+	//
+	// OK, the position after making the move is valid: update castle rights and
+	// flip the color.
+	//
+	pp.castles &= castleRights[from] & castleRights[to]
 	pp.hash ^= hashCastle[pp.castles]
-	if pp.enpassant != 0 {
-		pp.hash ^= hashEnpassant[Col(pp.enpassant)]
-	}
-
-	if color == White {
-		pp.hash ^= polyglotRandomWhite
-	}
-	pp.color = color ^ 1
+	pp.hash ^= polyglotRandomWhite
+	pp.color ^= 1 // <-- Flip side to move.
 
 	return pp // => &tree[node]
 }
@@ -198,11 +195,8 @@ func (p *Position) MakeNullMove() *Position {
 		pp.hash ^= hashEnpassant[Col(pp.enpassant)]
 		pp.enpassant = 0
 	}
-
-	if pp.color == White {
-		pp.hash ^= polyglotRandomWhite
-	}
-	pp.color ^= 1
+	pp.hash ^= polyglotRandomWhite
+	pp.color ^= 1 // <-- Flip side to move.
 
 	return pp // => &tree[node]
 }
@@ -214,10 +208,9 @@ func (p *Position) TakeBack(move Move) *Position {
 }
 
 func (p *Position) TakeBackNullMove() *Position {
+	p.hash ^= polyglotRandomWhite
 	p.color ^= 1
-	if p.color == White {
-		p.hash ^= polyglotRandomWhite
-	}
+
 	return p.TakeBack(Move(0))
 }
 
