@@ -226,6 +226,7 @@ func TestPosition200(t *testing.T) { // 1. e4
 	expect(t, hash, uint64(0x823C9B50FD114196))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0x0B2D6B38C0B92E91))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -239,6 +240,7 @@ func TestPosition210(t *testing.T) { // 1. e4 d5
 	expect(t, hash, uint64(0x0756B94461C50FB0))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0x76916F86F34AE5BE))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -253,6 +255,7 @@ func TestPosition220(t *testing.T) { // 1. e4 d5 2. e5
 	expect(t, hash, uint64(0x662FAFB965DB29D4))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0xEF3E5FD1587346D3))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -268,6 +271,7 @@ func TestPosition230(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 	expect(t, hash, uint64(0x22A48B5A8E47FF78))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0x83871FE249DCEE04))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, F6)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -284,6 +288,7 @@ func TestPosition240(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castl
 	expect(t, hash, uint64(0x652A607CA3F242C1))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0x83871FE249DCEE04))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, castleKingside[Black]|castleQueenside[Black])
 }
@@ -301,6 +306,7 @@ func TestPosition250(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black C
 	expect(t, hash, uint64(0x00FDD303C946BDD9))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0x83871FE249DCEE04))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, uint8(0))
 }
@@ -317,6 +323,7 @@ func TestPosition260(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- En
 	expect(t, hash, uint64(0x3C8123EA7B067637))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0xB5AA405AF42E7052))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, C3)
 	expect(t, p.castles, uint8(0x0F))
 }
@@ -335,6 +342,7 @@ func TestPosition270(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 
 	expect(t, hash, uint64(0x5C3F9B829B279560))
 	expect(t, hash, p.hash)
 	expect(t, hashPawn, uint64(0xE214F040EAA135A0))
+	expect(t, hashPawn, p.hashPawn)
 	expect(t, p.enpassant, 0)
 	expect(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
 }
