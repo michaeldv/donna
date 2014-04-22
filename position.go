@@ -71,10 +71,10 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	p.outposts[piece.color()] ^= bit[from] | bit[to]
 
 	// Update position's hash values.
-	poly := 64 * piece.polyglot()
-	p.hash ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
+	random := polyglotRandom[64 * piece.polyglot() + from] ^ polyglotRandom[64 * piece.polyglot() + to]
+	p.hash ^= random
 	if piece.isPawn() {
-		p.hashPawn ^= polyglotRandom[poly + from] ^ polyglotRandom[poly + to]
+		p.hashPawn ^= random
 	}
 
 	return p
@@ -88,6 +88,12 @@ func (p *Position) promotePawn(piece Piece, from, to int, promo Piece) *Position
 	p.count[piece]--
 	p.count[promo]++
 
+	// Update position's hash values.
+	random := polyglotRandom[64 * piece.polyglot() + from]
+	p.hash ^= random
+	p.hashPawn ^= random
+	p.hash ^= polyglotRandom[64 * promo.polyglot() + to]
+
 	return p
 }
 
@@ -95,6 +101,13 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	p.outposts[capture] ^= bit[to]
 	p.outposts[capture.color()] ^= bit[to]
 	p.count[capture]--
+
+	// Update position's hash values.
+	random := polyglotRandom[64 * capture.polyglot() + to]
+	p.hash ^= random
+	if capture.isPawn() {
+		p.hashPawn ^= random
+	}
 
 	return p
 }
@@ -106,6 +119,11 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	p.outposts[capture] ^= bit[enpassant]
 	p.outposts[capture.color()] ^= bit[enpassant]
 	p.count[capture]--
+
+	// Update position's hash values.
+	random := polyglotRandom[64 * capture.polyglot() + enpassant]
+	p.hash ^= random
+	p.hashPawn ^= random
 
 	return p
 }
@@ -125,14 +143,8 @@ func (p *Position) MakeMove(move Move) *Position {
 	if capture != 0 {
 		pp.reversible = false
 		if to != 0 && to == p.enpassant {
-			pp.hash ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
-			pp.hashPawn ^= polyglotRandom[64 * pawn(color^1).polyglot() + to - eight[color]]
 			pp.captureEnpassant(pawn(color^1), from, to)
 		} else {
-			pp.hash ^= polyglotRandom[64 * p.pieces[to].polyglot() + to]
-			if capture.isPawn() {
-				pp.hashPawn ^= polyglotRandom[64 * p.pieces[to].polyglot() + to]
-			}
 			pp.capturePiece(capture, from, to)
 		}
 	}
@@ -164,9 +176,6 @@ func (p *Position) MakeMove(move Move) *Position {
 		}
 	} else {
 		pp.reversible = false
-		pp.hash ^= polyglotRandom[64 * pawn(color).polyglot() + from]
-		pp.hashPawn ^= polyglotRandom[64 * pawn(color).polyglot() + from]
-		pp.hash ^= polyglotRandom[64 * promo.polyglot() + to]
 		pp.promotePawn(piece, from, to, promo)
 	}
 
