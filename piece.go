@@ -64,22 +64,22 @@ func (p Piece) value() (int, int) {
 }
 
 // Returns bonus points for a piece at the given square.
-func (p Piece) bonus(square int) (int, int) {
+func (p Piece) bonus(square int) Score {
 	switch p.kind() {
 	case Pawn:
-		return bonusPawn[0][square], bonusPawn[1][square]
+		return Score{bonusPawn[0][square], bonusPawn[1][square]}
 	case Knight:
-		return bonusKnight[0][square], bonusKnight[1][square]
+		return Score{bonusKnight[0][square], bonusKnight[1][square]}
 	case Bishop:
-		return bonusBishop[0][square], bonusBishop[1][square]
+		return Score{bonusBishop[0][square], bonusBishop[1][square]}
 	case Rook:
-		return bonusRook[0][square], bonusRook[1][square]
+		return Score{bonusRook[0][square], bonusRook[1][square]}
 	case Queen:
-		return bonusQueen[0][square], bonusQueen[1][square]
+		return Score{bonusQueen[0][square], bonusQueen[1][square]}
 	case King:
-		return bonusKing[0][square], bonusKing[1][square]
+		return Score{bonusKing[0][square], bonusKing[1][square]}
 	}
-	return 0, 0
+	return Score{0, 0}
 }
 
 // Converts a piece to "official" polyglot representation, i.e. returns (Piece - 1)

@@ -126,8 +126,8 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 		} else if move&isCapture != 0 {
 			gen.list[i].score = move.value()
 		} else {
-			endgame, midgame := move.score()
-			gen.list[i].score = gen.p.score(midgame, endgame)
+			points := move.score()
+			gen.list[i].score = gen.p.score(points.midgame, points.endgame)
 			gen.list[i].score += game.goodMoves[move.piece()][move.to()]
 		}
 	}
@@ -143,8 +143,8 @@ func (gen *MoveGen) quickRank() *MoveGen {
 		if move := gen.list[i].move; move&isCapture != 0 {
 			gen.list[i].score = move.value()
 		} else {
-			endgame, midgame := move.score()
-			gen.list[i].score = gen.p.score(midgame, endgame)
+			points := move.score()
+			gen.list[i].score = gen.p.score(points.midgame, points.endgame)
 		}
 	}
 	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
