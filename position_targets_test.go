@@ -44,3 +44,11 @@ func TestTargets030(t *testing.T) {
 	expect(t, position.targets(E4), bit[E5])         // e5
 	expect(t, position.targets(D4), bit[D3]|bit[E3]) // d3, e3 (en-passant).
 }
+
+// Pawn attacks.
+func TestTargets040(t *testing.T) {
+	game := NewGame().Setup(`Ke1,a3,b3,c3,d3,e3,f3,g3,h3`, `Ke8,a6,b6,c6,d6,e6,f6,g6,h6`)
+	position := game.Start(White)
+	expect(t, position.pawnAttacks(White), bit[A4]|bit[B4]|bit[C4]|bit[D4]|bit[E4]|bit[F4]|bit[G4]|bit[H4])
+	expect(t, position.pawnAttacks(Black), bit[A5]|bit[B5]|bit[C5]|bit[D5]|bit[E5]|bit[F5]|bit[G5]|bit[H5])
+}

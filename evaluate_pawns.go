@@ -47,8 +47,9 @@ func (e *Evaluator) pawnsScore(color int) (extra Score) {
 		// pawns in front of us.
 		//
 		if maskPassed[color][square] & herPawns == 0 && maskInFront[color][square] & hisPawns == 0 {
-			extra.midgame += bonusPassedPawn[0][flip[color][square]]
-			extra.endgame += bonusPassedPawn[1][flip[color][square]]
+			square = Flip(color, square)
+			extra.midgame += bonusPassedPawn[0][square]
+			extra.endgame += bonusPassedPawn[1][square]
 		}
 		//
 		// Check if the pawn is isolated, i.e. has no pawns of the

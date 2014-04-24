@@ -36,9 +36,16 @@ func RelRow(square, color int) int {
 	return Row(square) ^ (color * 7)
 }
 
-// Returns n for the given the given row/column coordinate.
+// Returns 0..63 square number for the given row/column coordinate.
 func Square(row, column int) int {
 	return (row << 3) + column
+}
+
+func Flip(color, square int) int {
+	if color == White {
+		return square ^ 56
+	}
+	return square
 }
 
 func IsBetween(from, to, between int) bool {
