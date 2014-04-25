@@ -20,9 +20,9 @@ func (e *Evaluator) analyzePawnStructure() {
 	entry := &pawnCache[index]
 
 	if entry.hash != hashPawn {
-		whiteExtra, blackExtra := e.pawnsScore(White), e.pawnsScore(Black)
-		entry.midgame = whiteExtra.midgame - blackExtra.midgame
-		entry.endgame = whiteExtra.endgame - blackExtra.endgame
+		white, black := e.pawns(White), e.pawns(Black)
+		entry.midgame = white.midgame - black.midgame
+		entry.endgame = white.endgame - black.endgame
 		entry.hash = e.position.hashPawn
 	}
 
@@ -33,7 +33,7 @@ func (e *Evaluator) analyzePawnStructure() {
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
-func (e *Evaluator) pawnsScore(color int) (extra Score) {
+func (e *Evaluator) pawns(color int) (score Score) {
 	hisPawns := e.position.outposts[pawn(color)]
 	herPawns := e.position.outposts[pawn(color^1)]
 
@@ -48,25 +48,30 @@ func (e *Evaluator) pawnsScore(color int) (extra Score) {
 		//
 		if maskPassed[color][square] & herPawns == 0 && maskInFront[color][square] & hisPawns == 0 {
 			square = Flip(color, square)
-			extra.midgame += bonusPassedPawn[0][square]
-			extra.endgame += bonusPassedPawn[1][square]
+			score.midgame += bonusPassedPawn[0][square]
+			score.endgame += bonusPassedPawn[1][square]
 		}
 		//
 		// Check if the pawn is isolated, i.e. has no pawns of the
 		// same color on either sides.
 		//
 		if maskIsolated[column] & hisPawns == 0 {
-			extra.midgame += penaltyIsolatedPawn[0][column]
-			extra.endgame += penaltyIsolatedPawn[1][column]
+			score.midgame += penaltyIsolatedPawn[0][column]
+			score.endgame += penaltyIsolatedPawn[1][column]
 		}
+
+		// Placement.
+		square = Flip(color, square)
+		score.midgame += bonusPawn[0][square]
+		score.endgame += bonusPawn[1][square]
 	}
 	//
 	// Penalties for doubled pawns.
 	//
 	for col := 0; col <= 7; col++ {
 		if doubled := (maskFile[col] & hisPawns).count(); doubled > 1 {
-			extra.midgame += (doubled - 1) * penaltyDoubledPawn[0][col]
-			extra.endgame += (doubled - 1) * penaltyDoubledPawn[1][col]
+			score.midgame += (doubled - 1) * penaltyDoubledPawn[0][col]
+			score.endgame += (doubled - 1) * penaltyDoubledPawn[1][col]
 		}
 	}
 	return
