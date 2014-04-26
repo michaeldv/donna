@@ -17,17 +17,20 @@ type Evaluator struct {
 }
 
 func (p *Position) Evaluate() int {
-	evaluator := &Evaluator{0, rightToMove.midgame, rightToMove.endgame, p}
+	evaluator := &Evaluator{0, 0, 0, p}
 	evaluator.analyzeMaterial()
 	evaluator.analyzeCoordination()
 	evaluator.analyzePawnStructure()
 	evaluator.analyzeKingSafety()
 
-	if p.color == Black {
-		evaluator.midgame = -evaluator.midgame
-		evaluator.endgame = -evaluator.endgame
+	if p.color == White {
+		evaluator.midgame += rightToMove.midgame
+		evaluator.endgame += rightToMove.endgame
+		return p.score(evaluator.midgame, evaluator.endgame)
 	}
-	return p.score(evaluator.midgame, evaluator.endgame)
+	evaluator.midgame -= rightToMove.midgame
+	evaluator.endgame -= rightToMove.endgame
+	return p.score(-evaluator.midgame, -evaluator.endgame)
 }
 
 func (e *Evaluator) strongEnough(color int) bool {
