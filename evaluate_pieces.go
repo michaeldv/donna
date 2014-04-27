@@ -4,25 +4,6 @@
 
 package donna
 
-var mobilityKnight = [9]Score{
-	{-15, -12}, {-10, -8}, {-4, -4}, {1, 0}, {6, 3}, {11, 7}, {15, 10}, {17, 12}, {18, 12},
-}
-
-var mobilityBishop = [16]Score{
-	{-10, -12}, {-4, -6}, { 2,  0}, { 8,  6}, {14, 12}, {20, 18}, {25, 23}, {28, 26},
-	{ 31,  28}, {32, 30}, {33, 31}, {34, 32}, {35, 33}, {36, 34}, {36, 34}, {36, 34},
-}
-
-var mobilityRook = [16]Score{
-	{-8, -15}, {-5, -7}, {-3,  0}, { 0,  6}, { 2, 13}, { 5, 20}, { 7, 27}, { 9, 34},
-	{ 10, 41}, {11, 46}, {12, 49}, {13, 51}, {14, 52}, {14, 52}, {15, 53}, {15, 53},
-}
-
-var mobilityQueen = [32]Score{
-	{-5, -8}, {-4, -6}, {-2, -3}, {-1, -1}, {0,  1}, {1,  4}, {2,  6}, {3,  9},
-	{ 5, 11}, { 6, 13}, { 7, 15}, { 7, 15}, {8, 16}, {9, 16}, {9, 16}, {9, 16},
-}
-
 func (e *Evaluator) analyzeMaterial() {
 	counters := &e.position.count
 	for _, piece := range []Piece{Pawn, Knight, Bishop, Rook, Queen} {
@@ -58,10 +39,12 @@ func (e *Evaluator) analyzeCoordination() {
 }
 
 func (e *Evaluator) knights(color int, maskSafe, maskEnemy Bitmask) (score Score) {
-	outposts := e.position.outposts[knight(color)]
+	p := e.position
+	outposts := p.outposts[knight(color)]
+
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := e.position.targets(square)
+		targets := p.targets(square)
 
 		// Attacks.
 		attacks := (targets & maskEnemy).count()
@@ -77,15 +60,29 @@ func (e *Evaluator) knights(color int, maskSafe, maskEnemy Bitmask) (score Score
 		square = Flip(color, square)
 		score.midgame += bonusKnight[0][square]
 		score.endgame += bonusKnight[1][square]
+
+		// Penalty a knight is attacked by enemy's pawn.
+		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
+			score.midgame -= penaltyPawnThreat[2].midgame
+			score.endgame -= penaltyPawnThreat[2].endgame
+		}
+
+		// Bonus if a knight is behind friendly pawn.
+		if RelRow(color, square) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
+			score.midgame += behindPawn.midgame
+			score.endgame += behindPawn.endgame
+		}
 	}
 	return
 }
 
 func (e *Evaluator) bishops(color int, maskSafe, maskEnemy Bitmask) (score Score) {
-	outposts := e.position.outposts[bishop(color)]
+	p := e.position
+	outposts := p.outposts[bishop(color)]
+
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := e.position.targets(square)
+		targets := p.xrayTargets(square)
 
 		// Attacks.
 		attacks := (targets & maskEnemy).count()
@@ -101,11 +98,28 @@ func (e *Evaluator) bishops(color int, maskSafe, maskEnemy Bitmask) (score Score
 		square = Flip(color, square)
 		score.midgame += bonusBishop[0][square]
 		score.endgame += bonusBishop[1][square]
+
+		// Penalty for light/dark square bishop and matching pawns.
+		if count := (SameColor(square) & p.outposts[pawn(color)]).count(); count > 0 {
+			score.midgame -= bishopPawns.midgame
+			score.midgame -= bishopPawns.midgame
+		}
+
+		// Penalty a bishop is attacked by enemy's pawn.
+		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
+			score.midgame -= penaltyPawnThreat[3].midgame
+			score.endgame -= penaltyPawnThreat[3].endgame
+		}
+
+		// Bonus if a bishop is behind friendly pawn.
+		if RelRow(color, square) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
+			score.midgame += behindPawn.midgame
+			score.endgame += behindPawn.endgame
+		}
 	}
-	//
+
 	// Bonus for the pair of bishops.
-	//
-	if bishops := e.position.count[bishop(color)]; bishops >= 2 {
+	if bishops := p.count[bishop(color)]; bishops >= 2 {
 		e.midgame += bishopPair.midgame
 		e.endgame += bishopPair.endgame
 	}
@@ -114,19 +128,19 @@ func (e *Evaluator) bishops(color int, maskSafe, maskEnemy Bitmask) (score Score
 
 
 func (e *Evaluator) rooks(color int, maskSafe, maskEnemy Bitmask) (score Score) {
-	hisPawns := e.position.outposts[pawn(color)]
-	herPawns := e.position.outposts[pawn(color^1)]
-	outposts := e.position.outposts[rook(color)]
-	//
-	// Bonus if rooks are on 7th rank.
-	//
-	if count := (outposts & mask7th[color]).count(); count > 0 {
+	p := e.position
+	hisPawns := p.outposts[pawn(color)]
+	herPawns := p.outposts[pawn(color^1)]
+	outposts := p.outposts[rook(color)]
+
+	// Bonus if rook is on 7th rank and enemy's king trapped on 8th.
+	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
 		score.midgame += count * rookOn7th.midgame
 		score.endgame += count * rookOn7th.endgame
 	}
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := e.position.targets(square)
+		targets := p.xrayTargets(square)
 
 		// Attacks.
 		attacks := (targets & maskEnemy).count()
@@ -142,9 +156,20 @@ func (e *Evaluator) rooks(color int, maskSafe, maskEnemy Bitmask) (score Score) 
 		square = Flip(color, square)
 		score.midgame += bonusRook[0][square]
 		score.endgame += bonusRook[1][square]
-		//
-		// Bonuses if rooks are on open or semi-open files.
-		//
+
+		// Penalty a rook is attacked by enemy's pawn.
+		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
+			score.midgame -= penaltyPawnThreat[4].midgame
+			score.endgame -= penaltyPawnThreat[4].endgame
+		}
+
+		// Bonus if rook is attacking enemy's pawns.
+		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 {
+			score.midgame += count * rookOnPawn.midgame
+			score.endgame += count * rookOnPawn.endgame
+		}
+
+		// Bonuses if rook is on open or semi-open file.
 		column := Col(square)
 		if hisPawns & maskFile[column] == 0 {
 			if herPawns & maskFile[column] == 0 {
@@ -160,10 +185,17 @@ func (e *Evaluator) rooks(color int, maskSafe, maskEnemy Bitmask) (score Score) 
 }
 
 func (e *Evaluator) queens(color int, maskSafe, maskEnemy Bitmask) (score Score) {
-	outposts := e.position.outposts[queen(color)]
+	p := e.position
+	outposts := p.outposts[queen(color)]
+
+	// Bonus if queen is on 7th rank and enemy's king trapped on 8th.
+	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
+		score.midgame += count * queenOn7th.midgame
+		score.endgame += count * queenOn7th.endgame
+	}
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := e.position.targets(square)
+		targets := p.targets(square)
 
 		// Attacks.
 		attacks := (targets & maskEnemy).count()
@@ -179,6 +211,18 @@ func (e *Evaluator) queens(color int, maskSafe, maskEnemy Bitmask) (score Score)
 		square = Flip(color, square)
 		score.midgame += bonusQueen[0][square]
 		score.endgame += bonusQueen[1][square]
+
+		// Penalty if queen is attacked by enemy's pawn.
+		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
+			score.midgame -= penaltyPawnThreat[5].midgame
+			score.endgame -= penaltyPawnThreat[5].endgame
+		}
+
+		// Bonus if queen is out and attacking enemy's pawns.
+		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(color, square) > 3 {
+			score.midgame += count * queenOnPawn.midgame
+			score.endgame += count * queenOnPawn.endgame
+		}
 	}
 	return
 }
