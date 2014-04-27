@@ -6,7 +6,7 @@ package donna
 
 import ()
 
-var razoringMargin = [4]int{0, 240, 450, 660}
+var razoringMargin = [4]int{0, 260, 470, 680}
 var futilityMargin = [4]int{0, 400, 500, 600}
 
 // Search with zero window.
