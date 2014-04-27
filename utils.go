@@ -49,7 +49,7 @@ func Flip(color, square int) int {
 }
 
 func SameColor(square int) Bitmask {
-	return (bit[square] & maskLight) | (bit[square] & ^maskLight)
+	return (bit[square] & maskDark) | (bit[square] & ^maskDark)
 }
 
 func IsBetween(from, to, between int) bool {

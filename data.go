@@ -13,11 +13,11 @@ const MaxDepth = 32
 const (
 	White = iota
 	Black
-	maskNone  = Bitmask(0x0000000000000000)
-	maskFull  = Bitmask(0xFFFFFFFFFFFFFFFF)
-	maskLight = Bitmask(0xAA55AA55AA55AA55)
-	maskA1H8  = Bitmask(0x8040201008040201)
-	maskH1A8  = Bitmask(0x0102040810204080)
+	maskNone = Bitmask(0x0000000000000000)
+	maskFull = Bitmask(0xFFFFFFFFFFFFFFFF)
+	maskDark = Bitmask(0xAA55AA55AA55AA55)
+	maskA1H8 = Bitmask(0x8040201008040201)
+	maskH1A8 = Bitmask(0x0102040810204080)
 )
 
 const (
