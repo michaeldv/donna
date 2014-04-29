@@ -18,6 +18,7 @@ var (
 	rookOnOpen     = Score{   20,   10 }
 	rookOnSemiOpen = Score{   10,    5 }
 	rookOn7th      = Score{    5,   10 }
+	rookBoxed      = Score{   40,    0 }
 	queenOnPawn    = Score{    2,   10 } //~~~
 	queenOn7th     = Score{    1,    4 } //~~~
 	behindPawn     = Score{    4,    0 } //~~~
@@ -214,4 +215,12 @@ var mobilityRook = [16]Score{
 var mobilityQueen = [32]Score{
 	{-5, -8}, {-4, -6}, {-2, -3}, {-1, -1}, {0,  1}, {1,  4}, {2,  6}, {3,  9},
 	{ 5, 11}, { 6, 13}, { 7, 15}, { 7, 15}, {8, 16}, {9, 16}, {9, 16}, {9, 16},
+}
+
+var rookBoxA = [2]Bitmask{ // A1,A2,B1 and A8,A7,B8
+	0x0000000000000103, 0x0301000000000000,
+}
+
+var rookBoxH = [2]Bitmask{ // G1,H1,H2 and G8,H8,H7
+	0x00000000000080C0, 0xC080000000000000,
 }

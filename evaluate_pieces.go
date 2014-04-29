@@ -180,6 +180,21 @@ func (e *Evaluator) rooks(color int, maskSafe, maskEnemy Bitmask) (score Score) 
 				score.endgame += rookOnSemiOpen.endgame
 			}
 		}
+
+		// Middle game penalty if a rook is boxed. Extra penalty if castle
+		// rights have been lost.
+		if bit[square] & rookBoxA[color] != 0 && p.outposts[king(color)] & castleQueen[color] != 0 {
+			score.midgame -= rookBoxed.midgame
+			if p.castles & castleQueenside[color] == 0 {
+				score.midgame -= rookBoxed.midgame
+			}
+		}
+		if bit[square] & rookBoxH[color] != 0 && p.outposts[king(color)] & castleKing[color] != 0 {
+			score.midgame -= rookBoxed.midgame
+			if p.castles & castleKingside[color] == 0 {
+				score.midgame -= rookBoxed.midgame
+			}
+		}
 	}
 	return
 }
