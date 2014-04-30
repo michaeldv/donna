@@ -48,6 +48,13 @@ func Flip(color, square int) int {
 	return square
 }
 
+func Push(color int, mask Bitmask) Bitmask {
+	if color == White {
+		return mask >> 8
+	}
+	return mask << 8
+}
+
 func SameColor(square int) Bitmask {
 	return (bit[square] & maskDark) | (bit[square] & ^maskDark)
 }
