@@ -12,8 +12,10 @@ var (
 	valueQueen     = Score{ 1000, 1015 } // 1273, 1291
 
 	rightToMove    = Score{   12,    5 }
+	pawnBlocked    = Score{    2,    5 }
 	bishopPair     = Score{   25,   65 }
 	bishopPawns    = Score{    5,   15 } //~~~
+	bishopBoxed    = Score{   40,    0 }
 	rookOnPawn     = Score{    5,   15 }
 	rookOnOpen     = Score{   20,   10 }
 	rookOnSemiOpen = Score{   10,    5 }
@@ -22,7 +24,6 @@ var (
 	queenOnPawn    = Score{    2,   10 } //~~~
 	queenOn7th     = Score{    1,    4 } //~~~
 	behindPawn     = Score{    4,    0 } //~~~
-	attackForce    = Score{    2,    4 }
 	shieldMissing  = Score{   30,    0 } // Missing shield pawn penalty.
 	shieldDistance = Score{    5,    0 } // Shield pawn row distance from king penalty.
 )
@@ -181,6 +182,34 @@ var bonusPassedPawn = [2][64]int{
 	       15,  14,  12,  10,  10,  12,  14,  15,
 		0,   0,   0,   0,   0,   0,   0,   0, // H1 - H8
          },
+}
+
+var extraKnight = [64]int{
+	0,  0,  0,  0,  0,  0,  0,  0, // A1 - A8
+	0,  0,  0,  0,  0,  0,  0,  0,
+	0,  2,  8,  8,  8,  8,  2,  0,
+	0,  4, 13, 17, 17, 13,  4,  0,
+	0,  2,  8, 13, 13,  8,  2,  0,
+	0,  0,  2,  4,  4,  2,  0,  0,
+	0,  0,  0,  0,  0,  0,  0,  0,
+	0,  0,  0,  0,  0,  0,  0,  0, // H1 - H8
+}
+
+var extraBishop = [64]int{
+	0,  0,  0,  0,  0,  0,  0,  0, // A1 - A8
+	0,  0,  0,  0,  0,  0,  0,  0,
+	0,  2,  4,  4,  4,  4,  2,  0,
+	0,  5, 10, 10, 10, 10,  5,  0,
+	0,  2,  5,  5,  5,  5,  2,  0,
+	0,  0,  2,  2,  2,  2,  0,  0,
+	0,  0,  0,  0,  0,  0,  0,  0,
+	0,  0,  0,  0,  0,  0,  0,  0, // H1 - H8
+}
+
+
+// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
+var bonusKingThreat = [6]int {
+	0, 0, 10, 10, 15, 25,
 }
 
 var penaltyDoubledPawn = [2][8]int{
