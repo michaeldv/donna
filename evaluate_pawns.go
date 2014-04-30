@@ -14,7 +14,7 @@ type PawnCacheEntry struct {
 
 var pawnCache [8192]PawnCacheEntry
 
-func (e *Evaluator) analyzePawnStructure() {
+func (e *Evaluator) analyzePawns() {
 	hashPawn := e.position.hashPawn
 	index := hashPawn % uint64(len(pawnCache))
 	entry := &pawnCache[index]
@@ -41,39 +41,42 @@ func (e *Evaluator) pawns(color int) (score Score) {
 	for pawns != 0 {
 		square := pawns.pop()
 		column := Col(square)
-		//
-		// The pawn is passed if a) there are no enemy pawns in the
-		// same and adjacent columns; and b) there is no same color
-		// pawns in front of us.
-		//
+
+		// The pawn is passed if a) there are no enemy pawns in the same
+		// and adjacent columns; and b) there are no same color pawns in
+		// front of us.
 		if maskPassed[color][square] & herPawns == 0 && maskInFront[color][square] & hisPawns == 0 {
-			square = Flip(color, square)
+			square := Flip(color, square)
 			score.midgame += bonusPassedPawn[0][square]
 			score.endgame += bonusPassedPawn[1][square]
 		}
-		//
-		// Check if the pawn is isolated, i.e. has no pawns of the
-		// same color on either sides.
-		//
+
+		// Check if the pawn is isolated, i.e. has no pawns of the same
+		// color on either sides.
 		if maskIsolated[column] & hisPawns == 0 {
 			score.midgame += penaltyIsolatedPawn[0][column]
 			score.endgame += penaltyIsolatedPawn[1][column]
 		}
 
-		// Placement.
+		// Bonus for pawn's position on the board.
 		square = Flip(color, square)
 		score.midgame += bonusPawn[0][square]
 		score.endgame += bonusPawn[1][square]
 	}
-	//
-	// Penalties for doubled pawns.
-	//
+
+	// Penalty for doubled pawns.
 	for col := 0; col <= 7; col++ {
 		if doubled := (maskFile[col] & hisPawns).count(); doubled > 1 {
 			score.midgame += (doubled - 1) * penaltyDoubledPawn[0][col]
 			score.endgame += (doubled - 1) * penaltyDoubledPawn[1][col]
 		}
 	}
+
+	// Penalty for blocked pawns.
+	blocked := (Push(color, hisPawns) & (e.position.outposts[White] | e.position.outposts[Black])).count()
+	score.midgame -= blocked * pawnBlocked.midgame
+	score.endgame -= blocked * pawnBlocked.endgame
+
 	return
 }
 
