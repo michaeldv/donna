@@ -54,8 +54,8 @@ func (e *Evaluator) pawns(color int) (score Score) {
 		// Check if the pawn is isolated, i.e. has no pawns of the same
 		// color on either sides.
 		if maskIsolated[column] & hisPawns == 0 {
-			score.midgame += penaltyIsolatedPawn[0][column]
-			score.endgame += penaltyIsolatedPawn[1][column]
+			score.midgame += penaltyIsolatedPawn[column].midgame
+			score.endgame += penaltyIsolatedPawn[column].midgame
 		}
 
 		// Bonus for pawn's position on the board.
@@ -67,8 +67,8 @@ func (e *Evaluator) pawns(color int) (score Score) {
 	// Penalty for doubled pawns.
 	for col := 0; col <= 7; col++ {
 		if doubled := (maskFile[col] & hisPawns).count(); doubled > 1 {
-			score.midgame += (doubled - 1) * penaltyDoubledPawn[0][col]
-			score.endgame += (doubled - 1) * penaltyDoubledPawn[1][col]
+			score.midgame += (doubled - 1) * penaltyDoubledPawn[col].midgame
+			score.endgame += (doubled - 1) * penaltyDoubledPawn[col].endgame
 		}
 	}
 
