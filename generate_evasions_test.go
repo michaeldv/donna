@@ -78,6 +78,13 @@ func TestGenerate360(t *testing.T) {
 	expect(t, white.allMoves(), `[Ka5-a6 Ka5-b6 b4-b5 c4-c5 d4-d5 e4-e5 f4-f5]`)
 }
 
+// Check evasions (pawn jumps).
+func TestGenerate365(t *testing.T) {
+	game := NewGame().Setup(`Ke1,Rh4`, `Kh6,h7`)
+	white := NewGen(game.Start(Black), 0).generateEvasions()
+	expect(t, white.allMoves(), `[Kh6-g5 Kh6-g6 Kh6-g7]`) // No h7-h5 jump.
+}
+
 // Check evasions (en-passant pawn capture).
 func TestGenerate370(t *testing.T) {
 	game := NewGame().Setup(`Kd4,d5,f5`, `Kd8,e7`)

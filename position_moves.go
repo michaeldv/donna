@@ -116,7 +116,7 @@ func (p *Position) causesEnpassant(target int) bool {
 	return false
 }
 
-func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
+func (p *Position) pawnPushesMask(color int) (mask Bitmask) {
 	if color == White {
 		mask = (p.outposts[Pawn] << 8)
 	} else {
@@ -126,11 +126,11 @@ func (p *Position) pawnMovesMask(color int) (mask Bitmask) {
 	return
 }
 
-func (p *Position) pawnJumpsMask(color int) (mask Bitmask) {
+func (p *Position) pawnJumpsMask(color int, pawns Bitmask) (mask Bitmask) {
 	if color == White {
-		mask = maskRank[3] & (p.outposts[Pawn] << 16)
+		mask = maskRank[3] & (pawns << 8)
 	} else {
-		mask = maskRank[4] & (p.outposts[BlackPawn] >> 16)
+		mask = maskRank[4] & (pawns >> 8)
 	}
 	mask &= ^p.board
 	return
