@@ -18,8 +18,11 @@ type Evaluator struct {
 	position *Position
 }
 
+// Use single statically allocated variable to avoid garbage collection overhead.
+var evaluator Evaluator
+
 func (p *Position) Evaluate() int {
-	evaluator := &Evaluator{0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, p}
+	evaluator = Evaluator{0, 0, 0, [2]int{0, 0}, [2]int{0, 0}, p}
 	evaluator.analyzeMaterial()
 	evaluator.analyzePieces()
 	evaluator.analyzePawns()
