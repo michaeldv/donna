@@ -36,20 +36,16 @@ func (e *Evaluator) knights(color int, maskSafe Bitmask) (score Score) {
 		targets := p.targets(square)
 
 		// Bonus for knight's mobility.
-		mobility := mobilityKnight[(targets & maskSafe).count()]
-		score.midgame += mobility.midgame
-		score.endgame += mobility.endgame
+		score.add(mobilityKnight[(targets & maskSafe).count()])
 
 		// Penalty if knight is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
-			score.midgame -= penaltyPawnThreat[Knight/2].midgame
-			score.endgame -= penaltyPawnThreat[Knight/2].endgame
+			score.subtract(penaltyPawnThreat[Knight/2])
 		}
 
 		// Bonus if knight is behind friendly pawn.
 		if RelRow(color, square) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
-			score.midgame += behindPawn.midgame
-			score.endgame += behindPawn.endgame
+			score.add(behindPawn)
 		}
 
 		// Track if knight attacks squares around enemy's king.
@@ -73,8 +69,7 @@ func (e *Evaluator) knights(color int, maskSafe Bitmask) (score Score) {
 				}
 				extra += extra / 2 // Supported by a pawn.
 			}
-			score.midgame += extra
-			score.endgame += extra
+			score.increment(extra)
 		}
 	}
 	return
@@ -89,26 +84,21 @@ func (e *Evaluator) bishops(color int, maskSafe Bitmask) (score Score) {
 		targets := p.xrayTargets(square)
 
 		// Bonus for bishop's mobility
-		mobility := mobilityBishop[(targets & maskSafe).count()]
-		score.midgame += mobility.midgame
-		score.endgame += mobility.endgame
+		score.add(mobilityBishop[(targets & maskSafe).count()])
 
 		// Penalty for light/dark square bishop and matching pawns.
 		if count := (Same(square) & p.outposts[pawn(color)]).count(); count > 0 {
-			score.midgame -= bishopPawns.midgame
-			score.endgame -= bishopPawns.endgame
+			score.subtract(bishopPawns)
 		}
 
 		// Penalty if bishop is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
-			score.midgame -= penaltyPawnThreat[Bishop/2].midgame
-			score.endgame -= penaltyPawnThreat[Bishop/2].endgame
+			score.subtract(penaltyPawnThreat[Bishop/2])
 		}
 
 		// Bonus if bishop is behind friendly pawn.
 		if RelRow(color, square) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
-			score.midgame += behindPawn.midgame
-			score.endgame += behindPawn.endgame
+			score.add(behindPawn)
 		}
 
 		// Middle game penalty for boxed bishop.
@@ -145,15 +135,13 @@ func (e *Evaluator) bishops(color int, maskSafe Bitmask) (score Score) {
 				}
 				extra += extra / 2 // Supported by a pawn.
 			}
-			score.midgame += extra
-			score.endgame += extra
+			score.increment(extra)
 		}
 	}
 
 	// Bonus for the pair of bishops.
 	if bishops := p.count[bishop(color)]; bishops >= 2 {
-		score.midgame += bishopPair.midgame
-		score.endgame += bishopPair.endgame
+		score.add(bishopPair)
 	}
 	return
 }
@@ -167,39 +155,32 @@ func (e *Evaluator) rooks(color int, maskSafe Bitmask) (score Score) {
 
 	// Bonus if rook is on 7th rank and enemy's king trapped on 8th.
 	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
-		score.midgame += count * rookOn7th.midgame
-		score.endgame += count * rookOn7th.endgame
+		score.add(rookOn7th.multiply(count))
 	}
 	for outposts != 0 {
 		square := outposts.pop()
 		targets := p.xrayTargets(square)
 
 		// Bonus for rook's mobility
-		mobility := mobilityRook[(targets & maskSafe).count()]
-		score.midgame += mobility.midgame
-		score.endgame += mobility.endgame
+		score.add(mobilityRook[(targets & maskSafe).count()])
 
 		// Penalty if rook is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
-			score.midgame -= penaltyPawnThreat[Rook/2].midgame
-			score.endgame -= penaltyPawnThreat[Rook/2].endgame
+			score.subtract(penaltyPawnThreat[Rook/2])
 		}
 
 		// Bonus if rook is attacking enemy's pawns.
 		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 {
-			score.midgame += count * rookOnPawn.midgame
-			score.endgame += count * rookOnPawn.endgame
+			score.add(rookOnPawn.multiply(count))
 		}
 
 		// Bonuses if rook is on open or semi-open file.
 		column := Col(square)
 		if hisPawns & maskFile[column] == 0 {
 			if herPawns & maskFile[column] == 0 {
-				score.midgame += rookOnOpen.midgame
-				score.endgame += rookOnOpen.endgame
+				score.add(rookOnOpen)
 			} else {
-				score.midgame += rookOnSemiOpen.midgame
-				score.endgame += rookOnSemiOpen.endgame
+				score.add(rookOnSemiOpen)
 			}
 		}
 
@@ -238,28 +219,23 @@ func (e *Evaluator) queens(color int, maskSafe Bitmask) (score Score) {
 
 	// Bonus if queen is on 7th rank and enemy's king trapped on 8th.
 	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
-		score.midgame += count * queenOn7th.midgame
-		score.endgame += count * queenOn7th.endgame
+		score.add(queenOn7th.multiply(count))
 	}
 	for outposts != 0 {
 		square := outposts.pop()
 		targets := p.targets(square)
 
 		// Bonus for queen's mobility
-		mobility := mobilityQueen[Min(15, (targets & maskSafe).count())]
-		score.midgame += mobility.midgame
-		score.endgame += mobility.endgame
+		score.add(mobilityQueen[Min(15, (targets & maskSafe).count())])
 
 		// Penalty if queen is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
-			score.midgame -= penaltyPawnThreat[Queen/2].midgame
-			score.endgame -= penaltyPawnThreat[Queen/2].endgame
+			score.subtract(penaltyPawnThreat[Queen/2])
 		}
 
 		// Bonus if queen is out and attacking enemy's pawns.
 		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(color, square) > 3 {
-			score.midgame += count * queenOnPawn.midgame
-			score.endgame += count * queenOnPawn.endgame
+			score.add(queenOnPawn.multiply(count))
 		}
 
 		// Track if queen attacks squares around enemy's king.

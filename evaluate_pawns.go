@@ -34,6 +34,8 @@ func (e *Evaluator) analyzePawns() {
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
 func (e *Evaluator) pawns(color int) (score Score) {
+	var passed, isolated [8]bool
+
 	hisPawns := e.position.outposts[pawn(color)]
 	herPawns := e.position.outposts[pawn(color^1)]
 
@@ -46,36 +48,42 @@ func (e *Evaluator) pawns(color int) (score Score) {
 		// and adjacent columns; and b) there are no same color pawns in
 		// front of us.
 		if maskPassed[color][square] & herPawns == 0 && maskInFront[color][square] & hisPawns == 0 {
-			square := Flip(color, square)
-			score.midgame += bonusPassedPawn[0][square]
-			score.endgame += bonusPassedPawn[1][square]
+			flip := Flip(color, square)
+			score.midgame += bonusPassedPawn[0][flip]
+			score.endgame += bonusPassedPawn[1][flip]
+			passed[column] = true
 		}
 
 		// Check if the pawn is isolated, i.e. has no pawns of the same
 		// color on either sides.
 		if maskIsolated[column] & hisPawns == 0 {
-			score.midgame += penaltyIsolatedPawn[column].midgame
-			score.endgame += penaltyIsolatedPawn[column].midgame
+			score.add(penaltyIsolatedPawn[column])
+			isolated[column] = true
 		}
 
 		// Bonus for pawn's position on the board.
-		square = Flip(color, square)
-		score.midgame += bonusPawn[0][square]
-		score.endgame += bonusPawn[1][square]
+		flip := Flip(color, square)
+		score.midgame += bonusPawn[0][flip]
+		score.endgame += bonusPawn[1][flip]
 	}
 
 	// Penalty for doubled pawns.
 	for col := 0; col <= 7; col++ {
 		if doubled := (maskFile[col] & hisPawns).count(); doubled > 1 {
-			score.midgame += (doubled - 1) * penaltyDoubledPawn[col].midgame
-			score.endgame += (doubled - 1) * penaltyDoubledPawn[col].endgame
+			penalty := penaltyDoubledPawn[col]
+
+			// Increate the penalty if doubled pawns are isolated
+			// but not passed.
+			if isolated[col] && !passed[col] {
+				penalty = penalty.multiply(2)
+			}
+			score.add(penalty.multiply(doubled - 1))
 		}
 	}
 
 	// Penalty for blocked pawns.
-	blocked := (Push(color, hisPawns) & (e.position.outposts[White] | e.position.outposts[Black])).count()
-	score.midgame -= blocked * pawnBlocked.midgame
-	score.endgame -= blocked * pawnBlocked.endgame
+	blocked := (hisPawns.pushed(color) & e.position.board).count()
+	score.subtract(pawnBlocked.multiply(blocked))
 
 	return
 }

@@ -53,3 +53,45 @@ func (e *Evaluator) strongEnough(color int) bool {
 	return p.count[queen(color)] > 0 &&
 		(p.count[rook(color)] > 0 || p.count[bishop(color)] > 0 || p.count[knight(color)] > 0)
 }
+
+func (s *Score) add(score Score) *Score {
+	s.midgame += score.midgame
+	s.endgame += score.endgame
+
+	return s
+}
+
+func (s *Score) subtract(score Score) *Score {
+	s.midgame -= score.midgame
+	s.endgame -= score.endgame
+
+	return s
+}
+
+func (s *Score) increment(n int) *Score {
+	s.midgame += n
+	s.endgame += n
+
+	return s
+}
+
+func (s *Score) decrement(n int) *Score {
+	s.midgame -= n
+	s.endgame -= n
+
+	return s
+}
+
+func (s Score) multiply(n int) Score {
+	s.midgame *= n
+	s.endgame *= n
+
+	return s
+}
+
+func (s Score) divide(n int) Score {
+	s.midgame /= n
+	s.endgame /= n
+
+	return s
+}
