@@ -94,7 +94,7 @@ func (e *Evaluator) bishops(color int, maskSafe Bitmask) (score Score) {
 		score.endgame += mobility.endgame
 
 		// Penalty for light/dark square bishop and matching pawns.
-		if count := (SameColor(square) & p.outposts[pawn(color)]).count(); count > 0 {
+		if count := (Same(square) & p.outposts[pawn(color)]).count(); count > 0 {
 			score.midgame -= bishopPawns.midgame
 			score.endgame -= bishopPawns.endgame
 		}

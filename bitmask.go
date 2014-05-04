@@ -30,10 +30,26 @@ func (b Bitmask) isClear(position int) bool {
 	return !b.isSet(position)
 }
 
+// Returns number of bits set.
+func (b Bitmask) count() int {
+	mask := b
+	mask -= (mask >> 1) & 0x5555555555555555
+	mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
+	mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
+	return int((mask * 0x0101010101010101) >> 56)
+}
+
 // Finds least significant bit set (LSB) in non-zero bitmask. Returns
 // an integer in 0..63 range.
 func (b Bitmask) first() int {
 	return deBruijn[((b ^ (b-1)) * 0x03F79D71B4CB0A89) >> 58]
+}
+
+func (b Bitmask) pushed(color int) Bitmask {
+	if color == White {
+		return b << 8
+	}
+	return b >> 8
 }
 
 // Finds *and clears* least significant bit set (LSB) in non-zero
@@ -43,15 +59,6 @@ func (b *Bitmask) pop() int {
 	index := deBruijn[((*b ^ magic) * 0x03F79D71B4CB0A89) >> 58]
 	*b &= magic
 	return index
-}
-
-// Returns number of bits set.
-func (b Bitmask) count() int {
-	mask := b
-	mask -= (mask >> 1) & 0x5555555555555555
-	mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
-	mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
-	return int((mask * 0x0101010101010101) >> 56)
 }
 
 // Sets a bit at given position.
