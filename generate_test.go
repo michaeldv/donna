@@ -9,11 +9,11 @@ import (
 )
 
 func TestGenerate010(t *testing.T) {
-	game := NewGame().Setup(`a2,b3,c4,d2,e6,f5,g4,h3`, `Kg8`)
+	game := NewGame().Setup(`Ka1,a2,b3,c4,d2,e6,f5,g4,h3`, `Kc1`)
 	gen := NewGen(game.Start(White), 0).generateMoves().rank(Move(0))
 
 	// Moves should be sorted by relative strength.
-	expect(t, gen.allMoves(), `[e6-e7 f5-f6 d2-d4 c4-c5 d2-d3 g4-g5 b3-b4 h3-h4 a2-a4 a2-a3]`)
+	expect(t, gen.allMoves(), `[Ka1-b2 Ka1-b1 e6-e7 f5-f6 c4-c5 d2-d4 g4-g5 b3-b4 d2-d3 h3-h4 a2-a4 a2-a3]`)
 }
 
 // LVA/MVV capture ordering.
