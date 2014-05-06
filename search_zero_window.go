@@ -7,7 +7,7 @@ package donna
 import ()
 
 var razoringMargin = [4]int{0, 260, 470, 680}
-var futilityMargin = [4]int{0, 400, 500, 600}
+var futilityMargin = [4]int{0, 890, 990, 1090}
 
 // Search with zero window.
 func (p *Position) searchWithZeroWindow(beta, depth int) int {
@@ -28,9 +28,9 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 		cachedMove = cached.move
 		if cached.depth >= depth {
 			score := cached.score
-			if score > Checkmate-MaxPly && score <= Checkmate {
+			if score > Checkmate - MaxPly && score <= Checkmate {
 				score -= ply
-			} else if score >= -Checkmate && score < -Checkmate+MaxPly {
+			} else if score >= -Checkmate && score < -Checkmate + MaxPly {
 				score += ply
 			}
 
@@ -46,7 +46,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 
 	// Razoring and futility pruning. TODO: disable or tune-up in puzzle solving mode.
 	if depth < len(razoringMargin) {
-		if margin := beta - razoringMargin[depth]; score < margin && beta < 31000 && cachedMove == Move(0) {
+		if margin := beta - razoringMargin[depth]; score < margin && beta < Checkmate - MaxPly && cachedMove == Move(0) {
 			if p.outposts[pawn(p.color)]&mask7th[p.color] == 0 { // No pawns on 7th.
 				razorScore := p.searchQuiescence(margin-1, margin)
 				if razorScore < margin {
@@ -55,7 +55,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 			}
 		}
 
-		if margin := score - futilityMargin[depth]; margin >= beta && beta > -31000 {
+		if margin := score - futilityMargin[depth]; margin >= beta && beta > -Checkmate + MaxPly {
 			if p.outposts[p.color] & ^p.outposts[king(p.color)] & ^p.outposts[pawn(p.color)] != 0 {
 				return margin
 			}
