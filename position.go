@@ -281,13 +281,13 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 
 // Reports game status for current position or after the given move. The status
 // help to determine whether to continue with search or if the game is over.
-func (p *Position) status(move Move, score int) int {
+func (p *Position) status(move Move, blendedScore int) int {
 	if move != Move(0) {
 		p = p.MakeMove(move)
 		defer func() { p = p.TakeBack(move) }()
 	}
 
-	switch ply, score := Ply(), Abs(score); score {
+	switch ply, score := Ply(), Abs(blendedScore); score {
 	case 0:
 		if ply == 1 {
 			if p.isRepetition() {
@@ -318,9 +318,9 @@ func (p *Position) status(move Move, score int) int {
 	return InProgress
 }
 
-// Calculates position stage based on what pieces are on the board (256 for
-// the initial position, 0 for bare kings).
-func (p *Position) stage() int {
+// Calculates game phase based on what pieces are on the board (256 for the
+// initial position, 0 for bare kings).
+func (p *Position) phase() int {
 	return 2 * (p.count[Pawn] + p.count[BlackPawn]) +
 		6 * (p.count[Knight] + p.count[BlackKnight]) +
 		12 * (p.count[Bishop] + p.count[BlackBishop]) +
@@ -330,9 +330,9 @@ func (p *Position) stage() int {
 
 // Calculates normalized position score based on position stage and given
 // midgame/endgame values.
-func (p *Position) score(midgame, endgame int) int {
-	stage := p.stage()
-	return (midgame * stage + endgame * (256-stage)) / 256
+func (p *Position) blended(score Score) int {
+	phase := p.phase()
+	return (score.midgame * phase + score.endgame * (256-phase)) / 256
 }
 
 // Computes initial values of position's polyglot hash (entire board) and pawn
