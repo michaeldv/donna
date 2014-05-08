@@ -139,9 +139,13 @@ func (gen *MoveGen) quickRank() *MoveGen {
 	if gen.size() < 2 {
 		return gen
 	}
+
+	game := gen.p.game
 	for i := gen.head; i < gen.tail; i++ {
 		if move := gen.list[i].move; move&isCapture != 0 {
 			gen.list[i].score = move.value()
+		} else if good := game.goodMoves[move.piece()][move.to()]; good != 0 {
+			gen.list[i].score = good
 		} else {
 			gen.list[i].score = gen.p.blended(move.score())
 		}
