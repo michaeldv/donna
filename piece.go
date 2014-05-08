@@ -47,24 +47,25 @@ func pawn(color int) Piece {
 
 // Returns intrinsic piece value for the middlegame and
 // the endgame.
-func (p Piece) value() (int, int) {
+func (p Piece) score() (score Score) {
 	switch p.kind() {
 	case Pawn:
-		return valuePawn.midgame, valuePawn.endgame
+		return Score{valuePawn.midgame, valuePawn.endgame}
 	case Knight:
-		return valueKnight.midgame, valueKnight.endgame
+		return Score{valueKnight.midgame, valueKnight.endgame}
 	case Bishop:
-		return valueBishop.midgame, valueBishop.endgame
+		return Score{valueBishop.midgame, valueBishop.endgame}
 	case Rook:
-		return valueRook.midgame, valueRook.endgame
+		return Score{valueRook.midgame, valueRook.endgame}
 	case Queen:
-		return valueQueen.midgame, valueQueen.endgame
+		return Score{valueQueen.midgame, valueQueen.endgame}
 	}
-	return 0, 0
+	return Score{0, 0}
 }
 
 // Returns bonus points for a piece at the given square.
 func (p Piece) bonus(square int) Score {
+	// return Score{ pst[p-2][0][square], pst[p-2][1][square] }
 	switch p.kind() {
 	case Pawn:
 		return Score{bonusPawn[0][square], bonusPawn[1][square]}

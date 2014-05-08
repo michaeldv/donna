@@ -21,15 +21,14 @@ func (e *Evaluator) analyzeSafety() {
 	black.midgame += bonusKing[0][square]
 	black.endgame += bonusKing[1][square]
 	if e.attacks[White] > 0 {
-		e.midgame -= Max(3, e.attacks[White]) * e.threats[White]
-		e.endgame -= bonusKing[1][square]
+		e.score.midgame -= Max(3, e.attacks[White]) * e.threats[White]
+		e.score.endgame -= bonusKing[1][square]
 	}
 
-	e.midgame += white.midgame - black.midgame
-	e.endgame += white.endgame - black.endgame
+	e.score.add(white).subtract(black)
 
 	// No endgame bonus or penalty for king shield.
-	e.midgame += e.kingShieldScore(White) - e.kingShieldScore(Black)
+	e.score.midgame += e.kingShieldScore(White) - e.kingShieldScore(Black)
 }
 
 func (e *Evaluator) kingShieldScore(color int) (penalty int) {

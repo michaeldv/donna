@@ -7,9 +7,8 @@ package donna
 import ()
 
 type PawnCacheEntry struct {
-	hash    uint64
-	midgame int
-	endgame int
+	hash   uint64
+	score  Score
 }
 
 var pawnCache [8192]PawnCacheEntry
@@ -21,13 +20,11 @@ func (e *Evaluator) analyzePawns() {
 
 	if entry.hash != hashPawn {
 		white, black := e.pawns(White), e.pawns(Black)
-		entry.midgame = white.midgame - black.midgame
-		entry.endgame = white.endgame - black.endgame
+		entry.score.clear().add(white).subtract(black)
 		entry.hash = e.position.hashPawn
 	}
 
-	e.midgame += entry.midgame
-	e.endgame += entry.endgame
+	e.score.add(entry.score)
 }
 
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
@@ -75,15 +72,15 @@ func (e *Evaluator) pawns(color int) (score Score) {
 			// Increate the penalty if doubled pawns are isolated
 			// but not passed.
 			if isolated[col] && !passed[col] {
-				penalty = penalty.multiply(2)
+				penalty = penalty.times(2)
 			}
-			score.add(penalty.multiply(doubled - 1))
+			score.add(penalty.times(doubled - 1))
 		}
 	}
 
 	// Penalty for blocked pawns.
 	blocked := (hisPawns.pushed(color) & e.position.board).count()
-	score.subtract(pawnBlocked.multiply(blocked))
+	score.subtract(pawnBlocked.times(blocked))
 
 	return
 }

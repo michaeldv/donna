@@ -20,11 +20,8 @@ func (e *Evaluator) analyzePieces() {
 	black[3] = e.queens(Black, maskSafe)
 
 
-	e.midgame += white[0].midgame + white[1].midgame + white[2].midgame + white[3].midgame -
-	             black[0].midgame - black[1].midgame - black[2].midgame - black[3].midgame
-
-     	e.endgame += white[0].endgame + white[1].endgame + white[2].endgame + white[3].endgame -
-     	             black[0].endgame - black[1].endgame - black[2].endgame - black[3].endgame
+	e.score.add(white[0]).add(white[1]).add(white[2]).add(white[3])
+	e.score.subtract(black[0]).subtract(black[1]).subtract(black[2]).subtract(black[3])
 }
 
 func (e *Evaluator) knights(color int, maskSafe Bitmask) (score Score) {
@@ -69,7 +66,7 @@ func (e *Evaluator) knights(color int, maskSafe Bitmask) (score Score) {
 				}
 				extra += extra / 2 // Supported by a pawn.
 			}
-			score.increment(extra)
+			score.adjust(extra)
 		}
 	}
 	return
@@ -135,7 +132,7 @@ func (e *Evaluator) bishops(color int, maskSafe Bitmask) (score Score) {
 				}
 				extra += extra / 2 // Supported by a pawn.
 			}
-			score.increment(extra)
+			score.adjust(extra)
 		}
 	}
 
@@ -155,7 +152,7 @@ func (e *Evaluator) rooks(color int, maskSafe Bitmask) (score Score) {
 
 	// Bonus if rook is on 7th rank and enemy's king trapped on 8th.
 	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
-		score.add(rookOn7th.multiply(count))
+		score.add(rookOn7th.times(count))
 	}
 	for outposts != 0 {
 		square := outposts.pop()
@@ -171,7 +168,7 @@ func (e *Evaluator) rooks(color int, maskSafe Bitmask) (score Score) {
 
 		// Bonus if rook is attacking enemy's pawns.
 		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 {
-			score.add(rookOnPawn.multiply(count))
+			score.add(rookOnPawn.times(count))
 		}
 
 		// Bonuses if rook is on open or semi-open file.
@@ -219,7 +216,7 @@ func (e *Evaluator) queens(color int, maskSafe Bitmask) (score Score) {
 
 	// Bonus if queen is on 7th rank and enemy's king trapped on 8th.
 	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
-		score.add(queenOn7th.multiply(count))
+		score.add(queenOn7th.times(count))
 	}
 	for outposts != 0 {
 		square := outposts.pop()
@@ -235,7 +232,7 @@ func (e *Evaluator) queens(color int, maskSafe Bitmask) (score Score) {
 
 		// Bonus if queen is out and attacking enemy's pawns.
 		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(color, square) > 3 {
-			score.add(queenOnPawn.multiply(count))
+			score.add(queenOnPawn.times(count))
 		}
 
 		// Track if queen attacks squares around enemy's king.
