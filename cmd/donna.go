@@ -23,7 +23,7 @@ func repl() {
 	}
 
 	think := func() {
-		if move := game.Think(8, position); move != 0 {
+		if move := game.Think(9, position); move != 0 {
 			position = position.MakeMove(move)
 			fmt.Printf("%s\n", position)
 		}
@@ -74,6 +74,12 @@ func main() {
 }
 
 func benchmark() {
+	// Tylkowski vs. Wojciechowski, Poznan 1931
+	// 30...Rxb2! 31. Nxb2 c3 32. Rxb6 c4!! 33. Rb4 a5! 34.Na4 axb4
+	// game := donna.NewGame().Setup(`Kg1,Rb7,Na4,a2,b2,f4,g2,g3`, `Kh7,Rd2,Bb6,a7,c5,c4,g7,h6`)
+	// fmt.Printf("%s\n", game)
+	// game.CacheSize(64).Think(11, game.Start(donna.Black))
+
 	// Sergey Kaminer, 1935
 	// 1.h8Q+ Kxh8 2.Ng4+ Kg7 3.Qh7+ Kf8 4.Qg8+ Ke7 5.Qe8+ Kd6 6.Qd7+ Kc5 7.Qb5+ Kd6
 	// 8.Qb6+ Ke7 9.Qc7+ Kf8 10.Qc8+ Ke7 11.Qd7+ Kf8 12.Qe8+ Kg7 13.Qg8+ Kxg8 14.Kxf6+
