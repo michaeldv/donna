@@ -137,6 +137,8 @@ func init() {
 		// Vertical squares in front of a pawn.
 		maskInFront[White][square].fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
 		maskInFront[Black][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
+
+
 	}
 
 	// Castle hash values.
@@ -158,6 +160,28 @@ func init() {
 	// Enpassant hash values.
 	for col := A1; col <= H1; col++ {
 		hashEnpassant[col] = polyglotRandomEnpassant[col]
+	}
+
+	// Initialize PST.
+	for square := A1; square <= H8; square++ {
+
+		// White pieces: flip square index since bonus points have been
+		// set up from black's point of view.
+		flip := square ^ A8
+		pst[Pawn][square].add(Score{bonusPawn[0][flip], bonusPawn[1][flip]}).add(valuePawn)
+		pst[Knight][square].add(Score{bonusKnight[0][flip], bonusKnight[1][flip]}).add(valueKnight)
+		pst[Bishop][square].add(Score{bonusBishop[0][flip], bonusBishop[1][flip]}).add(valueBishop)
+		pst[Rook][square].add(Score{bonusRook[0][flip], bonusRook[1][flip]}).add(valueRook)
+		pst[Queen][square].add(Score{bonusQueen[0][flip], bonusQueen[1][flip]}).add(valueQueen)
+		pst[King][square].add(Score{bonusKing[0][flip], bonusKing[1][flip]})
+
+		// Black pieces: use square index as is.
+		pst[BlackPawn][square].add(Score{bonusPawn[0][square], bonusPawn[1][square]}).add(valuePawn)
+		pst[BlackKnight][square].add(Score{bonusKnight[0][square], bonusKnight[1][square]}).add(valueKnight)
+		pst[BlackBishop][square].add(Score{bonusBishop[0][square], bonusBishop[1][square]}).add(valueBishop)
+		pst[BlackRook][square].add(Score{bonusRook[0][square], bonusRook[1][square]}).add(valueRook)
+		pst[BlackQueen][square].add(Score{bonusQueen[0][square], bonusQueen[1][square]}).add(valueQueen)
+		pst[BlackKing][square].add(Score{bonusKing[0][square], bonusKing[1][square]})
 	}
 }
 

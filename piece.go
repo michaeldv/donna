@@ -45,42 +45,26 @@ func pawn(color int) Piece {
 	return Piece(color | Pawn)
 }
 
-// Returns intrinsic piece value for the middlegame and
-// the endgame.
-func (p Piece) score() (score Score) {
+// Returns intrinsic piece value for the middlegame and the endgame.
+func (p Piece) value() Score {
 	switch p.kind() {
 	case Pawn:
-		return Score{valuePawn.midgame, valuePawn.endgame}
+		return valuePawn
 	case Knight:
-		return Score{valueKnight.midgame, valueKnight.endgame}
+		return valueKnight
 	case Bishop:
-		return Score{valueBishop.midgame, valueBishop.endgame}
+		return valueBishop
 	case Rook:
-		return Score{valueRook.midgame, valueRook.endgame}
+		return valueRook
 	case Queen:
-		return Score{valueQueen.midgame, valueQueen.endgame}
+		return valueQueen
 	}
 	return Score{0, 0}
 }
 
-// Returns bonus points for a piece at the given square.
-func (p Piece) bonus(square int) Score {
-	// return Score{ pst[p-2][0][square], pst[p-2][1][square] }
-	switch p.kind() {
-	case Pawn:
-		return Score{bonusPawn[0][square], bonusPawn[1][square]}
-	case Knight:
-		return Score{bonusKnight[0][square], bonusKnight[1][square]}
-	case Bishop:
-		return Score{bonusBishop[0][square], bonusBishop[1][square]}
-	case Rook:
-		return Score{bonusRook[0][square], bonusRook[1][square]}
-	case Queen:
-		return Score{bonusQueen[0][square], bonusQueen[1][square]}
-	case King:
-		return Score{bonusKing[0][square], bonusKing[1][square]}
-	}
-	return Score{0, 0}
+// Returns score points for a piece at given square.
+func (p Piece) score(square int) Score {
+	return pst[p][square]
 }
 
 // Converts a piece to "official" polyglot representation, i.e. returns (Piece - 1)

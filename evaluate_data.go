@@ -28,7 +28,11 @@ var (
 	shieldDistance = Score{    5,    0 } //~~~ Shield pawn row distance from king penalty.
 )
 
-// Piece/square bonus points from the Black's point of view ([0] => middle game, [1] => endgame).
+// Piece/square table: gets initilized on startup from the bonus arrays below.
+var pst = [14][64]Score{{},}
+
+// Piece/square bonus points arranged from Black's point of view. To make it
+// more visual use two indices instead of Score: [0] => midgame, [1] => endgame.
 var bonusPawn = [2][64]int{
 	{
 	        0,   0,   0,   0,   0,   0,   0,   0,   // A1 - H1

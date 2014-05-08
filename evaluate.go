@@ -37,7 +37,7 @@ func (e *Evaluator) analyzeMaterial() {
 	counters := &e.position.count
 	for _, piece := range []Piece{Pawn, Knight, Bishop, Rook, Queen} {
 		count := counters[piece] - counters[piece|Black]
-		e.score.add(piece.score().times(count))
+		e.score.add(piece.value().times(count))
 	}
 }
 

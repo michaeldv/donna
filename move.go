@@ -83,8 +83,7 @@ func (m Move) pawnJump() Move {
 
 // Non-capturing move score based on piece/square bonus values.
 func (m Move) score() Score {
-	square := Flip(m.color(), m.to())
-	return m.piece().bonus(square)
+	return m.piece().score(m.to())
 }
 
 // Capture value based on most valueable victim/least valueable attacker.
