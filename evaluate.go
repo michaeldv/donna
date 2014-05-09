@@ -5,6 +5,7 @@
 package donna
 
 type Evaluator struct {
+	phase    int
 	score    Score
 	attacks  [2]int
 	threats  [2]int
@@ -12,25 +13,24 @@ type Evaluator struct {
 }
 
 // Use single statically allocated variable to avoid garbage collection overhead.
-var evaluator Evaluator
+var eval Evaluator
 
 func (p *Position) Evaluate() int {
-	evaluator = Evaluator{Score{0, 0}, [2]int{0, 0}, [2]int{0, 0}, p}
-	evaluator.analyzeMaterial()
-	evaluator.analyzePieces()
-	evaluator.analyzePawns()
-	evaluator.analyzeSafety()
+	eval = Evaluator{p.phase(), Score{0, 0}, [2]int{0, 0}, [2]int{0, 0}, p}
+	eval.analyzeMaterial()
+	eval.analyzePieces()
+	eval.analyzePawns()
+	eval.analyzeSafety()
 
 	if p.color == White {
-		evaluator.score.add(rightToMove)
-		return p.blended(evaluator.score)
+		eval.score.add(rightToMove)
 	} else {
-		evaluator.score.subtract(rightToMove)
-		evaluator.score.midgame = -evaluator.score.midgame
-		evaluator.score.endgame = -evaluator.score.endgame
+		eval.score.subtract(rightToMove)
+		eval.score.midgame = -eval.score.midgame
+		eval.score.endgame = -eval.score.endgame
 	}
 
-	return p.blended(evaluator.score)
+	return eval.score.blended(eval.phase)
 }
 
 func (e *Evaluator) analyzeMaterial() {

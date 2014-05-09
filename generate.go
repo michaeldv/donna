@@ -14,11 +14,12 @@ type MoveWithScore struct {
 }
 
 type MoveGen struct {
-	p    *Position
-	list [256]MoveWithScore
-	head int
-	tail int
-	ply  int
+	p      *Position
+	list   [256]MoveWithScore
+	phase  int
+	head   int
+	tail   int
+	ply    int
 }
 
 // Pre-allocate move generator array (one entry per ply) to avoid garbage
@@ -31,6 +32,7 @@ var moveList [MaxPly]MoveGen
 func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen = &moveList[ply]
 	gen.p = p
+	gen.phase = p.phase()
 	gen.list = [256]MoveWithScore{}
 	gen.head, gen.tail = 0, 0
 	gen.ply = ply
@@ -123,12 +125,10 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 			gen.list[i].score = 0xFFFE
 		} else if move == game.killers[gen.ply][1] {
 			gen.list[i].score = 0xFFFD
-		} else if move&isCapture != 0 {
+		} else if move & isCapture != 0 {
 			gen.list[i].score = move.value()
-		} else if good := game.goodMoves[move.piece()][move.to()]; good != 0 {
-			gen.list[i].score = good
 		} else {
-			gen.list[i].score = gen.p.blended(move.score())
+			gen.list[i].score = game.good(move)
 		}
 	}
 	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
@@ -142,12 +142,10 @@ func (gen *MoveGen) quickRank() *MoveGen {
 
 	game := gen.p.game
 	for i := gen.head; i < gen.tail; i++ {
-		if move := gen.list[i].move; move&isCapture != 0 {
+		if move := gen.list[i].move; move & isCapture != 0 {
 			gen.list[i].score = move.value()
-		} else if good := game.goodMoves[move.piece()][move.to()]; good != 0 {
-			gen.list[i].score = good
 		} else {
-			gen.list[i].score = gen.p.blended(move.score())
+			gen.list[i].score = game.good(move)
 		}
 	}
 	sort.Sort(byScore{gen.list[gen.head:gen.tail]})

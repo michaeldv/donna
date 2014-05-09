@@ -188,6 +188,12 @@ func (game *Game) saveGood(depth int, move Move) *Game {
 	return game
 }
 
+// Checks whether the move is among good moves captured so far and returns its
+// history value.
+func (game *Game) good(move Move) int {
+	return game.goodMoves[move.piece()][move.to()]
+}
+
 func (game *Game) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h\n")
 	for row := 7; row >= 0; row-- {

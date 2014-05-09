@@ -73,17 +73,8 @@ func (m Move) enpassant() Move {
 	return m | isEnpassant
 }
 
-func (m Move) izPawnJump() bool {
-	return m&isPawnJump != 0
-}
-
 func (m Move) pawnJump() Move {
 	return m | isPawnJump
-}
-
-// Non-capturing move score based on piece/square bonus values.
-func (m Move) score() Score {
-	return m.piece().score(m.to())
 }
 
 // Capture value based on most valueable victim/least valueable attacker.

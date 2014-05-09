@@ -328,13 +328,6 @@ func (p *Position) phase() int {
 		44 * (p.count[Queen] + p.count[BlackQueen])
 }
 
-// Calculates normalized position score based on position stage and given
-// midgame/endgame values.
-func (p *Position) blended(score Score) int {
-	phase := p.phase()
-	return (score.midgame * phase + score.endgame * (256-phase)) / 256
-}
-
 // Computes initial values of position's polyglot hash (entire board) and pawn
 // hash (pawns only). When making a move the values get updated incrementally.
 func (p *Position) polyglot() (hash, hashPawn uint64) {
