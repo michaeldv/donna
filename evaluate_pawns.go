@@ -57,11 +57,6 @@ func (e *Evaluator) pawns(color int) (score Score) {
 			score.add(penaltyIsolatedPawn[column])
 			isolated[column] = true
 		}
-
-		// Bonus for pawn's position on the board.
-		flip := Flip(color, square)
-		score.midgame += bonusPawn[0][flip]
-		score.endgame += bonusPawn[1][flip]
 	}
 
 	// Penalty for doubled pawns.

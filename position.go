@@ -24,6 +24,7 @@ type Position struct {
 	count      [16]int     // Counts of each piece on the board, ex. white pawns: 6, etc.
 	pieces     [64]Piece   // Array of 64 squares with pieces on them.
 	outposts   [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
+	tally      Score       // Material score based on PST.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
@@ -61,6 +62,7 @@ func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
 	p.reversible = true
 	p.board = p.outposts[White] | p.outposts[Black]
 	p.hash, p.hashPawn = p.polyglot()
+	p.tally = p.material()
 
 	return p
 }
@@ -76,6 +78,9 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	if piece.isPawn() {
 		p.hashPawn ^= random
 	}
+
+	// Update material score.
+	p.tally.subtract(pst[piece][from]).add(pst[piece][to])
 
 	return p
 }
@@ -94,6 +99,9 @@ func (p *Position) promotePawn(piece Piece, from, to int, promo Piece) *Position
 	p.hashPawn ^= random
 	p.hash ^= polyglotRandom[64 * promo.polyglot() + to]
 
+	// Update material score.
+	p.tally.subtract(pst[piece][from]).add(pst[promo][to])
+
 	return p
 }
 
@@ -108,6 +116,9 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	if capture.isPawn() {
 		p.hashPawn ^= random
 	}
+
+	// Update material score.
+	p.tally.subtract(pst[capture][to])
 
 	return p
 }
@@ -125,15 +136,17 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	p.hash ^= random
 	p.hashPawn ^= random
 
+	// Update material score.
+	p.tally.subtract(pst[capture][enpassant])
+
 	return p
 }
 
 func (p *Position) MakeMove(move Move) *Position {
 	color := move.color()
 	from, to, piece, capture := move.split()
-	//
+
 	// Copy over the contents of previous tree node to the current one.
-	//
 	node++
 	tree[node] = *p // => tree[node] = tree[node - 1]
 	pp := &tree[node]
@@ -180,18 +193,16 @@ func (p *Position) MakeMove(move Move) *Position {
 	}
 
 	pp.board = pp.outposts[White] | pp.outposts[Black]
-	//
+
 	// Ready to validate new position we have after making the move: if it is not
 	// valid then revert back the node pointer and return nil.
-	//
 	if pp.isInCheck(color) {
 		node--
 		return nil
 	}
-	//
+
 	// OK, the position after making the move is valid: all that's left is updating
 	// castle rights, finishing off incremental hash value, and flipping the color.
-	//
 	pp.castles &= castleRights[from] & castleRights[to]
 	pp.hash ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
 
@@ -350,6 +361,18 @@ func (p *Position) polyglot() (hash, hashPawn uint64) {
 		hash ^= polyglotRandomWhite
 	}
 
+	return
+}
+
+// Computes position's cumulative material score. When making a move the
+// material score gets updated incrementally.
+func (p *Position) material() (score Score) {
+	board := p.board
+	for board != 0 {
+		square := board.pop()
+		piece := p.pieces[square]
+		score.add(pst[piece][square])
+	}
 	return
 }
 

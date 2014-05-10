@@ -7,19 +7,15 @@ package donna
 func (e *Evaluator) analyzeSafety() {
 	var white, black Score
 
-	// White king's board position and enemy threats.
-	square := e.position.king[White] ^ 56
-	white.midgame += bonusKing[0][square]
-	white.endgame += bonusKing[1][square]
+	// White king's threats.
+	square := e.position.king[White] ^ A8
 	if e.attacks[Black] > 0 {
 		white.midgame -= Max(3, e.attacks[Black]) * e.threats[Black]
 		white.endgame -= bonusKing[1][square]
 	}
 
-	// Black king's board position and enemy threats.
+	// Black king's threats.
 	square = e.position.king[Black]
-	black.midgame += bonusKing[0][square]
-	black.endgame += bonusKing[1][square]
 	if e.attacks[White] > 0 {
 		e.score.midgame -= Max(3, e.attacks[White]) * e.threats[White]
 		e.score.endgame -= bonusKing[1][square]

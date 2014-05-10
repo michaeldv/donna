@@ -51,14 +51,10 @@ func (e *Evaluator) knights(color int, maskSafe Bitmask) (score Score) {
 			e.threats[color] += bonusKingThreat[Knight/2]
 		}
 
-		// Bonus for knight's board position.
-		flip := Flip(color, square)
-		score.midgame += bonusKnight[0][flip]
-		score.endgame += bonusKnight[1][flip]
-
 		// Extra bonus if knight is in the center. Increase the extra
 		// bonus if the knight is supported by a pawn and can't be
 		// exchanged.
+		flip := Flip(color, square)
 		if extra := extraKnight[flip]; extra > 0 {
 			if p.pawnAttacks(color).isSet(square) {
 				if p.count[knight(color^1)] == 0 {
@@ -117,14 +113,10 @@ func (e *Evaluator) bishops(color int, maskSafe Bitmask) (score Score) {
 			e.threats[color] += bonusKingThreat[Bishop/2]
 		}
 
-		// Bonus for bishop's board position.
-		flip := Flip(color, square)
-		score.midgame += bonusBishop[0][flip]
-		score.endgame += bonusBishop[1][flip]
-
 		// Extra bonus if bishop is in the center. Increase the extra
 		// bonus if the bishop is supported by a pawn and can't be
 		// exchanged.
+		flip := Flip(color, square)
 		if extra := extraBishop[flip]; extra > 0 {
 			if p.pawnAttacks(color).isSet(square) {
 				if p.count[bishop(color^1)] == 0 {
@@ -201,11 +193,6 @@ func (e *Evaluator) rooks(color int, maskSafe Bitmask) (score Score) {
 			e.attacks[color]++
 			e.threats[color] += bonusKingThreat[Rook/2]
 		}
-
-		// Bonus for rook's board position.
-		flip := Flip(color, square)
-		score.midgame += bonusRook[0][flip]
-		score.endgame += bonusRook[1][flip]
 	}
 	return
 }
@@ -240,11 +227,6 @@ func (e *Evaluator) queens(color int, maskSafe Bitmask) (score Score) {
 			e.attacks[color]++
 			e.threats[color] += bonusKingThreat[Queen/2]
 		}
-
-		// Bonus for queen's board position.
-		flip := Flip(color, square)
-		score.midgame += bonusQueen[0][flip]
-		score.endgame += bonusQueen[1][flip]
 	}
 	return
 }

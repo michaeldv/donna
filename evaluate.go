@@ -16,8 +16,7 @@ type Evaluator struct {
 var eval Evaluator
 
 func (p *Position) Evaluate() int {
-	eval = Evaluator{p.phase(), Score{0, 0}, [2]int{0, 0}, [2]int{0, 0}, p}
-	eval.analyzeMaterial()
+	eval = Evaluator{p.phase(), p.tally, [2]int{0, 0}, [2]int{0, 0}, p}
 	eval.analyzePieces()
 	eval.analyzePawns()
 	eval.analyzeSafety()
@@ -31,14 +30,6 @@ func (p *Position) Evaluate() int {
 	}
 
 	return eval.score.blended(eval.phase)
-}
-
-func (e *Evaluator) analyzeMaterial() {
-	counters := &e.position.count
-	for _, piece := range []Piece{Pawn, Knight, Bishop, Rook, Queen} {
-		count := counters[piece] - counters[piece|Black]
-		e.score.add(piece.value().times(count))
-	}
 }
 
 func (e *Evaluator) strongEnough(color int) bool {
