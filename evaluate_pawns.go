@@ -31,46 +31,77 @@ func (e *Evaluator) analyzePawns() {
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
 func (e *Evaluator) pawns(color int) (score Score) {
-	var passed, isolated [8]bool
-
 	hisPawns := e.position.outposts[pawn(color)]
 	herPawns := e.position.outposts[pawn(color^1)]
 
 	pawns := hisPawns
 	for pawns != 0 {
 		square := pawns.pop()
-		column := Col(square)
+		row, col := Coordinate(square)
+
+		// Penalty if the pawn is isolated, i.e. has no friendly pawns
+		// on adjacent files. The penalty goes up if isolated pawn is
+		// exposed on semi-open file.
+		isolated := (maskIsolated[col] & hisPawns == 0)
+		exposed := (maskInFront[color][square] & herPawns == 0)
+		if isolated {
+			if !exposed {
+				score.subtract(penaltyIsolatedPawn[col])
+			} else {
+				score.subtract(penaltyWeakIsolatedPawn[col])
+			}
+		}
+
+		// Penalty if the pawn is doubled, i.e. there is another friendly
+		// pawn in front of us. The penalty goes up if doubled pawns are
+		// isolated.
+		doubled := (maskInFront[color][square] & hisPawns != 0)
+		if doubled {
+			score.subtract(penaltyDoubledPawn[col])
+		}
+
+		// Bonus if the pawn is supported by friendly pawn(s) on the same
+		// or previous ranks.
+		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].pushed(color^1)) & hisPawns != 0)
+		if supported {
+			flip := Flip(color, square)
+			score.add(Score{bonusSupportedPawn[flip], bonusSupportedPawn[flip]})
+		}
 
 		// The pawn is passed if a) there are no enemy pawns in the same
 		// and adjacent columns; and b) there are no same color pawns in
 		// front of us.
-		if maskPassed[color][square] & herPawns == 0 && maskInFront[color][square] & hisPawns == 0 {
+		passed := (maskPassed[color][square] & herPawns == 0 && !doubled)
+		if passed {
 			flip := Flip(color, square)
 			score.midgame += bonusPassedPawn[0][flip]
 			score.endgame += bonusPassedPawn[1][flip]
-			passed[column] = true
 		}
 
-		// Check if the pawn is isolated, i.e. has no pawns of the same
-		// color on either sides.
-		if maskIsolated[column] & hisPawns == 0 {
-			score.add(penaltyIsolatedPawn[column])
-			isolated[column] = true
-		}
-	}
+		// Penalty if the pawn is backward.
+		if (!passed && !supported && !isolated) {
 
-	// Penalty for doubled pawns.
-	for col := 0; col <= 7; col++ {
-		if doubled := (maskFile[col] & hisPawns).count(); doubled > 1 {
-			penalty := penaltyDoubledPawn[col]
+			// Backward pawn should not be attacking enemy pawns.
+			if pawnMoves[color][square] & herPawns == 0 {
 
-			// Increate the penalty if doubled pawns are isolated
-			// but not passed.
-			if isolated[col] && !passed[col] {
-				penalty = penalty.times(2)
+				// Backward pawn should not have friendly pawns behind.
+				if maskPassed[color^1][square] & maskIsolated[col] & hisPawns == 0 {
+
+					// Backward pawn should face enemy pawns on the next two ranks
+					// preventing its advance.
+					enemy := pawnMoves[color][square].pushed(color)
+					if (enemy | enemy.pushed(color)) & herPawns != 0 {
+						if !exposed {
+							score.subtract(penaltyBackwardPawn[col])
+						} else {
+							score.subtract(penaltyWeakBackwardPawn[col])
+						}
+					}
+				}
 			}
-			score.add(penalty.times(doubled - 1))
 		}
+
+		// TODO: Bonus if the pawn has good chance to become a passed pawn.
 	}
 
 	// Penalty for blocked pawns.

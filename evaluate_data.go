@@ -215,19 +215,47 @@ var bonusKingThreat = [6]int {
 	0, 0, 10, 10, 15, 30,
 }
 
+// Supported pawn bonus arranged from Black's point of view. The actual score
+// uses the same values for midgame and endgame.
+var bonusSupportedPawn = [64]int{
+	  0,   0,   0,   0,   0,   0,   0,   0, // A8 - H8
+	107, 111, 111, 113, 113, 111, 111, 107,
+	 62,  66,  66,  68,  68,  66,  66,  62,
+	 31,  34,  34,  36,  36,  34,  34,  31,
+	 13,  16,  16,  18,  18,  16,  16,  13,
+	  4,   6,   6,   7,   7,   6,   6,   4,
+	  1,   3,   3,   4,   4,   3,   3,   1,
+	  0,   0,   0,   0,   0,   0,   0,   0, // A1 - H1
+}
+
 // [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
 var penaltyPawnThreat = [6]Score {
 	{0, 0}, {0, 0}, {26, 35}, {26, 35}, {38, 49}, {43, 59},
 }
 
-// A to H, midgame/endgame.
+// Penalty for doubled pawn: A to H, midgame/endgame.
 var penaltyDoubledPawn = [8]Score{
-	{-34, -48}, {-16, -20}, {-8, -16}, {-4, -16}, {-4, -16}, {-8, -16}, {-16, -20}, {-34, -48},
+	{7, 22}, {10, 24}, {12, 24}, {12, 24}, {12, 24}, {12, 24}, {10, 24}, {7, 22},
 }
 
-// A to H, midgame/endgame.
+// Penalty for isolated pawn that is *not* exposed: A to H, midgame/endgame.
 var penaltyIsolatedPawn = [8]Score{
-	{-6, -12}, {-6, -12}, {-6, -12}, {-4, -10}, {-4, -10}, {-6, -12}, {-6, -12}, {-6, -12},
+	{12, 15}, {18, 17}, {20, 17}, {20, 17}, {20, 17}, {20, 17}, {18, 17}, {12, 15},
+}
+
+// Penalty for isolated pawn that is exposed: A to H, midgame/endgame.
+var penaltyWeakIsolatedPawn = [8]Score{
+	{18, 22}, {27, 26}, {30, 26}, {30, 26}, {30, 26}, {30, 26}, {27, 26}, {18, 22},
+}
+
+// Penalty for backward pawn that is *not* exposed: A to H, midgame/endgame.
+var penaltyBackwardPawn = [8]Score{
+	{10, 14}, {15, 16}, {17, 16}, {17, 16}, {17, 16}, {17, 16}, {15, 16}, {10, 14},
+}
+
+// Penalty for backward pawn that is exposed: A to H, midgame/endgame.
+var penaltyWeakBackwardPawn = [8]Score{
+	{15, 21}, {22, 23}, {25, 23}, {25, 23}, {25, 23}, {25, 23}, {22, 23}, {15, 21},
 }
 
 var mobilityKnight = [9]Score{
