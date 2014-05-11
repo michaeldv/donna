@@ -17,8 +17,8 @@ func (e *Evaluator) analyzeSafety() {
 	// Black king's threats.
 	square = e.position.king[Black]
 	if e.attacks[White] > 0 {
-		e.score.midgame -= Max(3, e.attacks[White]) * e.threats[White]
-		e.score.endgame -= bonusKing[1][square]
+		black.midgame -= Max(3, e.attacks[White]) * e.threats[White]
+		black.endgame -= bonusKing[1][square]
 	}
 
 	e.score.add(white).subtract(black)
