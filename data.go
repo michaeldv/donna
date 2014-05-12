@@ -43,6 +43,17 @@ const (
 	A8; B8; C8; D8; E8; F8; G8; H8
 )
 
+var bit = [64]Bitmask{
+	1<<A1, 1<<B1, 1<<C1, 1<<D1, 1<<E1, 1<<F1, 1<<G1, 1<<H1,
+	1<<A2, 1<<B2, 1<<C2, 1<<D2, 1<<E2, 1<<F2, 1<<G2, 1<<H2,
+	1<<A3, 1<<B3, 1<<C3, 1<<D3, 1<<E3, 1<<F3, 1<<G3, 1<<H3,
+	1<<A4, 1<<B4, 1<<C4, 1<<D4, 1<<E4, 1<<F4, 1<<G4, 1<<H4,
+	1<<A5, 1<<B5, 1<<C5, 1<<D5, 1<<E5, 1<<F5, 1<<G5, 1<<H5,
+	1<<A6, 1<<B6, 1<<C6, 1<<D6, 1<<E6, 1<<F6, 1<<G6, 1<<H6,
+	1<<A7, 1<<B7, 1<<C7, 1<<D7, 1<<E7, 1<<F7, 1<<G7, 1<<H7,
+	1<<A8, 1<<B8, 1<<C8, 1<<D8, 1<<E8, 1<<F8, 1<<G8, 1<<H8,
+}
+
 var deBruijn = [64]int{
 	 0, 47,  1, 56, 48, 27,  2, 60,
 	57, 49, 41, 37, 28, 16,  3, 61,
@@ -88,21 +99,21 @@ var mask7th = [2]Bitmask{ maskRank[6], maskRank[1] }
 var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
 
 // Castle squares that should be *empty* in order for catle to be valid.
-var gapKing = [2]Bitmask{ // F1 | G1 and F8 | G8
-	0x0000000000000060, 0x6000000000000000,
+var gapKing = [2]Bitmask{
+	bit[F1]|bit[G1], bit[F8]|bit[G8],
 }
 
-var gapQueen = [2]Bitmask{ // C1 | D1 and C8 | D8
-	0x000000000000000E, 0x0E00000000000000,
+var gapQueen = [2]Bitmask{
+	bit[C1]|bit[D1], bit[C8]|bit[D8],
 }
 
 // Castle squares that should be *safe* in order for catle to be valid.
-var castleKing = [2]Bitmask{ // E1 | F1 | G1 and E8 | F8 | G8
-	0x0000000000000070, 0x7000000000000000,
+var castleKing = [2]Bitmask{
+	bit[E1]|bit[F1]|bit[G1], bit[E8]|bit[F8]|bit[G8],
 }
 
-var castleQueen = [2]Bitmask{ // C1 | D1 | E1 and C8 | D8 | E8
-	0x000000000000001C, 0x1C00000000000000,
+var castleQueen = [2]Bitmask{
+	bit[C1]|bit[D1]|bit[E1], bit[C8]|bit[D8]|bit[E8],
 }
 
 // Default polyglot Random64 array (http://hardy.uhasselt.be/Toga/book_format.html)

@@ -12,7 +12,6 @@ type Magic struct {
 }
 
 var (
-	bit              [64]Bitmask
 	kingMoves        [64]Bitmask
 	knightMoves      [64]Bitmask
 	pawnMoves        [2][64]Bitmask
@@ -51,10 +50,6 @@ var (
 )
 
 func init() {
-	for square := A1; square <= H8; square++ {
-		bit[square] = Bitmask(1 << uint(square))
-	}
-
 	for square := A1; square <= H8; square++ {
 		row, col := Coordinate(square)
 
