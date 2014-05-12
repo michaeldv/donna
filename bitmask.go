@@ -113,6 +113,12 @@ func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask 
 	return b
 }
 
+func (b *Bitmask) spot(square, direction int, board Bitmask) *Bitmask {
+	*b = bit[square] & board
+	*b = ^*(b.shift(direction))
+	return b
+}
+
 func (b Bitmask) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h  ")
 	buffer.WriteString(fmt.Sprintf("0x%016X\n", uint64(b)))
