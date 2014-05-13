@@ -7,6 +7,7 @@ package donna
 import (
 	`encoding/binary`
 	`os`
+	`sort`
 )
 
 type Book struct {
@@ -32,13 +33,21 @@ func NewBook(fileName string) *Book {
 	return book
 }
 
-func (b *Book) pickMove(position *Position) (move Move) {
+func (b *Book) pickMove(position *Position) Move {
 	entries := b.lookup(position)
-	if len(entries) == 0 {
-		return 0 // TODO: set the "useless book" flag after a few misses.
+	switch length := len(entries); length {
+	case 0:
+		// TODO: set the "useless book" flag after a few misses.
+		return 0
+	case 1:
+		// The only move available.
+		return b.move(position, entries[0])
+	default:
+		// Sort book entries by score and pick among two best moves.
+		sort.Sort(byBookScore{entries})
+		best := Min(2, len(entries))
+		return b.move(position, entries[Random(best)])
 	}
-
-	return b.move(position, entries[Random(len(entries))])
 }
 
 func (b *Book) lookup(position *Position) (entries []Entry) {
@@ -51,10 +60,9 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 	defer file.Close()
 
 	key, _ := position.polyglot()
-	//
-	// Since book entries are ordered by the polyglot key use binary
+
+	// Since book entries are ordered by polyglot key we can use binary
 	// search to find *first* book entry that matches the position.
-	//
 	first, current, last := int64(-1), int64(0), b.entries
 	for first < last {
 		current = (first + last) / 2
@@ -66,9 +74,8 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 			first = current + 1
 		}
 	}
-	//
+
 	// Read all book entries for the given position.
-	//
 	file.Seek(first*16, 0)
 	for {
 		binary.Read(file, binary.BigEndian, &entry)
@@ -84,10 +91,9 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 func (b *Book) move(p *Position, entry Entry) Move {
 	from := Square(entry.fromRow(), entry.fromCol())
 	to := Square(entry.toRow(), entry.toCol())
-	//
+
 	// Check if this is a castle move. In Polyglot they are represented
-	// as e1-h1, e1-a1, e8-h8, and e8-a8.
-	//
+	// as E1-H1, E1-A1, E8-H8, and E8-A8.
 	if from == E1 && to == H1 {
 		return p.NewCastle(from, G1)
 	} else if from == E1 && to == A1 {
@@ -97,10 +103,8 @@ func (b *Book) move(p *Position, entry Entry) Move {
 	} else if from == E8 && to == A8 {
 		return p.NewCastle(from, C8)
 	} else {
-		//
 		// Special treatment for non-promo pawn moves since they might
 		// cause en-passant.
-		//
 		if piece := p.pieces[from]; piece.isPawn() && to > H1 && to < A8 {
 			return p.pawnMove(from, to)
 		}
@@ -141,3 +145,11 @@ func (e *Entry) promoted() int {
 	}
 	return piece*2 + 2
 }
+
+type byBookScore struct {
+	list []Entry
+}
+
+func (her byBookScore) Len() int           { return len(her.list) }
+func (her byBookScore) Swap(i, j int)      { her.list[i], her.list[j] = her.list[j], her.list[i] }
+func (her byBookScore) Less(i, j int) bool { return her.list[i].Score > her.list[j].Score }
