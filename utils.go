@@ -107,14 +107,23 @@ func Rose(direction int) int {
 	return [8]int{8, 9, 1, -7, -8, -9, -1, 7}[direction]
 }
 
-func Lop(args ...interface{}) {
-	if Settings.Log {
-		fmt.Println(args...)
-	}
-}
 
-func Log(format string, args ...interface{}) {
-	if Settings.Log {
-		fmt.Printf(format, args...)
+// Logging wrapper around fmt.Printf() that could be turned on as needed. Typical
+// usage is Log(true); defer Log(false) in tests.
+func Log(args ...interface{}) {
+	switch len(args) {
+	case 0:
+		// Calling Log() with no arguments flips the logging setting.
+		Settings.Log = !Settings.Log
+		Settings.Fancy = !Settings.Fancy
+	case 1:
+		switch args[0].(type) {
+		case bool:
+			Settings.Log = args[0].(bool)
+		default:
+			fmt.Println(args...)
+		}
+	default:
+		fmt.Printf(args[0].(string), args[1:]...)
 	}
 }
