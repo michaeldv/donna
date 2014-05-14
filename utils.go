@@ -12,6 +12,7 @@ import (
 
 type Globals struct {
 	Log   bool // Enable logging.
+	Trace bool // Trace evaluation scores.
 	Fancy bool // Represent pieces as UTF-8 characters.
 }
 
@@ -120,6 +121,7 @@ func Log(args ...interface{}) {
 		switch args[0].(type) {
 		case bool:
 			Settings.Log = args[0].(bool)
+			Settings.Fancy = args[0].(bool)
 		default:
 			fmt.Println(args...)
 		}
