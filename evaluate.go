@@ -31,16 +31,21 @@ func (p *Position) EvaluateWithTrace() (int, map[string]interface{}) {
 
 	Settings.Trace = true
 	defer func() {
-		var total Total
+		var tempo Total
+		var final Score
+
 		if p.color == White {
-			total.white.add(rightToMove)
+			tempo.white.add(rightToMove)
+			final.add(eval.score)
 		} else {
-			total.black.add(rightToMove)
+			tempo.black.add(rightToMove)
+			final.subtract(eval.score)
 		}
-		eval.checkpoint(`Tempo`, total)
-		eval.checkpoint(`PST`, p.tally)
+
 		eval.checkpoint(`Phase`, eval.phase)
-		eval.checkpoint(`Total`, eval.score)
+		eval.checkpoint(`PST`, p.tally)
+		eval.checkpoint(`Tempo`, tempo)
+		eval.checkpoint(`Final`, final)
 		Settings.Trace = false
 	}()
 

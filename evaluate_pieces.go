@@ -7,6 +7,18 @@ package donna
 func (e *Evaluator) analyzePieces() {
 	var white, black [4]Score
 
+	if Settings.Trace {
+		defer func() {
+			var his, her Score
+			e.checkpoint(`+Pieces`,  Total{*his.add(white[0]).add(white[1]).add(white[2]).add(white[3]),
+				*her.add(black[0]).add(black[1]).add(black[2]).add(black[3])})
+			e.checkpoint(`-Knights`, Total{white[0], black[0]})
+			e.checkpoint(`-Bishops`, Total{white[1], black[1]})
+			e.checkpoint(`-Rooks`,   Total{white[2], black[2]})
+			e.checkpoint(`-Queens`,  Total{white[3], black[3]})
+		}()
+	}
+
 	maskSafe := ^e.position.pawnAttacks(Black) // Squares not attacked by Black pawns.
 	white[0] = e.knights(White, maskSafe)
 	white[1] = e.bishops(White, maskSafe)
