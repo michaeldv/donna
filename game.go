@@ -162,7 +162,7 @@ func (game *Game) printBestLine(depth, score, status int, finish float64) {
 	default:
 		fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, float64(score)/100.0,
+			float64(game.nodes+game.qnodes)/finish, float32(score)/100.0,
 			game.bestLine[0][0:game.bestLength[0]])
 	}
 }
