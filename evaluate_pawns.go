@@ -18,10 +18,14 @@ func (e *Evaluator) analyzePawns() {
 	index := hashPawn % uint64(len(pawnCache))
 	entry := &pawnCache[index]
 
-	if entry.hash != hashPawn {
+	// Bypass pawns cache if evaluation tracing is enabled.
+	if entry.hash != hashPawn || Settings.Trace {
 		white, black := e.pawns(White), e.pawns(Black)
 		entry.score.clear().add(white).subtract(black)
 		entry.hash = e.position.hashPawn
+		if Settings.Trace {
+			e.checkpoint(`Pawns`, Total{white, black})
+		}
 	}
 
 	e.score.add(entry.score)

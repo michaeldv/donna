@@ -14,7 +14,7 @@ type Evaluator struct {
 	score     Score
 	attacks   [2]int
 	threats   [2]int
-	summary   map[string]interface{}
+	metrics   map[string]interface{}
 	position  *Position
 }
 
@@ -49,7 +49,7 @@ func (p *Position) EvaluateWithTrace() (int, map[string]interface{}) {
 		Settings.Trace = false
 	}()
 
-	return eval.run(), eval.summary
+	return eval.run(), eval.metrics
 }
 
 func (e *Evaluator) run() int {
@@ -69,7 +69,7 @@ func (e *Evaluator) run() int {
 }
 
 func (e *Evaluator) checkpoint(tag string, total interface{}) {
-	e.summary[tag] = total
+	e.metrics[tag] = total
 }
 
 func (e *Evaluator) strongEnough(color int) bool {
