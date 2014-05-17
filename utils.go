@@ -123,9 +123,13 @@ func Log(args ...interface{}) {
 			Settings.Log = args[0].(bool)
 			Settings.Fancy = args[0].(bool)
 		default:
-			fmt.Println(args...)
+			if Settings.Log {
+				fmt.Println(args...)
+			}
 		}
 	default:
-		fmt.Printf(args[0].(string), args[1:]...)
+		if Settings.Log {
+			fmt.Printf(args[0].(string), args[1:]...)
+		}
 	}
 }
