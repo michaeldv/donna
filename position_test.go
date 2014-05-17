@@ -144,6 +144,24 @@ func TestPosition083(t *testing.T) { // Rook is taken.
 	expect(t, queenside, false)
 }
 
+// Blocking kingside knight.
+func TestPosition084(t *testing.T) {
+	p := NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8,Ng8`).Start(Black)
+
+	kingside, queenside := p.canCastle(Black)
+	expect(t, kingside, false)
+	expect(t, queenside, true)
+}
+
+// Blocking queenside knight.
+func TestPosition085(t *testing.T) {
+	p := NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8,Nb8`).Start(Black)
+
+	kingside, queenside := p.canCastle(Black)
+	expect(t, kingside, true)
+	expect(t, queenside, false)
+}
+
 // Straight repetition.
 func TestPosition100(t *testing.T) {
 	p := NewGame().InitialPosition().Start(White) // Initial 1.

@@ -104,7 +104,7 @@ var gapKing = [2]Bitmask{
 }
 
 var gapQueen = [2]Bitmask{
-	bit[C1]|bit[D1], bit[C8]|bit[D8],
+	bit[B1]|bit[C1]|bit[D1], bit[B8]|bit[C8]|bit[D8],
 }
 
 // Castle squares that should be *safe* in order for catle to be valid.
