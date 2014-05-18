@@ -109,6 +109,77 @@ func Rose(direction int) int {
 }
 
 
+func Summary(metrics map[string]interface{}) {
+	phase := metrics[`Phase`].(int)
+	tally := metrics[`PST`].(Score)
+	final := metrics[`Final`].(Score)
+
+	fmt.Println()
+	fmt.Printf("Metric              MidGame        |        EndGame        | Blended\n")
+	fmt.Printf("                W      B     W-B   |    W      B     W-B   |  (%d)  \n", phase)
+	fmt.Printf("-----------------------------------+-----------------------+--------\n")
+	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `PST`,
+		float32(tally.midgame)/100.0, float32(tally.endgame)/100.0, float32(tally.blended(phase))/100.0)
+
+	for _, tag := range([]string{`Tempo`, `Pawns`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Danger`, `Initiative`}) {
+		white := metrics[tag].(Total).white
+		black := metrics[tag].(Total).black
+
+		var score Score
+		score.add(white).subtract(black)
+
+		if tag[0:1] == `+` {
+			tag = tag[1:]
+		} else if tag[0:1] == `-` {
+			tag = `  ` + tag[1:]
+		}
+
+		fmt.Printf("%-12s  %5.2f  %5.2f  %5.2f  |  %5.2f  %5.2f  %5.2f  >  %5.2f\n", tag,
+			float32(white.midgame)/100.0, float32(black.midgame)/100.0, float32(score.midgame)/100.0,
+			float32(white.endgame)/100.0, float32(black.endgame)/100.0, float32(score.endgame)/100.0,
+			float32(score.blended(phase))/100.0)
+	}
+	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n\n", `Final Score`,
+		float32(final.midgame)/100.0, float32(final.endgame)/100.0, float32(final.blended(phase))/100.0)
+}
+
+func SummaryAlt(metrics map[string]interface{}) {
+	phase := metrics[`Phase`].(int)
+	tally := metrics[`PST`].(Score)
+	final := metrics[`Final`].(Score)
+
+	fmt.Println()
+	fmt.Printf("Metric            White     |     Black     |     Total     | Blended \n")
+	fmt.Printf("                mid   end   |   mid   end   |   mid   end   |  (%d)  \n", phase)
+	fmt.Printf("----------------------------+---------------+---------------+---------\n")
+	fmt.Printf("%-12s     -     -    |    -     -    | %5.2f  %5.2f  > %5.2f\n", `PST`,
+		float32(tally.midgame)/100.0, float32(tally.endgame)/100.0,
+		float32(tally.blended(phase))/100.0)
+
+	for _, tag := range([]string{`Tempo`, `Pawns`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Danger`, `Initiative`}) {
+		white := metrics[tag].(Total).white
+		black := metrics[tag].(Total).black
+
+		var score Score
+		score.add(white).subtract(black)
+
+		if tag[0:1] == `+` {
+			tag = tag[1:]
+		} else if tag[0:1] == `-` {
+			tag = `  ` + tag[1:]
+		}
+
+		fmt.Printf("%-12s  %5.2f  %5.2f  | %5.2f  %5.2f  | %5.2f  %5.2f  > %5.2f\n", tag,
+			float32(white.midgame)/100.0, float32(white.endgame)/100.0,
+			float32(black.midgame)/100.0, float32(black.endgame)/100.0,
+			float32(score.midgame)/100.0, float32(score.endgame)/100.0,
+			float32(score.blended(phase))/100.0)
+	}
+	fmt.Printf("%-12s     -     -    |    -     -    | %5.2f  %5.2f  > %5.2f\n\n", `Final Score`,
+		float32(final.midgame)/100.0, float32(final.endgame)/100.0,
+		float32(final.blended(phase))/100.0)
+}
+
 // Logging wrapper around fmt.Printf() that could be turned on as needed. Typical
 // usage is Log(true); defer Log(false) in tests.
 func Log(args ...interface{}) {
