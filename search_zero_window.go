@@ -6,8 +6,8 @@ package donna
 
 import ()
 
-var razoringMargin = [4]int{0, 260, 470, 680}	// {0, 256, 256+256, 256+256+256}
-var futilityMargin = [4]int{0, 890, 990, 1090}	// {0, 512, 512+256, 512+256+256}
+var razoringMargin = [4]int{0, 256, 256+256, 256+256+256}
+var futilityMargin = [4]int{0, 512, 512+128, 512+128+128}
 
 // Search with zero window.
 func (p *Position) searchWithZeroWindow(beta, depth int) int {
