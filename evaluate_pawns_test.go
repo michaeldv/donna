@@ -4,9 +4,7 @@
 
 package donna
 
-import (
-	`testing`
-)
+import `testing`
 
 // Doubled pawns.
 func TestEvaluatePawns100(t *testing.T) {

@@ -109,8 +109,10 @@ func (e *Evaluator) pawns(color int) (score Score) {
 	}
 
 	// Penalty for blocked pawns.
-	blocked := (hisPawns.pushed(color) & e.position.board).count()
-	score.subtract(pawnBlocked.times(blocked))
+	// ~~~ TODO: should not be stored in the pawns cache since the blockade
+	// ~~~ depends on other pieces.
+	// blocked := (hisPawns.pushed(color) & e.position.board).count()
+	// score.subtract(pawnBlocked.times(blocked))
 
 	return
 }
