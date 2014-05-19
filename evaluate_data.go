@@ -24,8 +24,9 @@ var (
 	queenOnPawn    = Score{    2,   10 }
 	queenOn7th     = Score{    1,    4 }
 	behindPawn     = Score{    8,    0 }
-	shieldMissing  = Score{   30,    0 } //~~~ Missing shield pawn penalty.
-	shieldDistance = Score{    5,    0 } //~~~ Shield pawn row distance from king penalty.
+	hangingAttack  = Score{   10,   12 }
+	coverMissing   = Score{   30,    0 } //~~~ Missing cover pawn penalty.
+	coverDistance  = Score{    5,    0 } //~~~ Cover pawn row distance from king penalty.
 )
 
 // Piece/square table: gets initilized on startup from the bonus arrays below.
@@ -211,6 +212,16 @@ var extraBishop = [64]int{
 }
 
 // [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
+var bonusMinorThreat = [6]Score{
+	{0, 0}, {3, 19}, {12, 24}, {12, 24}, {20, 50}, {20, 50},
+}
+
+// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
+var bonusMajorThreat = [6]Score{
+	{0, 0}, {7, 19}, {7, 22}, {7, 22}, {7, 22}, {12, 24},
+}
+
+// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
 var bonusKingThreat = [6]int {
 	0, 0, 10, 10, 15, 30,
 }
@@ -277,10 +288,19 @@ var mobilityQueen = [16]Score{
 	{6, 14}, {8, 17}, {9, 19}, {10, 20}, {11, 20}, {11, 20}, {12, 20}, {12, 20},
 }
 
-var rookBoxA = [2]Bitmask{ // A1,A2,B1 and A8,A7,B8
-	0x0000000000000103, 0x0301000000000000,
+// Boxed rooks.
+var kingBoxA = [2]Bitmask{
+	bit[D1]|bit[C1]|bit[B1], bit[D8]|bit[C8]|bit[B8],
 }
 
-var rookBoxH = [2]Bitmask{ // G1,H1,H2 and G8,H8,H7
-	0x00000000000080C0, 0xC080000000000000,
+var kingBoxH = [2]Bitmask{
+	bit[E1]|bit[F1]|bit[G1], bit[E8]|bit[F8]|bit[G8],
+}
+
+var rookBoxA = [2]Bitmask{
+	bit[A1]|bit[B1]|bit[C1], bit[A8]|bit[B8]|bit[C8],
+}
+
+var rookBoxH = [2]Bitmask{
+	bit[H1]|bit[G1]|bit[F1], bit[H8]|bit[G8]|bit[F8],
 }

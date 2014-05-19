@@ -107,15 +107,17 @@ func (e *Evaluator) bishops(color int, maskSafe Bitmask) (score Score) {
 		}
 
 		// Middle game penalty for boxed bishop.
-		if color == White {
-			if (square == C1 && p.pieces[D2].isPawn() && p.pieces[D3] != 0) ||
-			   (square == F1 && p.pieces[E2].isPawn() && p.pieces[E3] != 0) {
-				score.midgame -= bishopBoxed.midgame
-			}
-		} else {
-			if (square == C8 && p.pieces[D7].isPawn() && p.pieces[D6] != 0) ||
-			   (square == F8 && p.pieces[E7].isPawn() && p.pieces[E6] != 0) {
-				score.midgame -= bishopBoxed.midgame
+		if e.phase > 160 {
+			if color == White {
+				if (square == C1 && p.pieces[D2].isPawn() && p.pieces[D3] != 0) ||
+				   (square == F1 && p.pieces[E2].isPawn() && p.pieces[E3] != 0) {
+					score.midgame -= bishopBoxed.midgame
+				}
+			} else {
+				if (square == C8 && p.pieces[D7].isPawn() && p.pieces[D6] != 0) ||
+				   (square == F8 && p.pieces[E7].isPawn() && p.pieces[E6] != 0) {
+					score.midgame -= bishopBoxed.midgame
+				}
 			}
 		}
 
@@ -163,7 +165,8 @@ func (e *Evaluator) rooks(color int, maskSafe Bitmask) (score Score) {
 		targets := p.xrayTargets(square)
 
 		// Bonus for rook's mobility
-		score.add(mobilityRook[(targets & maskSafe).count()])
+		mobility := (targets & maskSafe).count()
+		score.add(mobilityRook[mobility])
 
 		// Penalty if rook is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
@@ -177,7 +180,8 @@ func (e *Evaluator) rooks(color int, maskSafe Bitmask) (score Score) {
 
 		// Bonuses if rook is on open or semi-open file.
 		column := Col(square)
-		if hisPawns & maskFile[column] == 0 {
+		isFileAjar := (hisPawns & maskFile[column] == 0)
+		if isFileAjar {
 			if herPawns & maskFile[column] == 0 {
 				score.add(rookOnOpen)
 			} else {
@@ -187,16 +191,22 @@ func (e *Evaluator) rooks(color int, maskSafe Bitmask) (score Score) {
 
 		// Middle game penalty if a rook is boxed. Extra penalty if castle
 		// rights have been lost.
-		if bit[square] & rookBoxA[color] != 0 && p.outposts[king(color)] & castleQueen[color] != 0 {
-			score.midgame -= rookBoxed.midgame
-			if p.castles & castleQueenside[color] == 0 {
-				score.midgame -= rookBoxed.midgame
+		if mobility <= 3 || !isFileAjar {
+			kingSquare := p.king[color]
+			kingColumn := Col(kingSquare)
+
+			// Queenside box: king on D/C/B vs. rook on A/B/C files. Double the
+			// the penalty since no castle is possible.
+			if column < kingColumn && rookBoxA[color].isSet(square) && kingBoxA[color].isSet(kingSquare) {
+				score.midgame -= rookBoxed.midgame * 2
 			}
-		}
-		if bit[square] & rookBoxH[color] != 0 && p.outposts[king(color)] & castleKing[color] != 0 {
-			score.midgame -= rookBoxed.midgame
-			if p.castles & castleKingside[color] == 0 {
+
+			// Kingside box: king on E/F/G vs. rook on H/G/F files.
+			if column > kingColumn && rookBoxH[color].isSet(square) && kingBoxH[color].isSet(kingSquare) {
 				score.midgame -= rookBoxed.midgame
+				if p.castles & castleKingside[color] == 0 {
+					score.midgame -= rookBoxed.midgame
+				}
 			}
 		}
 
