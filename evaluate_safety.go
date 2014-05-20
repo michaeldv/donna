@@ -5,29 +5,37 @@
 package donna
 
 func (e *Evaluator) analyzeSafety() {
-	var white, black Score
+	var white, black [2]Score
 
-	// White king's threats.
-	square := e.position.king[White] ^ A8
-	if e.attacks[Black] > 0 {
-		white.midgame -= Max(3, e.attacks[Black]) * e.threats[Black]
-		white.endgame -= bonusKing[1][square]
+	if Settings.Trace {
+		defer func() {
+			var his, her Score
+			e.checkpoint(`+King`, Total{*his.add(white[0]).add(white[1]), *her.add(black[0]).add(black[1])})
+			e.checkpoint(`-Cover`, Total{white[0], black[0]})
+			e.checkpoint(`-Danger`, Total{white[1], black[1]})
+		}()
 	}
 
-	// Black king's threats.
-	square = e.position.king[Black]
-	if e.attacks[White] > 0 {
-		black.midgame -= Max(3, e.attacks[White]) * e.threats[White]
-		black.endgame -= bonusKing[1][square]
-	}
+	white[0] = e.kingCover(White)
+	black[0] = e.kingCover(Black)
 
-	e.score.add(white).subtract(black)
-
-	// No endgame bonus or penalty for king shield.
-	e.score.midgame += e.kingShieldScore(White) - e.kingShieldScore(Black)
+	white[1] = e.kingDanger(White)
+	black[1] = e.kingDanger(Black)
+	e.score.add(white[0]).add(white[1]).subtract(black[0]).subtract(black[1])
 }
 
-func (e *Evaluator) kingShieldScore(color int) (penalty int) {
+func (e *Evaluator) kingDanger(color int) (score Score) {
+	square := Flip(color, e.position.king[color])
+
+	if e.attacks[color^1] > 0 {
+		score.midgame -= Max(3, e.attacks[color^1]) * e.threats[color^1]
+		score.endgame -= bonusKing[1][square]
+	}
+
+	return
+}
+
+func (e *Evaluator) kingCover(color int) (penalty Score) {
 	p := e.position
 	kings, pawns := p.outposts[king(color)], p.outposts[pawn(color)]
 
@@ -38,7 +46,7 @@ func (e *Evaluator) kingShieldScore(color int) (penalty int) {
 	}
 
 	// Calculate relative square for the king so we could treat black king
-	// as white. Don't bother with the shield if the king is too far.
+	// as white. Don't bother with the cover if the king is too far.
 	square := Flip(color^1, p.king[color])
 	if square > H3 {
 		return
@@ -46,17 +54,17 @@ func (e *Evaluator) kingShieldScore(color int) (penalty int) {
 	row, col := Coordinate(square)
 	from, to := Max(0, col-1), Min(7, col+1)
 
-	// For each of the shield columns find the closest same color pawn. The
+	// For each of the cover columns find the closest same color pawn. The
 	// penalty is carried if the pawn is missing or is too far from the king
 	// (more than one row apart).
 	for column := from; column <= to; column++ {
-		if shield := (pawns & maskFile[column]); shield != 0 {
-			closest := Flip(color^1, shield.first()) // Make it relative.
+		if cover := (pawns & maskFile[column]); cover != 0 {
+			closest := Flip(color^1, cover.first()) // Make it relative.
 			if distance := Abs(Row(closest) - row); distance > 1 {
-				penalty += distance * -shieldDistance.midgame
+				penalty.midgame += distance * -coverDistance.midgame
 			}
 		} else {
-			penalty += -shieldMissing.midgame
+			penalty.midgame += -coverMissing.midgame
 		}
 	}
 	// Log("penalty[%s] => %d\n", C(color), penalty)

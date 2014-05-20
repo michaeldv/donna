@@ -4,11 +4,6 @@
 
 package donna
 
-type Total struct {
-	white Score
-	black Score
-}
-
 type Evaluator struct {
 	phase     int
 	score     Score
@@ -18,14 +13,22 @@ type Evaluator struct {
 	position  *Position
 }
 
+type Total struct {
+	white Score
+	black Score
+}
+
 // Use single statically allocated variable to avoid garbage collection overhead.
 var eval Evaluator
 
+// Main position evaluation method that returns single blended score.
 func (p *Position) Evaluate() int {
 	eval = Evaluator{p.phase(), p.tally, [2]int{0, 0}, [2]int{0, 0}, nil, p}
 	return eval.run()
 }
 
+// Auxiliary evaluation method that captures individual evaluation metrics. This
+// is useful when we want to see evaluation summary.
 func (p *Position) EvaluateWithTrace() (int, map[string]interface{}) {
 	eval = Evaluator{p.phase(), p.tally, [2]int{0, 0}, [2]int{0, 0}, make(map[string]interface{}), p}
 
@@ -52,9 +55,27 @@ func (p *Position) EvaluateWithTrace() (int, map[string]interface{}) {
 	return eval.run(), eval.metrics
 }
 
+// Evaluation method for use in tests. It invokes evaluation that captures the
+// metrics, and returns the requested metric score.
+func (p *Position) EvaluateTest(tag string) (score Score, metrics map[string]interface{}) {
+	_, metrics = p.EvaluateWithTrace()
+
+	switch metrics[tag].(type) {
+	case Score:
+		score = metrics[tag].(Score)
+	case Total:
+		if p.color == White {
+			score = metrics[tag].(Total).white
+		} else {
+			score = metrics[tag].(Total).black
+		}
+	}
+	return
+}
+
 func (e *Evaluator) run() int {
-	e.analyzePieces()
 	e.analyzePawns()
+	e.analyzePieces()
 	e.analyzeSafety()
 
 	if e.position.color == White {
@@ -68,8 +89,8 @@ func (e *Evaluator) run() int {
 	return e.score.blended(e.phase)
 }
 
-func (e *Evaluator) checkpoint(tag string, total interface{}) {
-	e.metrics[tag] = total
+func (e *Evaluator) checkpoint(tag string, metric interface{}) {
+	e.metrics[tag] = metric
 }
 
 func (e *Evaluator) strongEnough(color int) bool {
