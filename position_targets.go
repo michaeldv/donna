@@ -85,9 +85,6 @@ func (p *Position) xrayTargetsFor(square int, piece Piece) (bitmask Bitmask) {
 	case Rook:
 		board := p.board ^ p.outposts[queen(color)]
 		bitmask = p.rookMovesAt(square, board) & ^p.outposts[color]
-	case Queen:
-		board := p.board ^ p.outposts[bishop(color)] ^ p.outposts[rook(color)]
-		bitmask = (p.bishopMovesAt(square, board) | p.rookMovesAt(square, board)) & ^p.outposts[color]
 	}
 	return
 }
@@ -177,4 +174,23 @@ func (p *Position) queenAttacks(color int) (bitmask Bitmask) {
 
 func (p *Position) kingAttacks(color int) Bitmask {
 	return kingMoves[p.king[color]]
+}
+
+func (p *Position) strongestPiece(color int, targets Bitmask) Piece {
+	if targets & p.outposts[queen(color)] != 0 {
+		return queen(color)
+	}
+	if targets & p.outposts[rook(color)] != 0 {
+		return rook(color)
+	}
+	if targets & p.outposts[bishop(color)] != 0 {
+		return bishop(color)
+	}
+	if targets & p.outposts[knight(color)] != 0 {
+		return knight(color)
+	}
+	if targets & p.outposts[pawn(color)] != 0 {
+		return pawn(color)
+	}
+	return Piece(0)
 }
