@@ -36,18 +36,29 @@ func repl() {
 		case ``:
 		case `bench`:
 			benchmark()
-		case `perft`:
-			perft(5)
 		case `exit`, `quit`:
 			return
-		case `help`:
-			fmt.Println(`help: not implemented yet.`)
-		case `new`:
-			game, position = nil, nil
-			setup()
 		case `go`:
 			setup()
 			think()
+		case `help`, `?`:
+			fmt.Println("The commands are:\n\n" +
+				"   bench   Run benchmark test\n" +
+				"   exit    Exit the program\n" +
+				"   go      Take side and make a move\n" +
+				"   help    Display this help\n" +
+				"   new     Start new game\n" +
+				"   perft   Run perft test\n" +
+				"   score   Show evaluation summary\n")
+		case `new`:
+			game, position = nil, nil
+			setup()
+		case `perft`:
+			perft(5)
+		case `score`:
+			setup()
+			_, metrics := position.EvaluateWithTrace()
+			donna.Summary(metrics)
 		default:
 			setup()
 			if move := position.NewMoveFromString(command); move != 0 {
