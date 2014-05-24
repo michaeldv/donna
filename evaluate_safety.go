@@ -4,7 +4,7 @@
 
 package donna
 
-func (e *Evaluator) analyzeSafety() {
+func (e *Evaluation) analyzeSafety() {
 	var white, black [2]Score
 
 	if Settings.Trace {
@@ -12,30 +12,34 @@ func (e *Evaluator) analyzeSafety() {
 			var his, her Score
 			e.checkpoint(`+King`, Total{*his.add(white[0]).add(white[1]), *her.add(black[0]).add(black[1])})
 			e.checkpoint(`-Cover`, Total{white[0], black[0]})
-			e.checkpoint(`-Danger`, Total{white[1], black[1]})
+			e.checkpoint(`-Safety`, Total{white[1], black[1]})
 		}()
 	}
 
-	white[0] = e.kingCover(White)
-	black[0] = e.kingCover(Black)
-
-	white[1] = e.kingDanger(White)
-	black[1] = e.kingDanger(Black)
-	e.score.add(white[0]).add(white[1]).subtract(black[0]).subtract(black[1])
+	if e.strongEnough(White) {
+		white[0] = e.kingCover(White)
+		white[1] = e.kingSafety(White)
+		e.score.add(white[0]).add(white[1])
+	}
+	if e.strongEnough(Black) {
+		black[0] = e.kingCover(Black)
+		black[1] = e.kingSafety(Black)
+		e.score.subtract(black[0]).subtract(black[1])
+	}
 }
 
-func (e *Evaluator) kingDanger(color int) (score Score) {
+func (e *Evaluation) kingSafety(color int) (score Score) {
 	square := Flip(color, e.position.king[color])
 
-	if e.attacks[color^1] > 0 {
-		score.midgame -= Max(3, e.attacks[color^1]) * e.threats[color^1]
+	if e.king[color].threat > 0 {
+		score.midgame -= e.king[color].homeAttacks * e.king[color].threat * 2 +
+		                 e.king[color].fortAttackers * e.king[color].threat / 2
 		score.endgame -= bonusKing[1][square]
 	}
-
 	return
 }
 
-func (e *Evaluator) kingCover(color int) (penalty Score) {
+func (e *Evaluation) kingCover(color int) (penalty Score) {
 	p := e.position
 	kings, pawns := p.outposts[king(color)], p.outposts[pawn(color)]
 

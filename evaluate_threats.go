@@ -4,7 +4,7 @@
 
 package donna
 
-func (e *Evaluator) analyzeThreats() {
+func (e *Evaluation) analyzeThreats() {
 	whiteAttacks := e.position.attacks(White)
 	blackAttacks := e.position.attacks(Black)
 
@@ -20,7 +20,7 @@ func (e *Evaluator) analyzeThreats() {
 	e.score.add(white).subtract(black)
 }
 
-func (e *Evaluator) threats(color int, hisAttacks, herAttacks Bitmask) (score Score) {
+func (e *Evaluation) threats(color int, hisAttacks, herAttacks Bitmask) (score Score) {
 	p := e.position
 
 	// Find enemy pieces (excludes king) under attack that are not defended

@@ -13,7 +13,7 @@ type PawnCacheEntry struct {
 
 var pawnCache [8192]PawnCacheEntry
 
-func (e *Evaluator) analyzePawns() {
+func (e *Evaluation) analyzePawns() {
 	hashPawn := e.position.hashPawn
 	index := hashPawn % uint64(len(pawnCache))
 	entry := &pawnCache[index]
@@ -34,7 +34,7 @@ func (e *Evaluator) analyzePawns() {
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
-func (e *Evaluator) pawns(color int) (score Score) {
+func (e *Evaluation) pawns(color int) (score Score) {
 	hisPawns := e.position.outposts[pawn(color)]
 	herPawns := e.position.outposts[pawn(color^1)]
 
