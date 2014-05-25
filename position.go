@@ -279,7 +279,7 @@ func (p *Position) isInsufficient() bool {
 }
 
 func (p *Position) canCastle(color int) (kingside, queenside bool) {
-	attacks := p.attacks(color ^ 1)
+	attacks := p.allAttacks(color ^ 1)
 	kingside = p.castles & castleKingside[color] != 0 &&
 		(gapKing[color] & p.board == 0) &&
 		(castleKing[color] & attacks == 0)
