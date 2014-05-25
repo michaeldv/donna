@@ -121,7 +121,7 @@ func Summary(metrics map[string]interface{}) {
 	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `PST`,
 		float32(tally.midgame)/100.0, float32(tally.endgame)/100.0, float32(tally.blended(phase))/100.0)
 
-	for _, tag := range([]string{`Tempo`, `Pawns`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Danger`, `Initiative`}) {
+	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
 		white := metrics[tag].(Total).white
 		black := metrics[tag].(Total).black
 
@@ -156,7 +156,7 @@ func SummaryAlt(metrics map[string]interface{}) {
 		float32(tally.midgame)/100.0, float32(tally.endgame)/100.0,
 		float32(tally.blended(phase))/100.0)
 
-	for _, tag := range([]string{`Tempo`, `Pawns`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Danger`, `Initiative`}) {
+	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
 		white := metrics[tag].(Total).white
 		black := metrics[tag].(Total).black
 
