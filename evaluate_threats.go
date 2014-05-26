@@ -5,11 +5,8 @@
 package donna
 
 func (e *Evaluation) analyzeThreats() {
-	whiteAttacks := e.position.attacks(White)
-	blackAttacks := e.position.attacks(Black)
-
-	white := e.threats(White, whiteAttacks, blackAttacks)
-	black := e.threats(Black, blackAttacks, whiteAttacks)
+	white := e.threats(White, e.attacks[White], e.attacks[Black])
+	black := e.threats(Black, e.attacks[Black], e.attacks[White])
 
 	if Settings.Trace {
 		defer func() {
@@ -23,28 +20,31 @@ func (e *Evaluation) analyzeThreats() {
 func (e *Evaluation) threats(color int, hisAttacks, herAttacks Bitmask) (score Score) {
 	p := e.position
 
-	// Find enemy pieces (excludes king) under attack that are not defended
-	// by pawns.
-	weak := p.outposts[color^1] & hisAttacks & ^p.pawnAttacks(color^1)
+	// Find weak enemy pieces: the ones under attack and not defended by
+	// pawns (excluding a king).
+	weak := p.outposts[color^1] & hisAttacks & ^e.attacks[pawn(color^1)]
 	weak &= ^p.outposts[king(color^1)]
+
 	if weak != 0 {
 
-		// Attacks by pawns, knights, and bishops.
-		targets := weak & (p.pawnAttacks(color) | p.knightAttacks(color) | p.bishopAttacks(color))
+		// Threat bonus for strongest enemy piece attacked by our pawns,
+		// knights, or bishops.
+		targets := weak & (e.attacks[pawn(color)] | e.attacks[knight(color)] | e.attacks[bishop(color)])
 		if targets != 0 {
 			piece := p.strongestPiece(color^1, targets)
 			score.add(bonusMinorThreat[piece.kind()/2])
 		}
 
-		// Attacks by rooks and queens.
-		targets = weak & (p.rookAttacks(color) | p.queenAttacks(color))
+		// Threat bonus for strongest enemy piece attacked by our rooks
+		// or queen.
+		targets = weak & (e.attacks[rook(color)] | e.attacks[queen(color)])
 		if targets != 0 {
 			piece := p.strongestPiece(color^1, targets)
 			score.add(bonusMajorThreat[piece.kind()/2])
 		}
 
-		// Bonus when pieces under attack are hanging. Whoever has the
-		// right to move gets a bit extra.
+		// Extra bonus when attacking enemy pieces that are hanging. Side
+		// having the right to move gets bigger bonus.
 		hanging := (weak & ^herAttacks).count()
 		if hanging > 0 {
 			if p.color == color {

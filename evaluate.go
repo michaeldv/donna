@@ -29,7 +29,7 @@ type Evaluation struct {
 	flags     uint8 	// Evaluation flags.
 	score     Score 	// Current score.
 	king      [2]Safety 	// King safety for both sides.
-	targets   [14]Bitmask 	// Attack targets for all the pieces on board.
+	attacks   [14]Bitmask 	// Attack bitmasks for all the pieces on the board.
 	metrics   Metrics 	// Evaluation metrics when tracking is on.
 	position  *Position 	// Position we're evaluating.
 }
@@ -95,19 +95,19 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	e.score = p.tally
 	e.position = p
 
-	// Set up king and pawn attack targets for both sides.
-	e.targets[King] = p.kingAttacks(White)
-	e.targets[Pawn] = p.pawnAttacks(White)
-	e.targets[BlackKing] = p.kingAttacks(Black)
-	e.targets[BlackPawn] = p.pawnAttacks(Black)
+	// Set up king and pawn attacks for both sides.
+	e.attacks[King] = p.kingAttacks(White)
+	e.attacks[Pawn] = p.pawnAttacks(White)
+	e.attacks[BlackKing] = p.kingAttacks(Black)
+	e.attacks[BlackPawn] = p.pawnAttacks(Black)
 
-	// Overall attack targets for both sides include kings and pawns so far.
-	e.targets[White] = e.targets[King] | e.targets[Pawn]
-	e.targets[Black] = e.targets[BlackKing] | e.targets[BlackPawn]
+	// Overall attacks for both sides include kings and pawns so far.
+	e.attacks[White] = e.attacks[King] | e.attacks[Pawn]
+	e.attacks[Black] = e.attacks[BlackKing] | e.attacks[BlackPawn]
 
 	// TODO: initialize only if we are going to evaluate king's safety.
-	e.king[White].fort = e.targets[King].pushed(White)
-	e.king[Black].fort = e.targets[BlackKing].pushed(Black)
+	e.king[White].fort = e.attacks[King].pushed(White)
+	e.king[Black].fort = e.attacks[BlackKing].pushed(Black)
 
 	return e
 }

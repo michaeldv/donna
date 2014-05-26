@@ -20,53 +20,56 @@ func (e *Evaluation) analyzePieces() {
 		}()
 	}
 
-	maskSafe := ^e.position.pawnAttacks(Black) // Squares not attacked by Black pawns.
+	// Mobility mask for white pieces excludes a) squares attacked by Black
+	// pawns and b) squares occupied by white pawns and king.
+	maskMobile := ^(e.attacks[BlackPawn] | p.outposts[Pawn] | p.outposts[King])
 	if p.count[Knight] > 0 {
-		white[0] = e.knights(White, maskSafe)
+		white[0] = e.knights(White, maskMobile)
 	}
 	if p.count[Bishop] > 0 {
-		white[1] = e.bishops(White, maskSafe)
+		white[1] = e.bishops(White, maskMobile)
 	}
 	if p.count[Rook] > 0 {
-		white[2] = e.rooks(White, maskSafe)
+		white[2] = e.rooks(White, maskMobile)
 	}
 	if p.count[Queen] > 0 {
-		white[3] = e.queens(White, maskSafe)
+		white[3] = e.queens(White, maskMobile)
 	}
 
-	maskSafe = ^e.position.pawnAttacks(White) // Squares not attacked by White pawns.
+	// Update mobility mask for black pieces.
+	maskMobile = ^(e.attacks[Pawn] | p.outposts[BlackPawn] | p.outposts[BlackKing])
 	if p.count[BlackKnight] > 0 {
-		black[0] = e.knights(Black, maskSafe)
+		black[0] = e.knights(Black, maskMobile)
 	}
 	if p.count[BlackBishop] > 0 {
-		black[1] = e.bishops(Black, maskSafe)
+		black[1] = e.bishops(Black, maskMobile)
 	}
 	if p.count[BlackRook] > 0 {
-		black[2] = e.rooks(Black, maskSafe)
+		black[2] = e.rooks(Black, maskMobile)
 	}
 	if p.count[BlackQueen] > 0 {
-		black[3] = e.queens(Black, maskSafe)
+		black[3] = e.queens(Black, maskMobile)
 	}
 
-	// Update attack targets for both sides.
-	e.targets[White] |= e.targets[Knight] | e.targets[Bishop] | e.targets[Rook] | e.targets[Queen]
-	e.targets[Black] |= e.targets[BlackKnight] | e.targets[BlackBishop] | e.targets[BlackRook] | e.targets[BlackQueen]
+	// Update attack bitmasks for both sides.
+	e.attacks[White] |= e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook] | e.attacks[Queen]
+	e.attacks[Black] |= e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook] | e.attacks[BlackQueen]
 
 	// Update cumulative score based on white vs. black delta.
 	e.score.add(white[0]).add(white[1]).add(white[2]).add(white[3])
 	e.score.subtract(black[0]).subtract(black[1]).subtract(black[2]).subtract(black[3])
 }
 
-func (e *Evaluation) knights(color int, maskSafe Bitmask) (score Score) {
+func (e *Evaluation) knights(color int, maskMobile Bitmask) (score Score) {
 	p := e.position
 	outposts := p.outposts[knight(color)]
 
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := p.targets(square)
+		attacks := p.attacks(square)
 
 		// Bonus for knight's mobility.
-		score.add(mobilityKnight[(targets & maskSafe).count()])
+		score.add(mobilityKnight[(attacks & maskMobile).count()])
 
 		// Penalty if knight is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
@@ -93,21 +96,21 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask) (score Score) {
 		}
 
 		// Track if knight attacks squares around enemy's king.
-		e.enemyKingThreat(knight(color), targets)
+		e.enemyKingThreat(knight(color), attacks)
 	}
 	return
 }
 
-func (e *Evaluation) bishops(color int, maskSafe Bitmask) (score Score) {
+func (e *Evaluation) bishops(color int, maskMobile Bitmask) (score Score) {
 	p := e.position
 	outposts := p.outposts[bishop(color)]
 
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := p.xrayTargets(square)
+		attacks := p.xrayAttacks(square)
 
 		// Bonus for bishop's mobility
-		score.add(mobilityBishop[(targets & maskSafe).count()])
+		score.add(mobilityBishop[(attacks & maskMobile).count()])
 
 		// Penalty for light/dark square bishop and matching pawns.
 		if count := (Same(square) & p.outposts[pawn(color)]).count(); count > 0 {
@@ -154,7 +157,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask) (score Score) {
 		}
 
 		// Track if bishop attacks squares around enemy's king.
-		e.enemyKingThreat(bishop(color), targets)
+		e.enemyKingThreat(bishop(color), attacks)
 	}
 
 	// Bonus for the pair of bishops.
@@ -165,7 +168,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask) (score Score) {
 }
 
 
-func (e *Evaluation) rooks(color int, maskSafe Bitmask) (score Score) {
+func (e *Evaluation) rooks(color int, maskMobile Bitmask) (score Score) {
 	p := e.position
 	hisPawns := p.outposts[pawn(color)]
 	herPawns := p.outposts[pawn(color^1)]
@@ -177,10 +180,10 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask) (score Score) {
 	}
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := p.xrayTargets(square)
+		attacks := p.xrayAttacks(square)
 
 		// Bonus for rook's mobility
-		mobility := (targets & maskSafe).count()
+		mobility := (attacks & maskMobile).count()
 		score.add(mobilityRook[mobility])
 
 		// Penalty if rook is attacked by enemy's pawn.
@@ -189,7 +192,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask) (score Score) {
 		}
 
 		// Bonus if rook is attacking enemy's pawns.
-		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 {
+		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 {
 			score.add(rookOnPawn.times(count))
 		}
 
@@ -226,12 +229,12 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask) (score Score) {
 		}
 
 		// Track if rook attacks squares around enemy's king.
-		e.enemyKingThreat(rook(color), targets)
+		e.enemyKingThreat(rook(color), attacks)
 	}
 	return
 }
 
-func (e *Evaluation) queens(color int, maskSafe Bitmask) (score Score) {
+func (e *Evaluation) queens(color int, maskMobile Bitmask) (score Score) {
 	p := e.position
 	outposts := p.outposts[queen(color)]
 
@@ -241,10 +244,10 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask) (score Score) {
 	}
 	for outposts != 0 {
 		square := outposts.pop()
-		targets := p.targets(square)
+		attacks := p.attacks(square)
 
 		// Bonus for queen's mobility
-		score.add(mobilityQueen[Min(15, (targets & maskSafe).count())])
+		score.add(mobilityQueen[Min(15, (attacks & maskMobile).count())])
 
 		// Penalty if queen is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
@@ -252,27 +255,27 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask) (score Score) {
 		}
 
 		// Bonus if queen is out and attacking enemy's pawns.
-		if count := (targets & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(color, square) > 3 {
+		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(color, square) > 3 {
 			score.add(queenOnPawn.times(count))
 		}
 
 		// Track if queen attacks squares around enemy's king.
-		e.enemyKingThreat(queen(color), targets)
+		e.enemyKingThreat(queen(color), attacks)
 	}
 	return
 }
 
-func (e *Evaluation) enemyKingThreat(piece Piece, targets Bitmask) {
+func (e *Evaluation) enemyKingThreat(piece Piece, attacks Bitmask) {
 	color := piece.color() ^ 1
 
-	if targets & e.king[color].fort != 0 {
+	if attacks & e.king[color].fort != 0 {
 		e.king[color].fortAttackers++
 		e.king[color].threat += bonusKingThreat[piece.kind()/2]
-		if attacks := targets & e.targets[king(color)]; attacks != 0 {
-			e.king[color].homeAttacks += attacks.count()
+		if bits := attacks & e.attacks[king(color)]; bits != 0 {
+			e.king[color].homeAttacks += bits.count()
 		}
 	}
 
-	// Update attack targets for the given piece.
-	e.targets[piece] |= targets
+	// Update attack bitmask for the given piece.
+	e.attacks[piece] |= attacks
 }
