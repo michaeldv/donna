@@ -73,22 +73,6 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
 	return
 }
 
-func (p *Position) xrayTargets(square int) Bitmask {
-	return p.xrayTargetsFor(square, p.pieces[square])
-}
-
-func (p *Position) xrayTargetsFor(square int, piece Piece) (bitmask Bitmask) {
-	switch kind, color := piece.kind(), piece.color(); kind {
-	case Bishop:
-		board := p.board ^ p.outposts[queen(color)]
-		bitmask = p.bishopMovesAt(square, board) & ^p.outposts[color]
-	case Rook:
-		board := p.board ^ p.outposts[queen(color)]
-		bitmask = p.rookMovesAt(square, board) & ^p.outposts[color]
-	}
-	return p.targetsFor(square, piece)
-}
-
 func (p *Position) attacks(square int) Bitmask {
 	return p.attacksFor(square, p.pieces[square])
 }
