@@ -20,35 +20,45 @@ func (e *Evaluation) analyzePieces() {
 		}()
 	}
 
-	// Mobility mask for white pieces excludes a) squares attacked by Black
-	// pawns and b) squares occupied by white pawns and king.
-	maskMobile := ^(e.attacks[BlackPawn] | p.outposts[Pawn] | p.outposts[King])
-	if p.count[Knight] > 0 {
-		white[0] = e.knights(White, maskMobile)
-	}
-	if p.count[Bishop] > 0 {
-		white[1] = e.bishops(White, maskMobile)
-	}
-	if p.count[Rook] > 0 {
-		white[2] = e.rooks(White, maskMobile)
-	}
-	if p.count[Queen] > 0 {
-		white[3] = e.queens(White, maskMobile)
+	// Mobility mask for both sides excludes a) squares attacked by enemy's
+	// pawns and b) squares occupied by own pawns and king.
+	maskMobile := [2]Bitmask{
+		^(e.attacks[BlackPawn] | p.outposts[Pawn] | p.outposts[King]),
+		^(e.attacks[Pawn] | p.outposts[BlackPawn] | p.outposts[BlackKing]),
 	}
 
-	// Update mobility mask for black pieces.
-	maskMobile = ^(e.attacks[Pawn] | p.outposts[BlackPawn] | p.outposts[BlackKing])
+	// Evaluate white pieces except queen.
+	if p.count[Knight] > 0 {
+		white[0] = e.knights(White, maskMobile[White])
+	}
+	if p.count[Bishop] > 0 {
+		white[1] = e.bishops(White, maskMobile[White])
+	}
+	if p.count[Rook] > 0 {
+		white[2] = e.rooks(White, maskMobile[White])
+	}
+
+	// Evaluate black pieces except queen.
 	if p.count[BlackKnight] > 0 {
-		black[0] = e.knights(Black, maskMobile)
+		black[0] = e.knights(Black, maskMobile[Black])
 	}
 	if p.count[BlackBishop] > 0 {
-		black[1] = e.bishops(Black, maskMobile)
+		black[1] = e.bishops(Black, maskMobile[Black])
 	}
 	if p.count[BlackRook] > 0 {
-		black[2] = e.rooks(Black, maskMobile)
+		black[2] = e.rooks(Black, maskMobile[Black])
+	}
+
+	// Now that we've built all attack bitmasks we can adjust mobility to
+	// exclude attacks by enemy's knights, bishops, and rooks and evaluate
+	// the queens.
+	if p.count[Queen] > 0 {
+		maskMobile[White] &= ^(e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook])
+		white[3] = e.queens(White, maskMobile[White])
 	}
 	if p.count[BlackQueen] > 0 {
-		black[3] = e.queens(Black, maskMobile)
+		maskMobile[Black] &= ^(e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook])
+		black[3] = e.queens(Black, maskMobile[Black])
 	}
 
 	// Update attack bitmasks for both sides.
@@ -246,7 +256,7 @@ func (e *Evaluation) queens(color int, maskMobile Bitmask) (score Score) {
 		square := outposts.pop()
 		attacks := p.attacks(square)
 
-		// Bonus for queen's mobility
+		// Bonus for queen's mobility.
 		score.add(mobilityQueen[Min(15, (attacks & maskMobile).count())])
 
 		// Penalty if queen is attacked by enemy's pawn.
