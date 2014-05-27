@@ -94,6 +94,13 @@ func benchmark() {
 	fmt.Printf("%s\n", game)
 	game.CacheSize(64).Think(8, game.Start(donna.White))
 
+	// Donald Byrne vs. Bobby Fischer, Third Rosenwald Trophy 1956 after 16 moves.
+	// http://www.chessgames.com/perl/chessgame?gid=1008361
+	// 16... Rf8-e8 17. Ke1-f1 Bg4-e6!!
+	game = donna.NewGame().Setup(`Ke1,Qa3,Rd1,Rh1,Bc4,Bc5,Nf3,a2,d4,f2,g2,h2`, `Kg8,Qb6,Ra8,Rf8,Bg4,Bg7,Nc3,a7,b7,c6,f7,g6,h7`)
+	fmt.Printf("%s\n", game)
+	game.CacheSize(64).Think(9, game.Start(donna.Black))
+
 	// Bobby Fischer vs. James Sherwin, New Jersey Open 1957 after 16 moves.
 	// http://www.chessgames.com/perl/chessgame?gid=1008366
 	// Fischer played 17. h2-h4!
