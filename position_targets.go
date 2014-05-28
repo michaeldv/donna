@@ -105,7 +105,7 @@ func (p *Position) xrayAttacksFor(square int, piece Piece) (bitmask Bitmask) {
 		board := p.board ^ p.outposts[queen(color)]
 		return p.bishopMovesAt(square, board)
 	case Rook:
-		board := p.board ^ p.outposts[queen(color)]
+		board := p.board ^ p.outposts[rook(color)] ^ p.outposts[queen(color)]
 		return p.rookMovesAt(square, board)
 	}
 	return p.attacksFor(square, piece)
