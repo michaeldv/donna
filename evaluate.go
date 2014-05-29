@@ -106,8 +106,8 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	e.attacks[Black] = e.attacks[BlackKing] | e.attacks[BlackPawn]
 
 	// TODO: initialize only if we are going to evaluate king's safety.
-	e.king[White].fort = e.attacks[King].pushed(White)
-	e.king[Black].fort = e.attacks[BlackKing].pushed(Black)
+	e.king[White].fort = e.setupFort(White)
+	e.king[Black].fort = e.setupFort(Black)
 
 	return e
 }
@@ -137,4 +137,15 @@ func (e *Evaluation) strongEnough(color int) bool {
 	p := e.position
 	return p.count[queen(color)] > 0 &&
 		(p.count[rook(color)] > 0 || p.count[bishop(color)] > 0 || p.count[knight(color)] > 0)
+}
+
+func (e *Evaluation) setupFort(color int) (bitmask Bitmask) {
+	bitmask = e.attacks[king(color)] | e.attacks[king(color)].pushed(color)
+	switch e.position.king[color] {
+	case A1, A8:
+		bitmask |= e.attacks[king(color)] << 1
+	case H1, H8:
+		bitmask |= e.attacks[king(color)] >> 1
+	}
+	return
 }
