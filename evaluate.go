@@ -31,7 +31,8 @@ type Evaluation struct {
 	safety    [2]Safety 	// King safety for both sides.
 	attacks   [14]Bitmask 	// Attack bitmasks for all the pieces on the board.
 	metrics   Metrics 	// Evaluation metrics when tracking is on.
-	position  *Position 	// Position we're evaluating.
+	pawns     *PawnEntry 	// Pointer to the pawn cache entry.
+	position  *Position 	// Pointer to the position we're evaluating.
 }
 
 // Use single statically allocated variable to avoid garbage collection overhead.

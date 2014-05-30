@@ -6,35 +6,39 @@ package donna
 
 import ()
 
-type PawnCacheEntry struct {
-	hash   uint64
-	score  Score
+type PawnEntry struct {
+	hash     uint64
+	score    Score
+	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
 
-var pawnCache [8192]PawnCacheEntry
+var pawnCache [8192]PawnEntry
 
 func (e *Evaluation) analyzePawns() {
 	hashPawn := e.position.hashPawn
 	index := hashPawn % uint64(len(pawnCache))
-	entry := &pawnCache[index]
+	e.pawns = &pawnCache[index]
 
 	// Bypass pawns cache if evaluation tracing is enabled.
-	if entry.hash != hashPawn || Settings.Trace {
-		white, black := e.pawns(White), e.pawns(Black)
-		entry.score.clear().add(white).subtract(black)
-		entry.hash = e.position.hashPawn
+	if e.pawns.hash != hashPawn || Settings.Trace {
+		white, black := e.pawnStructure(White), e.pawnStructure(Black)
+		e.pawns.score.clear().add(white).subtract(black)
+		e.pawns.hash = e.position.hashPawn
 		if Settings.Trace {
 			e.checkpoint(`Pawns`, Total{white, black})
 		}
 	}
 
-	e.score.add(entry.score)
+	e.score.add(e.pawns.score)
+}
+
+func (e *Evaluation) analyzePassers() {
 }
 
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
-func (e *Evaluation) pawns(color int) (score Score) {
+func (e *Evaluation) pawnStructure(color int) (score Score) {
 	hisPawns := e.position.outposts[pawn(color)]
 	herPawns := e.position.outposts[pawn(color^1)]
 
@@ -80,6 +84,7 @@ func (e *Evaluation) pawns(color int) (score Score) {
 			flip := Flip(color, square)
 			score.midgame += bonusPassedPawn[0][flip]
 			score.endgame += bonusPassedPawn[1][flip]
+			e.pawns.passers[color] |= bit[square]
 		}
 
 		// Penalty if the pawn is backward.
