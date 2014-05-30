@@ -278,11 +278,11 @@ func (e *Evaluation) queens(color int, maskMobile Bitmask) (score Score) {
 func (e *Evaluation) enemyKingThreat(piece Piece, attacks Bitmask) {
 	color := piece.color() ^ 1
 
-	if attacks & e.king[color].fort != 0 {
-		e.king[color].fortAttackers++
-		e.king[color].threat += bonusKingThreat[piece.kind()/2]
+	if attacks & e.safety[color].fort != 0 {
+		e.safety[color].attackers++
+		e.safety[color].threats += bonusKingThreat[piece.kind()/2]
 		if bits := attacks & e.attacks[king(color)]; bits != 0 {
-			e.king[color].homeAttacks += bits.count()
+			e.safety[color].attacks += bits.count()
 		}
 	}
 

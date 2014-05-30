@@ -12,9 +12,9 @@ type Metrics map[string]interface{}
 // material to worry about the king safety.
 type Safety struct {
 	fort Bitmask 		// Squares around the king plus one extra row in front.
-	threat int 		// A sum of treats: each based on attacking piece type.
-	homeAttacks int 	// Number of attacks on squares adjacent to the king.
-	fortAttackers int 	// Number of pieces attacking king's fort.
+	threats int 		// A sum of treats: each based on attacking piece type.
+	attacks int 		// Number of attacks on squares adjacent to the king.
+	attackers int 		// Number of pieces attacking king's fort.
 }
 
 // Helper structure used for evaluation tracking.
@@ -28,7 +28,7 @@ type Evaluation struct {
 	phase     int 		// Game phase based on available material.
 	flags     uint8 	// Evaluation flags.
 	score     Score 	// Current score.
-	king      [2]Safety 	// King safety for both sides.
+	safety    [2]Safety 	// King safety for both sides.
 	attacks   [14]Bitmask 	// Attack bitmasks for all the pieces on the board.
 	metrics   Metrics 	// Evaluation metrics when tracking is on.
 	position  *Position 	// Position we're evaluating.
@@ -106,8 +106,8 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	e.attacks[Black] = e.attacks[BlackKing] | e.attacks[BlackPawn]
 
 	// TODO: initialize only if we are going to evaluate king's safety.
-	e.king[White].fort = e.setupFort(White)
-	e.king[Black].fort = e.setupFort(Black)
+	e.safety[White].fort = e.setupFort(White)
+	e.safety[Black].fort = e.setupFort(Black)
 
 	return e
 }
@@ -117,6 +117,7 @@ func (e *Evaluation) run() int {
 	e.analyzePieces()
 	e.analyzeThreats()
 	e.analyzeSafety()
+	e.analyzePassers()
 
 	if e.position.color == White {
 		e.score.add(rightToMove)
