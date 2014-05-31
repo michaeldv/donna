@@ -16,12 +16,12 @@ func (e *Evaluation) analyzeSafety() {
 		}()
 	}
 
-	if e.strongEnough(White) {
+	if e.strongEnough(Black) {
 		white[0] = e.kingCover(White)
 		white[1] = e.kingSafety(White)
 		e.score.add(white[0]).add(white[1])
 	}
-	if e.strongEnough(Black) {
+	if e.strongEnough(White) {
 		black[0] = e.kingCover(Black)
 		black[1] = e.kingSafety(Black)
 		e.score.subtract(black[0]).subtract(black[1])
