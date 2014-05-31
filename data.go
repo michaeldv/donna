@@ -43,6 +43,12 @@ const (
 	A8; B8; C8; D8; E8; F8; G8; H8
 )
 
+// Ranks and files.
+const (
+	A1H1 = iota; A2H2; A3H3; A4H4; A5H5; A6H6; A7H7; A8H8;
+	A1A8 = iota; B1B8; C1C8; D1D8; E1E8; F1F8; G1G8; H1H8;
+)
+
 var bit = [64]Bitmask{
 	1<<A1, 1<<B1, 1<<C1, 1<<D1, 1<<E1, 1<<F1, 1<<G1, 1<<H1,
 	1<<A2, 1<<B2, 1<<C2, 1<<D2, 1<<E2, 1<<F2, 1<<G2, 1<<H2,
