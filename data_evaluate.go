@@ -11,8 +11,8 @@ var (
 	valueRook      = Score{  635,  639 } //  525,  550
 	valueQueen     = Score{ 1260, 1279 } // 1000, 1015
 
-	rightToMove    = Score{   12,   10 }
-	pawnBlocked    = Score{    4,   12 } //~~~
+	rightToMove    = Score{   12,    5 }
+	pawnBlocked    = Score{    2,    6 } //~~~
 	bishopPair     = Score{   43,   56 } //~~~
 	bishopPawns    = Score{    4,    6 }
 	bishopBoxed    = Score{   73,    0 } //~~~
@@ -25,8 +25,8 @@ var (
 	queenOn7th     = Score{    1,    4 }
 	behindPawn     = Score{    8,    0 }
 	hangingAttack  = Score{   10,   12 }
-	coverMissing   = Score{   30,    0 } //~~~ Missing cover pawn penalty.
-	coverDistance  = Score{    5,    0 } //~~~ Cover pawn row distance from king penalty.
+	coverMissing   = Score{   45,    0 } //~~~ Missing cover pawn penalty.
+	coverDistance  = Score{    8,    0 } //~~~ Cover pawn row distance from king penalty.
 )
 
 // Piece/square table: gets initilized on startup from the bonus arrays below.
@@ -166,27 +166,11 @@ var bonusKing = [2][64]int{
 	},
 }
 
-var bonusPassedPawn = [2][64]int{
-	{
-		0,   0,   0,   0,   0,   0,   0,   0, // A1 - H1
-	       72,  65,  57,  50,  50,  57,  65,  72,
-	       52,  46,  45,  40,  40,  45,  48,  52,
-	       37,  35,  32,  30,  30,  32,  35,  37,
-	       25,  22,  20,  17,  17,  20,  22,  25,
-	       15,  14,  13,  12,  12,  13,  14,  15,
-	        7,   6,   6,   5,   5,   6,   6,   7,
-		0,   0,   0,   0,   0,   0,   0,   0, // A8 - H8
-	},
-	{
-		0,   0,   0,   0,   0,   0,   0,   0, // A1 - H1
-	      145, 130, 115, 100, 100, 115, 130, 145,
-	      105,  97,  90,  80,  80,  90,  97, 105,
-	       75,  70,  65,  60,  60,  65,  70,  75,
-	       50,  45,  40,  35,  35,  40,  45,  50,
-	       30,  28,  26,  25,  25,  26,  28,  30,
-	       15,  14,  12,  10,  10,  12,  14,  15,
-		0,   0,   0,   0,   0,   0,   0,   0, // A8 - H8
-         },
+var bonusPassedPawn = [8]Score{
+	{0, 0}, {0, 3}, {0, 7}, {17, 17}, {51, 35}, {102, 59}, {170, 91}, {0, 0},
+}
+var extraPassedPawn = [8]int{
+	0, 0, 0, 1, 3, 6, 10, 0,
 }
 
 var extraKnight = [64]int{
@@ -250,14 +234,14 @@ var kingSafety = [64]int {
 // Supported pawn bonus arranged from Black's point of view. The actual score
 // uses the same values for midgame and endgame.
 var bonusSupportedPawn = [64]int{
-	  0,   0,   0,   0,   0,   0,   0,   0, // A8 - H8
-	107, 111, 111, 113, 113, 111, 111, 107,
-	 62,  66,  66,  68,  68,  66,  66,  62,
-	 31,  34,  34,  36,  36,  34,  34,  31,
-	 13,  16,  16,  18,  18,  16,  16,  13,
-	  4,   6,   6,   7,   7,   6,   6,   4,
-	  1,   3,   3,   4,   4,   3,   3,   1,
-	  0,   0,   0,   0,   0,   0,   0,   0, // A1 - H1
+	  0,  0,  0,  0,  0,  0,  0,  0, // A8 - H8
+	 62, 66, 66, 68, 68, 66, 66, 62,
+	 31, 34, 34, 36, 36, 34, 34, 31,
+	 13, 16, 16, 18, 18, 16, 16, 13,
+	  4,  6,  6,  7,  7,  6,  6,  4,
+	  1,  3,  3,  4,  4,  3,  3,  1,
+	  0,  1,  1,  2,  2,  1,  1,  0,
+	  0,  0,  0,  0,  0,  0,  0,  0, // A1 - H1
 }
 
 // [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen

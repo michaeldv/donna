@@ -33,6 +33,17 @@ func (e *Evaluation) analyzePawns() {
 }
 
 func (e *Evaluation) analyzePassers() {
+	var white, black Score
+
+	if Settings.Trace {
+		defer func() {
+			e.checkpoint(`Passers`, Total{white, black})
+		}()
+	}
+
+	white, black = e.pawnPassers(White), e.pawnPassers(Black)
+
+	e.score.add(white).subtract(black)
 }
 
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
@@ -41,6 +52,7 @@ func (e *Evaluation) analyzePassers() {
 func (e *Evaluation) pawnStructure(color int) (score Score) {
 	hisPawns := e.position.outposts[pawn(color)]
 	herPawns := e.position.outposts[pawn(color^1)]
+	e.pawns.passers[color] = 0
 
 	pawns := hisPawns
 	for pawns != 0 {
@@ -81,9 +93,6 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 		// front of us.
 		passed := (maskPassed[color][square] & herPawns == 0 && !doubled)
 		if passed {
-			flip := Flip(color, square)
-			score.midgame += bonusPassedPawn[0][flip]
-			score.endgame += bonusPassedPawn[1][flip]
 			e.pawns.passers[color] |= bit[square]
 		}
 
@@ -113,11 +122,67 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 		// TODO: Bonus if the pawn has good chance to become a passed pawn.
 	}
 
+	return
+}
+
+func (e *Evaluation) pawnPassers(color int) (score Score) {
+	p := e.position
+
+	pawns := e.pawns.passers[color]
+	for pawns != 0 {
+		square := pawns.pop()
+		row := RelRow(square, color)
+		bonus := bonusPassedPawn[row]
+
+		if row > A2H2 {
+			nextSquare := square + eight[color]
+
+			// Check if the pawn can step forward.
+			if p.board.isClear(nextSquare) {
+
+				// Assume all squares in front of the pawn are under attack.
+				attacked := maskInFront[color][square]
+				protected := attacked & e.attacks[color]
+
+				// Check if the assumption is true and whether there is a queen
+				// or a rook attacking our passed pawn from behind.
+				enemy := maskInFront[color^1][square] & (p.outposts[queen(color^1)] | p.outposts[rook(color^1)])
+				if enemy == 0 || enemy & p.rookMoves(square) == 0 {
+
+					// Since nobody attacks the pawn from behind adjust the attacked
+					// bitmask to only include squares attacked or occupied by the enemy.
+					attacked &= (e.attacks[color^1] | p.outposts[color^1])
+
+				}
+
+				// Boost the bonus if passed pawn is free to run to the 8th rank
+				// or at least safely step forward.
+				extra := 0
+				if attacked == 0 {
+					extra = 10
+				} else if attacked.isClear(nextSquare) {
+					extra = 6
+				}
+
+				// Boost the bonus even more if all the squares in front of the
+				// pawn are protected. If not, see if next square is protected.
+				if protected == maskInFront[color][square] {
+					extra += 4
+				} else if protected.isSet(nextSquare) {
+					extra += 2
+				}
+				if extra > 0 {
+					bonus.adjust(extra * extraPassedPawn[row])
+				}
+			}
+			// TODO: Adjust bonus based on proximity of both kings.
+		}
+		score.add(bonus)
+	}
+
 	// Penalty for blocked pawns.
-	// ~~~ TODO: should not be stored in the pawns cache since the blockade
-	// ~~~ depends on other pieces.
-	// blocked := (hisPawns.pushed(color) & e.position.board).count()
-	// score.subtract(pawnBlocked.times(blocked))
+	blocked := (p.outposts[pawn(color)].pushed(color) & p.board).count()
+	score.subtract(pawnBlocked.times(blocked))
 
 	return
 }
