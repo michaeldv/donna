@@ -29,6 +29,18 @@ var (
 	coverDistance  = Score{    8,    0 } //~~~ Cover pawn row distance from king penalty.
 )
 
+// Piece values for calculating most valueable victim/least valueable attacker,
+// indexed by piece.
+var pieceValue = [14]int{
+	0, 0,
+	valuePawn.midgame,   valuePawn.midgame,
+	valueKnight.midgame, valueKnight.midgame,
+	valueBishop.midgame, valueBishop.midgame,
+	valueRook.midgame,   valueRook.midgame,
+	valueQueen.midgame,  valueQueen.midgame,
+	0, 0,
+}
+
 // Piece/square table: gets initilized on startup from the bonus arrays below.
 var pst = [14][64]Score{{},}
 

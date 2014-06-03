@@ -79,7 +79,7 @@ func (m Move) pawnJump() Move {
 
 // Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() int {
-	return int(m.capture().kind())*16 - m.piece().kind() + 1024
+	return  pieceValue[m.capture()] - m.piece().kind()
 }
 
 func (m Move) String() string {

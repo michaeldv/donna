@@ -121,16 +121,17 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 		move := gen.list[i].move
 		if move == bestMove {
 			gen.list[i].score = 0xFFFF
-		} else if move == game.killers[gen.ply][0] {
-			gen.list[i].score = 0xFFFE
-		} else if move == game.killers[gen.ply][1] {
-			gen.list[i].score = 0xFFFD
 		} else if move & isCapture != 0 {
-			gen.list[i].score = move.value()
+			gen.list[i].score = 8192 + move.value()
+		} else if move == game.killers[gen.ply][0] {
+			gen.list[i].score = 4096
+		} else if move == game.killers[gen.ply][1] {
+			gen.list[i].score = 2048
 		} else {
 			gen.list[i].score = game.good(move)
 		}
 	}
+
 	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
 	return gen
 }
@@ -143,11 +144,12 @@ func (gen *MoveGen) quickRank() *MoveGen {
 	game := gen.p.game
 	for i := gen.head; i < gen.tail; i++ {
 		if move := gen.list[i].move; move & isCapture != 0 {
-			gen.list[i].score = move.value()
+			gen.list[i].score = 8192 + move.value()
 		} else {
 			gen.list[i].score = game.good(move)
 		}
 	}
+
 	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
 	return gen
 }
