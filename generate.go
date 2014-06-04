@@ -16,7 +16,6 @@ type MoveWithScore struct {
 type MoveGen struct {
 	p      *Position
 	list   [256]MoveWithScore
-	phase  int
 	head   int
 	tail   int
 	ply    int
@@ -32,7 +31,6 @@ var moveList [MaxPly]MoveGen
 func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen = &moveList[ply]
 	gen.p = p
-	gen.phase = p.phase()
 	gen.list = [256]MoveWithScore{}
 	gen.head, gen.tail = 0, 0
 	gen.ply = ply
