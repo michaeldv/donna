@@ -17,11 +17,11 @@ type Position struct {
 	color      int         // Side to make next move.
 	reversible bool        // Is this position reversible?
 	castles    uint8       // Castle rights mask.
-	hash       uint64      // Polyglot hash value for the entire board.
-	hashPawn   uint64      // Polyglot hash value for pawns only.
+	hash       uint64      // Polyglot hash value for the position.
+	hashPawn   uint64      // Polyglot hash value for position's pawn structure.
 	board      Bitmask     // Bitmask of all pieces on the board.
 	king       [2]int      // King's square for both colors.
-	count      [16]int     // Counts of each piece on the board, ex. white pawns: 6, etc.
+	count      [14]int     // Counts of each piece on the board, ex. white pawns: 6, etc.
 	pieces     [64]Piece   // Array of 64 squares with pieces on them.
 	outposts   [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	tally      Score       // Material score based on PST.
@@ -73,7 +73,7 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	p.outposts[piece.color()] ^= bit[from] | bit[to]
 
 	// Update position's hash values.
-	random := polyglotRandom[64 * piece.polyglot() + from] ^ polyglotRandom[64 * piece.polyglot() + to]
+	random := piece.polyglot(from) ^ piece.polyglot(to)
 	p.hash ^= random
 	if piece.isPawn() {
 		p.hashPawn ^= random
@@ -94,10 +94,10 @@ func (p *Position) promotePawn(piece Piece, from, to int, promo Piece) *Position
 	p.count[promo]++
 
 	// Update position's hash values.
-	random := polyglotRandom[64 * piece.polyglot() + from]
+	random := piece.polyglot(from)
 	p.hash ^= random
 	p.hashPawn ^= random
-	p.hash ^= polyglotRandom[64 * promo.polyglot() + to]
+	p.hash ^= promo.polyglot(to)
 
 	// Update material score.
 	p.tally.subtract(pst[piece][from]).add(pst[promo][to])
@@ -111,7 +111,7 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	p.count[capture]--
 
 	// Update position's hash values.
-	random := polyglotRandom[64 * capture.polyglot() + to]
+	random := capture.polyglot(to)
 	p.hash ^= random
 	if capture.isPawn() {
 		p.hashPawn ^= random
@@ -132,7 +132,7 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	p.count[capture]--
 
 	// Update position's hash values.
-	random := polyglotRandom[64 * capture.polyglot() + enpassant]
+	random := capture.polyglot(enpassant)
 	p.hash ^= random
 	p.hashPawn ^= random
 
@@ -345,7 +345,7 @@ func (p *Position) polyglot() (hash, hashPawn uint64) {
 	for board != 0 {
 		square := board.pop()
 		piece := p.pieces[square]
-		seed := polyglotRandom[64 * piece.polyglot() + square]
+		seed := piece.polyglot(square)
 		hash ^= seed
 		if piece.isPawn() {
 			hashPawn ^= seed

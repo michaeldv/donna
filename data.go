@@ -122,6 +122,19 @@ var castleQueen = [2]Bitmask{
 	bit[C1]|bit[D1]|bit[E1], bit[C8]|bit[D8]|bit[E8],
 }
 
+// Base offsets to polyglotRandom table for each of the pieces. Note that we're
+// mapping our piece representation to polyglot, i.e. (Piece-1) for whites and
+// (Piece-3) for blacks.
+var polyglotBase = [14]int{
+	0, 0,
+	64 * (Pawn-1),   64 * (BlackPawn-3),
+	64 * (Knight-1), 64 * (BlackKnight-3),
+	64 * (Bishop-1), 64 * (BlackBishop-3),
+	64 * (Rook-1),   64 * (BlackRook-3),
+	64 * (Queen-1),  64 * (BlackQueen-3),
+	64 * (King-1),   64 * (BlackKing-3),
+}
+
 // Default polyglot Random64 array (http://hardy.uhasselt.be/Toga/book_format.html)
 // is split in four to avoid dealing with slices.
 var polyglotRandom = [...]uint64{

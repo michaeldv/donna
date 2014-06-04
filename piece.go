@@ -67,10 +67,8 @@ func (p Piece) score(square int) Score {
 	return pst[p][square]
 }
 
-// Converts a piece to "official" polyglot representation, i.e. returns (Piece - 1)
-// when the color is 0 and (Piece - 3) when color is 1.
-func (p Piece) polyglot() int {
-	return int(p) - 1 - (int(p) & 1) << 1 // Fast int(p) - 1 - 2 * p.color()
+func (p Piece) polyglot(square int) uint64 {
+	return polyglotRandom[polyglotBase[p] + square]
 }
 
 func (p Piece) color() int {
