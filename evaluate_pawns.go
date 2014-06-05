@@ -7,23 +7,25 @@ package donna
 import ()
 
 type PawnEntry struct {
-	hash     uint64
-	score    Score
+	hash     uint64 	// Pawn hash key.
+	score    Score 		// Static score for the given pawn structure.
 	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
 
 var pawnCache [8192]PawnEntry
 
 func (e *Evaluation) analyzePawns() {
-	hashPawn := e.position.hashPawn
-	index := hashPawn % uint64(len(pawnCache))
+	key := e.position.hashPawn
+
+	// Since pawn hash is fairly small we can use much faster 32-bit index.
+	index := uint32(key) % uint32(len(pawnCache))
 	e.pawns = &pawnCache[index]
 
 	// Bypass pawns cache if evaluation tracing is enabled.
-	if e.pawns.hash != hashPawn || Settings.Trace {
+	if e.pawns.hash != key || Settings.Trace {
 		white, black := e.pawnStructure(White), e.pawnStructure(Black)
 		e.pawns.score.clear().add(white).subtract(black)
-		e.pawns.hash = e.position.hashPawn
+		e.pawns.hash = key
 		if Settings.Trace {
 			e.checkpoint(`Pawns`, Total{white, black})
 		}
