@@ -138,31 +138,31 @@ func (game *Game) Think(requestedDepth int, position *Position) Move {
 func (game *Game) printBestLine(depth, score, status int, finish float64) {
 	switch status {
 	case WhiteWon:
-		fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1-0 White Checkmates\n",
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1-0 White Checkmates\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
 			float64(game.nodes+game.qnodes)/finish)
 	case BlackWon:
-		fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   0-1 Black Checkmates\n",
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   0-1 Black Checkmates\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
 			float64(game.nodes+game.qnodes)/finish)
 	case Stalemate:
-		fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Stalemate\n",
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1/2 Stalemate\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
 			float64(game.nodes+game.qnodes)/finish)
 	case Repetition:
-		fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
 			float64(game.nodes+game.qnodes)/finish)
 	case WhiteWinning, BlackWinning:
 		movesLeft := Checkmate - Abs(score)
-		fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
 			float64(game.nodes+game.qnodes)/finish, movesLeft/2,
 			game.bestLine[0][0:Min(movesLeft, game.bestLength[0])])
 	default:
-		fmt.Printf(" %d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, float32(score)/100.0,
+			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(valuePawn.endgame),
 			game.bestLine[0][0:game.bestLength[0]])
 	}
 }

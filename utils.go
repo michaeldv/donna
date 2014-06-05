@@ -113,13 +113,14 @@ func Summary(metrics map[string]interface{}) {
 	phase := metrics[`Phase`].(int)
 	tally := metrics[`PST`].(Score)
 	final := metrics[`Final`].(Score)
+	units := float32(valuePawn.endgame)
 
 	fmt.Println()
 	fmt.Printf("Metric              MidGame        |        EndGame        | Blended\n")
 	fmt.Printf("                W      B     W-B   |    W      B     W-B   |  (%d)  \n", phase)
 	fmt.Printf("-----------------------------------+-----------------------+--------\n")
 	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `PST`,
-		float32(tally.midgame)/100.0, float32(tally.endgame)/100.0, float32(tally.blended(phase))/100.0)
+		float32(tally.midgame)/units, float32(tally.endgame)/units, float32(tally.blended(phase))/units)
 
 	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `Passers`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
 		white := metrics[tag].(Total).white
@@ -135,26 +136,27 @@ func Summary(metrics map[string]interface{}) {
 		}
 
 		fmt.Printf("%-12s  %5.2f  %5.2f  %5.2f  |  %5.2f  %5.2f  %5.2f  >  %5.2f\n", tag,
-			float32(white.midgame)/100.0, float32(black.midgame)/100.0, float32(score.midgame)/100.0,
-			float32(white.endgame)/100.0, float32(black.endgame)/100.0, float32(score.endgame)/100.0,
-			float32(score.blended(phase))/100.0)
+			float32(white.midgame)/units, float32(black.midgame)/units, float32(score.midgame)/units,
+			float32(white.endgame)/units, float32(black.endgame)/units, float32(score.endgame)/units,
+			float32(score.blended(phase))/units)
 	}
 	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n\n", `Final Score`,
-		float32(final.midgame)/100.0, float32(final.endgame)/100.0, float32(final.blended(phase))/100.0)
+		float32(final.midgame)/units, float32(final.endgame)/units, float32(final.blended(phase))/units)
 }
 
 func SummaryAlt(metrics map[string]interface{}) {
 	phase := metrics[`Phase`].(int)
 	tally := metrics[`PST`].(Score)
 	final := metrics[`Final`].(Score)
+	units := float32(valuePawn.endgame)
 
 	fmt.Println()
 	fmt.Printf("Metric            White     |     Black     |     Total     | Blended \n")
 	fmt.Printf("                mid   end   |   mid   end   |   mid   end   |  (%d)  \n", phase)
 	fmt.Printf("----------------------------+---------------+---------------+---------\n")
 	fmt.Printf("%-12s     -     -    |    -     -    | %5.2f  %5.2f  > %5.2f\n", `PST`,
-		float32(tally.midgame)/100.0, float32(tally.endgame)/100.0,
-		float32(tally.blended(phase))/100.0)
+		float32(tally.midgame)/units, float32(tally.endgame)/units,
+		float32(tally.blended(phase))/units)
 
 	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `Passers`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
 		white := metrics[tag].(Total).white
@@ -170,14 +172,14 @@ func SummaryAlt(metrics map[string]interface{}) {
 		}
 
 		fmt.Printf("%-12s  %5.2f  %5.2f  | %5.2f  %5.2f  | %5.2f  %5.2f  > %5.2f\n", tag,
-			float32(white.midgame)/100.0, float32(white.endgame)/100.0,
-			float32(black.midgame)/100.0, float32(black.endgame)/100.0,
-			float32(score.midgame)/100.0, float32(score.endgame)/100.0,
-			float32(score.blended(phase))/100.0)
+			float32(white.midgame)/units, float32(white.endgame)/units,
+			float32(black.midgame)/units, float32(black.endgame)/units,
+			float32(score.midgame)/units, float32(score.endgame)/units,
+			float32(score.blended(phase))/units)
 	}
 	fmt.Printf("%-12s     -     -    |    -     -    | %5.2f  %5.2f  > %5.2f\n\n", `Final Score`,
-		float32(final.midgame)/100.0, float32(final.endgame)/100.0,
-		float32(final.blended(phase))/100.0)
+		float32(final.midgame)/units, float32(final.endgame)/units,
+		float32(final.blended(phase))/units)
 }
 
 // Logging wrapper around fmt.Printf() that could be turned on as needed. Typical
