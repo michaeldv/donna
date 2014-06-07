@@ -112,6 +112,7 @@ func Rose(direction int) int {
 func Summary(metrics map[string]interface{}) {
 	phase := metrics[`Phase`].(int)
 	tally := metrics[`PST`].(Score)
+	material := metrics[`Material`].(Score)
 	final := metrics[`Final`].(Score)
 	units := float32(valuePawn.endgame)
 
@@ -121,6 +122,8 @@ func Summary(metrics map[string]interface{}) {
 	fmt.Printf("-----------------------------------+-----------------------+--------\n")
 	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `PST`,
 		float32(tally.midgame)/units, float32(tally.endgame)/units, float32(tally.blended(phase))/units)
+	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `Material`,
+		float32(material.midgame)/units, float32(material.endgame)/units, float32(material.blended(phase))/units)
 
 	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `Passers`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
 		white := metrics[tag].(Total).white
@@ -147,6 +150,7 @@ func Summary(metrics map[string]interface{}) {
 func SummaryAlt(metrics map[string]interface{}) {
 	phase := metrics[`Phase`].(int)
 	tally := metrics[`PST`].(Score)
+	material := metrics[`Material`].(Score)
 	final := metrics[`Final`].(Score)
 	units := float32(valuePawn.endgame)
 
@@ -155,8 +159,9 @@ func SummaryAlt(metrics map[string]interface{}) {
 	fmt.Printf("                mid   end   |   mid   end   |   mid   end   |  (%d)  \n", phase)
 	fmt.Printf("----------------------------+---------------+---------------+---------\n")
 	fmt.Printf("%-12s     -     -    |    -     -    | %5.2f  %5.2f  > %5.2f\n", `PST`,
-		float32(tally.midgame)/units, float32(tally.endgame)/units,
-		float32(tally.blended(phase))/units)
+		float32(tally.midgame)/units, float32(tally.endgame)/units, float32(tally.blended(phase))/units)
+	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `Material`,
+		float32(material.midgame)/units, float32(material.endgame)/units, float32(material.blended(phase))/units)
 
 	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `Passers`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
 		white := metrics[tag].(Total).white
