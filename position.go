@@ -12,19 +12,20 @@ var tree [1024]Position
 var node, rootNode int
 
 type Position struct {
-	game       *Game
-	enpassant  int         // En-passant square caused by previous move.
-	color      int         // Side to make next move.
-	reversible bool        // Is this position reversible?
-	castles    uint8       // Castle rights mask.
-	hash       uint64      // Polyglot hash value for the position.
-	hashPawn   uint64      // Polyglot hash value for position's pawn structure.
-	board      Bitmask     // Bitmask of all pieces on the board.
-	king       [2]int      // King's square for both colors.
-	count      [14]int     // Counts of each piece on the board, ex. white pawns: 6, etc.
-	pieces     [64]Piece   // Array of 64 squares with pieces on them.
-	outposts   [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
-	tally      Score       // Material score based on PST.
+	game         *Game
+	enpassant    int         // En-passant square caused by previous move.
+	color        int         // Side to make next move.
+	reversible   bool        // Is this position reversible?
+	castles      uint8       // Castle rights mask.
+	hash         uint64      // Polyglot hash value for the position.
+	hashPawns    uint64      // Polyglot hash value for position's pawn structure.
+	hashMaterial uint64      // Polyglot hash for position's playing material.
+	board        Bitmask     // Bitmask of all pieces on the board.
+	king         [2]int      // King's square for both colors.
+	count        [14]int     // Counts of each piece on the board.
+	pieces       [64]Piece   // Array of 64 squares with pieces on them.
+	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
+	tally        Score       // Positional valuation score based on PST.
 }
 
 func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
@@ -61,8 +62,8 @@ func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
 
 	p.reversible = true
 	p.board = p.outposts[White] | p.outposts[Black]
-	p.hash, p.hashPawn = p.polyglot()
-	p.tally = p.material()
+	p.hash, p.hashPawns, p.hashMaterial = p.polyglot()
+	p.tally = p.valuation()
 
 	return p
 }
@@ -76,10 +77,10 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	random := piece.polyglot(from) ^ piece.polyglot(to)
 	p.hash ^= random
 	if piece.isPawn() {
-		p.hashPawn ^= random
+		p.hashPawns ^= random
 	}
 
-	// Update material score.
+	// Update positional score.
 	p.tally.subtract(pst[piece][from]).add(pst[piece][to])
 
 	return p
@@ -91,15 +92,15 @@ func (p *Position) promotePawn(piece Piece, from, to int, promo Piece) *Position
 	p.outposts[promo] ^= bit[to]
 	p.outposts[piece.color()] ^= bit[from] | bit[to]
 	p.count[piece]--
-	p.count[promo]++
 
 	// Update position's hash values.
 	random := piece.polyglot(from)
-	p.hash ^= random
-	p.hashPawn ^= random
-	p.hash ^= promo.polyglot(to)
+	p.hash ^= random ^ promo.polyglot(to)
+	p.hashPawns ^= random
+	p.hashMaterial ^= piece.polyglot(p.count[piece]) ^ promo.polyglot(p.count[promo])
+	p.count[promo]++
 
-	// Update material score.
+	// Update positional score.
 	p.tally.subtract(pst[piece][from]).add(pst[promo][to])
 
 	return p
@@ -110,14 +111,15 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	p.outposts[capture.color()] ^= bit[to]
 	p.count[capture]--
 
-	// Update position's hash values.
+	// Update position's hash values and count.
 	random := capture.polyglot(to)
 	p.hash ^= random
 	if capture.isPawn() {
-		p.hashPawn ^= random
+		p.hashPawns ^= random
 	}
+	p.hashMaterial ^= capture.polyglot(p.count[capture])
 
-	// Update material score.
+	// Update positional score.
 	p.tally.subtract(pst[capture][to])
 
 	return p
@@ -131,12 +133,13 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	p.outposts[capture.color()] ^= bit[enpassant]
 	p.count[capture]--
 
-	// Update position's hash values.
+	// Update position's hash values and count.
 	random := capture.polyglot(enpassant)
 	p.hash ^= random
-	p.hashPawn ^= random
+	p.hashPawns ^= random
+	p.hashMaterial ^= capture.polyglot(p.count[capture])
 
-	// Update material score.
+	// Update positional score.
 	p.tally.subtract(pst[capture][enpassant])
 
 	return p
@@ -338,17 +341,17 @@ func (p *Position) phase() int {
 	       44 * (p.count[Queen]  + p.count[BlackQueen])
 }
 
-// Computes initial values of position's polyglot hash (entire board) and pawn
-// hash (pawns only). When making a move the values get updated incrementally.
-func (p *Position) polyglot() (hash, hashPawn uint64) {
+// Computes initial values of position's polyglot hash, pawn hash, and material
+// hash. When making a move these values get updated incrementally.
+func (p *Position) polyglot() (hash, hashPawns, hashMaterial uint64) {
 	board := p.board
 	for board != 0 {
 		square := board.pop()
 		piece := p.pieces[square]
-		seed := piece.polyglot(square)
-		hash ^= seed
+		random := piece.polyglot(square)
+		hash ^= random
 		if piece.isPawn() {
-			hashPawn ^= seed
+			hashPawns ^= random
 		}
 	}
 
@@ -360,12 +363,18 @@ func (p *Position) polyglot() (hash, hashPawn uint64) {
 		hash ^= polyglotRandomWhite
 	}
 
+	for piece := Pawn; piece <= BlackQueen; piece++ {
+		for count := 0; count < p.count[piece]; count++ {
+			hashMaterial ^= Piece(piece).polyglot(count)
+		}
+	}
+
 	return
 }
 
-// Computes position's cumulative material score. When making a move the
-// material score gets updated incrementally.
-func (p *Position) material() (score Score) {
+// Computes positional valuation score based on PST. When making a move the
+// valuation tally gets updated incrementally.
+func (p *Position) valuation() (score Score) {
 	board := p.board
 	for board != 0 {
 		square := board.pop()
