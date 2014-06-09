@@ -10,7 +10,7 @@ import `testing`
 func TestEvaluatePawns100(t *testing.T) {
 	p := NewGame().Setup(`Ke1,h2,h3`, `Ke8,a7,a6`).Start(White)
 	score := p.Evaluate()
-	expect(t, score, rightToMove.blended(p.phase())) // Right to move only.
+	expect(t, score, rightToMove.endgame) // Right to move only.
 }
 
 // func TestEvaluatePawns110(t *testing.T) {

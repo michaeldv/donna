@@ -332,15 +332,6 @@ func (p *Position) status(move Move, blendedScore int) int {
 	return InProgress
 }
 
-// Calculates game phase based on what pieces are on the board (256 for the
-// initial position, 0 for bare kings).
-func (p *Position) phase() int {
-	return 12 * (p.count[Knight] + p.count[BlackKnight]) +
-	       12 * (p.count[Bishop] + p.count[BlackBishop]) +
-	       18 * (p.count[Rook]   + p.count[BlackRook]) +
-	       44 * (p.count[Queen]  + p.count[BlackQueen])
-}
-
 // Computes initial values of position's polyglot hash, pawn hash, and material
 // hash. When making a move these values get updated incrementally.
 func (p *Position) polyglot() (hash, hashPawns, hashMaterial uint64) {

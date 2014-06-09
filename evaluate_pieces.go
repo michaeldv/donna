@@ -138,7 +138,7 @@ func (e *Evaluation) bishops(color int, maskMobile Bitmask) (score Score) {
 		}
 
 		// Middle game penalty for boxed bishop.
-		if e.phase > 160 {
+		if e.material.phase > 160 {
 			if color == White {
 				if (square == C1 && p.pieces[D2].isPawn() && p.pieces[D3] != 0) ||
 				   (square == F1 && p.pieces[E2].isPawn() && p.pieces[E3] != 0) {
