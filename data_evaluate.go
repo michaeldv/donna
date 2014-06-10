@@ -14,7 +14,7 @@ var (
 	rightToMove    = Score{   12,    5 }
 	pawnBlocked    = Score{    2,    6 } //~~~
 	bishopPair     = Score{   43,   56 } //~~~
-	bishopPawns    = Score{    4,    6 }
+	bishopPawn     = Score{    4,    6 }
 	bishopBoxed    = Score{   73,    0 } //~~~
 	rookOnPawn     = Score{    5,   14 }
 	rookOnOpen     = Score{   22,   10 }

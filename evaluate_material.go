@@ -30,7 +30,7 @@ func (e *Evaluation) fetchMaterial() *MaterialEntry {
 	// Bypass material cache if evaluation tracing is enabled.
 	if material.hash != key || Settings.Trace {
 		material.hash = key
-		material.phase = e.gamePhase()
+		material.phase = e.phase()
 		if e.isMaterialEqual() {
 			material.score = Score{0, 0}
 		} else {
@@ -58,31 +58,26 @@ func (e *Evaluation) isMaterialEqual() bool {
 func (e *Evaluation) materialAdjustment() (score Score) {
 	count := &e.position.count
 
-	pawns   := count[Pawn]   - count[BlackPawn]
-	knights := count[Knight] - count[BlackKnight]
-	bishops := count[Bishop] - count[BlackBishop]
-	rooks   := count[Rook]   - count[BlackRook]
-	queens  := count[Queen]  - count[BlackQueen]
+	// pawns   := count[Pawn]   - count[BlackPawn]
+	// knights := count[Knight] - count[BlackKnight]
+	// bishops := count[Bishop] - count[BlackBishop]
+	// rooks   := count[Rook]   - count[BlackRook]
+	// queens  := count[Queen]  - count[BlackQueen]
 
-	score = Score{
-	       (pawns   * valuePawn.midgame   +
-		knights * valueKnight.midgame +
-		bishops * valueBishop.midgame +
-		rooks   * valueRook.midgame   +
-		queens  * valueQueen.midgame) / 32,
-
-	       (pawns   * valuePawn.endgame   +
-		knights * valueKnight.endgame +
-		bishops * valueBishop.endgame +
-		rooks   * valueRook.endgame   +
-		queens  * valueQueen.endgame) / 32,
+	// Bonus for the pair of bishops.
+	if count[Bishop] > 1 {
+		score.add(bishopPair)
 	}
+	if count[BlackBishop] > 1 {
+		score.subtract(bishopPair)
+	}
+
 	return
 }
 
 // Calculates game phase based on what pieces are on the board (256 for the
 // initial position, 0 for bare kings).
-func (e *Evaluation)  gamePhase() int {
+func (e *Evaluation)  phase() int {
 	count := &e.position.count
 
 	phase := 12 * (count[Knight] + count[BlackKnight] + count[Bishop] + count[BlackBishop]) +
@@ -137,18 +132,13 @@ func (g *Game) warmUpMaterialCache() {
 		material.hash = key
 
 		material.phase = 12 * (wK + bK + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
-		material.score = Score{
-		       ((wP - bP) * valuePawn.midgame   +
-			(wK - bK) * valueKnight.midgame +
-			(wB - bB) * valueBishop.midgame +
-			(wR - bR) * valueRook.midgame   +
-			(wQ - bQ) * valueQueen.midgame) / 32,
 
-		       ((wP - bP) * valuePawn.endgame   +
-			(wK - bK) * valueKnight.endgame +
-			(wB - bB) * valueBishop.endgame +
-			(wR - bR) * valueRook.endgame   +
-			(wQ - bQ) * valueQueen.endgame) / 32,
+		// Bonus for the pair of bishops.
+		if wB > 1 {
+			material.score.add(bishopPair)
+		}
+		if bB > 1 {
+			material.score.subtract(bishopPair)
 		}
 										}
 									}

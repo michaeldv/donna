@@ -124,7 +124,7 @@ func (e *Evaluation) bishops(color int, maskMobile Bitmask) (score Score) {
 
 		// Penalty for light/dark square bishop and matching pawns.
 		if count := (Same(square) & p.outposts[pawn(color)]).count(); count > 0 {
-			score.subtract(bishopPawns)
+			score.subtract(bishopPawn)
 		}
 
 		// Penalty if bishop is attacked by enemy's pawn.
@@ -168,11 +168,6 @@ func (e *Evaluation) bishops(color int, maskMobile Bitmask) (score Score) {
 
 		// Track if bishop attacks squares around enemy's king.
 		e.enemyKingThreat(bishop(color), attacks)
-	}
-
-	// Bonus for the pair of bishops.
-	if bishops := p.count[bishop(color)]; bishops >= 2 {
-		score.add(bishopPair)
 	}
 	return
 }
