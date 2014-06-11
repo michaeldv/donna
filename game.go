@@ -35,6 +35,8 @@ func (game *Game) Setup(white, black string) *Game {
 
 func (game *Game) CacheSize(megaBytes float32) *Game {
 	game.cache = NewCache(megaBytes)
+	game.warmUpMaterialCache()
+
 	return game
 }
 
