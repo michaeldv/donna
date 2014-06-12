@@ -47,6 +47,9 @@ var (
 	// Two arrays to simplify incremental polyglot hash computation.
 	hashCastle    [16]uint64
 	hashEnpassant [8]uint64
+
+	// Distance between two squares.
+	distance [64][64]int
 )
 
 func init() {
@@ -83,9 +86,11 @@ func init() {
 			}
 		}
 
-		// Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
+		// Distance, Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
 		for i := A1; i <= H8; i++ {
 			r, c := Coordinate(i)
+
+			distance[square][i] = Max(Abs(row - r), Abs(col - c))
 			setupMasks(square, i, row, col, r, c)
 
 			if i == square || Abs(i-square) > 17 {
