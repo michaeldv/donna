@@ -11,10 +11,17 @@ func (e *Evaluation) analyzeEndgame() int {
 func (e *Evaluation) inspectEndgame() {
 	if e.score.endgame != 0 {
 		markdown := e.material.endgame(e)
-		if markdown > 0 {
+		if markdown >= 0 {
 			e.score.endgame *= markdown / 128
 		}
 	}
+}
+
+func (e *Evaluation) strongerSide() int {
+	if e.score.endgame > 0 {
+		return White
+	}
+	return Black
 }
 
 // Known endgames where we calculate the exact score.
@@ -32,7 +39,22 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 
 // Lesser known endgames where we calculate endgame score markdown.
 func (e *Evaluation) kingAndPawnsVsBareKing() int {
-	return -1 // 96
+	color := e.strongerSide()
+
+	pawns := e.position.outposts[pawn(color)]
+	row, col := Coordinate(e.position.king[color^1])
+
+	// Pawns on A file with bare king opposing them.
+	if (pawns & ^maskFile[A1] == 0) && (pawns & ^maskInFront[color^1][row*8] == 0) && col <= B1 {
+		return 0
+	}
+
+	// Pawns on H file with bare king opposing them.
+	if (pawns & ^maskFile[H1] == 0) && (pawns & ^maskInFront[color^1][row*8+7] == 0) && col >= G1 {
+		return 0
+	}
+
+	return -1
 }
 
 func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
