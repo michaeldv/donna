@@ -13,8 +13,9 @@ var (
 
 	rightToMove    = Score{   12,    5 }
 	pawnBlocked    = Score{    2,    6 } //~~~
-	bishopPair     = Score{   43,   56 } //~~~
-	bishopPawn     = Score{    4,    6 }
+	bishopPair     = Score{   43,   56 } // Bonus for a pair of bishops.
+	bishopPairPawn = Score{    4,    0 } // Penalty for each 5+ pawn when we've got a pair of bishops.
+	bishopPawn     = Score{    4,    6 } // Penalty for each pawn on the same colored square as a bishop.
 	bishopBoxed    = Score{   73,    0 } //~~~
 	rookOnPawn     = Score{    5,   14 }
 	rookOnOpen     = Score{   22,   10 }

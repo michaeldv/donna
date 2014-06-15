@@ -139,9 +139,15 @@ func (e *Evaluation) materialScore() (score Score) {
 	// Bonus for the pair of bishops.
 	if count[Bishop] > 1 {
 		score.add(bishopPair)
+		if count[Pawn] > 5 {
+			score.subtract(bishopPairPawn.times(count[Pawn] - 5))
+		}
 	}
 	if count[BlackBishop] > 1 {
 		score.subtract(bishopPair)
+		if count[BlackPawn] > 5 {
+			score.subtract(bishopPairPawn.times(count[BlackPawn] - 5))
+		}
 	}
 
 	return
@@ -195,9 +201,15 @@ func (g *Game) warmUpMaterialCache() {
 		// Bonus for the pair of bishops.
 		if wB > 1 {
 			material.score.add(bishopPair)
+			if wP > 5 {
+				material.score.subtract(bishopPairPawn.times(wP - 5))
+			}
 		}
 		if bB > 1 {
 			material.score.subtract(bishopPair)
+			if bP > 5 {
+				material.score.subtract(bishopPairPawn.times(bP - 5))
+			}
 		}
 										}
 									}
