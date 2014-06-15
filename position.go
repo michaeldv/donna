@@ -287,7 +287,7 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 		(gapKing[color] & p.board == 0) &&
 		(castleKing[color] & attacks == 0)
 
-	queenside = p.castles&castleQueenside[color] != 0 &&
+	queenside = p.castles & castleQueenside[color] != 0 &&
 		(gapQueen[color] & p.board == 0) &&
 		(castleQueen[color] & attacks == 0)
 	return

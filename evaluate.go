@@ -112,10 +112,6 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	e.attacks[White] = e.attacks[King] | e.attacks[Pawn]
 	e.attacks[Black] = e.attacks[BlackKing] | e.attacks[BlackPawn]
 
-	// TODO: initialize only if we are going to evaluate king's safety.
-	e.safety[White].fort = e.setupFort(White)
-	e.safety[Black].fort = e.setupFort(Black)
-
 	return e
 }
 
@@ -146,12 +142,6 @@ func (e *Evaluation) run() int {
 
 func (e *Evaluation) checkpoint(tag string, metric interface{}) {
 	e.metrics[tag] = metric
-}
-
-func (e *Evaluation) strongEnough(color int) bool {
-	p := e.position
-	return p.count[queen(color)] > 0 &&
-		(p.count[rook(color)] > 0 || p.count[bishop(color)] > 0 || p.count[knight(color)] > 0)
 }
 
 func (e *Evaluation) setupFort(color int) (bitmask Bitmask) {

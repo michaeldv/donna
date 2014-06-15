@@ -63,15 +63,24 @@ func (e *Evaluation) materialFlagsAndFunction(key uint64) (flags uint8, endgame 
 	noPawns := (count[Pawn] + count[BlackPawn] == 0)
 	bareKing := (whiteForce * blackForce == 0) // Bare king (white, black or both).
 
-	// Two bare kings.
+	// Set king safety flags if the opposing side has a queen and at least one piece.
+	if whiteForce >= 1010 {
+		flags |= blackKingSafety
+	}
+	if blackForce >= 1010 {
+		flags |= whiteKingSafety
+	}
+
+	// Insufficient material endgames that don't require further evaluation:
+	// 1) Two bare kings.
 	if whiteForce + blackForce == 0 {
 		flags |= materialDraw
 
-	// No pawns and king with a minor.
+	// 2) No pawns and king with a minor.
 	} else if noPawns && whiteForce <= 10 && blackForce <= 10 {
 		flags |= materialDraw
 
-	// No pawns and king with two knights.
+	// 3) No pawns and king with two knights.
 	} else if whiteForce + blackForce == 20 && count[Knight] + count[BlackKnight] == 2 {
 		flags |= materialDraw
 

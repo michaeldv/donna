@@ -16,12 +16,17 @@ func (e *Evaluation) analyzeSafety() {
 		}()
 	}
 
-	if e.strongEnough(Black) {
+	// Initialize white king fort bitmasks, then evaluate cover and safety.
+	if e.material.flags & whiteKingSafety != 0 {
+		e.safety[White].fort = e.setupFort(White)
 		white[0] = e.kingCover(White)
 		white[1] = e.kingSafety(White)
 		e.score.add(white[0]).add(white[1])
 	}
-	if e.strongEnough(White) {
+
+	// Ditto for the black king.
+	if e.material.flags & blackKingSafety != 0 {
+		e.safety[Black].fort = e.setupFort(Black)
 		black[0] = e.kingCover(Black)
 		black[1] = e.kingSafety(Black)
 		e.score.subtract(black[0]).subtract(black[1])
@@ -111,11 +116,11 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 
 func (e *Evaluation) kingCover(color int) (penalty Score) {
 	p := e.position
-	kings, pawns := p.outposts[king(color)], p.outposts[pawn(color)]
+	pawns := p.outposts[pawn(color)]
 
-	// Pass if a) the king is missing, b) the king is on the initial square
-	// or c) the opposite side doesn't have a queen with one major piece.
-	if kings == 0 || kings == bit[homeKing[color]] || !e.strongEnough(color^1) {
+	// Pass if the king is on the initial square and has castle rights.
+	hasCastleRights := (p.castles & (castleKingside[color] | castleQueenside[color]) != 0)
+	if p.king[color] == homeKing[color] && hasCastleRights {
 		return
 	}
 
