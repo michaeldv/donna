@@ -4,13 +4,23 @@
 
 package donna
 
-import ()
+const (
+	materialDraw       = 0x01 	// King vs. King (with minor)
+	knownEndgame       = 0x02 	// Where we calculate exact score.
+	lesserKnownEndgame = 0x04 	// Where we set score markdown value.
+	whiteKingSafety    = 0x08 	// Should we worry about white king's safety?
+	blackKingSafety    = 0x10 	// Ditto for the black king.
+	oppositeBishops    = 0x20 	// Sides have one bishop on opposite color squares.
+)
+
+type Function func(*Evaluation) int
 
 type MaterialEntry struct {
-	hash   uint64 	// Material hash key.
-	flags  uint8    // Evaluation flags based on material balance.
-	phase  int 	// Game phase, based on available material.
-	score  Score 	// Score adjustment for the given material.
+	hash      uint64 	// Material hash key.
+	flags     uint8    	// Evaluation flags based on material balance.
+	phase     int 		// Game phase, based on available material.
+	score     Score 	// Score adjustment for the given material.
+	endgame   Function 	// Function to analyze an endgame position.
 }
 
 var materialCache [8192]MaterialEntry
@@ -30,12 +40,10 @@ func (e *Evaluation) fetchMaterial() *MaterialEntry {
 	// Bypass material cache if evaluation tracing is enabled.
 	if material.hash != key || Settings.Trace {
 		material.hash = key
-		material.phase = e.phase()
-		if e.isMaterialEqual() {
-			material.score = Score{0, 0}
-		} else {
-			material.score = e.materialAdjustment()
-		}
+		material.flags, material.endgame = e.materialFlagsAndFunction(key)
+		material.phase = e.materialPhase()
+		material.score = e.materialScore()
+
 		if Settings.Trace {
 			e.checkpoint(`Material`, material.score)
 		}
@@ -44,25 +52,89 @@ func (e *Evaluation) fetchMaterial() *MaterialEntry {
 	return material
 }
 
-func (e *Evaluation) isMaterialEqual() bool {
+// Set up evaluation flags based on the material balance.
+func (e *Evaluation) materialFlagsAndFunction(key uint64) (flags uint8, endgame Function) {
 	count := &e.position.count
 
-	return count[Pawn] == count[BlackPawn] &&
-	       count[Knight] == count[BlackKnight] &&
-	       count[Bishop] == count[BlackBishop] &&
-	       count[Rook] == count[BlackRook] &&
-	       count[Queen] == count[BlackQueen]
+	// Calculate material balances for both sides to simplify comparisons.
+	whiteForce := count[Pawn]      + (count[Knight]      + count[Bishop]     ) * 10 + count[Rook]      * 100 + count[Queen]      * 1000
+	blackForce := count[BlackPawn] + (count[BlackKnight] + count[BlackBishop]) * 10 + count[BlackRook] * 100 + count[BlackQueen] * 1000
+
+	noPawns := (count[Pawn] + count[BlackPawn] == 0)
+	bareKing := (whiteForce * blackForce == 0) // Bare king (white, black or both).
+
+	// Two bare kings.
+	if whiteForce + blackForce == 0 {
+		flags |= materialDraw
+
+	// No pawns and king with a minor.
+	} else if noPawns && whiteForce <= 10 && blackForce <= 10 {
+		flags |= materialDraw
+
+	// No pawns and king with two knights.
+	} else if whiteForce + blackForce == 20 && count[Knight] + count[BlackKnight] == 2 {
+		flags |= materialDraw
+
+	// Known endgame: king and a pawn vs. bare king.
+	} else if key == 0x5355F900C2A82DC7 || key == 0x9D39247E33776D41 {
+		flags |= knownEndgame
+		endgame = (*Evaluation).kingAndPawnVsBareKing
+
+	// Known endgame: king with a knight and a bishop vs. bare king.
+	} else if key == 0xE6F0FBA55BF280F1 || key == 0x29D8066E0A562122 {
+		flags |= knownEndgame
+		endgame = (*Evaluation).knightAndBishopVsBareKing
+
+	// Known endgame: king with some winning material vs. bare king.
+	} else if bareKing && whiteForce + blackForce > 10 {
+		flags |= knownEndgame
+		endgame = (*Evaluation).winAgainstBareKing
+
+	// Lesser known endgame: king and two or more pawns vs. bare king.
+	} else if bareKing && whiteForce + blackForce <= 8 {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).kingAndPawnsVsBareKing
+
+	// Lesser known endgame: queen vs. rook with pawn(s)
+	} else if (blackForce == 1000 && whiteForce - count[Pawn] == 100 && count[Pawn] > 0) ||
+		  (whiteForce == 1000 && blackForce - count[BlackPawn] == 100 && count[BlackPawn] > 0) {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).queenVsRookAndPawns
+
+	// Lesser known endgame: king and pawn vs. king and pawn.
+	} else if key == 0xCE6CDD7EF1DF4086 {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).kingAndPawnVsKingAndPawn
+
+	// Lesser known endgame: bishop and pawn vs. bare king.
+	} else if key == 0x70E2F7DBDBFDE978 || key == 0xE2A24E8FD880E6EE {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).bishopAndPawnVsBareKing
+
+	// Lesser known endgame: rook and pawn vs. rook.
+	} else if key == 0x29F14397EB52ECA8 || key == 0xE79D9EE91A8DAC2E {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).rookAndPawnVsRook
+	}
+
+	return
+}
+
+// Calculates game phase based on what pieces are on the board (256 for the
+// initial position, 0 for bare kings).
+func (e *Evaluation) materialPhase() int {
+	count := &e.position.count
+
+	phase := 12 * (count[Knight] + count[BlackKnight] + count[Bishop] + count[BlackBishop]) +
+		 18 * (count[Rook]   + count[BlackRook]) +
+		 44 * (count[Queen]  + count[BlackQueen])
+
+	return Min(256, phase)
 }
 
 // Calculates material score adjustment for the position we are evaluating.
-func (e *Evaluation) materialAdjustment() (score Score) {
+func (e *Evaluation) materialScore() (score Score) {
 	count := &e.position.count
-
-	// pawns   := count[Pawn]   - count[BlackPawn]
-	// knights := count[Knight] - count[BlackKnight]
-	// bishops := count[Bishop] - count[BlackBishop]
-	// rooks   := count[Rook]   - count[BlackRook]
-	// queens  := count[Queen]  - count[BlackQueen]
 
 	// Bonus for the pair of bishops.
 	if count[Bishop] > 1 {
@@ -74,19 +146,6 @@ func (e *Evaluation) materialAdjustment() (score Score) {
 
 	return
 }
-
-// Calculates game phase based on what pieces are on the board (256 for the
-// initial position, 0 for bare kings).
-func (e *Evaluation)  phase() int {
-	count := &e.position.count
-
-	phase := 12 * (count[Knight] + count[BlackKnight] + count[Bishop] + count[BlackBishop]) +
-		 18 * (count[Rook]   + count[BlackRook]) +
-		 44 * (count[Queen]  + count[BlackQueen])
-
-	return Min(256, phase)
-}
-
 
 // Pre-populates material cache with the most common middle game material
 // balances, namely zero or one queen, one or two rooks/bishops/knights, and

@@ -25,14 +25,14 @@ type Total struct {
 
 //
 type Evaluation struct {
-	phase     int 		// Game phase based on available material.
-	flags     uint8 	// Evaluation flags.
-	score     Score 	// Current score.
-	safety    [2]Safety 	// King safety for both sides.
-	attacks   [14]Bitmask 	// Attack bitmasks for all the pieces on the board.
-	metrics   Metrics 	// Evaluation metrics when tracking is on.
-	pawns     *PawnEntry 	// Pointer to the pawn cache entry.
-	position  *Position 	// Pointer to the position we're evaluating.
+	flags     uint8 	 // Evaluation flags.
+	score     Score 	 // Current score.
+	safety    [2]Safety 	 // King safety for both sides.
+	attacks   [14]Bitmask 	 // Attack bitmasks for all the pieces on the board.
+	pawns     *PawnEntry 	 // Pointer to the pawn cache entry.
+	material  *MaterialEntry // Pointer to the matrial cache entry.
+	position  *Position 	 // Pointer to the position we're evaluating.
+	metrics   Metrics 	 // Evaluation metrics when tracking is on.
 }
 
 // Use single statically allocated variable to avoid garbage collection overhead.
@@ -62,7 +62,7 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 			final.subtract(eval.score)
 		}
 
-		eval.checkpoint(`Phase`, eval.phase)
+		eval.checkpoint(`Phase`, eval.material.phase)
 		eval.checkpoint(`PST`, p.tally)
 		eval.checkpoint(`Tempo`, tempo)
 		eval.checkpoint(`Final`, final)
@@ -92,9 +92,15 @@ func (p *Position) EvaluateTest(tag string) (score Score, metrics Metrics) {
 
 func (e *Evaluation) init(p *Position) *Evaluation {
 	eval = Evaluation{}
-	e.phase = p.phase()
-	e.score = p.tally
 	e.position = p
+
+	// Initialize the score with incremental PST value and right to move.
+	e.score = p.tally
+	if e.position.color == White {
+		e.score.add(rightToMove)
+	} else {
+		e.score.subtract(rightToMove)
+	}
 
 	// Set up king and pawn attacks for both sides.
 	e.attacks[King] = p.kingAttacks(White)
@@ -114,21 +120,28 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 }
 
 func (e *Evaluation) run() int {
+	e.analyzeMaterial()
+	if e.material.flags & materialDraw != 0 {
+		return 0
+	}
+	if e.material.flags & knownEndgame != 0 {
+		return e.analyzeEndgame()
+	}
 	e.analyzePawns()
 	e.analyzePieces()
 	e.analyzeThreats()
 	e.analyzeSafety()
 	e.analyzePassers()
+	if e.material.flags & lesserKnownEndgame != 0 {
+		e.inspectEndgame()
+	}
 
-	if e.position.color == White {
-		e.score.add(rightToMove)
-	} else {
-		e.score.subtract(rightToMove)
+	if e.position.color == Black {
 		e.score.midgame = -e.score.midgame
 		e.score.endgame = -e.score.endgame
 	}
 
-	return e.score.blended(e.phase)
+	return e.score.blended(e.material.phase)
 }
 
 func (e *Evaluation) checkpoint(tag string, metric interface{}) {
