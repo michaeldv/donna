@@ -16,17 +16,13 @@ func (e *Evaluation) analyzeSafety() {
 		}()
 	}
 
-	// Initialize white king fort bitmasks, then evaluate cover and safety.
 	if e.material.flags & whiteKingSafety != 0 {
-		e.safety[White].fort = e.setupFort(White)
 		white[0] = e.kingCover(White)
 		white[1] = e.kingSafety(White)
 		e.score.add(white[0]).add(white[1])
 	}
 
-	// Ditto for the black king.
 	if e.material.flags & blackKingSafety != 0 {
-		e.safety[Black].fort = e.setupFort(Black)
 		black[0] = e.kingCover(Black)
 		black[1] = e.kingSafety(Black)
 		e.score.subtract(black[0]).subtract(black[1])
