@@ -47,7 +47,11 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// the attacking piece?
 	pawns := maskPawn[color][attackSquare] & p.outposts[pawn(color)]
 	for pawns != 0 {
-		gen.add(p.NewMove(pawns.pop(), attackSquare))
+		move := p.NewMove(pawns.pop(), attackSquare)
+		if attackSquare >= A8 || attackSquare <= H1 {
+			move = move.promote(Queen)
+		}
+		gen.add(move)
 	}
 
 	// Rare case when the check could be avoided by en-passant capture.
@@ -74,7 +78,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 		from := to - eight[color]
 		move := p.NewMove(from, to)
 		if to >= A8 || to <= H1 {
-			move.promote(Queen)
+			move = move.promote(Queen)
 		}
 		gen.add(move)
 	}

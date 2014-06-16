@@ -153,3 +153,28 @@ func TestGenerate430(t *testing.T) {
 	white := NewGen(black.MakeMove(black.NewMove(H4, F2)), 0).generateEvasions()
 	expect(t, white.allMoves(), `[Ke1-d1 Ke1xf2 Qf7xf2]`)
 }
+
+// Pawn promotion to block.
+func TestGenerate440(t *testing.T) {
+	game := NewGame().Setup(`Kf1,Qf3,Nf2`, `Ka1,b2`)
+	white := game.Start(White)
+	black := NewGen(white.MakeMove(white.NewMove(F3, D1)), 0).generateEvasions()
+	expect(t, black.allMoves(), `[Ka1-a2 b2-b1Q]`)
+}
+
+
+// Pawn promotion to block or capture.
+func TestGenerate450(t *testing.T) {
+	game := NewGame().Setup(`Kf1,Qf3,Nf2`, `Ka1,b2,c2`)
+	white := game.Start(White)
+	black := NewGen(white.MakeMove(white.NewMove(F3, D1)), 0).generateEvasions()
+	expect(t, black.allMoves(), `[Ka1-a2 c2xd1Q b2-b1Q c2-c1Q]`)
+}
+
+// Pawn promotion to capture.
+func TestGenerate460(t *testing.T) {
+	game := NewGame().Setup(`Kf1,Qf3,Nf2`, `Kc1,c2,d2`)
+	white := game.Start(White)
+	black := NewGen(white.MakeMove(white.NewMove(F3, D1)), 0).generateEvasions()
+	expect(t, black.allMoves(), `[Kc1-b2 c2xd1Q]`)
+}
