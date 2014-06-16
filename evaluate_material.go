@@ -155,7 +155,7 @@ func (e *Evaluation) materialScore() (score Score) {
 	if count[BlackBishop] > 1 {
 		score.subtract(bishopPair)
 		if count[BlackPawn] > 5 {
-			score.subtract(bishopPairPawn.times(count[BlackPawn] - 5))
+			score.add(bishopPairPawn.times(count[BlackPawn] - 5))
 		}
 	}
 
@@ -217,7 +217,7 @@ func (g *Game) warmUpMaterialCache() {
 		if bB > 1 {
 			material.score.subtract(bishopPair)
 			if bP > 5 {
-				material.score.subtract(bishopPairPawn.times(bP - 5))
+				material.score.add(bishopPairPawn.times(bP - 5))
 			}
 		}
 										}
