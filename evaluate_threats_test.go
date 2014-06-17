@@ -13,17 +13,17 @@ func TestEvaluateThreats000(t *testing.T) {
 	baseline, _ := p.EvaluateTest(`Threats`)
 
 	// Bishop not defended by pawn.
-	p = NewGame().Setup(`Kh1,Ne4`, `Ke7,Bf6`).Start(White)
+	p = NewGame().Setup(`Kh1,Ne4,a2`, `Ke7,Bf6,a7`).Start(White)
 	score, _ := p.EvaluateTest(`Threats`)
 	expect(t, score.minus(baseline), bonusMinorThreat[Bishop/2])
 
 	// Bishop and rook not defended by pawn (rook is stronger).
-	p = NewGame().Setup(`Kh1,Ne4`, `Ke7,Bf6,Rd6`).Start(White)
+	p = NewGame().Setup(`Kh1,Ne4,a2`, `Ke7,Bf6,Rd6,a7`).Start(White)
 	score, _ = p.EvaluateTest(`Threats`)
 	expect(t, score.minus(baseline), bonusMinorThreat[Rook/2])
 
 	// Hanging bishop with extra bonus for the right to move.
-	p = NewGame().Setup(`Kh1,Ne4`, `Ka8,Bf6`).Start(White)
+	p = NewGame().Setup(`Kh1,Ne4,a2`, `Ka8,Bf6,a7`).Start(White)
 	score, _ = p.EvaluateTest(`Threats`)
 	expect(t, score.minus(baseline), bonusMinorThreat[Bishop/2].plus(hangingAttack.times(2)))
 }
