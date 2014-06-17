@@ -124,14 +124,6 @@ func (e *Evaluation) run() int {
 		return e.analyzeEndgame()
 	}
 
-	// Initialize king fort bitmasks only when we need them.
-	if e.material.flags & whiteKingSafety != 0 {
-		e.safety[White].fort = e.setupFort(White)
-	}
-	if e.material.flags & blackKingSafety != 0 {
-		e.safety[Black].fort = e.setupFort(Black)
-	}
-
 	e.analyzePawns()
 	e.analyzePieces()
 	e.analyzeThreats()

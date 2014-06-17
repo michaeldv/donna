@@ -27,6 +27,17 @@ func (e *Evaluation) analyzePieces() {
 		^(e.attacks[Pawn] | p.outposts[BlackPawn] | p.outposts[BlackKing]),
 	}
 
+
+	// Initialize king fort bitmasks only when we need them.
+	// TODO: rearrange e.material.flags and invoke e.enemyKingThreat()
+	//       only when necessary.
+	if e.material.flags & whiteKingSafety != 0 {
+		e.safety[White].fort = e.setupFort(White)
+	}
+	if e.material.flags & blackKingSafety != 0 {
+		e.safety[Black].fort = e.setupFort(Black)
+	}
+
 	// Evaluate white pieces except queen.
 	if p.count[Knight] > 0 {
 		white[0] = e.knights(White, maskMobile[White])
