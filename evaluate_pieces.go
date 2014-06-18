@@ -29,35 +29,35 @@ func (e *Evaluation) analyzePieces() {
 
 
 	// Initialize king fort bitmasks only when we need them.
-	// TODO: rearrange e.material.flags and invoke e.enemyKingThreat()
-	//       only when necessary.
-	if e.material.flags & whiteKingSafety != 0 {
+	whiteSafety := (e.material.flags & whiteKingSafety != 0)
+	blackSafety := (e.material.flags & blackKingSafety != 0)
+	if whiteSafety {
 		e.safety[White].fort = e.setupFort(White)
 	}
-	if e.material.flags & blackKingSafety != 0 {
+	if blackSafety {
 		e.safety[Black].fort = e.setupFort(Black)
 	}
 
 	// Evaluate white pieces except queen.
 	if p.count[Knight] > 0 {
-		white[0] = e.knights(White, maskMobile[White])
+		white[0] = e.knights(White, maskMobile[White], blackSafety)
 	}
 	if p.count[Bishop] > 0 {
-		white[1] = e.bishops(White, maskMobile[White])
+		white[1] = e.bishops(White, maskMobile[White], blackSafety)
 	}
 	if p.count[Rook] > 0 {
-		white[2] = e.rooks(White, maskMobile[White])
+		white[2] = e.rooks(White, maskMobile[White], blackSafety)
 	}
 
 	// Evaluate black pieces except queen.
 	if p.count[BlackKnight] > 0 {
-		black[0] = e.knights(Black, maskMobile[Black])
+		black[0] = e.knights(Black, maskMobile[Black], whiteSafety)
 	}
 	if p.count[BlackBishop] > 0 {
-		black[1] = e.bishops(Black, maskMobile[Black])
+		black[1] = e.bishops(Black, maskMobile[Black], whiteSafety)
 	}
 	if p.count[BlackRook] > 0 {
-		black[2] = e.rooks(Black, maskMobile[Black])
+		black[2] = e.rooks(Black, maskMobile[Black], whiteSafety)
 	}
 
 	// Now that we've built all attack bitmasks we can adjust mobility to
@@ -65,11 +65,11 @@ func (e *Evaluation) analyzePieces() {
 	// the queens.
 	if p.count[Queen] > 0 {
 		maskMobile[White] &= ^(e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook])
-		white[3] = e.queens(White, maskMobile[White])
+		white[3] = e.queens(White, maskMobile[White], blackSafety)
 	}
 	if p.count[BlackQueen] > 0 {
 		maskMobile[Black] &= ^(e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook])
-		black[3] = e.queens(Black, maskMobile[Black])
+		black[3] = e.queens(Black, maskMobile[Black], whiteSafety)
 	}
 
 	// Update attack bitmasks for both sides.
@@ -81,7 +81,7 @@ func (e *Evaluation) analyzePieces() {
 	e.score.subtract(black[0]).subtract(black[1]).subtract(black[2]).subtract(black[3])
 }
 
-func (e *Evaluation) knights(color int, maskMobile Bitmask) (score Score) {
+func (e *Evaluation) knights(color int, maskMobile Bitmask, kingSafety bool) (score Score) {
 	p := e.position
 	outposts := p.outposts[knight(color)]
 
@@ -117,12 +117,17 @@ func (e *Evaluation) knights(color int, maskMobile Bitmask) (score Score) {
 		}
 
 		// Track if knight attacks squares around enemy's king.
-		e.enemyKingThreat(knight(color), attacks)
+		if kingSafety {
+			e.enemyKingThreat(knight(color), attacks)
+		}
+
+		// Update attack bitmask for the knight.
+		e.attacks[knight(color)] |= attacks
 	}
 	return
 }
 
-func (e *Evaluation) bishops(color int, maskMobile Bitmask) (score Score) {
+func (e *Evaluation) bishops(color int, maskMobile Bitmask, kingSafety bool) (score Score) {
 	p := e.position
 	outposts := p.outposts[bishop(color)]
 
@@ -178,13 +183,18 @@ func (e *Evaluation) bishops(color int, maskMobile Bitmask) (score Score) {
 		}
 
 		// Track if bishop attacks squares around enemy's king.
-		e.enemyKingThreat(bishop(color), attacks)
+		if kingSafety {
+			e.enemyKingThreat(bishop(color), attacks)
+		}
+
+		// Update attack bitmask for the bishop.
+		e.attacks[bishop(color)] |= attacks
 	}
 	return
 }
 
 
-func (e *Evaluation) rooks(color int, maskMobile Bitmask) (score Score) {
+func (e *Evaluation) rooks(color int, maskMobile Bitmask, kingSafety bool) (score Score) {
 	p := e.position
 	hisPawns := p.outposts[pawn(color)]
 	herPawns := p.outposts[pawn(color^1)]
@@ -245,12 +255,17 @@ func (e *Evaluation) rooks(color int, maskMobile Bitmask) (score Score) {
 		}
 
 		// Track if rook attacks squares around enemy's king.
-		e.enemyKingThreat(rook(color), attacks)
+		if kingSafety {
+			e.enemyKingThreat(rook(color), attacks)
+		}
+
+		// Update attack bitmask for the rook.
+		e.attacks[rook(color)] |= attacks
 	}
 	return
 }
 
-func (e *Evaluation) queens(color int, maskMobile Bitmask) (score Score) {
+func (e *Evaluation) queens(color int, maskMobile Bitmask, kingSafety bool) (score Score) {
 	p := e.position
 	outposts := p.outposts[queen(color)]
 
@@ -276,7 +291,12 @@ func (e *Evaluation) queens(color int, maskMobile Bitmask) (score Score) {
 		}
 
 		// Track if queen attacks squares around enemy's king.
-		e.enemyKingThreat(queen(color), attacks)
+		if kingSafety {
+			e.enemyKingThreat(queen(color), attacks)
+		}
+
+		// Update attack bitmask for the queen.
+		e.attacks[queen(color)] |= attacks
 	}
 	return
 }
@@ -291,7 +311,4 @@ func (e *Evaluation) enemyKingThreat(piece Piece, attacks Bitmask) {
 			e.safety[color].attacks += bits.count()
 		}
 	}
-
-	// Update attack bitmask for the given piece.
-	e.attacks[piece] |= attacks
 }
