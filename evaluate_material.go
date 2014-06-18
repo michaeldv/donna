@@ -5,12 +5,12 @@
 package donna
 
 const (
-	materialDraw       = 0x01 	// King vs. King (with minor)
-	knownEndgame       = 0x02 	// Where we calculate exact score.
-	lesserKnownEndgame = 0x04 	// Where we set score markdown value.
-	whiteKingSafety    = 0x08 	// Should we worry about white king's safety?
-	blackKingSafety    = 0x10 	// Ditto for the black king.
-	oppositeBishops    = 0x20 	// Sides have one bishop on opposite color squares.
+	whiteKingSafety    = 0x01  // Should we worry about white king's safety?
+	blackKingSafety    = 0x02  // Ditto for the black king.
+	materialDraw       = 0x04  // King vs. King (with minor)
+	knownEndgame       = 0x08  // Where we calculate exact score.
+	lesserKnownEndgame = 0x10  // Where we set score markdown value.
+	oppositeBishops    = 0x20  // Sides have one bishop on opposite color squares.
 )
 
 type Function func(*Evaluation) int
