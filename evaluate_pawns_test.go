@@ -57,14 +57,14 @@ func TestEvaluatePawns230(t *testing.T) {
 }
 
 func TestEvaluatePawns240(t *testing.T) {
-	game := NewGame().Setup(`Ke1,e5`, `Ke8,d5`) // Both passing but white is closer.
+	game := NewGame().Setup(`Kd1,e5`, `Ke8,d5`) // Both passing but white is closer.
 	score := game.Start(White).Evaluate()
 
 	expect(t, score, 36)
 }
 
 func TestEvaluatePawns250(t *testing.T) {
-	game := NewGame().Setup(`Ke1,a5`, `Ke8,h7`) // Both passing but white is much closer.
+	game := NewGame().Setup(`Ke1,a5`, `Kd8,h7`) // Both passing but white is much closer.
 	score := game.Start(White).Evaluate()
 
 	expect(t, score, 70)
@@ -72,7 +72,7 @@ func TestEvaluatePawns250(t *testing.T) {
 
 // Isolated pawns.
 func TestEvaluatePawns300(t *testing.T) {
-	game := NewGame().Setup(`Ke1,a5,c5`, `Ke8,f4,h4`) // All pawns are isolated.
+	game := NewGame().Setup(`Ke1,a5,c5`, `Kd8,f4,h4`) // All pawns are isolated.
 	score := game.Start(White).Evaluate()
 
 	expect(t, score, 17)

@@ -4,8 +4,6 @@
 
 package donna
 
-import ()
-
 type PawnEntry struct {
 	hash     uint64 	// Pawn hash key.
 	score    Score 		// Static score for the given pawn structure.
@@ -137,47 +135,50 @@ func (e *Evaluation) pawnPassers(color int) (score Score) {
 		bonus := bonusPassedPawn[row]
 
 		if row > A2H2 {
+			extra := extraPassedPawn[row]
 			nextSquare := square + eight[color]
+
+			// Adjust endgame bonus based on how close the kings are from the
+			// step forward square.
+			bonus.endgame += (distance[p.king[color^1]][nextSquare] * 5 - distance[p.king[color]][nextSquare] * 2) * extra
 
 			// Check if the pawn can step forward.
 			if p.board.isClear(nextSquare) {
+				boost := 0
 
 				// Assume all squares in front of the pawn are under attack.
 				attacked := maskInFront[color][square]
 				protected := attacked & e.attacks[color]
 
-				// Check if the assumption is true and whether there is a queen
-				// or a rook attacking our passed pawn from behind.
+				// Boost the bonus if squares in front of the pawn are protected.
+				if protected == attacked {
+					boost += 6 // All squares.
+				} else if protected.isSet(nextSquare) {
+					boost += 4 // Next square only.
+				}
+
+				// Check who is attacking the squares in front of the pawn including
+				// queen and rook x-ray attacks from behind.
 				enemy := maskInFront[color^1][square] & (p.outposts[queen(color^1)] | p.outposts[rook(color^1)])
 				if enemy == 0 || enemy & p.rookMoves(square) == 0 {
 
 					// Since nobody attacks the pawn from behind adjust the attacked
 					// bitmask to only include squares attacked or occupied by the enemy.
 					attacked &= (e.attacks[color^1] | p.outposts[color^1])
-
 				}
 
-				// Boost the bonus if passed pawn is free to run to the 8th rank
+				// Boost the bonus if passed pawn is free to advance to the 8th rank
 				// or at least safely step forward.
-				extra := 0
 				if attacked == 0 {
-					extra = 10
+					boost += 15 // Remaining squares are not under attack.
 				} else if attacked.isClear(nextSquare) {
-					extra = 6
+					boost += 9  // Next square is not under attack.
 				}
 
-				// Boost the bonus even more if all the squares in front of the
-				// pawn are protected. If not, see if next square is protected.
-				if protected == maskInFront[color][square] {
-					extra += 4
-				} else if protected.isSet(nextSquare) {
-					extra += 2
-				}
-				if extra > 0 {
-					bonus.adjust(extra * extraPassedPawn[row])
+				if boost > 0 {
+					bonus.adjust(extra * boost)
 				}
 			}
-			// TODO: Adjust bonus based on proximity of both kings.
 		}
 		score.add(bonus)
 	}
