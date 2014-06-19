@@ -19,12 +19,18 @@ func (e *Evaluation) analyzeSafety() {
 	if e.material.flags & whiteKingSafety != 0 {
 		white[0] = e.kingCover(White)
 		white[1] = e.kingSafety(White)
+		if e.material.flags & oppositeBishops != 0 && white[0].midgame + white[1].midgame < -valuePawn.midgame/2 {
+			white[1].midgame -= bishopDanger.midgame
+		}
 		e.score.add(white[0]).add(white[1])
 	}
 
 	if e.material.flags & blackKingSafety != 0 {
 		black[0] = e.kingCover(Black)
 		black[1] = e.kingSafety(Black)
+		if e.material.flags & oppositeBishops != 0 && black[0].midgame + black[1].midgame < -valuePawn.midgame/2 {
+			black[1].midgame -= bishopDanger.midgame
+		}
 		e.score.subtract(black[0]).subtract(black[1])
 	}
 }
@@ -107,6 +113,7 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 		score.midgame -= kingSafety[safetyIndex]
 		score.endgame -= bonusKing[1][Flip(color, square)]
 	}
+
 	return
 }
 

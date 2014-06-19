@@ -129,16 +129,40 @@ func (e *Evaluation) run() int {
 	e.analyzeThreats()
 	e.analyzeSafety()
 	e.analyzePassers()
-	if e.material.flags & lesserKnownEndgame != 0 {
+	e.wrapUp()
+
+	return e.score.blended(e.material.phase)
+}
+
+func (e *Evaluation) wrapUp() {
+	flags := e.material.flags
+
+	// Adjust the score if we have lesser known endgame.
+	if flags & lesserKnownEndgame != 0 {
 		e.inspectEndgame()
 	}
 
+	// Check if we have drawish endgame with the opposite-colored bishops.
+	if flags & oppositeBishops != 0 && e.material.phase < 256/2 {
+		count := &e.position.count
+		if count[Knight] + count[Rook] + count[Queen] + count[BlackKnight] + count[BlackRook] + count[BlackQueen] == 0 {
+			if pawns := Abs(count[Pawn] - count[BlackPawn]); pawns <= 2 {
+				markdown := 40 / (pawns * pawns + 1)
+				e.score.midgame /= markdown
+				e.score.endgame /= markdown
+			}
+		} else {
+			e.score.midgame /= 2
+			e.score.endgame /= 2
+		}
+	}
+
+	// Flip the sign for black so that blended evaluation score always
+	// represents the white side.
 	if e.position.color == Black {
 		e.score.midgame = -e.score.midgame
 		e.score.endgame = -e.score.endgame
 	}
-
-	return e.score.blended(e.material.phase)
 }
 
 func (e *Evaluation) checkpoint(tag string, metric interface{}) {
