@@ -40,8 +40,8 @@ func (e *Evaluation) fetchMaterial() *MaterialEntry {
 	// Bypass material cache if evaluation tracing is enabled.
 	if material.hash != key || Settings.Trace {
 		material.hash = key
-		material.flags, material.endgame = e.materialFlagsAndFunction(key)
 		material.phase = e.materialPhase()
+		material.flags, material.endgame = e.materialFlagsAndFunction(key)
 		material.score = e.materialScore()
 
 		if Settings.Trace {
@@ -124,6 +124,14 @@ func (e *Evaluation) materialFlagsAndFunction(key uint64) (flags uint8, endgame 
 	} else if key == 0x29F14397EB52ECA8 || key == 0xE79D9EE91A8DAC2E {
 		flags |= lesserKnownEndgame
 		endgame = (*Evaluation).rookAndPawnVsRook
+	}
+
+	// Do we have opposite-colored bishops?
+	if count[Bishop] * count[BlackBishop] == 1 && flags & (materialDraw | knownEndgame) == 0 {
+		bishops := e.position.outposts[Bishop] | e.position.outposts[BlackBishop]
+		if bishops & maskDark != 0 && bishops & ^maskDark != 0 {
+			flags |= oppositeBishops
+		}
 	}
 
 	return
