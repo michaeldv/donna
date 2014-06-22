@@ -31,6 +31,16 @@ var (
 	coverDistance  = Score{    8,    0 } //~~~ Cover pawn row distance from king penalty.
 )
 
+// Weight percentages applied to evaluation scores before computing the overall
+// blended score.
+var weights = []Score{
+	{105, 134}, 	// [0] Mobility.
+	{ 95,  79}, 	// [1] Pawn structure.
+	{ 86, 107}, 	// [2] Passed pawns.
+	{106,   0}, 	// [3] King safety.
+	{120,   0}, 	// [4] Enemy's king safety.
+}
+
 // Piece values for calculating most valueable victim/least valueable attacker,
 // indexed by piece.
 var pieceValue = [14]int{
