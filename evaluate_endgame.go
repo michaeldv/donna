@@ -5,7 +5,11 @@
 package donna
 
 func (e *Evaluation) analyzeEndgame() int {
-	return e.material.endgame(e)
+	score := e.material.endgame(e)
+	if e.position.color == Black {
+		return -score
+	}
+	return score
 }
 
 func (e *Evaluation) inspectEndgame() {
