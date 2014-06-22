@@ -95,7 +95,7 @@ func (e *Evaluation) materialFlagsAndFunction(key uint64) (flags uint8, endgame 
 		endgame = (*Evaluation).knightAndBishopVsBareKing
 
 	// Known endgame: king with some winning material vs. bare king.
-	} else if bareKing && whiteForce + blackForce > 10 {
+	} else if bareKing && Abs(whiteForce - blackForce) > 100 {
 		flags |= knownEndgame
 		endgame = (*Evaluation).winAgainstBareKing
 
