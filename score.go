@@ -9,7 +9,8 @@ type Score struct {
 	endgame int
 }
 
-// Pointer methods that change the receiver in place and return its pointer.
+// Reference methods that change the score receiver in place and return a
+// pointer to the updated score.
 func (s *Score) clear() *Score {
 	s.midgame, s.endgame = 0, 0
 
@@ -30,6 +31,13 @@ func (s *Score) subtract(score Score) *Score {
 	return s
 }
 
+func (s *Score) apply(weight Score) *Score {
+	s.midgame = s.midgame * weight.midgame / 100
+	s.endgame = s.midgame * weight.endgame / 100
+
+	return s
+}
+
 func (s *Score) adjust(n int) *Score {
 	s.midgame += n
 	s.endgame += n
@@ -37,7 +45,7 @@ func (s *Score) adjust(n int) *Score {
 	return s
 }
 
-// Value methods returning new updated receiver.
+// Value methods that return newly updated score value.
 func (s Score) plus(score Score) Score {
 	s.midgame += score.midgame
 	s.endgame += score.endgame
