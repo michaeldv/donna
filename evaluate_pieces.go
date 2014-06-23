@@ -6,17 +6,19 @@ package donna
 
 func (e *Evaluation) analyzePieces() {
 	p := e.position
-	var white, black [4]Score
+	var mobile Score
+	var knight, bishop, rook, queen, mobility Total
 
 	if Settings.Trace {
 		defer func() {
 			var his, her Score
-			e.checkpoint(`+Pieces`,  Total{*his.add(white[0]).add(white[1]).add(white[2]).add(white[3]),
-				*her.add(black[0]).add(black[1]).add(black[2]).add(black[3])})
-			e.checkpoint(`-Knights`, Total{white[0], black[0]})
-			e.checkpoint(`-Bishops`, Total{white[1], black[1]})
-			e.checkpoint(`-Rooks`,   Total{white[2], black[2]})
-			e.checkpoint(`-Queens`,  Total{white[3], black[3]})
+			e.checkpoint(`Mobility`, mobility)
+			e.checkpoint(`+Pieces`,  Total{*his.add(knight.white).add(bishop.white).add(rook.white).add(queen.white),
+				*her.add(knight.black).add(bishop.black).add(rook.black).add(queen.black)})
+			e.checkpoint(`-Knights`, knight)
+			e.checkpoint(`-Bishops`, bishop)
+			e.checkpoint(`-Rooks`,   rook)
+			e.checkpoint(`-Queens`,  queen)
 		}()
 	}
 
@@ -37,24 +39,30 @@ func (e *Evaluation) analyzePieces() {
 
 	// Evaluate white pieces except the queen.
 	if p.count[Knight] > 0 {
-		white[0] = e.knights(White, maskSafeForWhite, isBlackKingThreatened)
+		knight.white, mobile = e.knights(White, maskSafeForWhite, isBlackKingThreatened)
+		mobility.white.add(mobile)
 	}
 	if p.count[Bishop] > 0 {
-		white[1] = e.bishops(White, maskSafeForWhite, isBlackKingThreatened)
+		bishop.white, mobile = e.bishops(White, maskSafeForWhite, isBlackKingThreatened)
+		mobility.white.add(mobile)
 	}
 	if p.count[Rook] > 0 {
-		white[2] = e.rooks(White, maskSafeForWhite, isBlackKingThreatened)
+		rook.white, mobile = e.rooks(White, maskSafeForWhite, isBlackKingThreatened)
+		mobility.white.add(mobile)
 	}
 
 	// Evaluate black pieces except the queen.
 	if p.count[BlackKnight] > 0 {
-		black[0] = e.knights(Black, maskSafeForBlack, isWhiteKingThreatened)
+		knight.black, mobile = e.knights(Black, maskSafeForBlack, isWhiteKingThreatened)
+		mobility.black.add(mobile)
 	}
 	if p.count[BlackBishop] > 0 {
-		black[1] = e.bishops(Black, maskSafeForBlack, isWhiteKingThreatened)
+		bishop.black, mobile = e.bishops(Black, maskSafeForBlack, isWhiteKingThreatened)
+		mobility.black.add(mobile)
 	}
 	if p.count[BlackRook] > 0 {
-		black[2] = e.rooks(Black, maskSafeForBlack, isWhiteKingThreatened)
+		rook.black, mobile = e.rooks(Black, maskSafeForBlack, isWhiteKingThreatened)
+		mobility.black.add(mobile)
 	}
 
 	// Now that we've built all attack bitmasks we can adjust mobility to
@@ -62,23 +70,29 @@ func (e *Evaluation) analyzePieces() {
 	// the queens.
 	if p.count[Queen] > 0 {
 		maskSafeForWhite &= ^(e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook])
-		white[3] = e.queens(White, maskSafeForWhite, isBlackKingThreatened)
+		queen.white, mobile = e.queens(White, maskSafeForWhite, isBlackKingThreatened)
+		mobility.white.add(mobile)
 	}
 	if p.count[BlackQueen] > 0 {
 		maskSafeForBlack &= ^(e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook])
-		black[3] = e.queens(Black, maskSafeForBlack, isWhiteKingThreatened)
+		queen.black, mobile = e.queens(Black, maskSafeForBlack, isWhiteKingThreatened)
+		mobility.black.add(mobile)
 	}
 
 	// Update attack bitmasks for both sides.
 	e.attacks[White] |= e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook] | e.attacks[Queen]
 	e.attacks[Black] |= e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook] | e.attacks[BlackQueen]
 
-	// Update cumulative score based on white vs. black delta.
-	e.score.add(white[0]).add(white[1]).add(white[2]).add(white[3])
-	e.score.subtract(black[0]).subtract(black[1]).subtract(black[2]).subtract(black[3])
+	// Apply weights to the mobility scores.
+	mobility.white.apply(weights[0])
+	mobility.black.apply(weights[0])
+
+	// Update cumulative score based on white vs. black bonuses and mobility.
+	e.score.add(knight.white).add(bishop.white).add(rook.white).add(queen.white).add(mobility.white)
+	e.score.subtract(knight.black).subtract(bishop.black).subtract(rook.black).subtract(queen.black).subtract(mobility.black)
 }
 
-func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score Score) {
+func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	outposts := p.outposts[knight(color)]
 
@@ -87,7 +101,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		attacks := p.attacks(square)
 
 		// Bonus for knight's mobility.
-		score.add(mobilityKnight[(attacks & maskSafe).count()])
+		mobility.add(mobilityKnight[(attacks & maskSafe).count()])
 
 		// Penalty if knight is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
@@ -124,7 +138,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 	return
 }
 
-func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score Score) {
+func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	outposts := p.outposts[bishop(color)]
 
@@ -133,7 +147,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for bishop's mobility
-		score.add(mobilityBishop[(attacks & maskSafe).count()])
+		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
 
 		// Penalty for light/dark square bishop and matching pawns.
 		if count := (Same(square) & p.outposts[pawn(color)]).count(); count > 0 {
@@ -191,7 +205,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 }
 
 
-func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score Score) {
+func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	hisPawns := p.outposts[pawn(color)]
 	herPawns := p.outposts[pawn(color^1)]
@@ -206,8 +220,8 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for rook's mobility
-		mobility := (attacks & maskSafe).count()
-		score.add(mobilityRook[mobility])
+		safeSquares := (attacks & maskSafe).count()
+		mobility.add(mobilityRook[safeSquares])
 
 		// Penalty if rook is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
@@ -232,7 +246,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 
 		// Middle game penalty if a rook is boxed. Extra penalty if castle
 		// rights have been lost.
-		if mobility <= 3 || !isFileAjar {
+		if safeSquares <= 3 || !isFileAjar {
 			kingSquare := p.king[color]
 			kingColumn := Col(kingSquare)
 
@@ -262,7 +276,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 	return
 }
 
-func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score Score) {
+func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	outposts := p.outposts[queen(color)]
 
@@ -275,7 +289,7 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened b
 		attacks := p.attacks(square)
 
 		// Bonus for queen's mobility.
-		score.add(mobilityQueen[Min(15, (attacks & maskSafe).count())])
+		mobility.add(mobilityQueen[Min(15, (attacks & maskSafe).count())])
 
 		// Penalty if queen is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
