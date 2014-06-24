@@ -22,6 +22,7 @@ func (e *Evaluation) analyzePawns() {
 	// Bypass pawns cache if evaluation tracing is enabled.
 	if e.pawns.hash != key || Settings.Trace {
 		white, black := e.pawnStructure(White), e.pawnStructure(Black)
+		white.apply(weights[1]); black.apply(weights[1]) // <-- Pawn structure weight.
 		e.pawns.score.clear().add(white).subtract(black)
 		e.pawns.hash = key
 		if Settings.Trace {
@@ -42,7 +43,7 @@ func (e *Evaluation) analyzePassers() {
 	}
 
 	white, black = e.pawnPassers(White), e.pawnPassers(Black)
-
+	white.apply(weights[2]); black.apply(weights[2]) // <-- Passed pawns weight.
 	e.score.add(white).subtract(black)
 }
 

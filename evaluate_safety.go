@@ -5,33 +5,46 @@
 package donna
 
 func (e *Evaluation) analyzeSafety() {
-	var white, black [2]Score
+	var cover, safety Total
+	color := e.position.color
 
 	if Settings.Trace {
 		defer func() {
 			var his, her Score
-			e.checkpoint(`+King`, Total{*his.add(white[0]).add(white[1]), *her.add(black[0]).add(black[1])})
-			e.checkpoint(`-Cover`, Total{white[0], black[0]})
-			e.checkpoint(`-Safety`, Total{white[1], black[1]})
+			e.checkpoint(`+King`, Total{*his.add(cover.white).add(safety.white), *her.add(cover.black).add(safety.black)})
+			e.checkpoint(`-Cover`, cover)
+			e.checkpoint(`-Safety`, safety)
 		}()
 	}
 
 	if e.material.flags & whiteKingSafety != 0 {
-		white[0] = e.kingCover(White)
-		white[1] = e.kingSafety(White)
-		if e.material.flags & oppositeBishops != 0 && white[0].midgame + white[1].midgame < -valuePawn.midgame/2 {
-			white[1].midgame -= bishopDanger.midgame
+		cover.white = e.kingCover(White)
+		safety.white = e.kingSafety(White)
+		if e.material.flags & oppositeBishops != 0 && cover.white.midgame + safety.white.midgame < -valuePawn.midgame/2 {
+			safety.white.midgame -= bishopDanger.midgame
 		}
-		e.score.add(white[0]).add(white[1])
+
+		// Apply weights by mapping White (0) to our king safety index
+		// (3), and Black (1) to enemy's king safety index (4).
+		cover.white.apply(weights[3+color])
+		safety.white.apply(weights[3+color])
+
+		e.score.add(cover.white).add(safety.white)
 	}
 
 	if e.material.flags & blackKingSafety != 0 {
-		black[0] = e.kingCover(Black)
-		black[1] = e.kingSafety(Black)
-		if e.material.flags & oppositeBishops != 0 && black[0].midgame + black[1].midgame < -valuePawn.midgame/2 {
-			black[1].midgame -= bishopDanger.midgame
+		cover.black = e.kingCover(Black)
+		safety.black = e.kingSafety(Black)
+		if e.material.flags & oppositeBishops != 0 && cover.black.midgame + safety.black.midgame < -valuePawn.midgame/2 {
+			safety.black.midgame -= bishopDanger.midgame
 		}
-		e.score.subtract(black[0]).subtract(black[1])
+
+		// Apply weights by mapping Black (1) to our king safety index
+		// (3), and White (0) to enemy's king safety index (4).
+		cover.black.apply(weights[4-color])
+		safety.black.apply(weights[4-color])
+
+		e.score.subtract(cover.black).subtract(safety.black)
 	}
 }
 
