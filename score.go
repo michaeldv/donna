@@ -33,7 +33,7 @@ func (s *Score) subtract(score Score) *Score {
 
 func (s *Score) apply(weight Score) *Score {
 	s.midgame = s.midgame * weight.midgame / 100
-	s.endgame = s.midgame * weight.endgame / 100
+	s.endgame = s.endgame * weight.endgame / 100
 
 	return s
 }
