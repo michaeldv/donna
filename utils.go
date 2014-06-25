@@ -49,9 +49,13 @@ func Flip(color, square int) int {
 	return square
 }
 
-// Returns bitmask with light or dark squares set, based on color of the square.
-func Same(square int) Bitmask {
-	return (bit[square] & maskDark) | (bit[square] & ^maskDark)
+// Returns a bitmask with light or dark squares set matching the color of the
+// square.
+func SameAs(square int) Bitmask {
+	if bit[square] & maskDark != 0 {
+		return maskDark
+	}
+	return ^maskDark
 }
 
 func IsBetween(from, to, between int) bool {

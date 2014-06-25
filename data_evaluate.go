@@ -15,7 +15,7 @@ var (
 	pawnBlocked    = Score{    2,    6 } //~~~
 	bishopPair     = Score{   43,   56 } // Bonus for a pair of bishops.
 	bishopPairPawn = Score{    4,    0 } // Penalty for each 5+ pawn when we've got a pair of bishops.
-	bishopPawn     = Score{    4,    6 } // Penalty for each pawn on the same colored square as a bishop.
+	bishopPawn     = Score{    2,    6 } // Penalty for each pawn on the same colored square as a bishop.
 	bishopBoxed    = Score{   73,    0 } //~~~
 	bishopDanger   = Score{   35,    0 } // Bonus when king is under attack and sides have opposite-colored bishops.
 	rookOnPawn     = Score{    5,   14 }

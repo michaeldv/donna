@@ -149,9 +149,13 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		// Bonus for bishop's mobility
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
 
-		// Penalty for light/dark square bishop and matching pawns.
-		if count := (Same(square) & p.outposts[pawn(color)]).count(); count > 0 {
-			score.subtract(bishopPawn)
+		// Penalty for light/dark-colored pawns restricting a bishop.
+		// This applies to single bishop only since pawns blocking a
+		// pair of bishops are penalized when evaluating material.
+		if p.count[bishop(color)] == 1 {
+			if count := (SameAs(square) & p.outposts[pawn(color)]).count(); count > 0 {
+				score.subtract(bishopPawn.times(count))
+			}
 		}
 
 		// Penalty if bishop is attacked by enemy's pawn.
