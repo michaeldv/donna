@@ -72,24 +72,6 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 	return eval.run(), eval.metrics
 }
 
-// Evaluation method for use in tests. It invokes evaluation that captures the
-// metrics, and returns the requested metric score.
-func (p *Position) EvaluateTest(tag string) (score Score, metrics Metrics) {
-	_, metrics = p.EvaluateWithTrace()
-
-	switch metrics[tag].(type) {
-	case Score:
-		score = metrics[tag].(Score)
-	case Total:
-		if p.color == White {
-			score = metrics[tag].(Total).white
-		} else {
-			score = metrics[tag].(Total).black
-		}
-	}
-	return
-}
-
 func (e *Evaluation) init(p *Position) *Evaluation {
 	eval = Evaluation{}
 	e.position = p
@@ -121,7 +103,7 @@ func (e *Evaluation) run() int {
 		return 0
 	}
 	if e.material.flags & knownEndgame != 0 {
-		return e.analyzeEndgame()
+		return e.evaluateEndgame()
 	}
 
 	e.analyzePawns()
@@ -167,15 +149,4 @@ func (e *Evaluation) wrapUp() {
 
 func (e *Evaluation) checkpoint(tag string, metric interface{}) {
 	e.metrics[tag] = metric
-}
-
-func (e *Evaluation) setupFort(color int) (bitmask Bitmask) {
-	bitmask = e.attacks[king(color)] | e.attacks[king(color)].pushed(color)
-	switch e.position.king[color] {
-	case A1, A8:
-		bitmask |= e.attacks[king(color)] << 1
-	case H1, H8:
-		bitmask |= e.attacks[king(color)] >> 1
-	}
-	return
 }

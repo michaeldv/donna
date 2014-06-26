@@ -316,6 +316,7 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened b
 	return
 }
 
+// Updates safety data used later on when evaluating king safety.
 func (e *Evaluation) enemyKingThreat(piece Piece, attacks Bitmask) {
 	color := piece.color() ^ 1
 
@@ -326,4 +327,18 @@ func (e *Evaluation) enemyKingThreat(piece Piece, attacks Bitmask) {
 			e.safety[color].attacks += bits.count()
 		}
 	}
+}
+
+// Initializes the fort bitmask around king's square. For example, for a king on
+// G1 the bitmask covers F1,F2,F3, G2,G3, and H1,H2,H3. For a king on a corner
+// square, say H1, the bitmask covers F1,F2, G1,G2,G3, and H2,H3.
+func (e *Evaluation) setupFort(color int) (bitmask Bitmask) {
+	bitmask = e.attacks[king(color)] | e.attacks[king(color)].pushed(color)
+	switch e.position.king[color] {
+	case A1, A8:
+		bitmask |= e.attacks[king(color)] << 1
+	case H1, H8:
+		bitmask |= e.attacks[king(color)] >> 1
+	}
+	return
 }
