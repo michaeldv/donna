@@ -23,8 +23,12 @@ type Game struct {
 	goodMoves  [14][64]int
 }
 
+// Use single statically allocated variable.
+var game Game
+
 func NewGame() *Game {
-	return new(Game)
+	game = Game{}
+	return &game
 }
 
 func (game *Game) Setup(white, black string) *Game {
@@ -76,20 +80,9 @@ func (game *Game) InitialPosition() *Game {
 		`Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
 }
 
-func (game *Game) getReady() *Game {
-	rootNode = node
-	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
-	game.bestLine = [MaxPly][MaxPly]Move{}
-	game.bestLength = [MaxPly]int{}
-	game.goodMoves = [14][64]int{}
-	game.killers = [MaxPly][2]Move{}
-
-	return game
-}
-
 func (game *Game) Start(color int) *Position {
-	tree, node = [1024]Position{}, 0
-	game.getReady()
+	tree, node, rootNode = [1024]Position{}, 0, 0
+	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
 	return NewPosition(game, game.pieces, color)
 }
@@ -105,7 +98,6 @@ func (game *Game) Think(requestedDepth int, position *Position) Move {
 		return move
 	}
 
-	game.getReady()
 	move, score, status := Move(0), 0, InProgress
 
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
