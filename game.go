@@ -31,6 +31,21 @@ func NewGame() *Game {
 	return &game
 }
 
+func NewGameEx(args ...string) *Game {
+	game = Game{}
+
+	switch len(args) {
+	case 0:
+		return game.InitialPosition()
+	case 1:
+		// FEN string
+	case 2:
+		return game.Setup(args[0], args[1])
+	}
+
+	return &game
+}
+
 func (game *Game) Setup(white, black string) *Game {
 	re := regexp.MustCompile(`\W+`)
 	whiteSide, blackSide := re.Split(white, -1), re.Split(black, -1)
