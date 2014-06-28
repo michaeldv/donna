@@ -6,7 +6,6 @@ package donna
 
 import (
 	`fmt`
-	// `regexp`
 	`strings`
 	`time`
 )
@@ -27,13 +26,6 @@ type Game struct {
 // Use single statically allocated variable.
 var game Game
 
-// func NewGame() *Game {
-// 	game = Game{}
-// 	game.clearCaches()
-
-// 	return &game
-// }
-
 // We have two ways to initialize the game: 1) pass FEN string, and 2) specify
 // white and black pieces using regular chess notation.
 //
@@ -42,7 +34,8 @@ var game Game
 // much more useful when writing tests from memory.
 func NewGame(args ...string) *Game {
 	game = Game{}
-	game.clearCaches()
+	pawnCache = [8192]PawnEntry{}
+	materialCache = [8192]MaterialEntry{}
 
 	switch len(args) {
 	case 0: // Initial position.
@@ -56,70 +49,12 @@ func NewGame(args ...string) *Game {
 	return &game
 }
 
-// func (game *Game) Setup(white, black string) *Game {
-// 	re := regexp.MustCompile(`\W+`)
-// 	whiteSide, blackSide := re.Split(white, -1), re.Split(black, -1)
-// 	return game.SetupSide(whiteSide, 0).SetupSide(blackSide, 1)
-// }
-
-
 func (game *Game) CacheSize(megaBytes float32) *Game {
 	game.cache = NewCache(megaBytes)
 	game.warmUpMaterialCache()
 
 	return game
 }
-
-func (game *Game) clearCaches() *Game {
-	pawnCache = [8192]PawnEntry{}
-	materialCache = [8192]MaterialEntry{}
-
-	return game
-}
-
-// func (game *Game) SetupSide(moves []string, color int) *Game {
-// 	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])`)
-
-// 	for _, move := range moves {
-// 		arr := re.FindStringSubmatch(move)
-// 		if len(arr) == 0 {
-// 			fmt.Printf("Invalid move '%s' for %s\n", move, C(color))
-// 			return game
-// 		}
-// 		name, col, row := arr[1], int(arr[2][0]-'a'), int(arr[3][0]-'1')
-
-// 		var piece Piece
-// 		switch name {
-// 		case `K`:
-// 			piece = king(color)
-// 		case `Q`:
-// 			piece = queen(color)
-// 		case `R`:
-// 			piece = rook(color)
-// 		case `B`:
-// 			piece = bishop(color)
-// 		case `N`:
-// 			piece = knight(color)
-// 		default:
-// 			piece = pawn(color)
-// 		}
-// 		game.pieces[Square(row, col)] = piece
-// 	}
-// 	return game
-// }
-
-// // `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
-// func (game *Game) InitialPosition() *Game {
-// 	return game.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
-// 		`Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
-// }
-
-// func (game *Game) Start(color int) *Position {
-// 	tree, node, rootNode = [1024]Position{}, 0, 0
-// 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
-
-// 	return NewPosition(game, game.pieces, color)
-// }
 
 // The color parameter is optional.
 func (game *Game) Start(args ...int) *Position {

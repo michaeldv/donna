@@ -30,46 +30,6 @@ type Position struct {
 	tally        Score       // Positional valuation score based on PST.
 }
 
-// func NewPosition(game *Game, pieces [64]Piece, color int) *Position {
-// 	tree[node] = Position{game: game, pieces: pieces, color: color}
-// 	p := &tree[node]
-
-// 	p.castles = castleKingside[White] | castleQueenside[White] |
-// 		castleKingside[Black] | castleQueenside[Black]
-
-// 	if p.pieces[E1] != King || p.pieces[H1] != Rook {
-// 		p.castles &= ^castleKingside[White]
-// 	}
-// 	if p.pieces[E1] != King || p.pieces[A1] != Rook {
-// 		p.castles &= ^castleQueenside[White]
-// 	}
-
-// 	if p.pieces[E8] != BlackKing || p.pieces[H8] != BlackRook {
-// 		p.castles &= ^castleKingside[Black]
-// 	}
-// 	if p.pieces[E8] != BlackKing || p.pieces[A8] != BlackRook {
-// 		p.castles &= ^castleQueenside[Black]
-// 	}
-
-// 	for square, piece := range p.pieces {
-// 		if piece != 0 {
-// 			p.outposts[piece].set(square)
-// 			p.outposts[piece.color()].set(square)
-// 			p.count[piece]++
-// 			if piece.isKing() {
-// 				p.king[piece.color()] = square
-// 			}
-// 		}
-// 	}
-
-// 	p.reversible = true
-// 	p.board = p.outposts[White] | p.outposts[Black]
-// 	p.hash, p.hashPawns, p.hashMaterial = p.polyglot()
-// 	p.tally = p.valuation()
-
-// 	return p
-// }
-
 func NewPosition(game *Game, white, black string, color int) *Position {
 	tree[node] = Position{game: game, color: color}
 	p := &tree[node]
@@ -78,9 +38,7 @@ func NewPosition(game *Game, white, black string, color int) *Position {
 	whitePieces, blackPieces := re.Split(white, -1), re.Split(black, -1)
 	p.setupSide(whitePieces, White).setupSide(blackPieces, Black)
 
-	p.castles = castleKingside[White] | castleQueenside[White] |
-		castleKingside[Black] | castleQueenside[Black]
-
+	p.castles = castleKingside[White] | castleQueenside[White] | castleKingside[Black] | castleQueenside[Black]
 	if p.pieces[E1] != King || p.pieces[H1] != Rook {
 		p.castles &= ^castleKingside[White]
 	}
@@ -126,18 +84,12 @@ func (p *Position) setupSide(moves []string, color int) *Position {
 
 		var piece Piece
 		switch name {
-		case `K`:
-			piece = king(color)
-		case `Q`:
-			piece = queen(color)
-		case `R`:
-			piece = rook(color)
-		case `B`:
-			piece = bishop(color)
-		case `N`:
-			piece = knight(color)
-		default:
-			piece = pawn(color)
+		case `K`: piece = king(color)
+		case `Q`: piece = queen(color)
+		case `R`: piece = rook(color)
+		case `B`: piece = bishop(color)
+		case `N`: piece = knight(color)
+		default:  piece = pawn(color)
 		}
 		p.pieces[Square(row, col)] = piece
 	}
