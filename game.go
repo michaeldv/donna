@@ -5,9 +5,9 @@
 package donna
 
 import (
-	`bytes`
 	`fmt`
-	`regexp`
+	// `regexp`
+	`strings`
 	`time`
 )
 
@@ -16,6 +16,7 @@ type Game struct {
 	qnodes     int
 	token      uint8
 	cache      Cache
+	notation   string
 	pieces     [64]Piece
 	bestLine   [MaxPly][MaxPly]Move
 	bestLength [MaxPly]int
@@ -26,31 +27,41 @@ type Game struct {
 // Use single statically allocated variable.
 var game Game
 
-func NewGame() *Game {
-	game = Game{}
-	return &game
-}
+// func NewGame() *Game {
+// 	game = Game{}
+// 	game.clearCaches()
 
-func NewGameEx(args ...string) *Game {
+// 	return &game
+// }
+
+// We have two ways to initialize the game: 1) pass FEN string, and 2) specify
+// white and black pieces using regular chess notation.
+//
+// In latter case we need to tell who gets to move first when starting the game.
+// The second option is a bit less pricise (ex. no en-passant square) but it is
+// much more useful when writing tests from memory.
+func NewGame(args ...string) *Game {
 	game = Game{}
+	game.clearCaches()
 
 	switch len(args) {
-	case 0:
-		return game.InitialPosition()
-	case 1:
-		// FEN string
-	case 2:
-		return game.Setup(args[0], args[1])
+	case 0: // Initial position.
+		game.notation = `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
+	case 1: // Genuine FEN.
+		game.notation = args[0]
+	case 2: // Standard algebraic notation (white and black).
+		game.notation = args[0] + `:` + args[1]
 	}
 
 	return &game
 }
 
-func (game *Game) Setup(white, black string) *Game {
-	re := regexp.MustCompile(`\W+`)
-	whiteSide, blackSide := re.Split(white, -1), re.Split(black, -1)
-	return game.SetupSide(whiteSide, 0).SetupSide(blackSide, 1)
-}
+// func (game *Game) Setup(white, black string) *Game {
+// 	re := regexp.MustCompile(`\W+`)
+// 	whiteSide, blackSide := re.Split(white, -1), re.Split(black, -1)
+// 	return game.SetupSide(whiteSide, 0).SetupSide(blackSide, 1)
+// }
+
 
 func (game *Game) CacheSize(megaBytes float32) *Game {
 	game.cache = NewCache(megaBytes)
@@ -59,47 +70,71 @@ func (game *Game) CacheSize(megaBytes float32) *Game {
 	return game
 }
 
-func (game *Game) SetupSide(moves []string, color int) *Game {
-	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])`)
+func (game *Game) clearCaches() *Game {
+	pawnCache = [8192]PawnEntry{}
+	materialCache = [8192]MaterialEntry{}
 
-	for _, move := range moves {
-		arr := re.FindStringSubmatch(move)
-		if len(arr) == 0 {
-			fmt.Printf("Invalid move '%s' for %s\n", move, C(color))
-			return game
-		}
-		name, col, row := arr[1], int(arr[2][0]-'a'), int(arr[3][0]-'1')
-
-		var piece Piece
-		switch name {
-		case `K`:
-			piece = king(color)
-		case `Q`:
-			piece = queen(color)
-		case `R`:
-			piece = rook(color)
-		case `B`:
-			piece = bishop(color)
-		case `N`:
-			piece = knight(color)
-		default:
-			piece = pawn(color)
-		}
-		game.pieces[Square(row, col)] = piece
-	}
 	return game
 }
 
-func (game *Game) InitialPosition() *Game {
-	return game.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
-		`Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
+// func (game *Game) SetupSide(moves []string, color int) *Game {
+// 	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])`)
+
+// 	for _, move := range moves {
+// 		arr := re.FindStringSubmatch(move)
+// 		if len(arr) == 0 {
+// 			fmt.Printf("Invalid move '%s' for %s\n", move, C(color))
+// 			return game
+// 		}
+// 		name, col, row := arr[1], int(arr[2][0]-'a'), int(arr[3][0]-'1')
+
+// 		var piece Piece
+// 		switch name {
+// 		case `K`:
+// 			piece = king(color)
+// 		case `Q`:
+// 			piece = queen(color)
+// 		case `R`:
+// 			piece = rook(color)
+// 		case `B`:
+// 			piece = bishop(color)
+// 		case `N`:
+// 			piece = knight(color)
+// 		default:
+// 			piece = pawn(color)
+// 		}
+// 		game.pieces[Square(row, col)] = piece
+// 	}
+// 	return game
+// }
+
+// // `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
+// func (game *Game) InitialPosition() *Game {
+// 	return game.Setup(`Ra1,Nb1,Bc1,Qd1,Ke1,Bf1,Ng1,Rh1,a2,b2,c2,d2,e2,f2,g2,h2`,
+// 		`Ra8,Nb8,Bc8,Qd8,Ke8,Bf8,Ng8,Rh8,a7,b7,c7,d7,e7,f7,g7,h7`)
+// }
+
+// func (game *Game) Start(color int) *Position {
+// 	tree, node, rootNode = [1024]Position{}, 0, 0
+// 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
+
+// 	return NewPosition(game, game.pieces, color)
+// }
+
+// The color parameter is optional.
+func (game *Game) Start(args ...int) *Position {
+	tree, node, rootNode = [1024]Position{}, 0, 0
+
+	// Was the game started with FEN or algebraic notation?
+	sides := strings.Split(game.notation, `:`)
+	if len(sides) == 2 {
+		return NewPosition(game, sides[White], sides[Black], args[0])
+	}
+	return NewPositionFromFEN(game, game.notation)
 }
 
-func (game *Game) Start(color int) *Position {
-	tree, node, rootNode = [1024]Position{}, 0, 0
-	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
-
-	return NewPosition(game, game.pieces, color)
+func (game *Game) Position() *Position {
+	return &tree[node]
 }
 
 func (game *Game) Think(requestedDepth int, position *Position) Move {
@@ -112,6 +147,15 @@ func (game *Game) Think(requestedDepth int, position *Position) Move {
 		fmt.Printf("Book move: %s\n", move)
 		return move
 	}
+
+	// Reset principal variation, killer moves and move history, and update
+	// cache token to ignore existing cache entries.
+	rootNode = node
+	game.bestLine = [MaxPly][MaxPly]Move{}
+	game.bestLength = [MaxPly]int{}
+	game.killers = [MaxPly][2]Move{}
+	game.goodMoves = [14][64]int{}
+	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
 	move, score, status := Move(0), 0, InProgress
 
@@ -204,19 +248,5 @@ func (game *Game) good(move Move) int {
 }
 
 func (game *Game) String() string {
-	buffer := bytes.NewBufferString("  a b c d e f g h\n")
-	for row := 7; row >= 0; row-- {
-		buffer.WriteByte('1' + byte(row))
-		for col := 0; col <= 7; col++ {
-			square := Square(row, col)
-			buffer.WriteByte(' ')
-			if piece := game.pieces[square]; piece != 0 {
-				buffer.WriteString(piece.String())
-			} else {
-				buffer.WriteString("\u22C5")
-			}
-		}
-		buffer.WriteByte('\n')
-	}
-	return buffer.String()
+	return game.Position().String()
 }
