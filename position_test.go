@@ -7,7 +7,7 @@ package donna
 import `testing`
 
 func TestPosition010(t *testing.T) {
-	p := NewGame().Setup(`Ke1,e2`, `Kg8,d7,f7`).Start(White)
+	p := NewGame(`Ke1,e2`, `Kg8,d7,f7`).Start(White)
 	expect(t, p.enpassant, 0)
 
 	p = p.MakeMove(p.NewMove(E2, E4))
@@ -25,94 +25,94 @@ func TestPosition010(t *testing.T) {
 
 // Castle tests.
 func TestPosition030(t *testing.T) { // Everything is OK.
-	p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
+	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
 	kingside, queenside := p.canCastle(p.color)
 	expect(t, kingside, true)
 	expect(t, queenside, true)
 
-	p = NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`).Start(Black)
+	p = NewGame(`Ke1`, `Ke8,Ra8,Rh8`).Start(Black)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, true)
 	expect(t, queenside, true)
 }
 
 func TestPosition040(t *testing.T) { // King checked.
-	p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bg3`).Start(White)
+	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8,Bg3`).Start(White)
 	kingside, queenside := p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke1,Bg6`, `Ke8,Ra8,Rh8`).Start(Black)
+	p = NewGame(`Ke1,Bg6`, `Ke8,Ra8,Rh8`).Start(Black)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 }
 
 func TestPosition050(t *testing.T) { // Attacked square.
-	p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8,Bb3,Bh3`).Start(White)
+	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8,Bb3,Bh3`).Start(White)
 	kingside, queenside := p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke1,Bb6,Bh6`, `Ke8,Ra8,Rh8`).Start(Black)
+	p = NewGame(`Ke1,Bb6,Bh6`, `Ke8,Ra8,Rh8`).Start(Black)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 }
 
 func TestPosition060(t *testing.T) { // Wrong square.
-	p := NewGame().Setup(`Ke1,Ra8,Rh8`, `Ke5`).Start(White)
+	p := NewGame(`Ke1,Ra8,Rh8`, `Ke5`).Start(White)
 	kingside, queenside := p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke2,Ra1,Rh1`, `Ke8`).Start(White)
+	p = NewGame(`Ke2,Ra1,Rh1`, `Ke8`).Start(White)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke4`, `Ke8,Ra1,Rh1`).Start(Black)
+	p = NewGame(`Ke4`, `Ke8,Ra1,Rh1`).Start(Black)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke4`, `Ke7,Ra8,Rh8`).Start(Black)
+	p = NewGame(`Ke4`, `Ke7,Ra8,Rh8`).Start(Black)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 }
 
 func TestPosition070(t *testing.T) { // Missing rooks.
-	p := NewGame().Setup(`Ke1`, `Ke8`).Start(White)
+	p := NewGame(`Ke1`, `Ke8`).Start(White)
 	kingside, queenside := p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke1`, `Ke8`).Start(Black)
+	p = NewGame(`Ke1`, `Ke8`).Start(Black)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 }
 
 func TestPosition080(t *testing.T) { // Rooks on wrong squares.
-	p := NewGame().Setup(`Ke1,Rb1`, `Ke8`).Start(White)
+	p := NewGame(`Ke1,Rb1`, `Ke8`).Start(White)
 	kingside, queenside := p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke1,Rb1,Rh1`, `Ke8`).Start(White)
+	p = NewGame(`Ke1,Rb1,Rh1`, `Ke8`).Start(White)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, true)
 	expect(t, queenside, false)
 
-	p = NewGame().Setup(`Ke1,Ra1,Rf1`, `Ke8`).Start(White)
+	p = NewGame(`Ke1,Ra1,Rf1`, `Ke8`).Start(White)
 	kingside, queenside = p.canCastle(p.color)
 	expect(t, kingside, false)
 	expect(t, queenside, true)
 }
 
 func TestPosition081(t *testing.T) { // Rook has moved.
-	p := NewGame().Setup(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
+	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
 	p = p.MakeMove(p.NewMove(A1, A2))
 	p = p.MakeMove(p.NewMove(E8, E7))
 	p = p.MakeMove(p.NewMove(A2, A1))
@@ -123,7 +123,7 @@ func TestPosition081(t *testing.T) { // Rook has moved.
 }
 
 func TestPosition082(t *testing.T) { // King has moved.
-	p := NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8`).Start(Black)
+	p := NewGame(`Ke1`, `Ke8,Ra8,Rh8`).Start(Black)
 	p = p.MakeMove(p.NewMove(E8, E7))
 	p = p.MakeMove(p.NewMove(E1, E2))
 	p = p.MakeMove(p.NewMove(E7, E8))
@@ -134,7 +134,7 @@ func TestPosition082(t *testing.T) { // King has moved.
 }
 
 func TestPosition083(t *testing.T) { // Rook is taken.
-	p := NewGame().Setup(`Ke1,Nb6`, `Ke8,Ra8,Rh8`).Start(White)
+	p := NewGame(`Ke1,Nb6`, `Ke8,Ra8,Rh8`).Start(White)
 	p = p.MakeMove(p.NewMove(B6, A8))
 
 	kingside, queenside := p.canCastle(Black)
@@ -144,7 +144,7 @@ func TestPosition083(t *testing.T) { // Rook is taken.
 
 // Blocking kingside knight.
 func TestPosition084(t *testing.T) {
-	p := NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8,Ng8`).Start(Black)
+	p := NewGame(`Ke1`, `Ke8,Ra8,Rh8,Ng8`).Start(Black)
 
 	kingside, queenside := p.canCastle(Black)
 	expect(t, kingside, false)
@@ -153,7 +153,7 @@ func TestPosition084(t *testing.T) {
 
 // Blocking queenside knight.
 func TestPosition085(t *testing.T) {
-	p := NewGame().Setup(`Ke1`, `Ke8,Ra8,Rh8,Nb8`).Start(Black)
+	p := NewGame(`Ke1`, `Ke8,Ra8,Rh8,Nb8`).Start(Black)
 
 	kingside, queenside := p.canCastle(Black)
 	expect(t, kingside, true)
@@ -162,7 +162,7 @@ func TestPosition085(t *testing.T) {
 
 // Straight repetition.
 func TestPosition100(t *testing.T) {
-	p := NewGame().InitialPosition().Start(White) // Initial 1.
+	p := NewGame().Start() // Initial 1.
 	p = p.MakeMove(p.NewMove(G1, F3))
 	p = p.MakeMove(p.NewMove(G8, F6)) // 1.
 	expect(t, p.isRepetition(), false)
@@ -182,7 +182,7 @@ func TestPosition100(t *testing.T) {
 
 // Repetition with some moves in between.
 func TestPosition110(t *testing.T) {
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(E7, E5))
 
@@ -213,7 +213,7 @@ func TestPosition110(t *testing.T) {
 
 // Irreversible 0-0.
 func TestPosition120(t *testing.T) {
-	p := NewGame().Setup(`Ke1,Rh1,h2`, `Ke8,Ra8,a7`).Start(White)
+	p := NewGame(`Ke1,Rh1,h2`, `Ke8,Ra8,a7`).Start(White)
 	p = p.MakeMove(p.NewMove(H2, H4))
 	p = p.MakeMove(p.NewMove(A7, A5)) // 1.
 	p = p.MakeMove(p.NewMove(E1, E2))
@@ -235,7 +235,7 @@ func TestPosition120(t *testing.T) {
 
 // Incremental hash recalculation tests (see book_test.go).
 func TestPosition200(t *testing.T) { // 1. e4
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	hash, hashPawns, hashMaterial := p.polyglot()
 
@@ -250,7 +250,7 @@ func TestPosition200(t *testing.T) { // 1. e4
 }
 
 func TestPosition210(t *testing.T) { // 1. e4 d5
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(D7, D5))
 	hash, hashPawns, hashMaterial := p.polyglot()
@@ -266,7 +266,7 @@ func TestPosition210(t *testing.T) { // 1. e4 d5
 }
 
 func TestPosition220(t *testing.T) { // 1. e4 d5 2. e5
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, E5))
@@ -283,7 +283,7 @@ func TestPosition220(t *testing.T) { // 1. e4 d5 2. e5
 }
 
 func TestPosition230(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, E5))
@@ -301,7 +301,7 @@ func TestPosition230(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 }
 
 func TestPosition240(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, E5))
@@ -320,7 +320,7 @@ func TestPosition240(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castl
 }
 
 func TestPosition250(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, E5))
@@ -340,7 +340,7 @@ func TestPosition250(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black C
 }
 
 func TestPosition260(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpassant
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(A2, A4))
 	p = p.MakeMove(p.NewMove(B7, B5))
 	p = p.MakeMove(p.NewMove(H2, H4))
@@ -359,7 +359,7 @@ func TestPosition260(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- En
 }
 
 func TestPosition270(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(A2, A4))
 	p = p.MakeMove(p.NewMove(B7, B5))
 	p = p.MakeMove(p.NewMove(H2, H4))
@@ -381,7 +381,7 @@ func TestPosition270(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 
 
 // Incremental material hash calculation.
 func TestPosition280(t *testing.T) { // 1. e4 d5 2. e4xd5
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, D5))
 	_, _, hashMaterial := p.polyglot()
@@ -390,7 +390,7 @@ func TestPosition280(t *testing.T) { // 1. e4 d5 2. e4xd5
 }
 
 func TestPosition281(t *testing.T) { // 1. e4 d5 2. e4xd5 Ng8-f6 3. Nb1-c3 Nf6xd5
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, D5)); p = p.MakeMove(p.NewMove(G8, F6))
 	p = p.MakeMove(p.NewMove(B1, C3)); p = p.MakeMove(p.NewMove(F6, D5))
@@ -400,7 +400,7 @@ func TestPosition281(t *testing.T) { // 1. e4 d5 2. e4xd5 Ng8-f6 3. Nb1-c3 Nf6xd
 }
 
 func TestPosition282(t *testing.T) { // 1. e4 d5 2. e4xd5 Ng8-f6 3. Nb1-c3 Nf6xd5 4. Nc3xd5 Qd8xd5
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E4, D5)); p = p.MakeMove(p.NewMove(G8, F6))
 	p = p.MakeMove(p.NewMove(B1, C3)); p = p.MakeMove(p.NewMove(F6, D5))
@@ -411,7 +411,7 @@ func TestPosition282(t *testing.T) { // 1. e4 d5 2. e4xd5 Ng8-f6 3. Nb1-c3 Nf6xd
 }
 
 func TestPosition283(t *testing.T) { // Pawn promotion.
-	p := NewGame().Setup(`Kh1`, `Ka8,a2,b7`).Start(Black)
+	p := NewGame(`Kh1`, `Ka8,a2,b7`).Start(Black)
 	p = p.MakeMove(p.NewMove(A2, A1).promote(Rook))
 	_, _, hashMaterial := p.polyglot()
 
@@ -419,7 +419,7 @@ func TestPosition283(t *testing.T) { // Pawn promotion.
 }
 
 func TestPosition284(t *testing.T) { // Last pawn promotion.
-	p := NewGame().Setup(`Kh1`, `Ka8,a2`).Start(Black)
+	p := NewGame(`Kh1`, `Ka8,a2`).Start(Black)
 	p = p.MakeMove(p.NewMove(A2, A1).promote(Rook))
 	_, _, hashMaterial := p.polyglot()
 
@@ -427,7 +427,7 @@ func TestPosition284(t *testing.T) { // Last pawn promotion.
 }
 
 func TestPosition285(t *testing.T) { // Pawn promotion with capture.
-	p := NewGame().Setup(`Kh1,Nb1,Ng1`, `Ka8,a2,b7`).Start(Black)
+	p := NewGame(`Kh1,Nb1,Ng1`, `Ka8,a2,b7`).Start(Black)
 	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
 	_, _, hashMaterial := p.polyglot()
 
@@ -435,7 +435,7 @@ func TestPosition285(t *testing.T) { // Pawn promotion with capture.
 }
 
 func TestPosition286(t *testing.T) { // Pawn promotion with last piece capture.
-	p := NewGame().Setup(`Kh1,Nb1`, `Ka8,a2,b7`).Start(Black)
+	p := NewGame(`Kh1,Nb1`, `Ka8,a2,b7`).Start(Black)
 	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
 	_, _, hashMaterial := p.polyglot()
 
@@ -443,7 +443,7 @@ func TestPosition286(t *testing.T) { // Pawn promotion with last piece capture.
 }
 
 func TestPosition287(t *testing.T) { // Last pawn promotion with capture.
-	p := NewGame().Setup(`Kh1,Nb1,Ng1`, `Ka8,a2`).Start(Black)
+	p := NewGame(`Kh1,Nb1,Ng1`, `Ka8,a2`).Start(Black)
 	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
 	_, _, hashMaterial := p.polyglot()
 
@@ -451,7 +451,7 @@ func TestPosition287(t *testing.T) { // Last pawn promotion with capture.
 }
 
 func TestPosition288(t *testing.T) { // Last pawn promotion with last piece capture.
-	p := NewGame().Setup(`Kh1,Nb1`, `Ka8,a2`).Start(Black)
+	p := NewGame(`Kh1,Nb1`, `Ka8,a2`).Start(Black)
 	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
 	_, _, hashMaterial := p.polyglot()
 
@@ -459,7 +459,7 @@ func TestPosition288(t *testing.T) { // Last pawn promotion with last piece capt
 }
 
 func TestPosition289(t *testing.T) { // Capture.
-	p := NewGame().Setup(`Kh1,Nc3,Nf3`, `Ka8,d4,e4`).Start(Black)
+	p := NewGame(`Kh1,Nc3,Nf3`, `Ka8,d4,e4`).Start(Black)
 	p = p.MakeMove(p.NewMove(D4, C3))
 	_, _, hashMaterial := p.polyglot()
 
@@ -467,7 +467,7 @@ func TestPosition289(t *testing.T) { // Capture.
 }
 
 func TestPosition290(t *testing.T) { // Last piece capture.
-	p := NewGame().Setup(`Kh1,Nc3`, `Ka8,d4,e4`).Start(Black)
+	p := NewGame(`Kh1,Nc3`, `Ka8,d4,e4`).Start(Black)
 	p = p.MakeMove(p.NewMove(D4, C3))
 	_, _, hashMaterial := p.polyglot()
 
@@ -475,7 +475,7 @@ func TestPosition290(t *testing.T) { // Last piece capture.
 }
 
 func TestPosition291(t *testing.T) { // En-passant capture: 1. e2-e4 e7-e6 2. e4-e5 d7-d5 3. e4xd5
-	p := NewGame().InitialPosition().Start(Black)
+	p := NewGame().Start()
 	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(E7, E6))
 	p = p.MakeMove(p.NewMove(E4, E5)); p = p.MakeMove(p.NewMove(D7, D5))
 	p = p.MakeMove(p.NewMove(E5, D6))
@@ -485,7 +485,7 @@ func TestPosition291(t *testing.T) { // En-passant capture: 1. e2-e4 e7-e6 2. e4
 }
 
 func TestPosition292(t *testing.T) { // Last pawn en-passant capture.
-	p := NewGame().Setup(`Kh1,c2`, `Ka8,d4`).Start(White)
+	p := NewGame(`Kh1,c2`, `Ka8,d4`).Start(White)
 	p = p.MakeMove(p.NewMove(C2, C4)); p = p.MakeMove(p.NewMove(D4, C3))
 	_, _, hashMaterial := p.polyglot()
 
@@ -494,33 +494,33 @@ func TestPosition292(t *testing.T) { // Last pawn en-passant capture.
 
 // Position status.
 func TestPosition300(t *testing.T) {
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	expect(t, p.status(p.NewMove(E2, E4), p.Evaluate()), InProgress)
 }
 
 // Mate in 1 move.
 func TestPosition310(t *testing.T) {
-	p := NewGame().Setup(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).Start(White)
+	p := NewGame(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).Start(White)
 	rootNode = node // Reset Ply().
 	expect(t, p.status(p.NewMove(H1, H6), Checkmate-Ply()), WhiteWinning)
 }
 
 // Forced stalemate.
 func TestPosition320(t *testing.T) {
-	p := NewGame().Setup(`Kf7,b2,b4,h6`, `Kh8,Ba4,b3,b5,h7`).Start(White)
+	p := NewGame(`Kf7,b2,b4,h6`, `Kh8,Ba4,b3,b5,h7`).Start(White)
 	expect(t, p.status(p.NewMove(F7, F8), 0), Stalemate)
 }
 
 // Self-imposed stalemate.
 func TestPosition330(t *testing.T) {
-	p := NewGame().Setup(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black)
+	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black)
 	p = p.MakeMove(p.NewMove(H7, H6))
 	expect(t, p.status(p.NewMove(A1, B2), 0), Stalemate)
 }
 
 // Draw by repetition.
 func TestPosition340(t *testing.T) {
-	p := NewGame().Setup(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black) // Initial.
+	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black) // Initial.
 
 	p = p.MakeMove(p.NewMove(H5, H6))
 	p = p.MakeMove(p.NewMove(A1, A2))
@@ -538,7 +538,7 @@ func TestPosition340(t *testing.T) {
 
 // Position after null move.
 func TestPosition350(t *testing.T) {
-	p := NewGame().Setup(`Ke1,Qd1,d2,e2`, `Kg8,Qf8,f7,g7`).Start(White)
+	p := NewGame(`Ke1,Qd1,d2,e2`, `Kg8,Qf8,f7,g7`).Start(White)
 
 	p = p.MakeNullMove()
 	expect(t, p.isNull(), true)

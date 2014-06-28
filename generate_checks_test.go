@@ -10,7 +10,7 @@ import (
 
 // Knight.
 func TestGenChecks000(t *testing.T) {
-	game := NewGame().Setup(`Ka1,Nd7,Nf3,b3`, `Kh7,Nd4,f6`)
+	game := NewGame(`Ka1,Nd7,Nf3,b3`, `Kh7,Nd4,f6`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Nf3-g5 Nd7-f8]`)
 
@@ -20,7 +20,7 @@ func TestGenChecks000(t *testing.T) {
 
 // Bishop.
 func TestGenChecks010(t *testing.T) {
-	game := NewGame().Setup(`Kh2,Ba2`, `Kh7,Ba7`)
+	game := NewGame(`Kh2,Ba2`, `Kh7,Ba7`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Ba2-b1 Ba2-g8]`)
 
@@ -29,7 +29,7 @@ func TestGenChecks010(t *testing.T) {
 }
 
 func TestGenChecks020(t *testing.T) {
-	game := NewGame().Setup(`Kf4,Bc1`, `Kc5,Bf8,h6,e3`)
+	game := NewGame(`Kf4,Bc1`, `Kc5,Bf8,h6,e3`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Bc1-a3]`)
 
@@ -39,7 +39,7 @@ func TestGenChecks020(t *testing.T) {
 
 // Bishop: discovered non-capturing check with blocked diaginal.
 func TestGenChecks030(t *testing.T) {
-	game := NewGame().Setup(`Ka8,Ba1,Nb2,c3,f3`, `Kh8,Bh1,Ng2`)
+	game := NewGame(`Ka8,Ba1,Nb2,c3,f3`, `Kh8,Bh1,Ng2`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[]`)
 
@@ -49,7 +49,7 @@ func TestGenChecks030(t *testing.T) {
 
 // Bishop: discovered non-capturing check: Knight.
 func TestGenChecks040(t *testing.T) {
-	game := NewGame().Setup(`Ka8,Ba1,Nb2,a4,h4`, `Kh8,Bh1,Ng2,c4,f4`)
+	game := NewGame(`Ka8,Ba1,Nb2,a4,h4`, `Kh8,Bh1,Ng2,c4,f4`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Nb2-d1 Nb2-d3]`)
 
@@ -59,7 +59,7 @@ func TestGenChecks040(t *testing.T) {
 
 // Bishop: discovered non-capturing check: Rook.
 func TestGenChecks050(t *testing.T) {
-	game := NewGame().Setup(`Ka8,Qa1,Nb1,Rb2,b4,d2,e2`, `Kh8,Qh1,Rg2,g4`)
+	game := NewGame(`Ka8,Qa1,Nb1,Rb2,b4,d2,e2`, `Kh8,Qh1,Rg2,g4`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Rb2-a2 Rb2-c2 Rb2-b3]`)
 
@@ -69,14 +69,14 @@ func TestGenChecks050(t *testing.T) {
 
 // Bishop: discovered non-capturing check: King.
 func TestGenChecks060(t *testing.T) {
-	game := NewGame().Setup(`Ke5,Qc3,c4,d3,e4`, `Kh8,e6`)
+	game := NewGame(`Ke5,Qc3,c4,d3,e4`, `Kh8,e6`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Ke5-f4 Ke5-d5 Ke5-f5 Ke5-d6]`)
 }
 
 // Bishop: discovered non-capturing check: Pawn move.
 func TestGenChecks070(t *testing.T) {
-	game := NewGame().Setup(`Ka8,Ba1,c3`, `Kh8,Bg2,e4`)
+	game := NewGame(`Ka8,Ba1,c3`, `Kh8,Bg2,e4`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[c3-c4]`)
 
@@ -86,7 +86,7 @@ func TestGenChecks070(t *testing.T) {
 
 // Bishop: discovered non-capturing check: Pawn jump.
 func TestGenChecks080(t *testing.T) {
-	game := NewGame().Setup(`Kh2,Bb1,c2`, `Kh7,Bb8,c7`)
+	game := NewGame(`Kh2,Bb1,c2`, `Kh7,Bb8,c7`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[c2-c3 c2-c4]`)
 
@@ -96,7 +96,7 @@ func TestGenChecks080(t *testing.T) {
 
 // Bishop: discovered non-capturing check: no pawn promotions.
 func TestGenChecks090(t *testing.T) {
-	game := NewGame().Setup(`Kh7,Bb8,c7`, `Kh2,Bb1,c2`)
+	game := NewGame(`Kh7,Bb8,c7`, `Kh2,Bb1,c2`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[]`)
 
@@ -106,18 +106,18 @@ func TestGenChecks090(t *testing.T) {
 
 // Bishop: discovered non-capturing check: no enpassant captures.
 func TestGenChecks100(t *testing.T) {
-	p := NewGame().Setup(`Ka1,Bf4,e5`, `Kb8,f7`).Start(Black)
+	p := NewGame(`Ka1,Bf4,e5`, `Kb8,f7`).Start(Black)
 	white := NewGen(p.MakeMove(p.NewEnpassant(F7, F5)), 0).generateChecks()
 	expect(t, white.allMoves(), `[e5-e6]`)
 
-	p = NewGame().Setup(`Ka1,e2`, `Kb8,Be5,d4`).Start(White)
+	p = NewGame(`Ka1,e2`, `Kb8,Be5,d4`).Start(White)
 	black := NewGen(p.MakeMove(p.NewEnpassant(E2, E4)), 0).generateChecks()
 	expect(t, black.allMoves(), `[d4-d3]`)
 }
 
 // Bishop: extra Rook moves for Queen.
 func TestGenChecks110(t *testing.T) {
-	game := NewGame().Setup(`Kb1,Qa1,f2,a2`, `Kh1,Qa7,Nb8,a6`)
+	game := NewGame(`Kb1,Qa1,f2,a2`, `Kh1,Qa7,Nb8,a6`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Qa1-h8 Kb1-b2 Kb1-c2]`)
 
@@ -127,7 +127,7 @@ func TestGenChecks110(t *testing.T) {
 
 // Pawns.
 func TestGenChecks120(t *testing.T) {
-	game := NewGame().Setup(`Kb5,f2,g2,h2`, `Kg4,a7,b7,c7`)
+	game := NewGame(`Kb5,f2,g2,h2`, `Kg4,a7,b7,c7`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[f2-f3 h2-h3]`)
 
@@ -136,7 +136,7 @@ func TestGenChecks120(t *testing.T) {
 }
 
 func TestGenChecks130(t *testing.T) {
-	game := NewGame().Setup(`Kb4,f2,g2,h2`, `Kg5,a7,b7,c7`)
+	game := NewGame(`Kb4,f2,g2,h2`, `Kg5,a7,b7,c7`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[f2-f4 h2-h4]`)
 
@@ -145,7 +145,7 @@ func TestGenChecks130(t *testing.T) {
 }
 
 func TestGenChecks140(t *testing.T) {
-	game := NewGame().Setup(`Kb4,c5,f2,g2,h2`, `Kg5,a7,b7,c7,h4`)
+	game := NewGame(`Kb4,c5,f2,g2,h2`, `Kg5,a7,b7,c7,h4`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[f2-f4]`)
 
@@ -155,7 +155,7 @@ func TestGenChecks140(t *testing.T) {
 
 // Rook with pawn on the same rank (discovered check).
 func TestGenChecks150(t *testing.T) {
-	game := NewGame().Setup(`Ka4,Ra5,e5`, `Kh5,Rh4,c4`)
+	game := NewGame(`Ka4,Ra5,e5`, `Kh5,Rh4,c4`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[e5-e6]`)
 
@@ -165,7 +165,7 @@ func TestGenChecks150(t *testing.T) {
 
 // Rook with pawn on the same file (no check).
 func TestGenChecks160(t *testing.T) {
-	game := NewGame().Setup(`Kh8,Ra8,a6`, `Ka3,Rh1,h5`)
+	game := NewGame(`Kh8,Ra8,a6`, `Ka3,Rh1,h5`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[]`)
 
@@ -175,14 +175,14 @@ func TestGenChecks160(t *testing.T) {
 
 // Rook with king on the same rank (discovered check).
 func TestGenChecks170(t *testing.T) {
-	game := NewGame().Setup(`Ke5,Ra5,d4,e4,f4`, `Kh5`)
+	game := NewGame(`Ke5,Ra5,d4,e4,f4`, `Kh5`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Ke5-d6 Ke5-e6 Ke5-f6]`)
 }
 
 // Rook with king on the same file (discovered check).
 func TestGenChecks180(t *testing.T) {
-	game := NewGame().Setup(`Kb5,Rb8,c4,c5,c6`, `Kb1`)
+	game := NewGame(`Kb5,Rb8,c4,c5,c6`, `Kb1`)
 	white := NewGen(game.Start(White), 0).generateChecks()
 	expect(t, white.allMoves(), `[Kb5-a4 Kb5-a5 Kb5-a6]`)
 }

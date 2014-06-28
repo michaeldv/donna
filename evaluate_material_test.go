@@ -8,7 +8,7 @@ import `testing`
 
 // Bare kings.
 func TestMaterial000(t *testing.T) {
-	p := NewGame().Setup(`Ke1`, `Ke8`).Start(Black)
+	p := NewGame(`Ke1`, `Ke8`).Start(Black)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.flags, uint8(materialDraw))
@@ -17,7 +17,7 @@ func TestMaterial000(t *testing.T) {
 
 // No pawns, king with a minor.
 func TestMaterial010(t *testing.T) {
-	p := NewGame().Setup(`Ke1,Bc1`, `Ke8`).Start(White)
+	p := NewGame(`Ke1,Bc1`, `Ke8`).Start(White)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.flags, uint8(materialDraw))
@@ -25,7 +25,7 @@ func TestMaterial010(t *testing.T) {
 }
 
 func TestMaterial015(t *testing.T) {
-	p := NewGame().Setup(`Ke1,Bc1`, `Ke8,Nb8`).Start(White)
+	p := NewGame(`Ke1,Bc1`, `Ke8,Nb8`).Start(White)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.flags, uint8(materialDraw))
@@ -34,7 +34,7 @@ func TestMaterial015(t *testing.T) {
 
 // No pawns, king with two knights.
 func TestMaterial020(t *testing.T) {
-	p := NewGame().Setup(`Ke1,Ne2,Ne3`, `Ke8`).Start(White)
+	p := NewGame(`Ke1,Ne2,Ne3`, `Ke8`).Start(White)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.flags, uint8(materialDraw))
@@ -43,7 +43,7 @@ func TestMaterial020(t *testing.T) {
 
 // Known: king and a pawn vs. bare king.
 func TestMaterial100(t *testing.T) {
-	p := NewGame().Setup(`Ke1,e2`, `Ke8`).Start(White)
+	p := NewGame(`Ke1,e2`, `Ke8`).Start(White)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.hash, uint64(0x5355F900C2A82DC7))
@@ -52,7 +52,7 @@ func TestMaterial100(t *testing.T) {
 }
 
 func TestMaterial110(t *testing.T) {
-	p := NewGame().Setup(`Ke1`, `Ke8,e7`).Start(White)
+	p := NewGame(`Ke1`, `Ke8,e7`).Start(White)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.hash, uint64(0x9D39247E33776D41))
@@ -62,7 +62,7 @@ func TestMaterial110(t *testing.T) {
 
 // Known: king with a knight and a bishop vs. bare king.
 func TestMaterial120(t *testing.T) {
-	p := NewGame().Setup(`Ke1,Nb1,Bc1`, `Ke8`).Start(White)
+	p := NewGame(`Ke1,Nb1,Bc1`, `Ke8`).Start(White)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.hash, uint64(0xE6F0FBA55BF280F1))
@@ -71,7 +71,7 @@ func TestMaterial120(t *testing.T) {
 }
 
 func TestMaterial130(t *testing.T) {
-	p := NewGame().Setup(`Ke1`, `Ke8,Nb8,Bc8`).Start(White)
+	p := NewGame(`Ke1`, `Ke8,Nb8,Bc8`).Start(White)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.hash, uint64(0x29D8066E0A562122))
@@ -81,7 +81,7 @@ func TestMaterial130(t *testing.T) {
 
 // Lesser known endgame: king and two or more pawns vs. bare king.
 func TestMaterial140(t *testing.T) {
-	p := NewGame().Setup(`Ke1,a4,a5`, `Ka8`).Start(Black)
+	p := NewGame(`Ke1,a4,a5`, `Ka8`).Start(Black)
 	p.EvaluateWithTrace()
 
 	expect(t, eval.material.flags, uint8(lesserKnownEndgame))

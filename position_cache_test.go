@@ -9,7 +9,7 @@ import (
 )
 
 func TestCache000(t *testing.T) {
-	p := NewGame().CacheSize(0.5).InitialPosition().Start(White)
+	p := NewGame().CacheSize(0.5).Start()
 	move := p.NewMove(E2, E4)
 	p = p.MakeMove(move).cache(move, 42, 1, cacheExact)
 

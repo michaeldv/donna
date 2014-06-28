@@ -9,7 +9,7 @@ import (
 )
 
 func openBook() (*Book, *Position) {
-	return NewBook(`/tmp`), NewGame().InitialPosition().Start(White)
+	return NewBook(`/tmp`), NewGame().Start()
 }
 
 func polyglotEntry(source, target int) Entry {
@@ -19,7 +19,7 @@ func polyglotEntry(source, target int) Entry {
 
 // See test key values at http://hardy.uhasselt.be/Toga/book_format.html
 func TestBook000(t *testing.T) {
-	p := NewGame().InitialPosition().Start(White)
+	p := NewGame().Start()
 	hash, hashPawns, _ := p.polyglot()
 
 	expect(t, hash, uint64(0x463B96181691FC9C))

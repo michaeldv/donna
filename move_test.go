@@ -10,7 +10,7 @@ import (
 
 // PxQ, NxQ, BxQ, RxQ, QxQ, KxQ
 func TestMove000(t *testing.T) {
-	game := NewGame().Setup(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Qd5`)
+	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Qd5`)
 	p := game.Start(White)
 	expect(t, p.NewMove(E4, D5).value(), 1258) // PxQ
 	expect(t, p.NewMove(C3, D5).value(), 1256) // NxQ
@@ -22,7 +22,7 @@ func TestMove000(t *testing.T) {
 
 // PxR, NxR, BxR, RxR, QxR, KxR
 func TestMove010(t *testing.T) {
-	game := NewGame().Setup(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Rd5`)
+	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Rd5`)
 	p := game.Start(White)
 	expect(t, p.NewMove(E4, D5).value(), 633) // PxR
 	expect(t, p.NewMove(C3, D5).value(), 631) // NxR
@@ -34,7 +34,7 @@ func TestMove010(t *testing.T) {
 
 // PxB, NxB, BxB, RxB, QxB, KxB
 func TestMove020(t *testing.T) {
-	game := NewGame().Setup(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Bd5`)
+	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Bd5`)
 	p := game.Start(White)
 	expect(t, p.NewMove(E4, D5).value(), 416) // PxB
 	expect(t, p.NewMove(C3, D5).value(), 414) // NxB
@@ -46,7 +46,7 @@ func TestMove020(t *testing.T) {
 
 // PxN, NxN, BxN, RxN, QxN, KxN
 func TestMove030(t *testing.T) {
-	game := NewGame().Setup(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Nd5`)
+	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Nd5`)
 	p := game.Start(White)
 	expect(t, p.NewMove(E4, D5).value(), 406) // PxN
 	expect(t, p.NewMove(C3, D5).value(), 404) // NxN
@@ -58,7 +58,7 @@ func TestMove030(t *testing.T) {
 
 // PxP, NxP, BxP, RxP, QxP, KxP
 func TestMove040(t *testing.T) {
-	game := NewGame().Setup(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,d5`)
+	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,d5`)
 	p := game.Start(White)
 	expect(t, p.NewMove(E4, D5).value(), 98) // PxP
 	expect(t, p.NewMove(C3, D5).value(), 96) // NxP
