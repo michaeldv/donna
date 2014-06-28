@@ -87,7 +87,11 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	for jumps != 0 {
 		to := jumps.pop()
 		from := to - 2 * eight[color]
-		gen.add(p.NewMove(from, to))
+		if p.causesEnpassant(to) {
+			gen.add(p.NewEnpassant(from, to))
+		} else {
+			gen.add(p.NewPawnJump(from, to))
+		}
 	}
 
 	// What's left is to generate all possible knight, bishop, rook, and

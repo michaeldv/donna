@@ -130,6 +130,16 @@ func TestGenerate400(t *testing.T) {
 	expect(t, black.allMoves(), `[Ka5-a4 Ka5-b4 Ka5-a6 Ka5-b6 b7-b5 c7-c5 d7-d5 e7-e5 f7-f5 g7-g5]`)
 }
 
+// Check evasions (pawn jump, sets en-passant).
+func TestGenerate405(t *testing.T) {
+	p := NewGame(`Ke1,Qd4,d5`, `Kg7,e7,g6,h7`).Start(Black)
+	black := NewGen(p, 0).generateEvasions()
+	e7e5 := black.list[black.head + 4].move
+	expect(t, black.allMoves(), `[Kg7-h6 Kg7-f7 Kg7-f8 Kg7-g8 e7-e5]`)
+	p = p.MakeMove(e7e5)
+	expect(t, p.enpassant, E6)
+}
+
 // Check evasions (piece x piece captures).
 func TestGenerate410(t *testing.T) {
 	game := NewGame(`Ke1,Qd1,Rc7,Bd3,Nd4,c2,f2`, `Kh8,Nb4`)
@@ -161,7 +171,6 @@ func TestGenerate440(t *testing.T) {
 	black := NewGen(white.MakeMove(white.NewMove(F3, D1)), 0).generateEvasions()
 	expect(t, black.allMoves(), `[Ka1-a2 b2-b1Q]`)
 }
-
 
 // Pawn promotion to block or capture.
 func TestGenerate450(t *testing.T) {
