@@ -112,7 +112,7 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 	//
 	game := gen.p.game
 	if len(game.cache) == 0 && bestMove == Move(0) {
-		bestMove = game.bestLine[0][gen.ply]
+		bestMove = game.pv[0][gen.ply]
 	}
 
 	for i := gen.head; i < gen.tail; i++ {

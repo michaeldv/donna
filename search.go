@@ -54,7 +54,7 @@ func (p *Position) searchRoot(depth int) (bestMove Move, bestScore int) {
 		}
 	} // next move.
 
-	// fmt.Printf("depth: %d, node: %d\nbestline %v\nkillers %v\n", depth, node, p.game.bestLine, p.game.killers)
+	// fmt.Printf("depth: %d, node: %d\nbestline %v\nkillers %v\n", depth, node, p.game.pv, p.game.killers)
 
 	return
 }

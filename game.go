@@ -11,16 +11,15 @@ import (
 )
 
 type Game struct {
-	nodes      int
-	qnodes     int
-	token      uint8
-	cache      Cache
-	notation   string
-	pieces     [64]Piece
-	bestLine   [MaxPly][MaxPly]Move
-	bestLength [MaxPly]int
-	killers    [MaxPly][2]Move
-	goodMoves  [14][64]int
+	nodes    int 			// Number of regular nodes searched.
+	qnodes   int 			// Number of quiescence nodes searched.
+	token    uint8 			// Expiration token for cache.
+	cache    Cache 			// Transposition table.
+	initial  string 		// Initial position (FEN or algebraic).
+	history  [14][64]int 		// Good moves history.
+	killers  [MaxPly][2]Move 	// Killer moves.
+	pv       [MaxPly][MaxPly]Move 	// Principal variation.
+	pvsize   [MaxPly]int 		// Number of moves in principal variation.
 }
 
 // Use single statically allocated variable.
@@ -39,11 +38,11 @@ func NewGame(args ...string) *Game {
 
 	switch len(args) {
 	case 0: // Initial position.
-		game.notation = `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
+		game.initial = `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
 	case 1: // Genuine FEN.
-		game.notation = args[0]
+		game.initial = args[0]
 	case 2: // Standard algebraic notation (white and black).
-		game.notation = args[0] + `:` + args[1]
+		game.initial = args[0] + `:` + args[1]
 	}
 
 	return &game
@@ -61,11 +60,11 @@ func (game *Game) Start(args ...int) *Position {
 	tree, node, rootNode = [1024]Position{}, 0, 0
 
 	// Was the game started with FEN or algebraic notation?
-	sides := strings.Split(game.notation, `:`)
+	sides := strings.Split(game.initial, `:`)
 	if len(sides) == 2 {
 		return NewPosition(game, sides[White], sides[Black], args[0])
 	}
-	return NewPositionFromFEN(game, game.notation)
+	return NewPositionFromFEN(game, game.initial)
 }
 
 func (game *Game) Position() *Position {
@@ -84,10 +83,10 @@ func (game *Game) Think(requestedDepth int) Move {
 	// Reset principal variation, killer moves and move history, and update
 	// cache token to ignore existing cache entries.
 	rootNode = node
-	game.bestLine = [MaxPly][MaxPly]Move{}
-	game.bestLength = [MaxPly]int{}
+	game.pv = [MaxPly][MaxPly]Move{}
+	game.pvsize = [MaxPly]int{}
 	game.killers = [MaxPly][2]Move{}
-	game.goodMoves = [14][64]int{}
+	game.history = [14][64]int{}
 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
 	move, score, status := Move(0), 0, InProgress
@@ -144,23 +143,23 @@ func (game *Game) printBestLine(depth, score, status int, finish float64) {
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
 			float64(game.nodes+game.qnodes)/finish, movesLeft/2,
-			game.bestLine[0][0:Min(movesLeft, game.bestLength[0])])
+			game.pv[0][0:Min(movesLeft, game.pvsize[0])])
 	default:
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
 			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(valuePawn.endgame),
-			game.bestLine[0][0:game.bestLength[0]])
+			game.pv[0][0:game.pvsize[0]])
 	}
 }
 
 func (game *Game) saveBest(ply int, move Move) *Game {
-	game.bestLine[ply][ply] = move
-	game.bestLength[ply] = ply + 1
+	game.pv[ply][ply] = move
+	game.pvsize[ply] = ply + 1
 
-	if length := game.bestLength[ply+1]; length > 0 {
-		copy(game.bestLine[ply][ply+1:length],
-			game.bestLine[ply+1][ply+1:length])
-		game.bestLength[ply] = length
+	if length := game.pvsize[ply+1]; length > 0 {
+		copy(game.pv[ply][ply+1:length],
+			game.pv[ply+1][ply+1:length])
+		game.pvsize[ply] = length
 	}
 	return game
 }
@@ -169,7 +168,7 @@ func (game *Game) saveGood(depth int, move Move) *Game {
 	if ply := Ply(); move&(isCapture|isPromo) == 0 && move != game.killers[ply][0] {
 		game.killers[ply][1] = game.killers[ply][0]
 		game.killers[ply][0] = move
-		game.goodMoves[move.piece()][move.to()] += depth * depth
+		game.history[move.piece()][move.to()] += depth * depth
 	}
 	return game
 }
@@ -177,7 +176,7 @@ func (game *Game) saveGood(depth int, move Move) *Game {
 // Checks whether the move is among good moves captured so far and returns its
 // history value.
 func (game *Game) good(move Move) int {
-	return game.goodMoves[move.piece()][move.to()]
+	return game.history[move.piece()][move.to()]
 }
 
 func (game *Game) String() string {

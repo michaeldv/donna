@@ -8,7 +8,7 @@ import ()
 
 // Quiescence search.
 func (p *Position) searchQuiescence(alpha, beta int) int {
-	p.game.bestLength[Ply()] = Ply()
+	p.game.pvsize[Ply()] = Ply()
 	return p.quiescence(alpha, beta, false)
 }
 
