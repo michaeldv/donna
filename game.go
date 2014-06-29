@@ -72,10 +72,8 @@ func (game *Game) Position() *Position {
 	return &tree[node]
 }
 
-func (game *Game) Think(requestedDepth int, position *Position) Move {
-	if position == nil {
-		position = game.Start(White)
-	}
+func (game *Game) Think(requestedDepth int) Move {
+	position := game.Position()
 
 	book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
 	if move := book.pickMove(position); move != 0 {

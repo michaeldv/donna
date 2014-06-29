@@ -45,7 +45,6 @@ func NewPosition(game *Game, white, black string, color int) *Position {
 	if p.pieces[E1] != King || p.pieces[A1] != Rook {
 		p.castles &= ^castleQueenside[White]
 	}
-
 	if p.pieces[E8] != BlackKing || p.pieces[H8] != BlackRook {
 		p.castles &= ^castleKingside[Black]
 	}
