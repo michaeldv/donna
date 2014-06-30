@@ -10,16 +10,32 @@ import (
 	`time`
 )
 
+type Options struct {
+	msRemaining   int // (-) Remaining time for the rest of the game.
+	msIncrement   int // (-) Time increment after the move.
+	msToMakeMove  int // Time limit to make a move.
+	maxDepth      int // Search depth limit.
+	maxNodes      int // (-) Search nodes limit.
+	msSoftStop    int // (-) Soft time limit stop.
+	msHardStop    int // (-) Hard time limit stop.
+}
+
+type History [14][64]int
+type Killers [MaxPly][2]Move
+type Pv      [MaxPly][MaxPly]Move
+type PvSize  [MaxPly]int
+
 type Game struct {
-	nodes    int 			// Number of regular nodes searched.
-	qnodes   int 			// Number of quiescence nodes searched.
-	token    uint8 			// Expiration token for cache.
-	cache    Cache 			// Transposition table.
-	initial  string 		// Initial position (FEN or algebraic).
-	history  [14][64]int 		// Good moves history.
-	killers  [MaxPly][2]Move 	// Killer moves.
-	pv       [MaxPly][MaxPly]Move 	// Principal variation.
-	pvsize   [MaxPly]int 		// Number of moves in principal variation.
+	nodes    int 	  // Number of regular nodes searched.
+	qnodes   int 	  // Number of quiescence nodes searched.
+	token    uint8 	  // Expiration token for cache.
+	initial  string   // Initial position (FEN or algebraic).
+	cache    Cache 	  // Transposition table.
+	history  History  // Good moves history.
+	killers  Killers  // Killer moves.
+	pv       Pv 	  // Principal variation.
+	pvsize   PvSize   // Number of moves in principal variation.
+	options  Options  // Game options.
 }
 
 // Use single statically allocated variable.
@@ -67,6 +83,20 @@ func (game *Game) Start(args ...int) *Position {
 	return NewPositionFromFEN(game, game.initial)
 }
 
+func (game *Game) Set(option string, value int) {
+	switch option {
+	case `depth`:
+		game.options = Options{}
+		game.options.maxDepth = value
+	case `movetime`:
+		game.options = Options{}
+		game.options.msRemaining = value
+		game.options.msToMakeMove = value
+		game.options.msSoftStop = value
+		game.options.msHardStop = value
+	}
+}
+
 func (game *Game) Position() *Position {
 	return &tree[node]
 }
@@ -83,10 +113,10 @@ func (game *Game) Think(requestedDepth int) Move {
 	// Reset principal variation, killer moves and move history, and update
 	// cache token to ignore existing cache entries.
 	rootNode = node
-	game.pv = [MaxPly][MaxPly]Move{}
-	game.pvsize = [MaxPly]int{}
-	game.killers = [MaxPly][2]Move{}
-	game.history = [14][64]int{}
+	game.pv = Pv{}
+	game.pvsize = PvSize{}
+	game.killers = Killers{}
+	game.history = History{}
 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
 	move, score, status := Move(0), 0, InProgress
