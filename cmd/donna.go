@@ -23,7 +23,7 @@ func repl() {
 	}
 
 	think := func() {
-		if move := game.Think(10); move != 0 {
+		if move := game.Think(11); move != 0 {
 			position = position.MakeMove(move)
 			fmt.Printf("%s\n", position)
 		}
@@ -87,7 +87,7 @@ func benchmark() {
 	game := donna.NewGame(`Kd1,Qh2,Nh6,a4,g3,h7`, `Kg7,Qe4,Bf6,b7,e6,g6`)
 	position := game.Start(donna.White)
 	fmt.Printf("%s\n", position)
-	game.CacheSize(64).Think(8)
+	game.CacheSize(64).Think(12)
 
 	// Tylkowski vs. Wojciechowski, Poznan 1931
 	// 30...Rxb2! 31. Nxb2 c3 32. Rxb6 c4!! 33. Rb4 a5! 34.Na4 axb4
@@ -117,14 +117,14 @@ func benchmark() {
 	game = donna.NewGame(`Kg1,Qc2,Ra1,Re1,Bc1,Bg2,Ng5,a2,b2,c3,d4,f2,g3,h2`, `Kg8,Qd6,Ra8,Rf8,Bc8,Nd5,Ng6,a7,b6,c4,e6,f7,g7,h7`)
 	position = game.Start(donna.White)
 	fmt.Printf("%s\n", position)
-	game.CacheSize(64).Think(10)
+	game.CacheSize(64).Think(12)
 
 	// Mikhail Botvinnik vs. Jose Raul Capablanca, AVRO 1936, after 29 moves.
 	// Botvinnik played 30. Bb2-a3!
 	game = donna.NewGame(`Kg1,Qe5,Bb2,Ng3,c3,d4,e6,g2,h2`, `Kg7,Qe7,Nb3,Nf6,a7,b6,c4,d5,g6,h7`)
 	position = game.Start(donna.White)
 	fmt.Printf("%s\n", position)
-	game.CacheSize(64).Think(12)
+	game.CacheSize(64).Think(14)
 
 }
 
