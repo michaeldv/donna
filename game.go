@@ -120,17 +120,43 @@ func (game *Game) Think(requestedDepth int) Move {
 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
 	move, score, status := Move(0), 0, InProgress
+	alpha, beta := -Checkmate, Checkmate
 
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
 	for depth := 1; depth <= Min(MaxDepth, requestedDepth); depth++ {
 		game.nodes, game.qnodes = 0, 0
+
+		// At low depths do the search with full alpha/beta spread.
+		// Aspiration window searches kick in at depth 5 and up.
 		start := time.Now()
-		move, score = position.searchRoot(depth)
+		if depth < 5 {
+			move, score = position.searchRoot(alpha, beta, depth)
+		} else {
+			aspiration := 16
+			alpha = Max(score - aspiration, -Checkmate)
+			beta = Min(score + aspiration, Checkmate)
+
+			// Do the search with smaller alpha/beta spread based on
+			// previous iteration score, and re-search with the bigger
+			// window as necessary.
+			for {
+				move, score = position.searchRoot(alpha, beta, depth)
+				if score <= alpha {
+					alpha = Max(score - aspiration, -Checkmate)
+				} else if score >= beta {
+					beta = Min(score + aspiration, Checkmate)
+				} else {
+					break;
+				}
+				aspiration += aspiration / 2
+			}
+
+		}
 		finish := time.Since(start).Seconds()
+
 		if position.color == Black {
 			score = -score
 		}
-
 		status = position.status(move, score)
 		game.printBestLine(depth, score, status, finish)
 
