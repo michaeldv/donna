@@ -63,7 +63,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 	}
 
 	// Null move pruning.
-	if depth > 1 && score >= beta && p.outposts[p.color].count() > 5 /*&& beta > -31000*/ {
+	if depth > 1 && score >= beta && p.outposts[p.color].count() > 5 && !p.isNull() {
 		reduction := 3 + depth/4
 		if score-100 > beta {
 			reduction++
