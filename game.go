@@ -150,7 +150,7 @@ func (game *Game) Think(requestedDepth int) Move {
 				}
 				aspiration += aspiration / 2
 			}
-
+			// TBD: position.cache(move, score, 0, 0)
 		}
 		finish := time.Since(start).Seconds()
 
@@ -209,22 +209,24 @@ func (game *Game) printBestLine(depth, score, status int, finish float64) {
 }
 
 func (game *Game) saveBest(ply int, move Move) *Game {
+	next := ply + 1
+	game.pvsize[ply] = next
 	game.pv[ply][ply] = move
-	game.pvsize[ply] = ply + 1
 
-	if length := game.pvsize[ply+1]; length > 0 {
-		copy(game.pv[ply][ply+1:length],
-			game.pv[ply+1][ply+1:length])
+	if length := game.pvsize[next]; length > 0 {
+		copy(game.pv[ply][next : length], game.pv[next][next : length])
 		game.pvsize[ply] = length
 	}
 	return game
 }
 
 func (game *Game) saveGood(depth int, move Move) *Game {
-	if ply := Ply(); move&(isCapture|isPromo) == 0 && move != game.killers[ply][0] {
-		game.killers[ply][1] = game.killers[ply][0]
-		game.killers[ply][0] = move
-		game.history[move.piece()][move.to()] += depth * depth
+	if move & (isCapture | isPromo) == 0 {
+		if ply := Ply(); move & (isCapture | isPromo) == 0 && move != game.killers[ply][0] {
+			game.killers[ply][1] = game.killers[ply][0]
+			game.killers[ply][0] = move
+			game.history[move.piece()][move.to()] += depth * depth
+		}
 	}
 	return game
 }
