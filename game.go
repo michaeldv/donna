@@ -132,7 +132,7 @@ func (game *Game) Think(requestedDepth int) Move {
 		if depth < 5 {
 			move, score = position.searchRoot(alpha, beta, depth)
 		} else {
-			aspiration := 16
+			aspiration := valuePawn.midgame*3//valueQueen.endgame
 			alpha = Max(score - aspiration, -Checkmate)
 			beta = Min(score + aspiration, Checkmate)
 
@@ -148,7 +148,7 @@ func (game *Game) Think(requestedDepth int) Move {
 				} else {
 					break;
 				}
-				aspiration += aspiration / 2
+				aspiration += aspiration/3
 			}
 			// TBD: position.cache(move, score, 0, 0)
 		}
