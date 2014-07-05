@@ -17,6 +17,8 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 	}
 
 	ply := Ply()
+	p.game.pvsize[ply] = ply
+
 	bestScore := ply - Checkmate
 	if bestScore >= beta {
 		return bestScore //beta
@@ -82,24 +84,35 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 		}
 	}
 
+	// Internal iterative deepening.
+	if cachedMove == 0 && depth > 4 {
+		p.searchWithZeroWindow(beta, depth - 4)
+		if p.game.pvsize[ply] > 0 {
+			cachedMove = p.game.pv[ply][0]
+		}
+	}
+
 	moveCount := 0
 	gen := NewGen(p, ply).generateMoves().rank(cachedMove)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if position := p.MakeMove(move); position != nil {
 			//Log("%*szero/%s> depth: %d, ply: %d, move: %s\n", ply*2, ` `, C(p.color), depth, ply, move)
-			inCheck, giveCheck := position.isInCheck(position.color), position.isInCheck(position.color^1)
+			inCheck := position.isInCheck(position.color)
 
+			// Late move reduction.
 			reducedDepth := depth
-			if !inCheck && !giveCheck && move&(isCapture|isPromo) == 0 && depth >= 3 && moveCount >= 8 {
-				reducedDepth = depth - 2 // Late move reduction. TODO: disable or tune-up in puzzle solving mode.
-				if reducedDepth > 0 && moveCount >= 16 {
+			if !inCheck {
+				reducedDepth--
+				giveCheck := position.isInCheck(position.color^1)
+				if !giveCheck && depth >= 3 && moveCount >= 12 && move & (isCapture | isPromo) == 0 {
 					reducedDepth--
-					if reducedDepth > 0 && moveCount >= 32 {
+					if reducedDepth > 0 && moveCount >= 18 {
 						reducedDepth--
+						if reducedDepth > 0 && moveCount >= 24 {
+							reducedDepth--
+						}
 					}
 				}
-			} else if !inCheck {
-				reducedDepth = depth - 1
 			}
 
 			moveScore := 0
@@ -120,6 +133,7 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 			moveCount++
 
 			if moveScore > bestScore {
+				p.game.saveBest(ply, move)
 				if moveScore >= beta {
 					p.cache(move, moveScore, depth, cacheBeta)
 					p.game.saveGood(depth, move)
