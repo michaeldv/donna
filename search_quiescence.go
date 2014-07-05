@@ -8,7 +8,6 @@ import ()
 
 // Quiescence search.
 func (p *Position) searchQuiescence(alpha, beta int) int {
-	p.game.pvsize[Ply()] = Ply()
 	return p.quiescence(alpha, beta, false)
 }
 
@@ -18,6 +17,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 		return 0
 	}
 
+	p.game.pvsize[Ply()] = Ply()
 	bestScore := p.Evaluate()
 	if Ply() > MaxDepth {
 		return bestScore
@@ -44,6 +44,7 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 
 				position.TakeBack(move)
 				if moveScore > bestScore {
+					p.game.saveBest(Ply(), move)
 					if moveScore > alpha {
 						if moveScore >= beta {
 							return moveScore
@@ -87,10 +88,12 @@ func (p *Position) quiescence(alpha, beta int, capturesOnly bool) int {
 
 // Quiescence search (in check).
 func (p *Position) quiescenceInCheck(alpha, beta int) int {
+	p.game.qnodes++
 	if p.isRepetition() {
 		return 0
 	}
 
+	p.game.pvsize[Ply()] = Ply()
 	bestScore := Ply() - Checkmate
 	if bestScore >= beta {
 		return bestScore //beta
@@ -109,6 +112,7 @@ func (p *Position) quiescenceInCheck(alpha, beta int) int {
 
 			position.TakeBack(move)
 			if moveScore > bestScore {
+				p.game.saveBest(Ply(), move)
 				if moveScore > alpha {
 					if moveScore >= beta {
 						return moveScore

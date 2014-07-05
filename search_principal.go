@@ -14,6 +14,8 @@ func (p *Position) searchPrincipal(alpha, beta, depth int) int {
 
 	p.game.nodes++
 	ply := Ply()
+	p.game.pvsize[ply] = ply
+
 	if ply > MaxDepth {
 		return p.Evaluate()
 	}

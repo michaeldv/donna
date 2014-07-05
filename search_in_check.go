@@ -37,6 +37,7 @@ func (p *Position) searchInCheck(beta, depth int) int {
 		}
 	}
 
+	p.game.pvsize[ply] = ply
 	gen := NewGen(p, ply).generateEvasions().quickRank()
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if position := p.MakeMove(move); position != nil {
@@ -58,6 +59,7 @@ func (p *Position) searchInCheck(beta, depth int) int {
 
 			position.TakeBack(move)
 			if moveScore > bestScore {
+				p.game.saveBest(ply, move)
 				if moveScore >= beta {
 					p.cache(move, moveScore, depth, cacheBeta)
 					return moveScore

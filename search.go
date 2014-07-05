@@ -20,6 +20,7 @@ func (p *Position) searchRoot(alpha, beta, depth int) (bestMove Move, bestScore 
 	moveCount := 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.MakeMove(move)
+		//Log("%*sroot/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
 
 		inCheck := position.isInCheck(position.color)
 		reducedDepth := depth - 1
