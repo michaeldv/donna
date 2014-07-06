@@ -45,7 +45,7 @@ func (e *Evaluation) fetchMaterial() *MaterialEntry {
 		material.score = e.materialScore()
 
 		if Settings.Trace {
-			e.checkpoint(`Material`, material.score)
+			e.checkpoint(`Imbalance`, material.score)
 		}
 	}
 
@@ -153,21 +153,52 @@ func (e *Evaluation) materialPhase() int {
 func (e *Evaluation) materialScore() (score Score) {
 	count := &e.position.count
 
-	// Bonus for the pair of bishops.
+	whitePair, blackPair := 0, 0
 	if count[Bishop] > 1 {
-		score.add(bishopPair)
-		if count[Pawn] > 5 {
-			score.subtract(bishopPairPawn.times(count[Pawn] - 5))
-		}
+		whitePair++
 	}
 	if count[BlackBishop] > 1 {
-		score.subtract(bishopPair)
-		if count[BlackPawn] > 5 {
-			score.add(bishopPairPawn.times(count[BlackPawn] - 5))
-		}
+		blackPair++
 	}
 
+	white := imbalance(whitePair, count[Pawn], count[Knight], count[Bishop], count[Rook], count[Queen],
+		blackPair, count[BlackPawn], count[BlackKnight], count[BlackBishop], count[BlackRook], count[BlackQueen])
+	black := imbalance(blackPair, count[BlackPawn], count[BlackKnight], count[BlackBishop], count[BlackRook], count[BlackQueen],
+		whitePair, count[Pawn], count[Knight], count[Bishop], count[Rook], count[Queen])
+
+	adjustment := (white - black) / 48
+	score.midgame = adjustment
+	score.endgame = adjustment
+
 	return
+}
+
+// Simplified second-degree polynomial material imbalance by Tord Romstad.
+// Polynomial material balance parameters.
+//
+//        Indices:  0     1     2     3     4     5     6     7     8     9    10     11
+//   Coefficients:  A     -------------------------- B --------------------------     C
+var m2 = []int {    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  1852 } // Pair of bishops.
+var mP = []int {    2,   39,    0,    0,    0,    0,   37,    0,    0,    0,    0,  -162 } // Pawns.
+var mN = []int {   -4,   35,  271,    0,    0,    0,   10,   62,    0,    0,    0, -1122 } // Knights.
+var mB = []int {    0,    0,  105,    4,    0,    0,   57,   64,   39,    0,    0,  -183 } // Bishops.
+var mR = []int { -141,  -27,   -2,   46,  100,    0,   50,   40,   23,  -22,    0,   249 } // Rooks.
+var mQ = []int {    0, -177,   25,  129,  142, -137,   98,  105,  -39,  141,  274,  -154 } // Queens.
+
+func imbalance(w2, wP, wN, wB, wR, wQ, b2, bP, bN, bB, bR, bQ int) int {
+	return polynom(m2[0], (m2[1]                                                                                                       ), m2[11], w2) +
+	       polynom(mP[0], (mP[1]*w2 +                                             mP[6]*b2                                             ), mP[11], wP) +
+	       polynom(mN[0], (mN[1]*w2 + mN[2]*wP +                                  mN[6]*b2 + mN[7]*bP                                  ), mN[11], wN) +
+	       polynom(mB[0], (mB[1]*w2 + mB[2]*wP + mB[3]*wN +                       mB[6]*b2 + mB[7]*bP + mB[8]*bN                       ), mB[11], wB) +
+	       polynom(mR[0], (mR[1]*w2 + mR[2]*wP + mR[3]*wN + mR[4]*wB +            mR[6]*b2 + mR[7]*bP + mR[8]*bN + mR[9]*bB            ), mR[11], wR) +
+	       polynom(mQ[0], (mQ[1]*w2 + mQ[2]*wP + mQ[3]*wN + mQ[4]*wB + mQ[5]*wR + mQ[6]*b2 + mQ[7]*bP + mQ[8]*bN + mQ[9]*bB + mQ[10]*bR), mQ[11], wQ)
+}
+
+// Computes second degree polynom as in A*(X**2) + B*X + C. We are cheating with
+// the C coefficient to avoid extra multiplication (material imbalance parameter
+// assumes C gets multipled by X).
+func polynom(a, b, c, x int) int {
+	return a * (x * x) + (b + c) * x
 }
 
 // Pre-populates material cache with the most common middle game material
@@ -192,10 +223,10 @@ func (g *Game) warmUpMaterialCache() {
 						count[Bishop] = wB
 						for bB := 1; bB <= 2; bB++ {
 							count[BlackBishop] = bB
-							for wK := 1; wK <= 2; wK++ {
-								count[Knight] = wK
-								for bK := 1; bK <= 2; bK++ {
-									count[BlackKnight] = bK
+							for wN := 1; wN <= 2; wN++ {
+								count[Knight] = wN
+								for bN := 1; bN <= 2; bN++ {
+									count[BlackKnight] = bN
 									for wP := 4; wP <= 8; wP++ {
 										count[Pawn] = wP
 										for bP := 4; bP <= 8; bP++ {
@@ -213,21 +244,22 @@ func (g *Game) warmUpMaterialCache() {
 		material = &materialCache[index]
 		material.hash = key
 
-		material.phase = 12 * (wK + bK + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
+		material.phase = 12 * (wN + bN + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
 
-		// Bonus for the pair of bishops.
+		wPair, bPair := 0, 0
 		if wB > 1 {
-			material.score.add(bishopPair)
-			if wP > 5 {
-				material.score.subtract(bishopPairPawn.times(wP - 5))
-			}
+			wPair++
 		}
-		if bB > 1 {
-			material.score.subtract(bishopPair)
-			if bP > 5 {
-				material.score.add(bishopPairPawn.times(bP - 5))
-			}
+		if bP > 1 {
+			bPair++
 		}
+
+		white := imbalance(wPair, wP, wN, wB, wR, wQ,  bPair, bP, bN, bB, bR, bQ)
+		black := imbalance(bPair, bP, bN, bB, bR, bQ,  wPair, wP, wN, wB, wR, wQ)
+
+		adjustment := (white - black) / 16
+		material.score.midgame += adjustment
+		material.score.endgame += adjustment
 										}
 									}
 								}
