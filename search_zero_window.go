@@ -104,11 +104,11 @@ func (p *Position) searchWithZeroWindow(beta, depth int) int {
 			if !inCheck {
 				reducedDepth--
 				giveCheck := position.isInCheck(position.color^1)
-				if !giveCheck && depth >= 3 && moveCount >= 12 && move & (isCapture | isPromo) == 0 {
+				if !giveCheck && depth >= 3 && moveCount >= 8 && move & (isCapture | isPromo) == 0 {
 					reducedDepth--
-					if reducedDepth > 0 && moveCount >= 18 {
+					if reducedDepth > 0 && moveCount >= 16 {
 						reducedDepth--
-						if reducedDepth > 0 && moveCount >= 24 {
+						if reducedDepth > 0 && moveCount >= 32 {
 							reducedDepth--
 						}
 					}
