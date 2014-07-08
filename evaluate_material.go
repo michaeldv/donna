@@ -166,7 +166,7 @@ func (e *Evaluation) materialScore() (score Score) {
 	black := imbalance(blackPair, count[BlackPawn], count[BlackKnight], count[BlackBishop], count[BlackRook], count[BlackQueen],
 		whitePair, count[Pawn], count[Knight], count[Bishop], count[Rook], count[Queen])
 
-	adjustment := (white - black) / 48
+	adjustment := (white - black) / 32
 	score.midgame = adjustment
 	score.endgame = adjustment
 
@@ -257,7 +257,7 @@ func (g *Game) warmUpMaterialCache() {
 		white := imbalance(wPair, wP, wN, wB, wR, wQ,  bPair, bP, bN, bB, bR, bQ)
 		black := imbalance(bPair, bP, bN, bB, bR, bQ,  wPair, wP, wN, wB, wR, wQ)
 
-		adjustment := (white - black) / 16
+		adjustment := (white - black) / 32
 		material.score.midgame += adjustment
 		material.score.endgame += adjustment
 										}
