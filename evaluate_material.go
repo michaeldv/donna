@@ -161,9 +161,9 @@ func (e *Evaluation) materialScore() (score Score) {
 		blackPair++
 	}
 
-	white := imbalance(whitePair, count[Pawn], count[Knight], count[Bishop], count[Rook], count[Queen],
+	white := e.imbalance(whitePair, count[Pawn], count[Knight], count[Bishop], count[Rook], count[Queen],
 		blackPair, count[BlackPawn], count[BlackKnight], count[BlackBishop], count[BlackRook], count[BlackQueen])
-	black := imbalance(blackPair, count[BlackPawn], count[BlackKnight], count[BlackBishop], count[BlackRook], count[BlackQueen],
+	black := e.imbalance(blackPair, count[BlackPawn], count[BlackKnight], count[BlackBishop], count[BlackRook], count[BlackQueen],
 		whitePair, count[Pawn], count[Knight], count[Bishop], count[Rook], count[Queen])
 
 	adjustment := (white - black) / 32
@@ -185,20 +185,13 @@ var mB = []int {    0,    0,  105,    4,    0,    0,   57,   64,   39,    0,    
 var mR = []int { -141,  -27,   -2,   46,  100,    0,   50,   40,   23,  -22,    0,   249 } // Rooks.
 var mQ = []int {    0, -177,   25,  129,  142, -137,   98,  105,  -39,  141,  274,  -154 } // Queens.
 
-func imbalance(w2, wP, wN, wB, wR, wQ, b2, bP, bN, bB, bR, bQ int) int {
+func (e *Evaluation) imbalance(w2, wP, wN, wB, wR, wQ, b2, bP, bN, bB, bR, bQ int) int {
 	return polynom(m2[0], (m2[1]                                                                                                       ), m2[11], w2) +
 	       polynom(mP[0], (mP[1]*w2 +                                             mP[6]*b2                                             ), mP[11], wP) +
 	       polynom(mN[0], (mN[1]*w2 + mN[2]*wP +                                  mN[6]*b2 + mN[7]*bP                                  ), mN[11], wN) +
 	       polynom(mB[0], (mB[1]*w2 + mB[2]*wP + mB[3]*wN +                       mB[6]*b2 + mB[7]*bP + mB[8]*bN                       ), mB[11], wB) +
 	       polynom(mR[0], (mR[1]*w2 + mR[2]*wP + mR[3]*wN + mR[4]*wB +            mR[6]*b2 + mR[7]*bP + mR[8]*bN + mR[9]*bB            ), mR[11], wR) +
 	       polynom(mQ[0], (mQ[1]*w2 + mQ[2]*wP + mQ[3]*wN + mQ[4]*wB + mQ[5]*wR + mQ[6]*b2 + mQ[7]*bP + mQ[8]*bN + mQ[9]*bB + mQ[10]*bR), mQ[11], wQ)
-}
-
-// Computes second degree polynom as in A*(X**2) + B*X + C. We are cheating with
-// the C coefficient to avoid extra multiplication (material imbalance parameter
-// assumes C gets multipled by X).
-func polynom(a, b, c, x int) int {
-	return a * (x * x) + (b + c) * x
 }
 
 // Pre-populates material cache with the most common middle game material
@@ -254,8 +247,9 @@ func (g *Game) warmUpMaterialCache() {
 			bPair++
 		}
 
-		white := imbalance(wPair, wP, wN, wB, wR, wQ,  bPair, bP, bN, bB, bR, bQ)
-		black := imbalance(bPair, bP, bN, bB, bR, bQ,  wPair, wP, wN, wB, wR, wQ)
+		// Cheating with eval global: this should be game.eval.
+		white := eval.imbalance(wPair, wP, wN, wB, wR, wQ,  bPair, bP, bN, bB, bR, bQ)
+		black := eval.imbalance(bPair, bP, bN, bB, bR, bQ,  wPair, wP, wN, wB, wR, wQ)
 
 		adjustment := (white - black) / 32
 		material.score.midgame += adjustment

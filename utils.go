@@ -99,19 +99,12 @@ func C(color int) string {
 	return [2]string{`white`, `black`}[color]
 }
 
-//
-//   noWe         nort         noEa
-//           +7    +8    +9
-//               \  |  /
-//   west    -1 <-  0 -> +1    east
-//               /  |  \
-//           -9    -8    -7
-//   soWe         sout         soEa
-//
-func Rose(direction int) int {
-	return [8]int{8, 9, 1, -7, -8, -9, -1, 7}[direction]
+// Computes second degree polynom as in A*(X**2) + B*X + C. We are cheating with
+// the C coefficient to avoid extra multiplication (material imbalance parameter
+// assumes C gets multipled by X).
+func polynom(a, b, c, x int) int {
+	return a * (x * x) + (b + c) * x
 }
-
 
 func Summary(metrics map[string]interface{}) {
 	phase := metrics[`Phase`].(int)
