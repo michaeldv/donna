@@ -16,5 +16,6 @@ tmtags
 # Other
 ~*
 *.*~
+logs/*
 tools/*
 
