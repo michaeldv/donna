@@ -4,44 +4,28 @@
 
 package donna
 
-import `regexp`
-// import `fmt`
+import `strings`
 
 func NewPositionFromFEN(game *Game, fen string) *Position {
-	const ( 
-		row1   = `([rnbqkRNBQK1-8]+/`
-		rows26 = `([rnbqkpRNBQKP1-8]+/){6}`
-		row8   = `[rnbqkRNBQK1-8]+)`
-		color  = `([bw])`
-		castle = `(-|K?Q?k?q?)`
-		enpass = `(-|[a-h][36])`
-		number = `(\d+)`
-		spx    = `\s*`
-		sp     = `\s`
-	)
-
 	tree[node] = Position{game: game}
 	p := &tree[node]
 
 	// Expected matches of interest are as follows:
-	// [1] - Pieces (entire board).
-	// [3] - Color of side to move.
-	// [4] - Castle rights.
-	// [5] - En-passant square.
-	// [6] - Number of half-moves.
-	// [7] - Number of full moves.
-	re := regexp.MustCompile(spx + row1 + rows26 + row8 + sp + color + sp + castle + sp + enpass + sp + number + sp + number + spx);
-	matches := re.FindStringSubmatch(fen)
-	if matches == nil {
+	// [0] - Pieces (entire board).
+	// [1] - Color of side to move.
+	// [2] - Castle rights.
+	// [3] - En-passant square.
+	// [4] - Number of half-moves.
+	// [5] - Number of full moves.
+	matches := strings.Split(fen, ` `)
+	if len(matches) == 5 {
 		return nil
 	}
-	// fmt.Println(spx + row1 + rows26 + row8 + sp + color + sp + castle + sp + enpass + sp + number + sp + number + spx)
 	// fmt.Printf("%q\n", matches)
-	// fmt.Printf("%s\n", matches[1])
 
-	// [1] - Pieces (entire board).
+	// [0] - Pieces (entire board).
 	square := A8
-	for _, char := range(matches[1]) {
+	for _, char := range(matches[0]) {
 		piece := Piece(0)
 		// fmt.Printf("%c ", char)
 		switch(char) {
@@ -86,15 +70,15 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		}
 	}
 
-	// [3] - Color of side to move.
-	if matches[3] == `w` {
+	// [1] - Color of side to move.
+	if matches[1] == `w` {
 		p.color = White
 	} else {
 		p.color = Black
 	}
 
-	// [4] - Castle rights.
-	for _, char := range(matches[4]) {
+	// [2] - Castle rights.
+	for _, char := range(matches[2]) {
 		switch(char) {
 		case 'K':
 			p.castles |= castleKingside[White]
@@ -109,9 +93,9 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		}
 	}
 
-	// [5] - En-passant square.
-	if matches[5] != `-` {
-		p.enpassant = Square(int(matches[5][1] - '1'), int(matches[5][0] - 'a'))
+	// [3] - En-passant square.
+	if matches[3] != `-` {
+		p.enpassant = Square(int(matches[3][1] - '1'), int(matches[3][0] - 'a'))
 
 	}
 
