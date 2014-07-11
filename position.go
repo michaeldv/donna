@@ -8,6 +8,7 @@ import (
 	`bytes`
 	`fmt`
 	`regexp`
+	`strings`
 )
 
 var tree [1024]Position
@@ -34,9 +35,8 @@ func NewPosition(game *Game, white, black string, color int) *Position {
 	tree[node] = Position{game: game, color: color}
 	p := &tree[node]
 
-	re := regexp.MustCompile(`\W+`)
-	whitePieces, blackPieces := re.Split(white, -1), re.Split(black, -1)
-	p.setupSide(whitePieces, White).setupSide(blackPieces, Black)
+	p.setupSide(strings.Split(white, `,`), White)
+	p.setupSide(strings.Split(black, `,`), Black)
 
 	p.castles = castleKingside[White] | castleQueenside[White] | castleKingside[Black] | castleQueenside[Black]
 	if p.pieces[E1] != King || p.pieces[H1] != Rook {
