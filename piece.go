@@ -112,46 +112,13 @@ func (p Piece) isPawn() bool {
 }
 
 func (p Piece) String() string {
-	color := p.color()
-	switch p.kind() {
-	case King:
-		if Settings.Fancy {
-			return []string{"\u2654", "\u265A"}[color]
-		} else {
-			return []string{`K`, `k`}[color]
-		}
-	case Queen:
-		if Settings.Fancy {
-			return []string{"\u2655", "\u265B"}[color]
-		} else {
-			return []string{`Q`, `q`}[color]
-		}
-	case Rook:
-		if Settings.Fancy {
-			return []string{"\u2656", "\u265C"}[color]
-		} else {
-			return []string{`R`, `r`}[color]
-		}
-	case Bishop:
-		if Settings.Fancy {
-			return []string{"\u2657", "\u265D"}[color]
-		} else {
-			return []string{`B`, `b`}[color]
-		}
-	case Knight:
-		if Settings.Fancy {
-			return []string{"\u2658", "\u265E"}[color]
-		} else {
-			return []string{`N`, `n`}[color]
-		}
-	case Pawn:
-		if Settings.Fancy {
-			return []string{"\u2659", "\u265F"}[color]
-		} else {
-			return []string{`P`, `p`}[color]
-		}
+	plain := []string{ ` `, ` `, `P`, `p`, `N`, `n`, `B`, `b`, `R`, `r`, `Q`, `q`, `K`, `k` }
+	fancy := []string{ ` `, ` `, "\u2659", "\u265F", "\u2658", "\u265E", "\u2657", "\u265D", "\u2656", "\u265C", "\u2655", "\u265B", "\u2654", "\u265A" }
+
+	if Settings.Fancy {
+		return fancy[p]
 	}
-	return ``
+	return plain[p]
 }
 
 // Colorless ASCII representation (perfect for tests).
