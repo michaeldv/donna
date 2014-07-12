@@ -123,6 +123,7 @@ func (game *Game) Think(requestedDepth int) Move {
 	alpha, beta := -Checkmate, Checkmate
 
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
+
 	for depth := 1; depth <= Min(MaxDepth, requestedDepth); depth++ {
 		game.nodes, game.qnodes = 0, 0
 
@@ -130,9 +131,9 @@ func (game *Game) Think(requestedDepth int) Move {
 		// Aspiration window searches kick in at depth 5 and up.
 		start := time.Now()
 		if depth < 5 {
-			move, score = position.searchRoot(alpha, beta, depth)
+			move, score = position.search(alpha, beta, depth)
 		} else {
-			aspiration := valuePawn.midgame*3//valueQueen.endgame
+			aspiration := valuePawn.midgame / 3
 			alpha = Max(score - aspiration, -Checkmate)
 			beta = Min(score + aspiration, Checkmate)
 
@@ -140,15 +141,20 @@ func (game *Game) Think(requestedDepth int) Move {
 			// previous iteration score, and re-search with the bigger
 			// window as necessary.
 			for {
-				move, score = position.searchRoot(alpha, beta, depth)
+				// Log("\tscore -> %d, searchRoot(%d, %d, %d)\n", score, alpha, beta, depth)
+				move, score = position.search(alpha, beta, depth)
+
+				// Log("\tscore => %d, pv => %v\n", score, game.pv[0][0:game.pvsize[0]])
 				if score <= alpha {
+					// Log("\tscore %d <= alpha %d, new alpha %d\n", score, alpha, score - aspiration)
 					alpha = Max(score - aspiration, -Checkmate)
 				} else if score >= beta {
+					// Log("\tscore %d >= beta %d, new beta %d\n", score, beta, score + aspiration)
 					beta = Min(score + aspiration, Checkmate)
 				} else {
 					break;
 				}
-				aspiration += aspiration/3
+				aspiration *= 2
 			}
 			// TBD: position.cache(move, score, 0, 0)
 		}
@@ -221,13 +227,12 @@ func (game *Game) saveBest(ply int, move Move) *Game {
 }
 
 func (game *Game) saveGood(depth int, move Move) *Game {
-	if move & (isCapture | isPromo) == 0 {
-		if ply := Ply(); move & (isCapture | isPromo) == 0 && move != game.killers[ply][0] {
-			game.killers[ply][1] = game.killers[ply][0]
-			game.killers[ply][0] = move
-			game.history[move.piece()][move.to()] += depth * depth
-		}
+	if ply := Ply(); move.isQuiet() && move != game.killers[ply][0] {
+		game.killers[ply][1] = game.killers[ply][0]
+		game.killers[ply][0] = move
+		game.history[move.piece()][move.to()] += depth * depth
 	}
+
 	return game
 }
 
