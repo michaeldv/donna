@@ -4,66 +4,85 @@
 
 package donna
 
-import ()
-
 // Root node search.
-func (p *Position) searchRoot(alpha, beta, depth int) (bestMove Move, bestScore int) {
-	gen := NewRootGen(p, depth)
-	if gen.onlyMove() {
-		p.game.saveBest(Ply(), gen.list[0].move)
-		return gen.list[0].move, p.Evaluate()
-	}
+func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
+	ply := 0
+	p.game.pvsize[ply] = 0
 
-	bestMove = gen.list[0].move
-	bestScore = alpha
+	cachedMove := p.cachedMove()
+	cacheFlags := uint8(cacheAlpha)
+
+	inCheck := p.isInCheck(p.color)
+
+	gen := NewGen(p, ply)
+	if inCheck {
+		gen.generateEvasions().quickRank()
+	} else {
+		gen.generateMoves().rank(cachedMove)
+	}
 
 	moveCount := 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		position := p.MakeMove(move)
-		//Log("%*sroot/%s> depth: %d, ply: %d, move: %s\n", Ply()*2, ` `, C(p.color), depth, Ply(), move)
+		if position := p.MakeMove(move); position != nil {
+			moveCount++
+			newDepth := depth - 1
 
-		inCheck := position.isInCheck(position.color)
-		reducedDepth := depth - 1
-		if inCheck {
-			reducedDepth++
-		}
+			// Search depth extension.
+			if position.isInCheck(p.color^1) { // Give check.
+				newDepth++
+			}
 
-		moveScore := 0
-		if moveCount > 0 && reducedDepth > 0 {
-			if inCheck {
-				moveScore = -position.searchInCheck(-alpha, reducedDepth)
+			if moveCount == 1 {
+				score = -position.searchTree(-beta, -alpha, newDepth)
 			} else {
-				moveScore = -position.searchWithZeroWindow(-alpha, reducedDepth)
+				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
+				if score > alpha && score < beta {
+					score = -position.searchTree(-beta, -alpha, newDepth)
+				}
 			}
-			if moveScore > alpha {
-				moveScore = -position.searchPrincipal(-Checkmate, -alpha, reducedDepth)
-			}
-		} else {
-			moveScore = -position.searchPrincipal(alpha, beta, reducedDepth)
-		}
+			position.TakeBack(move)
 
-		position.TakeBack(move)
-		moveCount++
-
-		if moveScore > bestScore {
-			bestScore = moveScore
-			position.game.saveBest(Ply(), move)
-			if bestScore > alpha {
-				alpha = bestScore
+			if moveCount == 1 {
 				bestMove = move
+				p.game.saveBest(ply, move)
+			}
+
+			if score > alpha {
+				alpha = score
+				bestMove = move
+				cacheFlags = cacheExact
+				p.game.saveBest(ply, move)
+
+				if alpha >= beta {
+					cacheFlags = cacheBeta
+					break
+				}
 			}
 		}
-	} // next move.
+	}
 
-	// fmt.Printf("depth: %d, node: %d\nbestline %v\nkillers %v\n", depth, node, p.game.pv, p.game.killers)
+	p.game.nodes += moveCount
+
+	if moveCount == 0 {
+		if inCheck {
+			alpha = -Checkmate + ply
+		} else {
+			alpha = 0
+		}
+	} else if score >= beta && !inCheck {
+		p.game.saveGood(depth, bestMove)
+	}
+
+	score = alpha
+	p.cache(bestMove, score, depth, cacheFlags)
+
 	return
 }
 
-// Helps with testing root search by initializing move genarator at given depth and
-// bypassing iterative deepening altogether.
-func (p *Position) search(depth int) Move {
-	NewGen(p, 0).generateAllMoves().validOnly(p)
-	move, _ := p.searchRoot(-Checkmate, Checkmate, depth)
+// Testing helper method to test root search.
+func (p *Position) solve(depth int) Move {
+	//NewGen(p, 0).generateAllMoves().validOnly(p)
+	move, _ := p.search(-Checkmate, Checkmate, depth)
 
 	return move
 }
