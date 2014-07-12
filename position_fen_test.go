@@ -71,3 +71,23 @@ func TestFen120(t *testing.T) {
 	expect(t, p.outposts[BlackQueen], bit[C7])
 	expect(t, p.outposts[BlackKing], bit[F8])
 }
+
+// Position to FEN tests.
+
+// Initial position: castles, no en-passant.
+func TestFen200(t *testing.T) {
+	p := NewGame(`rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`).Start()
+	expect(t, p.fen(), `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -`)
+}
+
+// Castles, no en-passant.
+func TestFen210(t *testing.T) {
+	p := NewGame(`2r1kb1r/pp3ppp/2n1b3/1q1N2B1/1P2Q3/8/P4PPP/3RK1NR w Kk - 42 42`).Start()
+	expect(t, p.fen(), `2r1kb1r/pp3ppp/2n1b3/1q1N2B1/1P2Q3/8/P4PPP/3RK1NR w Kk -`)
+}
+
+// No castles, en-passant.
+func TestFen220(t *testing.T) {
+	p := NewGame(`1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 42 42`).Start()
+	expect(t, p.fen(), `1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6`)
+}

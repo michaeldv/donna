@@ -4,8 +4,9 @@
 
 package donna
 
-import `strings`
+import(`fmt`; `strings`)
 
+// Decodes FEN string and creates new position.
 func NewPositionFromFEN(game *Game, fen string) *Position {
 	tree[node] = Position{game: game}
 	p := &tree[node]
@@ -107,6 +108,74 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	return p
 }
 
-func (p *Position) fen() string {
-	return ":-)"
+// Encodes position as FEN string.
+func (p *Position) fen() (fen string) {
+	fancy := Settings.Fancy
+	Settings.Fancy = false; defer func() { Settings.Fancy = fancy }()
+
+	// Board: start from A8->H8 going down to A1->H1.
+	empty := 0
+	for row := A8H8; row >= A1H1; row-- {
+		for col := A1A8; col <= H1H8; col++ {
+			square := Square(row, col)
+			piece := p.pieces[square]
+
+			//fmt.Printf("row %d col %d square %d, piece: %s\n", row, col, square, piece)
+			if piece != 0 {
+				if empty != 0 {
+					fen += fmt.Sprintf(`%d`, empty)
+					empty = 0
+				}
+				fen += piece.String()
+			} else {
+				empty++
+			}
+
+			if col == 7 {
+				if empty != 0 {
+					fen += fmt.Sprintf(`%d`, empty)
+					empty = 0
+				}
+				if row != 0 {
+					fen += `/`
+				}
+			}
+		}
+	}
+
+	// Side to move.
+	if p.color == White {
+		fen += ` w`
+	} else {
+		fen += ` b`
+	}
+
+	// Castle rights for both sides, if any.
+	if p.castles & 0x33 != 0 {
+		fen += ` `
+		if p.castles & 0x01 != 0 {
+			fen += `K`
+		}
+		if p.castles & 0x02 != 0 {
+			fen += `Q`
+		}
+		if p.castles & 0x04 != 0 {
+			fen += `k`
+		}
+		if p.castles & 0x08 != 0 {
+			fen += `q`
+		}
+	} else {
+		fen += ` -`
+	}
+
+	// En-passant square, if any.
+	if p.enpassant != 0 {
+		row, col := Coordinate(p.enpassant)
+		fen += fmt.Sprintf(` %c%d`, col + 'a', row + 1)
+	} else {
+		fen += ` -`
+	}
+
+	return
 }
