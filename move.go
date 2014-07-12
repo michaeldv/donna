@@ -66,7 +66,12 @@ func (m Move) castle() Move {
 }
 
 func (m Move) isEnpassant() bool {
-	return m&isEnpassant != 0
+	return m & isEnpassant != 0
+}
+
+// Returns true if the move doesn't change material balance.
+func (m Move) isQuiet() bool {
+	return m & (isCapture | isPromo) == 0
 }
 
 func (m Move) enpassant() Move {
@@ -76,6 +81,7 @@ func (m Move) enpassant() Move {
 func (m Move) pawnJump() Move {
 	return m | isPawnJump
 }
+
 
 // Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() int {
