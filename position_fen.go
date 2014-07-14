@@ -28,7 +28,6 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	square := A8
 	for _, char := range(matches[0]) {
 		piece := Piece(0)
-		// fmt.Printf("%c ", char)
 		switch(char) {
 		case 'P':
 			piece = Pawn
@@ -62,7 +61,6 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 			square += int(char - '0')
 		}
 		if piece != 0 {
-			// fmt.Printf("%02d: %s\n", square, piece)
 			p.pieces[square] = piece
 			p.outposts[piece].set(square)
 			p.outposts[piece.color()].set(square)
@@ -120,7 +118,6 @@ func (p *Position) fen() (fen string) {
 			square := Square(row, col)
 			piece := p.pieces[square]
 
-			//fmt.Printf("row %d col %d square %d, piece: %s\n", row, col, square, piece)
 			if piece != 0 {
 				if empty != 0 {
 					fen += fmt.Sprintf(`%d`, empty)
@@ -151,18 +148,18 @@ func (p *Position) fen() (fen string) {
 	}
 
 	// Castle rights for both sides, if any.
-	if p.castles & 0x33 != 0 {
+	if p.castles & 0x0F != 0 {
 		fen += ` `
-		if p.castles & 0x01 != 0 {
+		if p.castles & castleKingside[White] != 0 {
 			fen += `K`
 		}
-		if p.castles & 0x02 != 0 {
+		if p.castles & castleQueenside[White] != 0 {
 			fen += `Q`
 		}
-		if p.castles & 0x04 != 0 {
+		if p.castles & castleKingside[Black] != 0 {
 			fen += `k`
 		}
-		if p.castles & 0x08 != 0 {
+		if p.castles & castleQueenside[Black] != 0 {
 			fen += `q`
 		}
 	} else {

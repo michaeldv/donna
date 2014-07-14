@@ -72,14 +72,14 @@ var deBruijn = [64]int{
 var castleKingside = [2]uint8{ 1, 4 }
 var castleQueenside = [2]uint8{ 2, 8 }
 var castleRights = [64]uint8{
-	13, 15, 15, 15, 12, 15, 15, 14, // A1 -- H1
+	13, 15, 15, 15, 12, 15, 15, 14,
 	15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15,
 	15, 15, 15, 15, 15, 15, 15, 15,
-	 7, 15, 15, 15,  3, 15, 15, 11, // A8 -- H8
+	 7, 15, 15, 15,  3, 15, 15, 11,
 }
 
 var maskRank = [8]Bitmask{ // 0 to 8
@@ -102,7 +102,7 @@ var homeKing = [2]int{ E1, E8 }
 var mask7th = [2]Bitmask{ maskRank[6], maskRank[1] }
 var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
 
-// Castle squares that should be *empty* in order for catle to be valid.
+// Castle squares that should be *empty* in order for the castle to be valid.
 var gapKing = [2]Bitmask{
 	bit[F1]|bit[G1], bit[F8]|bit[G8],
 }
@@ -111,7 +111,7 @@ var gapQueen = [2]Bitmask{
 	bit[B1]|bit[C1]|bit[D1], bit[B8]|bit[C8]|bit[D8],
 }
 
-// Castle squares that should be *safe* in order for catle to be valid.
+// Castle squares that should be *safe* in order for the castle to be valid.
 var castleKing = [2]Bitmask{
 	bit[E1]|bit[F1]|bit[G1], bit[E8]|bit[F8]|bit[G8],
 }
