@@ -36,6 +36,7 @@ type Game struct {
 	pv       Pv 	  // Principal variation.
 	pvsize   PvSize   // Number of moves in principal variation.
 	options  Options  // Game options.
+	clock    *time.Ticker
 }
 
 // Use single statically allocated variable.
@@ -124,6 +125,8 @@ func (game *Game) Think(requestedDepth int) Move {
 
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
 
+	game.options.msToMakeMove = 1000
+	game.startClock(); defer game.stopClock();
 	for depth := 1; depth <= Min(MaxDepth, requestedDepth); depth++ {
 		game.nodes, game.qnodes = 0, 0
 
@@ -240,6 +243,25 @@ func (game *Game) saveGood(depth int, move Move) *Game {
 // history value.
 func (game *Game) good(move Move) int {
 	return game.history[move.piece()][move.to()]
+}
+
+func (game *Game) startClock() {
+	if game.options.msToMakeMove > 0 {
+		start := time.Now()
+		game.clock = time.NewTicker(time.Millisecond * 2000)
+		go func() {
+			for _ = range game.clock.C {
+				elapsed := time.Since(start)
+				fmt.Printf("\tElapsed %d (%v)\n", elapsed, elapsed)
+			}
+		}()
+	}
+}
+
+func (game *Game) stopClock() {
+	if game.clock != nil {
+		game.clock.Stop()
+	}
 }
 
 func (game *Game) String() string {
