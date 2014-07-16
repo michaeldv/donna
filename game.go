@@ -10,16 +10,6 @@ import (
 	`time`
 )
 
-type Options struct {
-	msRemaining   int // (-) Remaining time for the rest of the game.
-	msIncrement   int // (-) Time increment after the move.
-	msToMakeMove  int // Time limit to make a move.
-	maxDepth      int // Search depth limit.
-	maxNodes      int // (-) Search nodes limit.
-	msSoftStop    int // (-) Soft time limit stop.
-	msHardStop    int // (-) Hard time limit stop.
-}
-
 type History [14][64]int
 type Killers [MaxPly][2]Move
 type Pv      [MaxPly][MaxPly]Move
@@ -35,8 +25,8 @@ type Game struct {
 	killers  Killers  // Killer moves.
 	pv       Pv 	  // Principal variation.
 	pvsize   PvSize   // Number of moves in principal variation.
-	options  Options  // Game options.
-	clock    *time.Ticker
+	options  Options  // Game options, might be set by REPL or UCI.
+	clock    Clock    // Time controls.
 }
 
 // Use single statically allocated variable.
@@ -65,13 +55,6 @@ func NewGame(args ...string) *Game {
 	return &game
 }
 
-func (game *Game) CacheSize(megaBytes float32) *Game {
-	game.cache = NewCache(megaBytes)
-	game.warmUpMaterialCache()
-
-	return game
-}
-
 // The color parameter is optional.
 func (game *Game) Start(args ...int) *Position {
 	tree, node, rootNode = [1024]Position{}, 0, 0
@@ -82,20 +65,6 @@ func (game *Game) Start(args ...int) *Position {
 		return NewPosition(game, sides[White], sides[Black], args[0])
 	}
 	return NewPositionFromFEN(game, game.initial)
-}
-
-func (game *Game) Set(option string, value int) {
-	switch option {
-	case `depth`:
-		game.options = Options{}
-		game.options.maxDepth = value
-	case `movetime`:
-		game.options = Options{}
-		game.options.msRemaining = value
-		game.options.msToMakeMove = value
-		game.options.msSoftStop = value
-		game.options.msHardStop = value
-	}
 }
 
 func (game *Game) Position() *Position {
@@ -125,7 +94,7 @@ func (game *Game) Think(requestedDepth int) Move {
 
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
 
-	game.options.msToMakeMove = 1000
+	game.options.msMoveTime = 1000
 	game.startClock(); defer game.stopClock();
 	for depth := 1; depth <= Min(MaxDepth, requestedDepth); depth++ {
 		game.nodes, game.qnodes = 0, 0
@@ -243,25 +212,6 @@ func (game *Game) saveGood(depth int, move Move) *Game {
 // history value.
 func (game *Game) good(move Move) int {
 	return game.history[move.piece()][move.to()]
-}
-
-func (game *Game) startClock() {
-	if game.options.msToMakeMove > 0 {
-		start := time.Now()
-		game.clock = time.NewTicker(time.Millisecond * 2000)
-		go func() {
-			for _ = range game.clock.C {
-				elapsed := time.Since(start)
-				fmt.Printf("\tElapsed %d (%v)\n", elapsed, elapsed)
-			}
-		}()
-	}
-}
-
-func (game *Game) stopClock() {
-	if game.clock != nil {
-		game.clock.Stop()
-	}
 }
 
 func (game *Game) String() string {
