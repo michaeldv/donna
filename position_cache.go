@@ -25,7 +25,7 @@ type CacheEntry struct {
 
 type Cache []CacheEntry
 
-func NewCache(megaBytes float32) Cache {
+func NewCache(megaBytes float64) Cache {
 	cacheSize := uint(1024*1024*megaBytes) / uint(unsafe.Sizeof(CacheEntry{}))
 	return make(Cache, cacheSize)
 }
