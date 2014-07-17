@@ -17,13 +17,23 @@ type Clock struct {
 }
 
 func (game *Game) startClock() {
+	game.clock.stopSearch = false
+
+	if game.options.msMoveTime == 0 && game.options.msGameTime == 0 {
+		return
+	}
+
 	if game.options.msMoveTime > 0 {
 		start := time.Now()
-		game.clock.ticker = time.NewTicker(time.Millisecond * 2000)
+		game.clock.ticker = time.NewTicker(time.Millisecond * 125) // 8 times 1a second.
 		go func() {
-			for x := range game.clock.ticker.C { // Returns current time.
-				elapsed := time.Since(start)
-				fmt.Printf("\tElapsed %d (%v) => %q\n", elapsed, elapsed, x)
+			for now := range game.clock.ticker.C {
+				elapsed := now.Sub(start).Nanoseconds() / 1000000
+				fmt.Printf("    ->clock %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
+				if elapsed >= game.options.msMoveTime {
+					fmt.Printf("    <-CLOCK %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
+					game.clock.stopSearch = true
+				}
 			}
 		}()
 	}
