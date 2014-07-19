@@ -9,7 +9,7 @@ import ()
 func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	ply := Ply()
 
-	if ply >= MaxPly {
+	if ply >= MaxPly || p.game.clock.stopSearch {
 		return p.Evaluate()
 	}
 
@@ -175,6 +175,11 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			}
 			position.TakeBack(move)
 
+			if p.game.clock.stopSearch {
+				p.game.nodes += moveCount
+				return alpha
+			}
+
 			if score > alpha {
 				alpha = score
 				bestMove = move
@@ -185,7 +190,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 					cacheFlags = cacheBeta
 					break
 				}
-
 			}
 		}
 	}

@@ -11,9 +11,8 @@ func (p *Position) searchQuiescence(alpha, beta, depth int) int {
 
 func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly bool) (score int) {
 	ply := Ply()
-	//p.game.qnodes++
 
-	if ply >= MaxPly {
+	if ply >= MaxPly || p.game.clock.stopSearch {
 		return p.Evaluate()
 	}
 
@@ -99,6 +98,11 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 				moveCount++
 				score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, false)
 				position.TakeBack(move)
+
+				if p.game.clock.stopSearch {
+					p.game.qnodes += moveCount
+					return alpha
+				}
 
 				if score > alpha {
 					alpha = score
