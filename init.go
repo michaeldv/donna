@@ -75,7 +75,7 @@ func init() {
 		}
 
 		// Pawns.
-		if row >= 1 && row <= 7 {
+		if row >= A2H2 && row <= A7H7 {
 			if col > 0 {
 				pawnMoves[White][square].set(Square(row + 1, col - 1))
 				pawnMoves[Black][square].set(Square(row - 1, col - 1))
