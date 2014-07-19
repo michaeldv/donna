@@ -37,22 +37,32 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 	return gen
 }
 
-// Returns "new" move generator for the initial step of iterative deepening
-// (depth == 1) and existing one for subsequent iterations (depth > 1). This
-// is used in iterative deepening search when all the moves are being generated
-// at depth one, and reused later as the search deepens.
+// Returns new move generator for the initial step of iterative deepening
+// (depth == 1) and existing one for subsequent iterations (depth > 1).
+//
+// This is used in iterative deepening search when all the moves are being
+// generated at depth one, and reused later as the search deepens.
 func NewRootGen(p *Position, depth int) (gen *MoveGen) {
 	if depth > 1 {
 		return moveList[0].reset().rank(p.cachedMove())
 	}
 
-	gen = NewGen(p, 0).generateAllMoves()
+	// 1) generate all moves or check evasions; 2) return if we've got the
+	// only move; 3) and get rid of invalid moves so that we don't do it on
+	// each iteration; 4) return sorted list.
+	gen = NewGen(p, 0)
+	if p.isInCheck(p.color) {
+		gen.generateEvasions()
+		if gen.onlyMove() {
+			return gen
+		}
+		return gen.validOnly(p).quickRank()
+	}
+
+	gen.generateMoves()
 	if gen.onlyMove() {
 		return gen
 	}
-	//
-	// Get rid of invalid moves so that we don't do it on each iteration.
-	//
 	return gen.validOnly(p).rank(p.cachedMove())
 }
 

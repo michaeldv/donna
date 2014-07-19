@@ -8,17 +8,10 @@ package donna
 func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
 	ply := 0
 
-	cachedMove := p.cachedMove()
+	inCheck := p.isInCheck(p.color)
 	cacheFlags := uint8(cacheAlpha)
 
-	inCheck := p.isInCheck(p.color)
-
-	gen := NewGen(p, ply)
-	if inCheck {
-		gen.generateEvasions().quickRank()
-	} else {
-		gen.generateMoves().rank(cachedMove)
-	}
+	gen := NewRootGen(p, ply)
 
 	moveCount := 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
@@ -92,8 +85,6 @@ func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
 
 // Testing helper method to test root search.
 func (p *Position) solve(depth int) Move {
-	//NewGen(p, 0).generateAllMoves().validOnly(p)
 	move, _ := p.search(-Checkmate, Checkmate, depth)
-
 	return move
 }
