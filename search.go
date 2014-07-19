@@ -7,7 +7,6 @@ package donna
 // Root node search.
 func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
 	ply := 0
-	p.game.pvsize[ply] = 0
 
 	cachedMove := p.cachedMove()
 	cacheFlags := uint8(cacheAlpha)
@@ -44,7 +43,19 @@ func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
 
 			if moveCount == 1 {
 				bestMove = move
+				p.game.pv[ply] = p.game.pv[ply][:0]
 				p.game.saveBest(ply, move)
+			}
+
+			if p.game.clock.stopSearch {
+				p.game.nodes += moveCount
+				Log("searchRoot at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
+				if score > alpha {
+					p.game.saveBest(ply, move)
+					return move, score
+				}
+				Log("searchRoot: bestMove %s pv[0][0] %s\n", bestMove, p.game.pv[0][0])
+				return bestMove, alpha
 			}
 
 			if score > alpha {

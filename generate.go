@@ -106,16 +106,8 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 	if gen.size() < 2 {
 		return gen
 	}
-	//
-	// If the cache is disabled or we couldn't determine best move so far
-	// then use principal variation table as backup.
-	//
-	game := gen.p.game
-	if len(game.cache) == 0 && bestMove == Move(0) {
-		bestMove = game.pv[0][gen.ply]
-	}
 
-	for i := gen.head; i < gen.tail; i++ {
+	for i, game := gen.head, gen.p.game; i < gen.tail; i++ {
 		move := gen.list[i].move
 		if move == bestMove {
 			gen.list[i].score = 0xFFFF
@@ -139,8 +131,7 @@ func (gen *MoveGen) quickRank() *MoveGen {
 		return gen
 	}
 
-	game := gen.p.game
-	for i := gen.head; i < gen.tail; i++ {
+	for i, game := gen.head, gen.p.game; i < gen.tail; i++ {
 		if move := gen.list[i].move; move & isCapture != 0 {
 			gen.list[i].score = 8192 + move.value()
 		} else {

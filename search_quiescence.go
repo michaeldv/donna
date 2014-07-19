@@ -16,7 +16,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 		return p.Evaluate()
 	}
 
-	p.game.pvsize[ply] = 0
+	p.game.pv[ply] = p.game.pv[ply][:0]
 
 	// Probe cache.
 	cacheFlags := uint8(cacheAlpha)

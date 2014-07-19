@@ -12,8 +12,8 @@ import (
 
 type History [14][64]int
 type Killers [MaxPly][2]Move
-type Pv      [MaxPly][MaxPly]Move
-type PvSize  [MaxPly]int
+type Pv      []Move
+type PvTable [MaxPly]Pv
 
 type Game struct {
 	nodes    int 	  // Number of regular nodes searched.
@@ -23,8 +23,8 @@ type Game struct {
 	cache    Cache 	  // Transposition table.
 	history  History  // Good moves history.
 	killers  Killers  // Killer moves.
-	pv       Pv 	  // Principal variation.
-	pvsize   PvSize   // Number of moves in principal variation.
+	rootpv   Pv 	  // Principal variation for root moves.
+	pv       PvTable  // Principal variations for each ply.
 	options  Options  // Game options, might be set by REPL or UCI.
 	clock    Clock    // Time controls.
 }
@@ -42,6 +42,10 @@ func NewGame(args ...string) *Game {
 	game = Game{}
 	pawnCache = [8192]PawnEntry{}
 	materialCache = [8192]MaterialEntry{}
+
+	for ply := 0;  ply < MaxPly; ply++ {
+		game.pv[ply] = make([]Move, 0, MaxPly)
+	}
 
 	switch len(args) {
 	case 0: // Initial position.
@@ -71,7 +75,7 @@ func (game *Game) Position() *Position {
 	return &tree[node]
 }
 
-func (game *Game) Think(requestedDepth int) Move {
+func (game *Game) Think() Move {
 	position := game.Position()
 
 	book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
@@ -83,21 +87,29 @@ func (game *Game) Think(requestedDepth int) Move {
 	// Reset principal variation, killer moves and move history, and update
 	// cache token to ignore existing cache entries.
 	rootNode = node
-	game.pv = Pv{}
-	game.pvsize = PvSize{}
 	game.killers = Killers{}
 	game.history = History{}
 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
+	for ply := 0;  ply < MaxPly; ply++ {
+		game.pv[ply] = game.pv[ply][:0]
+	}
+
 	move, score, status := Move(0), 0, InProgress
 	alpha, beta := -Checkmate, Checkmate
 
+	done := func(depth int) bool {
+		return game.clock.stopSearch || (game.options.maxDepth > 0 && depth > game.options.maxDepth)
+	}
+
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
 
-	game.options.msMoveTime = 1000
 	game.startClock(); defer game.stopClock();
-	for depth := 1; depth <= Min(MaxDepth, requestedDepth); depth++ {
+	for depth := 1; !done(depth); depth++ {
 		game.nodes, game.qnodes = 0, 0
+
+		// Save previous best score in case search gets interrupted.
+		previousBest := score
 
 		// At low depths do the search with full alpha/beta spread.
 		// Aspiration window searches kick in at depth 5 and up.
@@ -113,15 +125,20 @@ func (game *Game) Think(requestedDepth int) Move {
 			// previous iteration score, and re-search with the bigger
 			// window as necessary.
 			for {
-				// Log("\tscore -> %d, searchRoot(%d, %d, %d)\n", score, alpha, beta, depth)
+				Log("\tscore -> %d, searchRoot(%d, %d, %d)\n", score, alpha, beta, depth)
+				previousBest = score
 				move, score = position.search(alpha, beta, depth)
 
-				// Log("\tscore => %d, pv => %v\n", score, game.pv[0][0:game.pvsize[0]])
+				if game.clock.stopSearch {
+					break
+				}
+
+				Log("\tscore => %d, pv => %v\n", score, game.pv[0])
 				if score <= alpha {
-					// Log("\tscore %d <= alpha %d, new alpha %d\n", score, alpha, score - aspiration)
+					Log("\tscore %d <= alpha %d, new alpha %d\n", score, alpha, score - aspiration)
 					alpha = Max(score - aspiration, -Checkmate)
 				} else if score >= beta {
-					// Log("\tscore %d >= beta %d, new beta %d\n", score, beta, score + aspiration)
+					Log("\tscore %d >= beta %d, new beta %d\n", score, beta, score + aspiration)
 					beta = Min(score + aspiration, Checkmate)
 				} else {
 					break;
@@ -132,16 +149,13 @@ func (game *Game) Think(requestedDepth int) Move {
 		}
 		finish := time.Since(start).Seconds()
 
-		if position.color == Black {
-			score = -score
+		if game.clock.stopSearch {
+			Log("\ttimed out score %d previousBest %d move %s\n", score, previousBest, move)
+			score = previousBest
 		}
+
 		status = position.status(move, score)
 		game.printBestLine(depth, score, status, finish)
-
-		// No reason to search deeper if no moves are available at current depth.
-		if move == Move(0) {
-			return move
-		}
 
 		// No reason to search deeper if the game is over or mate in X moves was
 		// found at current depth.
@@ -150,6 +164,7 @@ func (game *Game) Think(requestedDepth int) Move {
 		}
 
 	}
+
 	fmt.Printf("\nDonna's move: %s\n\n", move)
 	return move
 }
@@ -176,25 +191,25 @@ func (game *Game) printBestLine(depth, score, status int, finish float64) {
 		movesLeft := Checkmate - Abs(score)
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, movesLeft/2,
-			game.pv[0][0:Min(movesLeft, game.pvsize[0])])
+			float64(game.nodes+game.qnodes)/finish, movesLeft/2, game.pv[0])
 	default:
+		if game.Position().color == Black {
+			score = -score
+		}
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(valuePawn.endgame),
-			game.pv[0][0:game.pvsize[0]])
+			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(valuePawn.endgame), game.pv[0])
 	}
 }
 
 func (game *Game) saveBest(ply int, move Move) *Game {
-	next := ply + 1
-	game.pvsize[ply] = next
-	game.pv[ply][ply] = move
+	game.pv[ply] = append(game.pv[ply][0:ply], move)
 
-	if length := game.pvsize[next]; length > 0 {
-		copy(game.pv[ply][next : length], game.pv[next][next : length])
-		game.pvsize[ply] = length
+	next := ply + 1
+	if length := len(game.pv[next]); length > 0 {
+		game.pv[ply] = append(game.pv[ply], game.pv[next][next : length]...)
 	}
+
 	return game
 }
 

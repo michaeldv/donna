@@ -13,7 +13,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		return p.Evaluate()
 	}
 
-	p.game.pvsize[ply] = 0
+	p.game.pv[ply] = p.game.pv[ply][:0]
 	isNull := p.isNull()
 	inCheck := p.isInCheck(p.color)
 	isPrincipal := (beta - alpha > 1)
@@ -110,7 +110,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	// Internal iterative deepening.
 	if cachedMove == 0 && depth > 4 {
 		p.searchTree(alpha, beta, depth - 4)
-		if p.game.pvsize[ply] > 0 {
+		if len(p.game.pv[ply]) > 0 {
 			cachedMove = p.game.pv[ply][0]
 		}
 	}

@@ -228,5 +228,21 @@ func TestSearchDebug(t *testing.T) {
 	// Log("%s\n", p)
 
 	// move = game.Think(10)
+
+	// game := NewGame(`Ke1,Qd1,Ra1,Rh1,Be5,Bb5,Nc3,a2,b2,d4,e3,f2,g2,h2`,
+	// 	        `Ke8,Qd8,Ra8,Rh8,Bf5,Bd6,Nf6,a7,b7,d5,e6,f7,g7,h7`)
+	// game.Set(`cache`, 64, `movetime`, 5000)
+	// p := game.Start(Black)
+	// Log(); defer Log()
+	// Log("%s\n", p)
+
+	// game := NewGame(`Kg1,Qe2,Ra1,Re1,Bc1,Bd3,Nb3,Nf3,a2,b2,c3,f2,g2,h2`,
+	// 	        `Kg8,Qc7,Ra8,Rf8,Bb6,Bc8,Nc6,Nf6,a7,b7,d5,e6,g7,h7`)
+	// game.Set(`cache`, 64, `movetime`, 4620)
+	// p := game.Start(White)
+	// Log(); defer Log()
+	// Log("%s\n", p)
+
+	// game.Think()
 }
 
