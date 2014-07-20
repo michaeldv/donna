@@ -63,8 +63,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	gen.quickRank()
 
 
-	bestMove := Move(0)
-	moveCount := 0
+	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if !inCheck && p.exchange(move) < 0 {
 			continue
@@ -101,6 +100,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 
 				if p.game.clock.stopSearch {
 					p.game.qnodes += moveCount
+					//Log("searchQui at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
 					return alpha
 				}
 

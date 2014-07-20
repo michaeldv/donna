@@ -177,6 +177,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 			if p.game.clock.stopSearch {
 				p.game.nodes += moveCount
+				//Log("searchTree at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
 				return alpha
 			}
 

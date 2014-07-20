@@ -43,6 +43,7 @@ func NewGame(args ...string) *Game {
 	pawnCache = [8192]PawnEntry{}
 	materialCache = [8192]MaterialEntry{}
 
+	game.rootpv = make([]Move, 0, MaxPly)
 	for ply := 0;  ply < MaxPly; ply++ {
 		game.pv[ply] = make([]Move, 0, MaxPly)
 	}
@@ -91,6 +92,7 @@ func (game *Game) Think() Move {
 	game.history = History{}
 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
+	game.rootpv = game.rootpv[:0]
 	for ply := 0;  ply < MaxPly; ply++ {
 		game.pv[ply] = game.pv[ply][:0]
 	}
@@ -109,13 +111,17 @@ func (game *Game) Think() Move {
 		game.nodes, game.qnodes = 0, 0
 
 		// Save previous best score in case search gets interrupted.
-		previousBest := score
+		bestScore := score
 
 		// At low depths do the search with full alpha/beta spread.
 		// Aspiration window searches kick in at depth 5 and up.
 		start := time.Now()
 		if depth < 5 {
-			move, score = position.search(alpha, beta, depth)
+			score = position.search(alpha, beta, depth)
+			if score > alpha {
+				bestScore = score
+				game.rootpv = append(game.rootpv[:0], game.pv[0]...)
+			}
 		} else {
 			aspiration := valuePawn.midgame / 3
 			alpha = Max(score - aspiration, -Checkmate)
@@ -125,35 +131,38 @@ func (game *Game) Think() Move {
 			// previous iteration score, and re-search with the bigger
 			// window as necessary.
 			for {
-				Log("\tscore -> %d, searchRoot(%d, %d, %d)\n", score, alpha, beta, depth)
-				previousBest = score
-				move, score = position.search(alpha, beta, depth)
+				//Log("\tscore -> %d, searchRoot(%d, %d, %d)\n", score, alpha, beta, depth)
+				score = position.search(alpha, beta, depth)
+				if score > alpha {
+					bestScore = score
+					game.rootpv = append(game.rootpv[:0], game.pv[0]...)
+				}
 
 				if game.clock.stopSearch {
 					break
 				}
 
-				Log("\tscore => %d, pv => %v\n", score, game.pv[0])
 				if score <= alpha {
-					Log("\tscore %d <= alpha %d, new alpha %d\n", score, alpha, score - aspiration)
+					//Log("\tscore %d <= alpha %d, new alpha %d\n", score, alpha, score - aspiration)
 					alpha = Max(score - aspiration, -Checkmate)
 				} else if score >= beta {
-					Log("\tscore %d >= beta %d, new beta %d\n", score, beta, score + aspiration)
+					//Log("\tscore %d >= beta %d, new beta %d\n", score, beta, score + aspiration)
 					beta = Min(score + aspiration, Checkmate)
 				} else {
 					break;
 				}
 				aspiration *= 2
 			}
-			// TBD: position.cache(move, score, 0, 0)
+			// TBD: position.cache(game.rootpv[0], score, 0, 0)
 		}
 		finish := time.Since(start).Seconds()
 
 		if game.clock.stopSearch {
-			Log("\ttimed out score %d previousBest %d move %s\n", score, previousBest, move)
-			score = previousBest
+			//Log("\ttimed out pv => %v\n\ttimed out rv => %v\n", game.pv[0], game.rootpv)
+			score = bestScore
 		}
 
+		move = game.rootpv[0]
 		status = position.status(move, score)
 		game.printBestLine(depth, score, status, finish)
 
@@ -191,14 +200,14 @@ func (game *Game) printBestLine(depth, score, status int, finish float64) {
 		movesLeft := Checkmate - Abs(score)
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, movesLeft/2, game.pv[0])
+			float64(game.nodes+game.qnodes)/finish, movesLeft/2, game.rootpv)
 	default:
 		if game.Position().color == Black {
 			score = -score
 		}
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(valuePawn.endgame), game.pv[0])
+			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(valuePawn.endgame), game.rootpv)
 	}
 }
 

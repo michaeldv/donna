@@ -5,7 +5,7 @@
 package donna
 
 // Root node search.
-func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
+func (p *Position) search(alpha, beta, depth int) (score int) {
 	ply := 0
 
 	inCheck := p.isInCheck(p.color)
@@ -13,7 +13,7 @@ func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
 
 	gen := NewRootGen(p, ply)
 
-	moveCount := 0
+	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if position := p.MakeMove(move); position != nil {
 			moveCount++
@@ -34,21 +34,16 @@ func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
 			}
 			position.TakeBack(move)
 
+			if p.game.clock.stopSearch {
+				p.game.nodes += moveCount
+				//Log("searchRoot: bestMove %s pv[0][0] %s alpha %d\n", bestMove, p.game.pv[0][0], alpha)
+				return alpha
+			}
+
 			if moveCount == 1 {
 				bestMove = move
 				p.game.pv[ply] = p.game.pv[ply][:0]
 				p.game.saveBest(ply, move)
-			}
-
-			if p.game.clock.stopSearch {
-				p.game.nodes += moveCount
-				Log("searchRoot at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
-				if score > alpha {
-					p.game.saveBest(ply, move)
-					return move, score
-				}
-				Log("searchRoot: bestMove %s pv[0][0] %s\n", bestMove, p.game.pv[0][0])
-				return bestMove, alpha
 			}
 
 			if score > alpha {
@@ -85,6 +80,6 @@ func (p *Position) search(alpha, beta, depth int) (bestMove Move, score int) {
 
 // Testing helper method to test root search.
 func (p *Position) solve(depth int) Move {
-	move, _ := p.search(-Checkmate, Checkmate, depth)
-	return move
+	p.search(-Checkmate, Checkmate, depth)
+	return p.game.pv[0][0]
 }
