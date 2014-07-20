@@ -4,10 +4,9 @@
 
 package donna
 
-import (
-	`fmt`
-	`time`
-)
+import `time`
+
+const Ping = 125 // Check time 8 times a second.
 
 type Clock struct {
 	stopSearch  bool  // Stop search when set to true.
@@ -25,13 +24,16 @@ func (game *Game) startClock() {
 
 	if game.options.msMoveTime > 0 {
 		start := time.Now()
-		game.clock.ticker = time.NewTicker(time.Millisecond * 125) // 8 times 1a second.
+		game.clock.ticker = time.NewTicker(time.Millisecond * Ping)
 		go func() {
+			if len(game.rootpv) == 0 {
+				return // Haven't found the move yet.
+			}
 			for now := range game.clock.ticker.C {
 				elapsed := now.Sub(start).Nanoseconds() / 1000000
-				fmt.Printf("    ->clock %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
-				if elapsed >= game.options.msMoveTime {
-					fmt.Printf("    <-CLOCK %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
+				//Log("    ->clock %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
+				if elapsed >= (game.options.msMoveTime - Ping) {
+					//Log("    <-CLOCK %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
 					game.clock.stopSearch = true
 				}
 			}
