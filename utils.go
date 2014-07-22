@@ -144,46 +144,6 @@ func Summary(metrics map[string]interface{}) {
 		float32(final.midgame)/units, float32(final.endgame)/units, float32(final.blended(phase))/units)
 }
 
-func SummaryAlt(metrics map[string]interface{}) {
-	phase := metrics[`Phase`].(int)
-	tally := metrics[`PST`].(Score)
-	material := metrics[`Imbalance`].(Score)
-	final := metrics[`Final`].(Score)
-	units := float32(valuePawn.endgame)
-
-	fmt.Println()
-	fmt.Printf("Metric            White     |     Black     |     Total     | Blended \n")
-	fmt.Printf("                mid   end   |   mid   end   |   mid   end   |  (%d)  \n", phase)
-	fmt.Printf("----------------------------+---------------+---------------+---------\n")
-	fmt.Printf("%-12s     -     -    |    -     -    | %5.2f  %5.2f  > %5.2f\n", `PST`,
-		float32(tally.midgame)/units, float32(tally.endgame)/units, float32(tally.blended(phase))/units)
-	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `Imbalance`,
-		float32(material.midgame)/units, float32(material.endgame)/units, float32(material.blended(phase))/units)
-
-	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `Passers`, `Mobility`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
-		white := metrics[tag].(Total).white
-		black := metrics[tag].(Total).black
-
-		var score Score
-		score.add(white).subtract(black)
-
-		if tag[0:1] == `+` {
-			tag = tag[1:]
-		} else if tag[0:1] == `-` {
-			tag = `  ` + tag[1:]
-		}
-
-		fmt.Printf("%-12s  %5.2f  %5.2f  | %5.2f  %5.2f  | %5.2f  %5.2f  > %5.2f\n", tag,
-			float32(white.midgame)/units, float32(white.endgame)/units,
-			float32(black.midgame)/units, float32(black.endgame)/units,
-			float32(score.midgame)/units, float32(score.endgame)/units,
-			float32(score.blended(phase))/units)
-	}
-	fmt.Printf("%-12s     -     -    |    -     -    | %5.2f  %5.2f  > %5.2f\n\n", `Final Score`,
-		float32(final.midgame)/units, float32(final.endgame)/units,
-		float32(final.blended(phase))/units)
-}
-
 // Logging wrapper around fmt.Printf() that could be turned on as needed. Typical
 // usage is Log(true); defer Log(false) in tests.
 func Log(args ...interface{}) {
