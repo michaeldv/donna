@@ -69,6 +69,9 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 		// No razoring if pawns are on 7th rank.
 		if cachedMove == Move(0) && depth < 8 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
+			razoringMargin := func(depth int) int {
+				return 512 + 64 * (depth - 1)
+			}
 
 		   	// Special case for razoring at low depths.
 			if depth <= 2 && staticScore <= alpha - razoringMargin(5) {
@@ -85,6 +88,9 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		// yet and there are pieces other than pawns.
 		if !isNull && depth < 14 && Abs(beta) < Checkmate - MaxPly &&
 		   p.outposts[p.color] & ^(p.outposts[king(p.color)] | p.outposts[pawn(p.color)]) != 0 {
+			futilityMargin := func (depth int) int {
+				return 256 * depth
+			}
 
 			// Largest conceivable positional gain.
 			if gain := staticScore - futilityMargin(depth); gain >= beta {
@@ -211,12 +217,4 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	p.cache(bestMove, score, depth, cacheFlags)
 
 	return
-}
-
-func razoringMargin(depth int) int {
-	return 512 + 64 * (depth - 1)
-}
-
-func futilityMargin(depth int) int {
-	return 256 * depth
 }
