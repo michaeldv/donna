@@ -16,10 +16,10 @@ type Book struct {
 }
 
 type Entry struct {
-	Key   uint64
-	Move  uint16
-	Score uint16
-	Learn uint32
+	key   uint64
+	move  uint16
+	score uint16
+	learn uint32
 }
 
 func NewBook(fileName string) *Book {
@@ -68,7 +68,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 		current = (first + last) / 2
 		file.Seek(current*16, 0)
 		binary.Read(file, binary.BigEndian, &entry)
-		if key <= entry.Key {
+		if key <= entry.key {
 			last = current
 		} else {
 			first = current + 1
@@ -79,7 +79,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 	file.Seek(first*16, 0)
 	for {
 		binary.Read(file, binary.BigEndian, &entry)
-		if key != entry.Key {
+		if key != entry.key {
 			break
 		} else {
 			entries = append(entries, entry)
@@ -89,8 +89,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 }
 
 func (b *Book) move(p *Position, entry Entry) Move {
-	from := Square(entry.fromRow(), entry.fromCol())
-	to := Square(entry.toRow(), entry.toCol())
+	from, to := entry.from(), entry.to()
 
 	// Check if this is a castle move. In Polyglot they are represented
 	// as E1-H1, E1-A1, E8-H8, and E8-A8.
@@ -117,20 +116,14 @@ func (b *Book) move(p *Position, entry Entry) Move {
 	return move
 }
 
-func (e *Entry) toCol() int {
-	return int(e.Move & 7)
+// Converts polyglot encoded "from" coordinate to our square.
+func (e *Entry) from() int {
+	return Square(int((e.move >> 9) & 7), int((e.move >> 6) & 7))
 }
 
-func (e *Entry) toRow() int {
-	return int((e.Move >> 3) & 7)
-}
-
-func (e *Entry) fromCol() int {
-	return int((e.Move >> 6) & 7)
-}
-
-func (e *Entry) fromRow() int {
-	return int((e.Move >> 9) & 7)
+// Converts polyglot encoded "to" coordinate to our square.
+func (e *Entry) to() int {
+	return Square(int((e.move >> 3) & 7), int(e.move & 7))
 }
 
 // Polyglot encodes "promotion piece" as follows:
@@ -139,7 +132,7 @@ func (e *Entry) fromRow() int {
 //   rook    3 => 8
 //   queen   4 => 10
 func (e *Entry) promoted() int {
-	piece := int((e.Move >> 12) & 7)
+	piece := int((e.move >> 12) & 7)
 	if piece == 0 {
 		return piece
 	}
@@ -152,4 +145,4 @@ type byBookScore struct {
 
 func (her byBookScore) Len() int           { return len(her.list) }
 func (her byBookScore) Swap(i, j int)      { her.list[i], her.list[j] = her.list[j], her.list[i] }
-func (her byBookScore) Less(i, j int) bool { return her.list[i].Score > her.list[j].Score }
+func (her byBookScore) Less(i, j int) bool { return her.list[i].score > her.list[j].score }
