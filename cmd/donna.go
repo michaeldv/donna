@@ -89,27 +89,6 @@ func benchmark() {
 	fmt.Printf("%s\n", position)
 	game.Think()
 
-	// Gurevich-Sherbakov, Eu Club Cup, Neum BIH 2000
-	// Nxd6!
-	game = donna.NewGame(`r3qrk1/p5b1/1p1p1p2/2pP2pp/1nN1PP1B/2Nn3P/PP2Q1P1/R4RK1 w - -`)
-	position = game.Set(`cache`, 64, `depth`, 11).Start()
-	fmt.Printf("%s\n", position)
-	game.Think()
-
-	// Spassky-Gheorghiu, EU-chT, Bath 1973
-	// Be3!
-	game = donna.NewGame(`1r1n4/5kp1/p4p1p/2B1p3/P1R5/1PK3P1/5P1P/8 w - -`)
-	position = game.Set(`cache`, 64, `depth`, 11).Start()
-	fmt.Printf("%s\n", position)
-	game.Think()
-
-	// Yermolinsky-Majorovas, URS-ch U26 Jurmala 1983
-	// d6!
-	game = donna.NewGame(`5rk1/2p5/2N3p1/2pPp1Pp/2P1Pp1P/3Q1P2/r4b2/3K4 w - -`)
-	position = game.Set(`cache`, 64, `depth`, 11).Start()
-	fmt.Printf("%s\n", position)
-	game.Think()
-
 	// Tylkowski vs. Wojciechowski, Poznan 1931
 	// 30...Rxb2! 31. Nxb2 c3 32. Rxb6 c4!! 33. Rb4 a5! 34.Na4 axb4
 	game = donna.NewGame(`Kg1,Rb7,Na4,a2,b2,f4,g2,g3`, `Kh7,Rd2,Bb6,a7,c5,c4,g7,h6`)
