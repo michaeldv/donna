@@ -305,10 +305,6 @@ func (p *Position) isRepetition() bool {
 	return false
 }
 
-func (p *Position) isInsufficient() bool {
-	return false
-}
-
 func (p *Position) canCastle(color int) (kingside, queenside bool) {
 	attacks := p.allAttacks(color ^ 1)
 	kingside = p.castles & castleKingside[color] != 0 &&
