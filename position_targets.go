@@ -35,27 +35,19 @@ func (p *Position) targets(square int) Bitmask {
 func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
 	switch kind, color := piece.kind(), piece.color(); kind {
 	case Pawn:
-		bitmask = pawnMoves[color][square] & p.outposts[color^1]
-		//
-		// If the square in front of the pawn is empty then add it as possible
-		// target.
-		//
-		if target := square + eight[color]; p.board.isClear(target) {
-			bitmask.set(target)
-			//
-			// If the pawn is in its initial position and two squares in front of
-			// the pawn are empty then add the second square as possible target.
-			//
-			if RelRow(square, color) == 1 {
-				if target += eight[color]; p.board.isClear(target) {
-					bitmask.set(target)
-				}
-			}
+		// Start with one square push, then try the second square.
+		empty := ^p.board
+		if color == White {
+			bitmask |= (bit[square] << 8) & empty
+			bitmask |= (bitmask << 8) & empty & maskRank[3]
+		} else {
+			bitmask |= (bit[square] >> 8) & empty
+			bitmask |= (bitmask >> 8) & empty & maskRank[4]
 		}
-		//
+		bitmask |= pawnMoves[color][square] & p.outposts[color^1]
+
 		// If the last move set the en-passant square and it is diagonally adjacent
 		// to the current pawn, then add en-passant to the pawn's attack targets.
-		//
 		if p.enpassant != 0 && maskPawn[color][p.enpassant].isSet(square) {
 			bitmask.set(p.enpassant)
 		}
