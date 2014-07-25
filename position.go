@@ -317,6 +317,11 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 	return
 }
 
+// Stub.
+func (p *Position) isInsufficient() bool {
+	return false
+}
+
 // Reports game status for current position or after the given move. The status
 // help to determine whether to continue with search or if the game is over.
 func (p *Position) status(move Move, blendedScore int) int {
