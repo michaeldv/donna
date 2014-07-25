@@ -15,11 +15,12 @@ type Book struct {
 	entries  int64
 }
 
+// Opening book record: the fields are exported for binary.Read().
 type Entry struct {
-	key   uint64
-	move  uint16
-	score uint16
-	learn uint32
+	Key   uint64
+	Move  uint16
+	Score uint16
+	Learn uint32
 }
 
 func NewBook(fileName string) *Book {
@@ -68,7 +69,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 		current = (first + last) / 2
 		file.Seek(current*16, 0)
 		binary.Read(file, binary.BigEndian, &entry)
-		if key <= entry.key {
+		if key <= entry.Key {
 			last = current
 		} else {
 			first = current + 1
@@ -79,7 +80,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 	file.Seek(first*16, 0)
 	for {
 		binary.Read(file, binary.BigEndian, &entry)
-		if key != entry.key {
+		if key != entry.Key {
 			break
 		} else {
 			entries = append(entries, entry)
@@ -118,12 +119,12 @@ func (b *Book) move(p *Position, entry Entry) Move {
 
 // Converts polyglot encoded "from" coordinate to our square.
 func (e *Entry) from() int {
-	return Square(int((e.move >> 9) & 7), int((e.move >> 6) & 7))
+	return Square(int((e.Move >> 9) & 7), int((e.Move >> 6) & 7))
 }
 
 // Converts polyglot encoded "to" coordinate to our square.
 func (e *Entry) to() int {
-	return Square(int((e.move >> 3) & 7), int(e.move & 7))
+	return Square(int((e.Move >> 3) & 7), int(e.Move & 7))
 }
 
 // Polyglot encodes "promotion piece" as follows:
@@ -132,7 +133,7 @@ func (e *Entry) to() int {
 //   rook    3 => 8
 //   queen   4 => 10
 func (e *Entry) promoted() int {
-	piece := int((e.move >> 12) & 7)
+	piece := int((e.Move >> 12) & 7)
 	if piece == 0 {
 		return piece
 	}
@@ -145,4 +146,4 @@ type byBookScore struct {
 
 func (her byBookScore) Len() int           { return len(her.list) }
 func (her byBookScore) Swap(i, j int)      { her.list[i], her.list[j] = her.list[j], her.list[i] }
-func (her byBookScore) Less(i, j int) bool { return her.list[i].score > her.list[j].score }
+func (her byBookScore) Less(i, j int) bool { return her.list[i].Score > her.list[j].Score }

@@ -13,7 +13,7 @@ func openBook() (*Book, *Position) {
 }
 
 func polyglotEntry(source, target int) Entry {
-	return Entry{move: uint16(Row(source)<<9) | uint16(Col(source)<<6) |
+	return Entry{Move: uint16(Row(source)<<9) | uint16(Col(source)<<6) |
 		uint16(Row(target)<<3) | uint16(Col(target))}
 }
 
