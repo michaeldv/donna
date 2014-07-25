@@ -9,20 +9,21 @@ import `time`
 const Ping = 125 // Check time 8 times a second.
 
 type Clock struct {
-	stopSearch  bool  // Stop search when set to true.
-	msSoftStop  int   // Intermediate soft time limit.
-	msHardStop  int   // Immediate hard time limit.
+	halt        bool   // Stop search immediately when set to true.
+	checkpoint  int64  // First time limit check.
+	softStop    int64  // Intermediate soft time limit.
+	hardStop    int64  // Immediate hard time limit.
 	ticker      *time.Ticker
 }
 
 func (game *Game) startClock() {
-	game.clock.stopSearch = false
+	game.clock.halt = false
 
-	if game.options.msMoveTime == 0 && game.options.msGameTime == 0 {
+	if game.options.moveTime == 0 && game.options.gameTime == 0 {
 		return
 	}
 
-	if game.options.msMoveTime > 0 {
+	if game.options.moveTime > 0 {
 		start := time.Now()
 		game.clock.ticker = time.NewTicker(time.Millisecond * Ping)
 		go func() {
@@ -31,10 +32,10 @@ func (game *Game) startClock() {
 			}
 			for now := range game.clock.ticker.C {
 				elapsed := now.Sub(start).Nanoseconds() / 1000000
-				//Log("    ->clock %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
-				if elapsed >= (game.options.msMoveTime - Ping) {
-					//Log("    <-CLOCK %d limit %d left %d\n", elapsed, game.options.msMoveTime, (game.options.msMoveTime - elapsed))
-					game.clock.stopSearch = true
+				//Log("    ->clock %d limit %d left %d\n", elapsed, game.options.moveTime, (game.options.moveTime - elapsed))
+				if elapsed >= game.options.moveTime - Ping {
+					//Log("    <-CLOCK %d limit %d left %d\n", elapsed, game.options.moveTime, (game.options.moveTime - elapsed))
+					game.clock.halt = true
 				}
 			}
 		}()

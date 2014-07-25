@@ -101,7 +101,7 @@ func (game *Game) Think() Move {
 	alpha, beta := -Checkmate, Checkmate
 
 	done := func(depth int) bool {
-		return game.clock.stopSearch || (game.options.maxDepth > 0 && depth > game.options.maxDepth)
+		return game.clock.halt || (game.options.maxDepth > 0 && depth > game.options.maxDepth)
 	}
 
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
@@ -138,7 +138,7 @@ func (game *Game) Think() Move {
 					game.rootpv = append(game.rootpv[:0], game.pv[0]...)
 				}
 
-				if game.clock.stopSearch {
+				if game.clock.halt {
 					break
 				}
 
@@ -157,7 +157,7 @@ func (game *Game) Think() Move {
 		}
 		finish := time.Since(start).Seconds()
 
-		if game.clock.stopSearch {
+		if game.clock.halt {
 			//Log("\ttimed out pv => %v\n\ttimed out rv => %v\n", game.pv[0], game.rootpv)
 			score = bestScore
 		}

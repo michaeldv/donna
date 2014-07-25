@@ -34,7 +34,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		}
 		position.TakeBack(move)
 
-		if p.game.clock.stopSearch {
+		if p.game.clock.halt {
 			p.game.nodes += moveCount
 			//Log("searchRoot: bestMove %s pv[0][0] %s alpha %d\n", bestMove, p.game.pv[0][0], alpha)
 			return alpha

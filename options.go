@@ -5,12 +5,12 @@
 package donna
 
 type Options struct {
-	infinite    bool   // (-) Search until the "stop" command.
-	maxDepth    int    // Search X plies only.
-	maxNodes    int    // (-) Search X nodes only.
-	msMoveTime  int64  // Search exactly X milliseconds per move.
-	msGameTime  int64  // Time for all remaining moves is X milliseconds.
-	msTimeInc   int64  // Time increment after the move is X milliseconds.
+	infinite     bool   // (-) Search until the "stop" command.
+	maxDepth     int    // Search X plies only.
+	maxNodes     int    // (-) Search X nodes only.
+	gameTime     int64  // Time for all remaining moves is X milliseconds.
+	moveTime     int64  // Search exactly X milliseconds per move.
+	moveTimeInc  int64  // Time increment after the move is X milliseconds.
 }
 
 func (game *Game) Set(args ...interface{}) *Game {
@@ -28,9 +28,21 @@ func (game *Game) Set(args ...interface{}) *Game {
 		case `depth`:
 			game.options = Options{}
 			game.options.maxDepth = value.(int)
+		case `time`:
+			game.options.infinite = false
+			game.options.maxDepth = 0
+			game.options.maxNodes = 0
+			game.options.moveTime = 0
+			game.options.gameTime = int64(value.(int))
+		case `timeinc`:
+			game.options.infinite = false
+			game.options.maxDepth = 0
+			game.options.maxNodes = 0
+			game.options.moveTime = 0
+			game.options.moveTimeInc = int64(value.(int))
 		case `movetime`:
 			game.options = Options{}
-			game.options.msMoveTime = int64(value.(int))
+			game.options.moveTime = int64(value.(int))
 		}
 	}
 
