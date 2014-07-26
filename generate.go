@@ -19,6 +19,7 @@ type MoveGen struct {
 	head   int
 	tail   int
 	ply    int
+	pins   Bitmask
 }
 
 // Pre-allocate move generator array (one entry per ply) to avoid garbage
@@ -34,6 +35,8 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen.list = [256]MoveWithScore{}
 	gen.head, gen.tail = 0, 0
 	gen.ply = ply
+	gen.pins = p.pinnedMask(p.king[p.color])
+
 	return gen
 }
 
@@ -87,14 +90,18 @@ func (gen *MoveGen) NextMove() (move Move) {
 	return
 }
 
+// Returns true if the move is valid i.e. can be played without violating chess
+// rules.
+func (gen *MoveGen) isValid(move Move) bool {
+	return gen.p.isValid(move, gen.pins)
+}
+
 // Removes invalid moves from the generated list. We use in iterative deepening
-// to avoid stumbling upon invalid moves on each iteration.
+// to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly(p *Position) *MoveGen {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if position := p.MakeMove(move); position == nil {
+		if !gen.isValid(move) {
 			gen.remove()
-		} else {
-			position.UndoLastMove()
 		}
 	}
 	return gen.reset()
@@ -104,8 +111,7 @@ func (gen *MoveGen) validOnly(p *Position) *MoveGen {
 // one valid move.
 func (gen *MoveGen) anyValid(p *Position) bool {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if position := p.MakeMove(move); position != nil {
-			position.UndoLastMove()
+		if gen.isValid(move) {
 			return true
 		}
 	}
