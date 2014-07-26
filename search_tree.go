@@ -131,72 +131,75 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	bestMove := Move(0)
 	moveCount, quietMoveCount := 0, 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if position := p.MakeMove(move); position != nil {
-			moveCount++
-			newDepth := depth - 1
+		if !gen.isValid(move) {
+			continue
+		}
 
-			// Search depth extension.
-			giveCheck := position.isInCheck(p.color^1)
-			if giveCheck {
-				newDepth++
-			}
+		position := p.MakeMove(move)
+		moveCount++
+		newDepth := depth - 1
 
-			// Late move reduction.
-			lateMoveReduction := false
-			if depth >= 3 && !isPrincipal && !inCheck && !giveCheck && move.isQuiet() {
-				quietMoveCount++
-				if newDepth > 0 && quietMoveCount >= 8 {
+		// Search depth extension.
+		giveCheck := position.isInCheck(p.color^1)
+		if giveCheck {
+			newDepth++
+		}
+
+		// Late move reduction.
+		lateMoveReduction := false
+		if depth >= 3 && !isPrincipal && !inCheck && !giveCheck && move.isQuiet() {
+			quietMoveCount++
+			if newDepth > 0 && quietMoveCount >= 8 {
+				newDepth--
+				lateMoveReduction = true
+				if quietMoveCount >= 16 {
 					newDepth--
-					lateMoveReduction = true
-					if quietMoveCount >= 16 {
+					if quietMoveCount >= 24 {
 						newDepth--
-						if quietMoveCount >= 24 {
-							newDepth--
-						}
 					}
 				}
 			}
+		}
 
-			// Start search with full window.
-			if moveCount == 1 {
-				score = -position.searchTree(-beta, -alpha, newDepth)
-			} else if lateMoveReduction {
-				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
+		// Start search with full window.
+		if moveCount == 1 {
+			score = -position.searchTree(-beta, -alpha, newDepth)
+		} else if lateMoveReduction {
+			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 
-				// Verify late move reduction and re-run the search if necessary.
-				if score > alpha {
-					score = -position.searchTree(-alpha - 1, -alpha, newDepth + 1)
-				}
-			} else {
-				if newDepth < 2 {
-					score = -position.searchQuiescence(-alpha - 1, -alpha, 0)
-				} else {
-					score = -position.searchTree(-alpha - 1, -alpha, newDepth)
-				}
-
-				// If zero window failed try full window.
-				if score > alpha && score < beta {
-					score = -position.searchTree(-beta, -alpha, newDepth)
-				}
-			}
-			position.UndoLastMove()
-
-			if p.game.clock.halt {
-				p.game.nodes += moveCount
-				//Log("searchTree at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
-				return alpha
-			}
-
+			// Verify late move reduction and re-run the search if necessary.
 			if score > alpha {
-				alpha = score
-				bestMove = move
-				cacheFlags = cacheExact
-				p.game.saveBest(ply, move)
+				score = -position.searchTree(-alpha - 1, -alpha, newDepth + 1)
+			}
+		} else {
+			if newDepth < 2 {
+				score = -position.searchQuiescence(-alpha - 1, -alpha, 0)
+			} else {
+				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
+			}
 
-				if alpha >= beta {
-					cacheFlags = cacheBeta
-					break
-				}
+			// If zero window failed try full window.
+			if score > alpha && score < beta {
+				score = -position.searchTree(-beta, -alpha, newDepth)
+			}
+		}
+		position.UndoLastMove()
+
+		if p.game.clock.halt {
+			p.game.nodes += moveCount
+			//Log("searchTree at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
+			return alpha
+		}
+
+		if score > alpha {
+			alpha = score
+			bestMove = move
+			cacheFlags = cacheExact
+			p.game.saveBest(ply, move)
+
+			if alpha >= beta {
+				cacheFlags = cacheBeta
+				break
 			}
 		}
 	}

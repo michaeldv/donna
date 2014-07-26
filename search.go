@@ -11,6 +11,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	inCheck := p.isInCheck(p.color)
 	cacheFlags := uint8(cacheAlpha)
 
+	// Root move generator makes sure all generated moves are valid.
 	gen := NewRootGen(p, ply)
 
 	moveCount, bestMove := 0, Move(0)

@@ -65,13 +65,45 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if !inCheck && p.exchange(move) < 0 {
+		if !gen.isValid(move) || (!inCheck && p.exchange(move) < 0) {
 			continue
 		}
-		if position := p.MakeMove(move); position != nil {
+
+		position := p.MakeMove(move)
+		moveCount++
+		score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, true)
+		position.UndoLastMove()
+
+		if score > alpha {
+			alpha = score
+			bestMove = move
+			cacheFlags = cacheExact
+
+			if alpha >= beta {
+				cacheFlags = cacheBeta
+				break
+			}
+			p.game.saveBest(ply, move)
+		}
+	}
+
+	if !inCheck && !capturesOnly {
+		gen = NewGen(p, Ply()).generateChecks().quickRank()
+		for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+			if !gen.isValid(move) || p.exchange(move) < 0 {
+				continue
+			}
+
+			position := p.MakeMove(move)
 			moveCount++
-			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, true)
+			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, false)
 			position.UndoLastMove()
+
+			if p.game.clock.halt {
+				p.game.qnodes += moveCount
+				//Log("searchQui at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
+				return alpha
+			}
 
 			if score > alpha {
 				alpha = score
@@ -83,38 +115,6 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 					break
 				}
 				p.game.saveBest(ply, move)
-			}
-		}
-	}
-
-	if !inCheck && !capturesOnly {
-		gen = NewGen(p, Ply()).generateChecks().quickRank()
-		for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-			if p.exchange(move) < 0 {
-				continue
-			}
-			if position := p.MakeMove(move); position != nil {
-				moveCount++
-				score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, false)
-				position.UndoLastMove()
-
-				if p.game.clock.halt {
-					p.game.qnodes += moveCount
-					//Log("searchQui at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
-					return alpha
-				}
-
-				if score > alpha {
-					alpha = score
-					bestMove = move
-					cacheFlags = cacheExact
-
-					if alpha >= beta {
-						cacheFlags = cacheBeta
-						break
-					}
-					p.game.saveBest(ply, move)
-				}
 			}
 		}
 	}
