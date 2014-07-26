@@ -34,15 +34,12 @@ func (p *Position) NewPawnJump(from, to int) Move {
 // the move in current position without violating chess rules. If the king is
 // in check the generator is expected to generate valid evasions where extra
 // validation is not needed.
-func (p *Position) isValid(move Move) bool {
+func (p *Position) isValid(move Move, pins Bitmask) bool {
 	color := move.color() // TODO: make color part of move split.
 	from, to, piece, capture := move.split()
-	square := p.king[color]
-	pinned := p.pinnedMask(square)
-	//
+
 	// For rare en-passant pawn captures we validate the move by actually
 	// making it, and then taking it back.
-	//
 	if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
 		if position := p.MakeMove(move); position != nil {
 			position.UndoLastMove()
@@ -50,19 +47,17 @@ func (p *Position) isValid(move Move) bool {
 		}
 		return false
 	}
-	//
-	// King's move is valid when the destination square is not being
-	// attacked by the opponent or when the move is a castle.
-	//
+
+	// King's move is valid when a) the move is a castle or b) the destination
+	// square is not being attacked by the opponent.
 	if piece.isKing() {
-		return !p.isAttacked(to, color^1) || (move&isCastle != 0)
+		return (move & isCastle != 0) || !p.isAttacked(to, color^1)
 	}
-	//
+
 	// For all other peices the move is valid when it doesn't cause a
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
-	//
-	return pinned == 0 || pinned.isClear(from) || IsBetween(from, to, square)
+	return pins == 0 || pins.isClear(from) || IsBetween(from, to, p.king[color])
 }
 
 // Returns a bitmask of all pinned pieces preventing a check for the king on
