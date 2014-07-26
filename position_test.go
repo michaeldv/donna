@@ -543,7 +543,7 @@ func TestPosition350(t *testing.T) {
 	p = p.MakeNullMove()
 	expect(t, p.isNull(), true)
 
-	p = p.TakeBackNullMove()
+	p = p.UndoNullMove()
 	p = p.MakeMove(p.NewMove(E2, E4))
 	expect(t, p.isNull(), false)
 }

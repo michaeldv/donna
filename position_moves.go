@@ -45,7 +45,7 @@ func (p *Position) isValid(move Move) bool {
 	//
 	if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
 		if position := p.MakeMove(move); position != nil {
-			position.TakeBack(move)
+			position.UndoLastMove()
 			return true
 		}
 		return false

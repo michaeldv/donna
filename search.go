@@ -32,7 +32,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 				score = -position.searchTree(-beta, -alpha, newDepth)
 			}
 		}
-		position.TakeBack(move)
+		position.UndoLastMove()
 
 		if p.game.clock.halt {
 			p.game.nodes += moveCount

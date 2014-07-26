@@ -103,7 +103,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	if !inCheck && !isNull && depth > 1 && p.outposts[p.color].count() > 5 {
 		position := p.MakeNullMove()
 		nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)
-		position.TakeBackNullMove()
+		position.UndoNullMove()
 
 		if nullScore >= beta {
 			if Abs(nullScore) >= Checkmate - MaxPly {
@@ -179,7 +179,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 					score = -position.searchTree(-beta, -alpha, newDepth)
 				}
 			}
-			position.TakeBack(move)
+			position.UndoLastMove()
 
 			if p.game.clock.halt {
 				p.game.nodes += moveCount

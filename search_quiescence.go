@@ -71,7 +71,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 		if position := p.MakeMove(move); position != nil {
 			moveCount++
 			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, true)
-			position.TakeBack(move)
+			position.UndoLastMove()
 
 			if score > alpha {
 				alpha = score
@@ -96,7 +96,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 			if position := p.MakeMove(move); position != nil {
 				moveCount++
 				score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, false)
-				position.TakeBack(move)
+				position.UndoLastMove()
 
 				if p.game.clock.halt {
 					p.game.qnodes += moveCount

@@ -266,16 +266,18 @@ func (p *Position) MakeNullMove() *Position {
 }
 
 // Restores previous position effectively taking back the last move made.
-func (p *Position) TakeBack(move Move) *Position {
-	node--
+func (p *Position) UndoLastMove() *Position {
+	if node > 0 {
+		node--
+	}
 	return &tree[node]
 }
 
-func (p *Position) TakeBackNullMove() *Position {
+func (p *Position) UndoNullMove() *Position {
 	p.hash ^= polyglotRandomWhite
 	p.color ^= 1
 
-	return p.TakeBack(Move(0))
+	return p.UndoLastMove()
 }
 
 func (p *Position) isInCheck(color int) bool {
@@ -327,7 +329,7 @@ func (p *Position) isInsufficient() bool {
 func (p *Position) status(move Move, blendedScore int) int {
 	if move != Move(0) {
 		p = p.MakeMove(move)
-		defer func() { p = p.TakeBack(move) }()
+		defer func() { p = p.UndoLastMove() }()
 	}
 
 	switch ply, score := Ply(), Abs(blendedScore); score {

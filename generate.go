@@ -94,7 +94,7 @@ func (gen *MoveGen) validOnly(p *Position) *MoveGen {
 		if position := p.MakeMove(move); position == nil {
 			gen.remove()
 		} else {
-			position.TakeBack(move)
+			position.UndoLastMove()
 		}
 	}
 	return gen.reset()
@@ -105,7 +105,7 @@ func (gen *MoveGen) validOnly(p *Position) *MoveGen {
 func (gen *MoveGen) anyValid(p *Position) bool {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if position := p.MakeMove(move); position != nil {
-			position.TakeBack(move)
+			position.UndoLastMove()
 			return true
 		}
 	}
