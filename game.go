@@ -207,7 +207,7 @@ func (game *Game) printBestLine(depth, score, status int, finish float64) {
 		}
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
 			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(valuePawn.endgame), game.rootpv)
+			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(onePawn), game.rootpv)
 	}
 }
 

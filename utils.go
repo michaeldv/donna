@@ -111,7 +111,7 @@ func Summary(metrics map[string]interface{}) {
 	tally := metrics[`PST`].(Score)
 	material := metrics[`Imbalance`].(Score)
 	final := metrics[`Final`].(Score)
-	units := float32(valuePawn.endgame)
+	units := float32(onePawn)
 
 	fmt.Println()
 	fmt.Printf("Metric              MidGame        |        EndGame        | Blended\n")

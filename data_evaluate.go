@@ -4,41 +4,40 @@
 
 package donna
 
+const onePawn = 100
 var (
-	valuePawn      = Score{  100,  129 }
-	valueKnight    = Score{  408,  423 } //  350,  330
-	valueBishop    = Score{  418,  428 } //  355,  360
-	valueRook      = Score{  635,  639 } //  525,  550
-	valueQueen     = Score{ 1260, 1279 } // 1000, 1015
+	valuePawn      = Score{ onePawn *  1 +  0, onePawn *  1 + 29 }  //  100,  129
+	valueKnight    = Score{ onePawn *  4 +  8, onePawn *  4 + 23 }  //  408,  423
+	valueBishop    = Score{ onePawn *  4 + 18, onePawn *  4 + 28 }  //  418,  428
+	valueRook      = Score{ onePawn *  6 + 35, onePawn *  6 + 39 }  //  635,  639
+	valueQueen     = Score{ onePawn * 12 + 60, onePawn * 12 + 79 }  // 1260, 1279
 
-	rightToMove    = Score{   12,    5 }
-	pawnBlocked    = Score{    2,    6 } //~~~
-	bishopPair     = Score{   43,   56 } // Bonus for a pair of bishops.
-	bishopPairPawn = Score{    4,    0 } // Penalty for each 5+ pawn when we've got a pair of bishops.
-	bishopPawn     = Score{    4,    6 } // Penalty for each pawn on the same colored square as a bishop.
-	bishopBoxed    = Score{   73,    0 } //~~~
-	bishopDanger   = Score{   35,    0 } // Bonus when king is under attack and sides have opposite-colored bishops.
-	rookOnPawn     = Score{    5,   14 }
-	rookOnOpen     = Score{   22,   10 }
-	rookOnSemiOpen = Score{    9,    5 }
-	rookOn7th      = Score{    5,   10 }
-	rookBoxed      = Score{   45,    0 }
-	queenOnPawn    = Score{    2,   10 }
-	queenOn7th     = Score{    1,    4 }
-	behindPawn     = Score{    8,    0 }
-	hangingAttack  = Score{   10,   12 }
-	coverMissing   = Score{   45,    0 } //~~~ Missing cover pawn penalty.
-	coverDistance  = Score{    8,    0 } //~~~ Cover pawn row distance from king penalty.
+	rightToMove    = Score{ 12,  5 }  // Tempo bonus.
+	pawnBlocked    = Score{  2,  6 }  // Penalty for each pawn that is blocked.
+	bishopPawn     = Score{  4,  6 }  // Penalty for each pawn on the same colored square as a bishop.
+	bishopBoxed    = Score{ 73,  0 }  // Penalty for patterns like Bc1,d2,Nd3.
+	bishopDanger   = Score{ 35,  0 }  // Bonus when king is under attack and sides have opposite-colored bishops.
+	rookOnPawn     = Score{  5, 14 }  // Bonus for rook attacking a pawn.
+	rookOnOpen     = Score{ 22, 10 }  // Bonus for rook on open file.
+	rookOnSemiOpen = Score{  9,  5 }  // Bonus for rook on semi-open file.
+	rookOn7th      = Score{  5, 10 }  // Bonus for rook on 7th file.
+	rookBoxed      = Score{ 45,  0 }  // Penalty for rook boxed by king.
+	queenOnPawn    = Score{  2, 10 }  // Bonus for queen attacking a pawn.
+	queenOn7th     = Score{  1,  4 }  // Bonus for queen on 7th rank.
+	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
+	hangingAttack  = Score{ 10, 12 }  // Bonus for attacking enemy pieces that are hanging.
+	coverMissing   = Score{ 45,  0 }  // Penalty for missing cover pawn.
+	coverDistance  = Score{  8,  0 }  // Penalty for cover pawn being distant from the king.
 )
 
 // Weight percentages applied to evaluation scores before computing the overall
 // blended score.
 var weights = []Score{
-	{100, 100}, 	// [0] Mobility.
-	{100, 100}, 	// [1] Pawn structure.
-	{100, 100}, 	// [2] Passed pawns.
-	{100,   0}, 	// [3] King safety.
-	{100,   0}, 	// [4] Enemy's king safety.
+	{ 100, 100 }, 	// [0] Mobility.
+	{ 100, 100 }, 	// [1] Pawn structure.
+	{ 100, 100 }, 	// [2] Passed pawns.
+	{ 100,   0 }, 	// [3] King safety.
+	{ 100,   0 }, 	// [4] Enemy's king safety.
 }
 
 // Piece values for calculating most valueable victim/least valueable attacker,
@@ -61,21 +60,21 @@ var pst = [14][64]Score{{},}
 var bonusPawn = [2][64]int{
 	{  // vvvvvvvvvvvvvvvv Black vvvvvvvvvvvvvvvv
 	        0,   0,   0,   0,   0,   0,   0,   0,
-	      -10,  -3,   2,   7,   7,   2,  -3, -10,
-	      -10,  -3,   4,   7,   7,   4,  -3, -10,
-	      -10,  -3,   8,  17,  17,   8,  -3, -10,
-	      -10,  -3,   8,  27,  27,   8,  -3, -10,
-	      -10,  -3,   4,  17,  17,   4,  -3, -10,
-	      -10,  -3,   2,   7,   7,   2,  -3, -10,
-	        0,   0,   0,   0,   0,   0,   0,   0,
+	      -10,   0,   0,   0,   0,   0,   0,  -10,
+	      -10,   0,   0,   0,   0,   0,   0,  -10,
+	      -10,   0,   5,  10,  10,   5,   0,  -10,
+	      -10,   0,  10,  20,  20,  10,   0,  -10,
+	      -10,   0,   5,  10,  10,   5,   0,  -10,
+	      -10,   0,   0,   0,   0,   0,   0,  -10,
+	        0,   0,   0,   0,   0,   0,   0,    0,
 	}, {
 	        0,   0,   0,   0,   0,   0,   0,   0,
-	       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
-	       -2,  -2,  -2,  -2,  -2,  -2,  -2,  -2,
-	       -3,  -3,  -3,  -3,  -3,  -3,  -3,  -3,
-	       -4,  -4,  -4,  -4,  -4,  -4,  -4,  -4,
-	       -5,  -5,  -5,  -5,  -5,  -5,  -5,  -5,
-	       -6,  -6,  -6,  -6,  -6,  -6,  -6,  -6,
+	        0,   0,   0,   0,   0,   0,   0,   0,
+	        0,   0,   0,   0,   0,   0,   0,   0,
+	        0,   0,   0,   0,   0,   0,   0,   0,
+	        0,   0,   0,   0,   0,   0,   0,   0,
+	        0,   0,   0,   0,   0,   0,   0,   0,
+	        0,   0,   0,   0,   0,   0,   0,   0,
 	        0,   0,   0,   0,   0,   0,   0,   0,
 	}, // ^^^^^^^^^^^^^^^^ White ^^^^^^^^^^^^^^^^
 }
@@ -148,14 +147,14 @@ var bonusRook = [2][64]int{
 
 var bonusQueen = [2][64]int{
 	{  // vvvvvvvvvvvvvvvv Black vvvvvvvvvvvvvvvv
-	        4,   4,   4,   4,   4,   4,   4,   4,
-	        4,   4,   4,   4,   4,   4,   4,   4,
-	        4,   4,   4,   4,   4,   4,   4,   4,
-	        4,   4,   4,   4,   4,   4,   4,   4,
-	        4,   4,   4,   4,   4,   4,   4,   4,
-	        4,   4,   4,   4,   4,   4,   4,   4,
-	        4,   4,   4,   4,   4,   4,   4,   4,
-	        4,   4,   4,   4,   4,   4,   4,   4,
+	       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+	       -1,   4,   4,   4,   4,   4,   4,  -1,
+	       -1,   4,   4,   4,   4,   4,   4,  -1,
+	       -1,   4,   4,   4,   4,   4,   4,  -1,
+	       -1,   4,   4,   4,   4,   4,   4,  -1,
+	       -1,   4,   4,   4,   4,   4,   4,  -1,
+	       -1,   4,   4,   4,   4,   4,   4,  -1,
+	       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
 	}, {
 	      -40, -27, -21, -15, -15, -21, -27, -40,
 	      -27, -15,  -9,  -3,  -3,  -9, -15, -27,
