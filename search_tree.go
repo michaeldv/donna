@@ -102,6 +102,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	// Null move pruning.
 	if !inCheck && !isNull && depth > 1 && p.outposts[p.color].count() > 5 {
 		position := p.MakeNullMove()
+		p.game.nodes++
 		nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)
 		position.UndoNullMove()
 
