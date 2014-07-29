@@ -11,10 +11,12 @@ func (p *Position) Perft(depth int) (total int64) {
 
 	gen := NewGen(p, depth).generateAllMoves()
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if position := p.MakeMove(move); position != nil {
-			total += position.Perft(depth - 1)
-			position.UndoLastMove()
+		if !gen.isValid(move) {
+			continue
 		}
+		position := p.MakeMove(move)
+		total += position.Perft(depth - 1)
+		position.UndoLastMove()
 	}
 	return
 }
