@@ -188,6 +188,7 @@ func (p *Position) MakeMove(move Move) *Position {
 		pp.reversible = false
 		if to != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(color^1), from, to)
+			pp.hash ^= hashEnpassant[Col(p.enpassant)]
 		} else {
 			pp.capturePiece(capture, from, to)
 		}
@@ -223,24 +224,11 @@ func (p *Position) MakeMove(move Move) *Position {
 		pp.promotePawn(piece, from, to, promo)
 	}
 
+	// Set up the board bitmask, update castle rights, finish off incremental
+	// hash value, and flip the color.
 	pp.board = pp.outposts[White] | pp.outposts[Black]
-
-	// Ready to validate new position we have after making the move: if it is not
-	// valid then revert back the node pointer and return nil.
-	if pp.isInCheck(color) {
-		node--
-		return nil
-	}
-
-	// OK, the position after making the move is valid: all that's left is updating
-	// castle rights, finishing off incremental hash value, and flipping the color.
 	pp.castles &= castleRights[from] & castleRights[to]
 	pp.hash ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
-
-	if p.enpassant != 0 {
-		pp.hash ^= hashEnpassant[Col(p.enpassant)]
-	}
-
 	pp.hash ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
 
