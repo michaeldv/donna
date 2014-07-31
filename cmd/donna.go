@@ -49,7 +49,8 @@ func repl() {
 				"   help    Display this help\n" +
 				"   new     Start new game\n" +
 				"   perft   Run perft test\n" +
-				"   score   Show evaluation summary\n")
+				"   score   Show evaluation summary\n" +
+				"   undo    Undo last move\n")
 		case `new`:
 			game, position = nil, nil
 			setup()
@@ -59,6 +60,11 @@ func repl() {
 			setup()
 			_, metrics := position.EvaluateWithTrace()
 			donna.Summary(metrics)
+		case `undo`:
+			if position != nil {
+				position = position.UndoLastMove()
+				fmt.Printf("%s\n", position)
+			}
 		default:
 			setup()
 			if move := position.NewMoveFromString(command); move != 0 {
