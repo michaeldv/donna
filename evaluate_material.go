@@ -174,24 +174,17 @@ func (e *Evaluation) materialScore() (score Score) {
 }
 
 // Simplified second-degree polynomial material imbalance by Tord Romstad.
-// Polynomial material balance parameters.
-//
-//        Indices:  0     1     2     3     4     5     6     7     8     9    10     11
-//   Coefficients:  A     -------------------------- B --------------------------     C
-var m2 = []int {    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  1852 } // Pair of bishops.
-var mP = []int {    2,   39,    0,    0,    0,    0,   37,    0,    0,    0,    0,  -162 } // Pawns.
-var mN = []int {   -4,   35,  271,    0,    0,    0,   10,   62,    0,    0,    0, -1122 } // Knights.
-var mB = []int {    0,    0,  105,    4,    0,    0,   57,   64,   39,    0,    0,  -183 } // Bishops.
-var mR = []int { -141,  -27,   -2,   46,  100,    0,   50,   40,   23,  -22,    0,   249 } // Rooks.
-var mQ = []int {    0, -177,   25,  129,  142, -137,   98,  105,  -39,  141,  274,  -154 } // Queens.
-
 func (e *Evaluation) imbalance(w2, wP, wN, wB, wR, wQ, b2, bP, bN, bB, bR, bQ int) int {
-	return polynom(m2[0], (m2[1]                                                                                                       ), m2[11], w2) +
-	       polynom(mP[0], (mP[1]*w2 +                                             mP[6]*b2                                             ), mP[11], wP) +
-	       polynom(mN[0], (mN[1]*w2 + mN[2]*wP +                                  mN[6]*b2 + mN[7]*bP                                  ), mN[11], wN) +
-	       polynom(mB[0], (mB[1]*w2 + mB[2]*wP + mB[3]*wN +                       mB[6]*b2 + mB[7]*bP + mB[8]*bN                       ), mB[11], wB) +
-	       polynom(mR[0], (mR[1]*w2 + mR[2]*wP + mR[3]*wN + mR[4]*wB +            mR[6]*b2 + mR[7]*bP + mR[8]*bN + mR[9]*bB            ), mR[11], wR) +
-	       polynom(mQ[0], (mQ[1]*w2 + mQ[2]*wP + mQ[3]*wN + mQ[4]*wB + mQ[5]*wR + mQ[6]*b2 + mQ[7]*bP + mQ[8]*bN + mQ[9]*bB + mQ[10]*bR), mQ[11], wQ)
+	polynom := func(a, b, c, x int) int {
+		return a * (x * x) + (b + c) * x
+	}
+
+	return polynom(   0, (   0                                                                                    ),  1852, w2) +
+	       polynom(   2, (  39*w2 +                                      37*b2                                    ),  -162, wP) +
+	       polynom(  -4, (  35*w2 + 271*wP +                             10*b2 +  62*bP                           ), -1122, wN) +
+	       polynom(   0, (   0*w2 + 105*wP +   4*wN +                    57*b2 +  64*bP +  39*bN                  ),  -183, wB) +
+	       polynom(-141, ( -27*w2 +  -2*wP +  46*wN + 100*wB +           50*b2 +  40*bP +  23*bN + -22*bB         ),   249, wR) +
+	       polynom(   0, (-177*w2 +  25*wP + 129*wN + 142*wB + -137*wR + 98*b2 + 105*bP + -39*bN + 141*bB + 274*bR),  -154, wQ)
 }
 
 // Pre-populates material cache with the most common middle game material
