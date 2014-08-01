@@ -29,15 +29,23 @@ func (e *Evaluation) strongerSide() int {
 }
 
 // Known endgames where we calculate the exact score.
-func (e *Evaluation) winAgainstBareKing() int {
+func (e *Evaluation) winAgainstBareKing() int { // STUB.
 	return e.score.blended(e.material.phase)
 }
 
-func (e *Evaluation) knightAndBishopVsBareKing() int {
+func (e *Evaluation) knightAndBishopVsBareKing() int { // STUB.
 	return e.score.blended(e.material.phase)
 }
 
-func (e *Evaluation) kingAndPawnVsBareKing() int {
+func (e *Evaluation) twoBishopsVsBareKing() int { // STUB.
+	return e.score.blended(e.material.phase)
+}
+
+func (e *Evaluation) bishopsAndPawns() int { // STUB.
+	return e.score.blended(e.material.phase)
+}
+
+func (e *Evaluation) kingAndPawnVsBareKing() int { // STUB.
 	return e.score.blended(e.material.phase)
 }
 
@@ -61,20 +69,18 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	return -1
 }
 
-func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
+func (e *Evaluation) kingAndPawnVsKingAndPawn() int { // STUB.
 	return -1 // 96
 }
 
-func (e *Evaluation) bishopAndPawnVsBareKing() int {
+func (e *Evaluation) bishopAndPawnVsBareKing() int { // STUB.
 	return -1 // 96
 }
 
-func (e *Evaluation) rookAndPawnVsRook() int {
+func (e *Evaluation) rookAndPawnVsRook() int { // STUB.
 	return -1 // 96
 }
 
-func (e *Evaluation) queenVsRookAndPawns() int {
+func (e *Evaluation) queenVsRookAndPawns() int { // STUB.
 	return -1 // 96
 }
-
-
