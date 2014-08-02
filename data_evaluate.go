@@ -55,6 +55,21 @@ var pieceValue = [14]int{
 // Piece/square table: gets initilized on startup from the bonus arrays below.
 var pst = [14][64]Score{{},}
 
+var materialBalance = [14]int{
+	0, 0,
+	2*2*3*3*3*3*9,	  // Pawn
+	2*2*3*3*3*3*9*9,  // Black Pawn
+	2*2*3*3*3*3,	  // Knight
+	2*2*3*3*3*3*3,	  // Black Knight
+	2*2*3*3,	  // Bishop
+	2*2*3*3*3,	  // Black Bishop
+	2*2,	          // Rook
+	2*2*3,	          // Black Rook
+	1,	          // Queen
+	1*2,	          // Black Queen
+	0, 0,	          // Kings
+}
+
 // Piece/square bonus points, visually arranged from White's point of view. The
 // square index is used directly for Black and requires a flip for White.
 var bonusPawn = [2][64]int{
