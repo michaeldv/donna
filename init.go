@@ -12,13 +12,13 @@ type Magic struct {
 }
 
 var (
-	kingMoves        [64]Bitmask
-	knightMoves      [64]Bitmask
-	pawnMoves        [2][64]Bitmask
-	rookMagicMoves   [64][4096]Bitmask
+	kingMoves [64]Bitmask
+	knightMoves [64]Bitmask
+	pawnMoves [2][64]Bitmask
+	rookMagicMoves [64][4096]Bitmask
 	bishopMagicMoves [64][512]Bitmask
 
-	maskPassed  [2][64]Bitmask
+	maskPassed [2][64]Bitmask
 	maskInFront [2][64]Bitmask
 
 	// Complete file or rank mask if both squares reside on on the same file
@@ -45,14 +45,25 @@ var (
 	maskPawn [2][64]Bitmask
 
 	// Two arrays to simplify incremental polyglot hash computation.
-	hashCastle    [16]uint64
+	hashCastle [16]uint64
 	hashEnpassant [8]uint64
 
 	// Distance between two squares.
 	distance [64][64]int
+
+	// Precomputed database of material imbalance scores, evaluation flags,
+	// and endgame handlers.
+	materialBase [2*2*3*3*3*3*3*3*9*9]MaterialEntry
 )
 
 func init() {
+	initMasks()
+	initArrays()
+	initPST()
+	initMaterial()
+}
+
+func initMasks() {
 	for square := A1; square <= H8; square++ {
 		row, col := Coordinate(square)
 
@@ -138,6 +149,9 @@ func init() {
 		maskInFront[White][square].fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
 		maskInFront[Black][square].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
 	}
+}
+
+func initArrays() {
 
 	// Castle hash values.
 	for mask := uint8(0); mask < 16; mask++ {
@@ -159,8 +173,9 @@ func init() {
 	for col := A1; col <= H1; col++ {
 		hashEnpassant[col] = polyglotRandomEnpassant[col]
 	}
+}
 
-	// Initialize PST.
+func initPST() {
 	for square := A1; square <= H8; square++ {
 
 		// White pieces: flip square index since bonus points have been
@@ -182,6 +197,162 @@ func init() {
 		pst[BlackQueen] [square].subtract(Score{bonusQueen [0][square], bonusQueen [1][square]}).subtract(valueQueen)
 		pst[BlackKing]  [square].subtract(Score{bonusKing  [0][square], bonusKing  [1][square]})
 	}
+}
+
+func initMaterial() {
+	var index int
+
+	for wQ := 0; wQ < 2; wQ++ {
+	  for bQ := 0; bQ < 2; bQ++ {
+	    for wR := 0; wR < 3; wR++ {
+	      for bR := 0; bR < 3; bR++ {
+		for wB := 0; wB < 3; wB++ {
+		  for bB := 0; bB < 3; bB++ {
+		    for wN := 0; wN < 3; wN++ {
+		      for bN := 0; bN < 3; bN++ {
+			for wP := 0; wP < 9; wP++ {
+			  for bP := 0; bP < 9; bP++ {
+				index = wQ * materialBalance[Queen]       +
+					bQ * materialBalance[BlackQueen]  +
+					wR * materialBalance[Rook]        +
+					bR * materialBalance[BlackRook]   +
+					wB * materialBalance[Bishop]      +
+					bB * materialBalance[BlackBishop] +
+					wN * materialBalance[Knight]      +
+					bN * materialBalance[BlackKnight] +
+					wP * materialBalance[Pawn]        +
+					bP * materialBalance[BlackPawn]
+
+				// Compute game phase.
+				materialBase[index].phase = 12 * (wN + bN + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
+
+				// Set up evaluation flags and endgame handlers.
+				materialBase[index].flags,
+				materialBase[index].endgame = endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ)
+
+				// Compute material imbalance scores.
+				if wQ != bQ || wR != bR || wB != bB || wN != bN || wP != bP {
+					white := imbalance(wB/2, wP, wN, wB, wR, wQ,  bB/2, bP, bN, bB, bR, bQ)
+					black := imbalance(bB/2, bP, bN, bB, bR, bQ,  wB/2, wP, wN, wB, wR, wQ)
+
+					adjustment := (white - black) / 32
+					materialBase[index].score.midgame += adjustment
+					materialBase[index].score.endgame += adjustment
+				}
+			  }
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+}
+
+// Simplified second-degree polynomial material imbalance by Tord Romstad.
+func imbalance(w2, wP, wN, wB, wR, wQ, b2, bP, bN, bB, bR, bQ int) int {
+	polynom := func(x, a, b, c int) int {
+		return a * (x * x) + (b + c) * x
+	}
+
+	return polynom(w2,    0, (   0                                                                                    ),  1852) +
+	       polynom(wP,    2, (  39*w2 +                                      37*b2                                    ),  -162) +
+	       polynom(wN,   -4, (  35*w2 + 271*wP +                             10*b2 +  62*bP                           ), -1122) +
+	       polynom(wB,    0, (   0*w2 + 105*wP +   4*wN +                    57*b2 +  64*bP +  39*bN                  ),  -183) +
+	       polynom(wR, -141, ( -27*w2 +  -2*wP +  46*wN + 100*wB +           50*b2 +  40*bP +  23*bN + -22*bB         ),   249) +
+	       polynom(wQ,    0, (-177*w2 +  25*wP + 129*wN + 142*wB + -137*wR + 98*b2 + 105*bP + -39*bN + 141*bB + 274*bR),  -154)
+}
+
+func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame Function) {
+	wMinor, wMajor := wN + wB, wR + wQ
+	bMinor, bMajor := bN + bB, bR + bQ
+	allMinor, allMajor := wMinor + bMinor, wMajor + bMajor
+
+	noPawns := (wP + bP == 0)
+	bareKing := ((wP + wMinor + wMajor) * (bP + bMinor + bMajor) == 0) // Bare king (white, black or both).
+
+	// Set king safety flags if the opposing side has a queen and at least one piece.
+	if wQ > 0 && (wN + wB + wR) > 0 {
+		flags |= blackKingSafety
+	}
+	if bQ > 0 && (bN + bB + bR) > 0 {
+		flags |= whiteKingSafety
+	}
+
+	// Insufficient material endgames that don't require further evaluation:
+	// 1) Two bare kings.
+	if wP + bP + allMinor + allMajor == 0 {
+		flags |= materialDraw
+
+	// 2) No pawns and king with a minor.
+	} else if noPawns && allMajor == 0 && wMinor < 2 && bMinor < 2 {
+		flags |= materialDraw
+
+	// 3) No pawns and king with two knights.
+	} else if noPawns && allMajor == 0 && allMinor == 2 && (wN == 2 || bN == 2) {
+		flags |= materialDraw
+
+	// Known endgame: king and a pawn vs. bare king.
+	} else if wP + bP == 1 && allMinor == 0 && allMajor == 0 {
+		flags |= knownEndgame
+		endgame = (*Evaluation).kingAndPawnVsBareKing
+
+	// Known endgame: king with a knight and a bishop vs. bare king.
+	} else if noPawns && allMajor == 0 && ((wN == 1 && wB == 1) || (bN == 1 && bB == 1)) {
+		flags |= knownEndgame
+		endgame = (*Evaluation).knightAndBishopVsBareKing
+
+	// Known endgame: two bishops vs. bare king.
+	} else if noPawns && allMajor == 0 && ((wN == 0 && wB == 2) || (bN == 0 && bB == 2)) {
+		flags |= knownEndgame
+		endgame = (*Evaluation).twoBishopsVsBareKing
+
+	// Known endgame: king with some winning material vs. bare king.
+	} else if bareKing && allMajor > 0 {
+		flags |= knownEndgame
+		endgame = (*Evaluation).winAgainstBareKing
+
+	// Lesser known endgame: king and two or more pawns vs. bare king.
+	} else if bareKing && allMinor + allMajor == 0 && wP + bP > 1 {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).kingAndPawnsVsBareKing
+
+	// Lesser known endgame: queen vs. rook with pawn(s)
+	} else if (wP + wMinor + wR == 0 && wQ == 1 && bMinor + bQ == 0 && bP > 0 && bR == 1) ||
+	          (bP + bMinor + bR == 0 && bQ == 1 && wMinor + wQ == 0 && wP > 0 && wR == 1) {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).queenVsRookAndPawns
+
+	// Lesser known endgame: king and pawn vs. king and pawn.
+	} else if allMinor + allMajor == 0 && wP == 1 && bP == 1 {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).kingAndPawnVsKingAndPawn
+
+	// Lesser known endgame: bishop and pawn vs. bare king.
+	} else if bareKing && allMajor == 0 && allMinor == 1 && ((wB + wP == 2) || (bB + bP == 2)) {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).bishopAndPawnVsBareKing
+
+	// Lesser known endgame: rook and pawn vs. rook.
+	} else if allMinor == 0 && wQ + bQ == 0 && ((wR + wP == 2) || (bR + bP == 2)) {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).rookAndPawnVsRook
+
+	// Check for potential opposite-colored bishops.
+	} else if wB * bB == 1 {
+		flags |= singleBishops
+		if allMajor == 0 && allMinor == 2 && Abs(wP - bP) < 3 {
+			flags |= lesserKnownEndgame
+			endgame = (*Evaluation).bishopsAndPawns
+		} else if flags & (whiteKingSafety | blackKingSafety) == 0 {
+			flags |= lesserKnownEndgame
+			endgame = (*Evaluation).drawishBishops
+		}
+	}
+
+	return
 }
 
 func indexedBitmask(index int, mask Bitmask) (bitmask Bitmask) {
@@ -367,10 +538,9 @@ func setupMasks(square, target, row, col, r, c int) {
 			maskDiagonal[square][target] = maskH1A8 << uint(8*(16-shift))
 		}
 	}
-	//
+
 	// Default values are all 0 for maskBlock[square][target] (Go sets it for us)
 	// and all 1 for maskEvade[square][target].
-	//
 	if maskEvade[square][target] == 0 {
 		maskEvade[square][target] = maskFull
 	}

@@ -64,3 +64,173 @@ func TestMagic040(t *testing.T) {
 	expect(t, maskDiagonal[A2][G4], maskNone) // Random squares.
 	expect(t, maskDiagonal[E4][E4], maskNone) // Same square.
 }
+
+// Material base tests.
+
+// Bare kings.
+func TestMaterial000(t *testing.T) {
+	balance := materialBalance[King] + materialBalance[BlackKing]
+	expect(t, balance, 0)
+	expect(t, materialBase[balance].flags, uint8(materialDraw))
+	expect(t, materialBase[balance].endgame, nil)
+
+	p := NewGame(`Ke1`, `Ke8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+// No pawns, king with a minor.
+func TestMaterial010(t *testing.T) {
+	balance := materialBalance[Bishop]
+	expect(t, materialBase[balance].flags, uint8(materialDraw))
+	expect(t, materialBase[balance].endgame, nil)
+
+	p := NewGame(`Ke1,Bc1`, `Ke8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+func TestMaterial015(t *testing.T) {
+	balance := materialBalance[Bishop] + materialBalance[BlackKnight]
+	expect(t, materialBase[balance].flags, uint8(materialDraw))
+	expect(t, materialBase[balance].endgame, nil)
+
+	p := NewGame(`Ke1,Bc1`, `Ke8,Nb8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+// No pawns, king with two knights.
+func TestMaterial020(t *testing.T) {
+	balance := 2 * materialBalance[Knight]
+	expect(t, materialBase[balance].flags, uint8(materialDraw))
+	expect(t, materialBase[balance].endgame, nil)
+
+	p := NewGame(`Ke1,Ne2,Ne3`, `Ke8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+// Known: king and a pawn vs. bare king.
+func TestMaterial030(t *testing.T) {
+	balance := materialBalance[Pawn]
+	expect(t, materialBase[balance].flags, uint8(knownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnVsBareKing)
+
+	p := NewGame(`Ke1,e2`, `Ke8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+func TestMaterial040(t *testing.T) {
+	balance := materialBalance[BlackPawn]
+	expect(t, materialBase[balance].flags, uint8(knownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnVsBareKing)
+
+	p := NewGame(`Ke1`, `Ke8,e7`).Start(Black)
+	expect(t, p.balance, balance)
+}
+
+// Known: king with a knight and a bishop vs. bare king.
+func TestMaterial050(t *testing.T) {
+	balance := materialBalance[Knight] + materialBalance[Bishop]
+	expect(t, materialBase[balance].flags, uint8(knownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).knightAndBishopVsBareKing)
+
+	p := NewGame(`Ke1,Nb1,Bc1`, `Ke8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+func TestMaterial060(t *testing.T) {
+	balance := materialBalance[BlackKnight] + materialBalance[BlackBishop]
+	expect(t, materialBase[balance].flags, uint8(knownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).knightAndBishopVsBareKing)
+
+	p := NewGame(`Ke1`, `Ke8,Nb8,Bc8`).Start(Black)
+	expect(t, p.balance, balance)
+}
+
+// Known endgame: two bishops vs. bare king.
+func TestMaterial070(t *testing.T) {
+	balance := 2 * materialBalance[BlackBishop]
+	expect(t, materialBase[balance].flags, uint8(knownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).twoBishopsVsBareKing)
+
+	p := NewGame(`Ke1`, `Ka8,Bg8,Bh8`).Start(Black)
+	expect(t, p.balance, balance)
+}
+
+// Known endgame: king with some winning material vs. bare king.
+func TestMaterial080(t *testing.T) {
+	balance := materialBalance[BlackRook]
+	expect(t, materialBase[balance].flags, uint8(knownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).winAgainstBareKing)
+
+	p := NewGame(`Ke1`, `Ka8,Rh8`).Start(Black)
+	expect(t, p.balance, balance)
+}
+
+// Lesser known endgame: king and two or more pawns vs. bare king.
+func TestMaterial090(t *testing.T) {
+	balance := 2 * materialBalance[Pawn]
+	expect(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnsVsBareKing)
+
+	p := NewGame(`Ke1,a4,a5`, `Ka8`).Start(Black)
+	expect(t, p.balance, balance)
+}
+
+// Lesser known endgame: queen vs. rook with pawn(s)
+func TestMaterial100(t *testing.T) {
+	balance := materialBalance[Rook] + materialBalance[Pawn] + materialBalance[BlackQueen]
+	expect(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).queenVsRookAndPawns)
+
+	p := NewGame(`Ke1,Re4,e5`, `Ka8,Qh8`).Start(Black)
+	expect(t, p.balance, balance)
+}
+
+// Lesser known endgame: king and pawn vs. king and pawn.
+func TestMaterial110(t *testing.T) {
+	balance := materialBalance[Pawn] + materialBalance[BlackPawn]
+	expect(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnVsKingAndPawn)
+
+	p := NewGame(`Ke1,a4`, `Ka8,h5`).Start(Black)
+	expect(t, p.balance, balance)
+}
+
+// Lesser known endgame: bishop and pawn vs. bare king.
+func TestMaterial120(t *testing.T) {
+	balance := materialBalance[Pawn] + materialBalance[Bishop]
+	expect(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).bishopAndPawnVsBareKing)
+
+	p := NewGame(`Ke1,Be2,a4`, `Ka8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+// Lesser known endgame: rook and pawn vs. rook.
+func TestMaterial130(t *testing.T) {
+	balance := materialBalance[Rook] + materialBalance[Pawn] + materialBalance[BlackRook]
+	expect(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).rookAndPawnVsRook)
+
+	p := NewGame(`Ke1,Re2,a4`, `Ka8,Rh8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+// Single bishops (midgame).
+func TestMaterial140(t *testing.T) {
+	balance := materialBalance[Bishop] + materialBalance[Knight] + materialBalance[Rook] + materialBalance[BlackBishop] + materialBalance[BlackKnight] + materialBalance[BlackRook]
+	expect(t, materialBase[balance].flags, uint8(singleBishops | lesserKnownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).drawishBishops)
+
+	p := NewGame(`Ke1,Ra1,Bc1,Nb1`, `Ke8,Rh8,Bf8,Ng8`).Start(White)
+	expect(t, p.balance, balance)
+}
+
+// Single bishops (endgame).
+func TestMaterial150(t *testing.T) {
+	balance := materialBalance[Bishop] + 4 * materialBalance[Pawn] + materialBalance[BlackBishop] + 3 * materialBalance[BlackPawn]
+	expect(t, materialBase[balance].flags, uint8(singleBishops | lesserKnownEndgame))
+	expect(t, materialBase[balance].endgame, (*Evaluation).bishopsAndPawns)
+
+	p := NewGame(`Ke1,Bc1,a2,b2,c2,d4`, `Ke8,Bf8,f7,g7,h7`).Start(White)
+	expect(t, p.balance, balance)
+}
