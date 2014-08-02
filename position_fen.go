@@ -64,6 +64,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 			p.pieces[square] = piece
 			p.outposts[piece].set(square)
 			p.outposts[piece.color()].set(square)
+			p.balance += materialBalance[piece]
 			p.count[piece]++
 			square++
 		}
@@ -100,7 +101,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 	p.reversible = true
 	p.board = p.outposts[White] | p.outposts[Black]
-	p.hash, p.hashPawns, p.hashMaterial = p.polyglot()
+	p.hash, p.hashPawns = p.polyglot()
 	p.tally = p.valuation()
 
 	return p
