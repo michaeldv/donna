@@ -13,11 +13,9 @@ func (e *Evaluation) evaluateEndgame() int {
 }
 
 func (e *Evaluation) inspectEndgame() {
-	if e.score.endgame != 0 {
-		markdown := e.material.endgame(e)
-		if markdown >= 0 {
-			e.score.endgame *= markdown / 128
-		}
+	markdown := e.material.endgame(e)
+	if markdown >= 0 {
+		e.score.endgame = e.score.endgame * markdown / 128
 	}
 }
 
@@ -38,10 +36,6 @@ func (e *Evaluation) knightAndBishopVsBareKing() int { // STUB.
 }
 
 func (e *Evaluation) twoBishopsVsBareKing() int { // STUB.
-	return e.score.blended(e.material.phase)
-}
-
-func (e *Evaluation) bishopsAndPawns() int { // STUB.
 	return e.score.blended(e.material.phase)
 }
 
@@ -66,6 +60,24 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 		return 0
 	}
 
+	return -1
+}
+
+// Checks if we have drawish bishop-only endgame with the opposite-colored bishops.
+func (e *Evaluation) bishopsAndPawns() int {
+	if e.oppositeBishops() {
+		pawns := Abs(e.position.count[Pawn] - e.position.count[BlackPawn])
+		return 4 * pawns * pawns + 1
+	}
+
+	return -1
+}
+
+// Checks if we are to reduce the score because of opposite-colored bishops.
+func (e *Evaluation) drawishBishops() int {
+	if e.oppositeBishops() {
+		return 64 // Drop endgame score by the factor of 2.
+	}
 	return -1
 }
 

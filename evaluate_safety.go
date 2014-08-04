@@ -17,10 +17,14 @@ func (e *Evaluation) analyzeSafety() {
 		}()
 	}
 
+	oppositeBishops := func(c, s Score) bool {
+		return e.material.flags & singleBishops != 0 && c.midgame + s.midgame < -onePawn/2 && e.oppositeBishops()
+	}
+
 	if e.material.flags & whiteKingSafety != 0 {
 		cover.white = e.kingCover(White)
 		safety.white = e.kingSafety(White)
-		if e.material.flags & oppositeBishops != 0 && cover.white.midgame + safety.white.midgame < -valuePawn.midgame/2 {
+		if oppositeBishops(cover.white, safety.white) {
 			safety.white.midgame -= bishopDanger.midgame
 		}
 
@@ -35,7 +39,7 @@ func (e *Evaluation) analyzeSafety() {
 	if e.material.flags & blackKingSafety != 0 {
 		cover.black = e.kingCover(Black)
 		safety.black = e.kingSafety(Black)
-		if e.material.flags & oppositeBishops != 0 && cover.black.midgame + safety.black.midgame < -valuePawn.midgame/2 {
+		if oppositeBishops(cover.black, safety.black) {
 			safety.black.midgame -= bishopDanger.midgame
 		}
 

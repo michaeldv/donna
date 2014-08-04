@@ -4,6 +4,15 @@
 
 package donna
 
+const (
+	whiteKingSafety    = 0x01  // Should we worry about white king's safety?
+	blackKingSafety    = 0x02  // Ditto for the black king.
+	materialDraw       = 0x04  // King vs. King (with minor)
+	knownEndgame       = 0x08  // Where we calculate exact score.
+	lesserKnownEndgame = 0x10  // Where we set score markdown value.
+	singleBishops      = 0x20  // Sides might have bishops on opposite color squares.
+)
+
 // Hash containing various evaluation metrics; used only when evaluation tracing
 // is enabled.
 type Metrics map[string]interface{}
@@ -23,14 +32,20 @@ type Total struct {
 	black Score 		// Score for black.
 }
 
-//
+type Function func(*Evaluation) int
+type MaterialEntry struct {
+	score     Score 	// Score adjustment for the given material.
+	endgame   Function 	// Function to analyze an endgame position.
+	phase     int 		// Game phase, based on available material.
+	flags     uint8    	// Evaluation flags based on material balance.
+}
+
 type Evaluation struct {
-	flags     uint8 	 // Evaluation flags.
 	score     Score 	 // Current score.
-	safety    [2]Safety 	 // King safety for both sides.
+	safety    [2]Safety 	 // King safety data for both sides.
 	attacks   [14]Bitmask 	 // Attack bitmasks for all the pieces on the board.
 	pawns     *PawnEntry 	 // Pointer to the pawn cache entry.
-	material  *MaterialEntry // Pointer to the matrial cache entry.
+	material  *MaterialEntry // Pointer to the matrial base entry.
 	position  *Position 	 // Pointer to the position we're evaluating.
 	metrics   Metrics 	 // Evaluation metrics when tracking is on.
 }
@@ -97,11 +112,18 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	return e
 }
 
+func (e *Evaluation) analyzeMaterialNew() {
+	e.material = &materialBase[e.position.balance]
+	e.score.add(e.material.score)
+}
+
 func (e *Evaluation) run() int {
-	e.analyzeMaterial()
+	e.material = &materialBase[e.position.balance]
 	if e.material.flags & materialDraw != 0 {
 		return 0
 	}
+
+	e.score.add(e.material.score)
 	if e.material.flags & knownEndgame != 0 {
 		return e.evaluateEndgame()
 	}
@@ -117,26 +139,10 @@ func (e *Evaluation) run() int {
 }
 
 func (e *Evaluation) wrapUp() {
-	flags := e.material.flags
 
 	// Adjust the score if we have lesser known endgame.
-	if flags & lesserKnownEndgame != 0 {
+	if e.material.flags & lesserKnownEndgame != 0 {
 		e.inspectEndgame()
-	}
-
-	// Check if we have drawish endgame with the opposite-colored bishops.
-	if flags & oppositeBishops != 0 && e.material.phase < 256/2 {
-		count := &e.position.count
-		if count[Knight] + count[Rook] + count[Queen] + count[BlackKnight] + count[BlackRook] + count[BlackQueen] == 0 {
-			if pawns := Abs(count[Pawn] - count[BlackPawn]); pawns <= 2 {
-				markdown := 40 / (pawns * pawns + 1)
-				e.score.midgame /= markdown
-				e.score.endgame /= markdown
-			}
-		} else {
-			e.score.midgame /= 2
-			e.score.endgame /= 2
-		}
 	}
 
 	// Flip the sign for black so that blended evaluation score always
@@ -149,4 +155,10 @@ func (e *Evaluation) wrapUp() {
 
 func (e *Evaluation) checkpoint(tag string, metric interface{}) {
 	e.metrics[tag] = metric
+}
+
+func (e *Evaluation) oppositeBishops() bool {
+	bishops := e.position.outposts[Bishop] | e.position.outposts[BlackBishop]
+
+	return bishops & maskDark == 0 || bishops & ^maskDark == 0
 }

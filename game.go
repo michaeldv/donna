@@ -41,7 +41,6 @@ var game Game
 func NewGame(args ...string) *Game {
 	game = Game{}
 	pawnCache = [8192]PawnEntry{}
-	materialCache = [8192]MaterialEntry{}
 
 	game.rootpv = make([]Move, 0, MaxPly)
 	for ply := 0;  ply < MaxPly; ply++ {
@@ -123,7 +122,7 @@ func (game *Game) Think() Move {
 				game.rootpv = append(game.rootpv[:0], game.pv[0]...)
 			}
 		} else {
-			aspiration := valuePawn.midgame / 3
+			aspiration := onePawn / 3
 			alpha = Max(score - aspiration, -Checkmate)
 			beta = Min(score + aspiration, Checkmate)
 

@@ -24,7 +24,6 @@ func (game *Game) Set(args ...interface{}) *Game {
 			case int:
 				game.cache = NewCache(float64(value.(int)))
 			}
-			game.warmUpMaterialCache()
 		case `depth`:
 			game.options = Options{}
 			game.options.maxDepth = value.(int)
