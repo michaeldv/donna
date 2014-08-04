@@ -62,3 +62,16 @@ func TestEvaluate060(t *testing.T) {
 	score := p.Evaluate()
 	expect(t, score, rightToMove.midgame) // Right to move only.
 }
+
+// Opposite-colored bishops.
+func TestEvaluate070(t *testing.T) {
+	p := NewGame(`Ke1,Bc1`, `Ke8,Bc8`).Start(White)
+	eval.init(p)
+	expect(t, eval.oppositeBishops(), false)
+}
+
+func TestEvaluate080(t *testing.T) {
+	p := NewGame(`Ke1,Bc1`, `Ke8,Bf8`).Start(White)
+	eval.init(p)
+	expect(t, eval.oppositeBishops(), true)
+}
