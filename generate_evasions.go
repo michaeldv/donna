@@ -90,7 +90,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 		if p.causesEnpassant(to) {
 			gen.add(p.NewEnpassant(from, to))
 		} else {
-			gen.add(p.NewPawnJump(from, to))
+			gen.add(p.NewMove(from, to))
 		}
 	}
 

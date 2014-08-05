@@ -26,10 +26,6 @@ func (p *Position) NewEnpassant(from, to int) Move {
 	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
 }
 
-func (p *Position) NewPawnJump(from, to int) Move {
-	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isPawnJump)
-}
-
 // Returns true if *non-evasion* move is valid, i.e. it is possible to make
 // the move in current position without violating chess rules. If the king is
 // in check the generator is expected to generate valid evasions where extra
@@ -84,7 +80,7 @@ func (p *Position) pawnMove(square, target int) Move {
 		if p.causesEnpassant(target) {
 			return p.NewEnpassant(square, target)
 		} else {
-			return p.NewPawnJump(square, target)
+			return p.NewMove(square, target)
 		}
 	}
 

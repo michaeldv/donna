@@ -13,7 +13,6 @@ const (
 	isPromo     = 0x0F000000
 	isCastle    = 0x10000000
 	isEnpassant = 0x20000000
-	isPawnJump  = 0x40000000
 )
 
 // Bits 00:00:00:FF => Source square (0 .. 63).
@@ -78,14 +77,9 @@ func (m Move) enpassant() Move {
 	return m | isEnpassant
 }
 
-func (m Move) pawnJump() Move {
-	return m | isPawnJump
-}
-
-
 // Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() int {
-	return  pieceValue[m.capture()] - m.piece().kind()
+	return pieceValue[m.capture()] - m.piece().kind()
 }
 
 func (m Move) String() string {
