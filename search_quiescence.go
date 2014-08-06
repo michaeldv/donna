@@ -12,11 +12,21 @@ func (p *Position) searchQuiescence(alpha, beta, depth int) int {
 func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly bool) (score int) {
 	ply := Ply()
 
+	// Reset principal variation.
+	p.game.pv[ply] = p.game.pv[ply][:0]
+
+	// Return if it's time to stop search.
 	if ply >= MaxPly || p.game.clock.halt {
 		return p.Evaluate()
 	}
 
-	p.game.pv[ply] = p.game.pv[ply][:0]
+	// Repetition and/or perpetual check pruning.
+	if p.isRepetition() {
+		if p.isInCheck(p.color) {
+			return 0
+		}
+		return p.Evaluate()
+	}
 
 	// Probe cache.
 	cacheFlags := uint8(cacheAlpha)

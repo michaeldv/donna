@@ -9,20 +9,34 @@ import ()
 func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	ply := Ply()
 
+	// Reset principal variation.
+	p.game.pv[ply] = p.game.pv[ply][:0]
+
+	// Return if it's time to stop search.
 	if ply >= MaxPly || p.game.clock.halt {
 		return p.Evaluate()
 	}
 
-	p.game.pv[ply] = p.game.pv[ply][:0]
+	// Checkmate distance pruning.
+	if score := Abs(ply - Checkmate); score < beta {
+		beta = score
+		if score <= alpha {
+			return alpha
+		}
+	}
+
+	// Repetition and/or perpetual check pruning.
+	if p.isRepetition() {
+		if p.isInCheck(p.color) {
+			return 0
+		}
+		return p.Evaluate()
+	}
+
+	// Initialize node search conditions.
 	isNull := p.isNull()
 	inCheck := p.isInCheck(p.color)
 	isPrincipal := (beta - alpha > 1)
-
-	if !isNull {
-		if p.isRepetition() {
-			return 0
-		}
-	}
 
 	// Probe cache.
 	cachedMove := Move(0)
@@ -61,7 +75,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	if !inCheck && depth < 1 {
 		return p.searchQuiescence(alpha, beta, depth)
 	}
-
 
 	// Razoring and futility margin pruning.
 	if !inCheck && !isPrincipal {
