@@ -6,6 +6,11 @@ package donna
 
 import(`fmt`; `strings`)
 
+// Sets up initial chess position.
+func NewInitialPosition(game *Game) *Position {
+	return NewPositionFromFEN(game, `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`)
+}
+
 // Decodes FEN string and creates new position.
 func NewPositionFromFEN(game *Game, fen string) *Position {
 	tree[node] = Position{game: game}
@@ -19,10 +24,10 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	// [4] - Number of half-moves.
 	// [5] - Number of full moves.
 	matches := strings.Split(fen, ` `)
-	if len(matches) == 5 {
+	// fmt.Printf("%q\n", matches)
+	if len(matches) < 4 {
 		return nil
 	}
-	// fmt.Printf("%q\n", matches)
 
 	// [0] - Pieces (entire board).
 	square := A8
