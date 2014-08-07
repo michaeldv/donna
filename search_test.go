@@ -177,6 +177,37 @@ func TestSearch300(t *testing.T) {
 	expect(t, move, `Ne5-f7`)
 }
 
+// Perft.
+func TestSearch400(t *testing.T) {
+	position := NewGame().Start()
+	expect(t, position.Perft(0), int64(1))
+}
+
+func TestSearch410(t *testing.T) {
+	position := NewGame().Start()
+	expect(t, position.Perft(1), int64(20))
+}
+
+func TestSearch420(t *testing.T) {
+	position := NewGame().Start()
+	expect(t, position.Perft(2), int64(400))
+}
+
+func TestSearch430(t *testing.T) {
+	position := NewGame().Start()
+	expect(t, position.Perft(3), int64(8902))
+}
+
+func TestSearch440(t *testing.T) {
+	position := NewGame().Start()
+	expect(t, position.Perft(4), int64(197281))
+}
+
+func TestSearch450(t *testing.T) {
+	position := NewGame().Start()
+	expect(t, position.Perft(5), int64(4865609))
+}
+
 func TestSearchDebug(t *testing.T) {
 	// game := NewGame(`Kg2,Rg3,Bh7,a4,g5,f6`,`Kf7,Rh8,Nc4,d4,b4,a5`).CacheSize(64)
 	// p := game.Start(Black)
