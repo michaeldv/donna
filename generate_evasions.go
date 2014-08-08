@@ -67,10 +67,16 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// See if the check could be blocked or the attacked piece captured.
 	block := maskBlock[square][attackSquare] | bit[attackSquare]
 
-	// Create masks for pawn pushes and jumps.
-	pawns = p.pawnPushesMask(color)			// One square push.
-	jumps := p.pawnJumpsMask(color, pawns) & block 	// Try one more square.
-	pawns &= block
+	// Create masks for one-square pawn pushes and two-square jumps.
+	jumps := ^p.board
+	if color == White {
+		pawns = (p.outposts[Pawn] << 8) & ^p.board
+		jumps &= maskRank[3] & (pawns << 8)
+	} else {
+		pawns = (p.outposts[BlackPawn] >> 8) & ^p.board
+		jumps &= maskRank[4] & (pawns >> 8)
+	}
+	pawns &= block; jumps &= block
 
 	// Handle one-square pawn pushes: promote to Queen if reached last rank.
 	for pawns != 0 {

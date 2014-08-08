@@ -107,26 +107,6 @@ func (p *Position) causesEnpassant(target int) bool {
 	return false
 }
 
-func (p *Position) pawnPushesMask(color int) (mask Bitmask) {
-	if color == White {
-		mask = (p.outposts[Pawn] << 8)
-	} else {
-		mask = (p.outposts[BlackPawn] >> 8)
-	}
-	mask &= ^p.board
-	return
-}
-
-func (p *Position) pawnJumpsMask(color int, pawns Bitmask) (mask Bitmask) {
-	if color == White {
-		mask = maskRank[3] & (pawns << 8)
-	} else {
-		mask = maskRank[4] & (pawns >> 8)
-	}
-	mask &= ^p.board
-	return
-}
-
 func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
 	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
 	arr := re.FindStringSubmatch(e2e4)
