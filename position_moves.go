@@ -76,12 +76,8 @@ func (p *Position) pinnedMask(square int) (mask Bitmask) {
 }
 
 func (p *Position) pawnMove(square, target int) Move {
-	if RelRow(square, p.color) == 1 && RelRow(target, p.color) == 3 {
-		if p.causesEnpassant(target) {
-			return p.NewEnpassant(square, target)
-		} else {
-			return p.NewMove(square, target)
-		}
+	if Abs(square - target) == 16 && p.causesEnpassant(target) {
+		return p.NewEnpassant(square, target)
 	}
 
 	return p.NewMove(square, target)
@@ -94,17 +90,12 @@ func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
 		p.NewMove(square, target).promote(Knight)
 }
 
+// Returns true if a pawn jump causes en-passant. This is done by checking whether
+// the enemy pawns occupy squares ajacent to the target square.
 func (p *Position) causesEnpassant(target int) bool {
 	pawns := p.outposts[pawn(p.color^1)] // Opposite color pawns.
-	switch col := Col(target); col {
-	case 0:
-		return pawns.isSet(target + 1)
-	case 7:
-		return pawns.isSet(target - 1)
-	default:
-		return pawns.isSet(target+1) || pawns.isSet(target-1)
-	}
-	return false
+
+	return maskIsolated[Col(target)] & maskRank[Row(target)] & pawns != 0
 }
 
 func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
