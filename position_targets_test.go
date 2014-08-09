@@ -39,7 +39,7 @@ func TestTargets020(t *testing.T) {
 func TestTargets030(t *testing.T) {
 	game := NewGame(`Kd1,e2`, `Ke8,d4`)
 	position := game.Start(White)
-	position = position.MakeMove(position.NewEnpassant(E2, E4)) // Creates en-passant on e3.
+	position = position.MakeMove(NewEnpassant(position, E2, E4)) // Creates en-passant on e3.
 
 	expect(t, position.targets(E4), bit[E5])         // e5
 	expect(t, position.targets(D4), bit[D3]|bit[E3]) // d3, e3 (en-passant).

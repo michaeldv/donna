@@ -47,7 +47,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// the attacking piece?
 	pawns := maskPawn[color][attackSquare] & p.outposts[pawn(color)]
 	for pawns != 0 {
-		move := p.NewMove(pawns.pop(), attackSquare)
+		move := NewMove(p, pawns.pop(), attackSquare)
 		if attackSquare >= A8 || attackSquare <= H1 {
 			move = move.promote(Queen)
 		}
@@ -60,7 +60,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	if enpassant := attackSquare + eight[color]; p.enpassant == enpassant {
 		pawns := maskPawn[color][enpassant] & p.outposts[pawn(color)]
 		for pawns != 0 {
-			gen.add(p.NewMove(pawns.pop(), attackSquare+eight[color]))
+			gen.add(NewMove(p, pawns.pop(), attackSquare+eight[color]))
 		}
 	}
 
@@ -82,7 +82,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	for pawns != 0 {
 		to := pawns.pop()
 		from := to - eight[color]
-		move := p.NewMove(from, to)
+		move := NewMove(p, from, to)
 		if to >= A8 || to <= H1 {
 			move = move.promote(Queen)
 		}
@@ -94,9 +94,9 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 		to := jumps.pop()
 		from := to - 2 * eight[color]
 		if p.causesEnpassant(to) {
-			gen.add(p.NewEnpassant(from, to))
+			gen.add(NewEnpassant(p, from, to))
 		} else {
-			gen.add(p.NewMove(from, to))
+			gen.add(NewMove(p, from, to))
 		}
 	}
 

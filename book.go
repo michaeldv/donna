@@ -95,13 +95,13 @@ func (b *Book) move(p *Position, entry Entry) Move {
 	// Check if this is a castle move. In Polyglot they are represented
 	// as E1-H1, E1-A1, E8-H8, and E8-A8.
 	if from == E1 && to == H1 {
-		return p.NewCastle(from, G1)
+		return NewCastle(p, from, G1)
 	} else if from == E1 && to == A1 {
-		return p.NewCastle(from, C1)
+		return NewCastle(p, from, C1)
 	} else if from == E8 && to == H8 {
-		return p.NewCastle(from, G8)
+		return NewCastle(p, from, G8)
 	} else if from == E8 && to == A8 {
-		return p.NewCastle(from, C8)
+		return NewCastle(p, from, C8)
 	} else {
 		// Special treatment for non-promo pawn moves since they might
 		// cause en-passant.
@@ -110,7 +110,7 @@ func (b *Book) move(p *Position, entry Entry) Move {
 		}
 	}
 
-	move := p.NewMove(from, to)
+	move := NewMove(p, from, to)
 	if promo := entry.promoted(); promo != 0 {
 		move.promote(promo)
 	}

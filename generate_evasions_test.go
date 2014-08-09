@@ -89,7 +89,7 @@ func TestGenerate365(t *testing.T) {
 func TestGenerate370(t *testing.T) {
 	game := NewGame(`Kd4,d5,f5`, `Kd8,e7`)
 	black := game.Start(Black)
-	white := NewGen(black.MakeMove(black.NewEnpassant(E7, E5)), 0).generateEvasions()
+	white := NewGen(black.MakeMove(NewEnpassant(black, E7, E5)), 0).generateEvasions()
 	expect(t, white.allMoves(), `[Kd4-c3 Kd4-d3 Kd4-e3 Kd4-c4 Kd4-e4 Kd4-c5 Kd4xe5 d5xe6 f5xe6]`)
 }
 
@@ -97,7 +97,7 @@ func TestGenerate370(t *testing.T) {
 func TestGenerate380(t *testing.T) {
 	game := NewGame(`Kb1,b2`, `Ka5,a4,c5,c4`)
 	white := game.Start(White)
-	black := NewGen(white.MakeMove(white.NewEnpassant(B2, B4)), 0).generateEvasions()
+	black := NewGen(white.MakeMove(NewEnpassant(white, B2, B4)), 0).generateEvasions()
 	expect(t, black.allMoves(), `[Ka5xb4 Ka5-b5 Ka5-a6 Ka5-b6 c5xb4 a4xb3 c4xb3]`)
 }
 
@@ -105,7 +105,7 @@ func TestGenerate380(t *testing.T) {
 func TestGenerate385(t *testing.T) {
 	game := NewGame(`Ke4,c5,e5`, `Ke7,d7`)
 	black := game.Start(Black)
-	white := NewGen(black.MakeMove(black.NewEnpassant(D7, D5)), 0).generateEvasions()
+	white := NewGen(black.MakeMove(NewEnpassant(black, D7, D5)), 0).generateEvasions()
 	for move := white.NextMove(); move != 0; move = white.NextMove() {
 		if move.piece() == Pawn {
 			expect(t, move.to(), D6)
@@ -144,7 +144,7 @@ func TestGenerate405(t *testing.T) {
 func TestGenerate410(t *testing.T) {
 	game := NewGame(`Ke1,Qd1,Rc7,Bd3,Nd4,c2,f2`, `Kh8,Nb4`)
 	black := game.Start(Black)
-	white := NewGen(black.MakeMove(black.NewMove(B4, C2)), 0).generateEvasions()
+	white := NewGen(black.MakeMove(NewMove(black, B4, C2)), 0).generateEvasions()
 	expect(t, white.allMoves(), `[Ke1-f1 Ke1-d2 Ke1-e2 Qd1xc2 Bd3xc2 Nd4xc2 Rc7xc2]`)
 }
 
@@ -152,7 +152,7 @@ func TestGenerate410(t *testing.T) {
 func TestGenerate420(t *testing.T) {
 	game := NewGame(`Ke1,Qd1,Rd7,Bf1,Nc1,c2,d3,f2`, `Kh8,Nb4`)
 	black := game.Start(Black)
-	white := NewGen(black.MakeMove(black.NewMove(B4, D3)), 0).generateEvasions()
+	white := NewGen(black.MakeMove(NewMove(black, B4, D3)), 0).generateEvasions()
 	expect(t, white.allMoves(), `[Ke1-d2 Ke1-e2 c2xd3 Nc1xd3 Qd1xd3 Bf1xd3 Rd7xd3]`)
 }
 
@@ -160,7 +160,7 @@ func TestGenerate420(t *testing.T) {
 func TestGenerate430(t *testing.T) {
 	game := NewGame(`Ke1,Qf7,f2`, `Kh8,Qh4`)
 	black := game.Start(Black)
-	white := NewGen(black.MakeMove(black.NewMove(H4, F2)), 0).generateEvasions()
+	white := NewGen(black.MakeMove(NewMove(black, H4, F2)), 0).generateEvasions()
 	expect(t, white.allMoves(), `[Ke1-d1 Ke1xf2 Qf7xf2]`)
 }
 
@@ -168,7 +168,7 @@ func TestGenerate430(t *testing.T) {
 func TestGenerate440(t *testing.T) {
 	game := NewGame(`Kf1,Qf3,Nf2`, `Ka1,b2`)
 	white := game.Start(White)
-	black := NewGen(white.MakeMove(white.NewMove(F3, D1)), 0).generateEvasions()
+	black := NewGen(white.MakeMove(NewMove(white, F3, D1)), 0).generateEvasions()
 	expect(t, black.allMoves(), `[Ka1-a2 b2-b1Q]`)
 }
 
@@ -176,7 +176,7 @@ func TestGenerate440(t *testing.T) {
 func TestGenerate450(t *testing.T) {
 	game := NewGame(`Kf1,Qf3,Nf2`, `Ka1,b2,c2`)
 	white := game.Start(White)
-	black := NewGen(white.MakeMove(white.NewMove(F3, D1)), 0).generateEvasions()
+	black := NewGen(white.MakeMove(NewMove(white, F3, D1)), 0).generateEvasions()
 	expect(t, black.allMoves(), `[Ka1-a2 c2xd1Q b2-b1Q c2-c1Q]`)
 }
 
@@ -184,6 +184,6 @@ func TestGenerate450(t *testing.T) {
 func TestGenerate460(t *testing.T) {
 	game := NewGame(`Kf1,Qf3,Nf2`, `Kc1,c2,d2`)
 	white := game.Start(White)
-	black := NewGen(white.MakeMove(white.NewMove(F3, D1)), 0).generateEvasions()
+	black := NewGen(white.MakeMove(NewMove(white, F3, D1)), 0).generateEvasions()
 	expect(t, black.allMoves(), `[Kc1-b2 c2xd1Q]`)
 }

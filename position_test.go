@@ -10,16 +10,16 @@ func TestPosition010(t *testing.T) {
 	p := NewGame(`Ke1,e2`, `Kg8,d7,f7`).Start(White)
 	expect(t, p.enpassant, 0)
 
-	p = p.MakeMove(p.NewMove(E2, E4))
+	p = p.MakeMove(NewMove(p, E2, E4))
 	expect(t, p.enpassant, 0)
 
-	p = p.MakeMove(p.NewMove(D7, D5))
+	p = p.MakeMove(NewMove(p, D7, D5))
 	expect(t, p.enpassant, 0)
 
-	p = p.MakeMove(p.NewMove(E4, E5))
+	p = p.MakeMove(NewMove(p, E4, E5))
 	expect(t, p.enpassant, 0)
 
-	p = p.MakeMove(p.NewEnpassant(F7, F5))
+	p = p.MakeMove(NewEnpassant(p, F7, F5))
 	expect(t, p.enpassant, F6)
 }
 
@@ -113,9 +113,9 @@ func TestPosition080(t *testing.T) { // Rooks on wrong squares.
 
 func TestPosition081(t *testing.T) { // Rook has moved.
 	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8`).Start(White)
-	p = p.MakeMove(p.NewMove(A1, A2))
-	p = p.MakeMove(p.NewMove(E8, E7))
-	p = p.MakeMove(p.NewMove(A2, A1))
+	p = p.MakeMove(NewMove(p, A1, A2))
+	p = p.MakeMove(NewMove(p, E8, E7))
+	p = p.MakeMove(NewMove(p, A2, A1))
 
 	kingside, queenside := p.canCastle(White)
 	expect(t, kingside, true)
@@ -124,9 +124,9 @@ func TestPosition081(t *testing.T) { // Rook has moved.
 
 func TestPosition082(t *testing.T) { // King has moved.
 	p := NewGame(`Ke1`, `Ke8,Ra8,Rh8`).Start(Black)
-	p = p.MakeMove(p.NewMove(E8, E7))
-	p = p.MakeMove(p.NewMove(E1, E2))
-	p = p.MakeMove(p.NewMove(E7, E8))
+	p = p.MakeMove(NewMove(p, E8, E7))
+	p = p.MakeMove(NewMove(p, E1, E2))
+	p = p.MakeMove(NewMove(p, E7, E8))
 
 	kingside, queenside := p.canCastle(Black)
 	expect(t, kingside, false)
@@ -135,7 +135,7 @@ func TestPosition082(t *testing.T) { // King has moved.
 
 func TestPosition083(t *testing.T) { // Rook is taken.
 	p := NewGame(`Ke1,Nb6`, `Ke8,Ra8,Rh8`).Start(White)
-	p = p.MakeMove(p.NewMove(B6, A8))
+	p = p.MakeMove(NewMove(p, B6, A8))
 
 	kingside, queenside := p.canCastle(Black)
 	expect(t, kingside, true)
@@ -163,28 +163,28 @@ func TestPosition085(t *testing.T) {
 // Straight repetition.
 func TestPosition100(t *testing.T) {
 	p := NewGame().Start() // Initial 1.
-	p = p.MakeMove(p.NewMove(G1, F3))
-	p = p.MakeMove(p.NewMove(G8, F6)) // 1.
+	p = p.MakeMove(NewMove(p, G1, F3))
+	p = p.MakeMove(NewMove(p, G8, F6)) // 1.
 	expect(t, p.isRepetition(), false)
 	expect(t, p.isTripleRepetition(), false)
 
-	p = p.MakeMove(p.NewMove(F3, G1))
-	p = p.MakeMove(p.NewMove(F6, G8)) // Initial 2.
+	p = p.MakeMove(NewMove(p, F3, G1))
+	p = p.MakeMove(NewMove(p, F6, G8)) // Initial 2.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), false)
 
-	p = p.MakeMove(p.NewMove(G1, F3))
-	p = p.MakeMove(p.NewMove(G8, F6)) // 2.
+	p = p.MakeMove(NewMove(p, G1, F3))
+	p = p.MakeMove(NewMove(p, G8, F6)) // 2.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), false)
 
-	p = p.MakeMove(p.NewMove(F3, G1))
-	p = p.MakeMove(p.NewMove(F6, G8)) // Initial 3.
+	p = p.MakeMove(NewMove(p, F3, G1))
+	p = p.MakeMove(NewMove(p, F6, G8)) // Initial 3.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), true)
 
-	p = p.MakeMove(p.NewMove(G1, F3))
-	p = p.MakeMove(p.NewMove(G8, F6)) // 3.
+	p = p.MakeMove(NewMove(p, G1, F3))
+	p = p.MakeMove(NewMove(p, G8, F6)) // 3.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), true)
 }
@@ -192,29 +192,29 @@ func TestPosition100(t *testing.T) {
 // Repetition with some moves in between.
 func TestPosition110(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4))
-	p = p.MakeMove(p.NewMove(E7, E5))
-	p = p.MakeMove(p.NewMove(G1, F3))
-	p = p.MakeMove(p.NewMove(G8, F6)) // 1.
-	p = p.MakeMove(p.NewMove(B1, C3))
-	p = p.MakeMove(p.NewMove(B8, C6))
-	p = p.MakeMove(p.NewMove(F1, C4))
-	p = p.MakeMove(p.NewMove(F8, C5))
-	p = p.MakeMove(p.NewMove(C3, B1))
-	p = p.MakeMove(p.NewMove(C6, B8))
-	p = p.MakeMove(p.NewMove(C4, F1))
-	p = p.MakeMove(p.NewMove(C5, F8)) // 2.
+	p = p.MakeMove(NewMove(p, E2, E4))
+	p = p.MakeMove(NewMove(p, E7, E5))
+	p = p.MakeMove(NewMove(p, G1, F3))
+	p = p.MakeMove(NewMove(p, G8, F6)) // 1.
+	p = p.MakeMove(NewMove(p, B1, C3))
+	p = p.MakeMove(NewMove(p, B8, C6))
+	p = p.MakeMove(NewMove(p, F1, C4))
+	p = p.MakeMove(NewMove(p, F8, C5))
+	p = p.MakeMove(NewMove(p, C3, B1))
+	p = p.MakeMove(NewMove(p, C6, B8))
+	p = p.MakeMove(NewMove(p, C4, F1))
+	p = p.MakeMove(NewMove(p, C5, F8)) // 2.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), false)
 
-	p = p.MakeMove(p.NewMove(F1, C4))
-	p = p.MakeMove(p.NewMove(F8, C5))
-	p = p.MakeMove(p.NewMove(B1, C3))
-	p = p.MakeMove(p.NewMove(B8, C6))
-	p = p.MakeMove(p.NewMove(C4, F1))
-	p = p.MakeMove(p.NewMove(C5, F8))
-	p = p.MakeMove(p.NewMove(C3, B1))
-	p = p.MakeMove(p.NewMove(C6, B8)) // 3.
+	p = p.MakeMove(NewMove(p, F1, C4))
+	p = p.MakeMove(NewMove(p, F8, C5))
+	p = p.MakeMove(NewMove(p, B1, C3))
+	p = p.MakeMove(NewMove(p, B8, C6))
+	p = p.MakeMove(NewMove(p, C4, F1))
+	p = p.MakeMove(NewMove(p, C5, F8))
+	p = p.MakeMove(NewMove(p, C3, B1))
+	p = p.MakeMove(NewMove(p, C6, B8)) // 3.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), true)
 }
@@ -222,23 +222,23 @@ func TestPosition110(t *testing.T) {
 // Irreversible 0-0.
 func TestPosition120(t *testing.T) {
 	p := NewGame(`Ke1,Rh1,h2`, `Ke8,Ra8,a7`).Start(White)
-	p = p.MakeMove(p.NewMove(H2, H4))
-	p = p.MakeMove(p.NewMove(A7, A5)) // 1.
-	p = p.MakeMove(p.NewMove(E1, E2))
-	p = p.MakeMove(p.NewMove(E8, E7)) // King has moved.
-	p = p.MakeMove(p.NewMove(E2, E1))
-	p = p.MakeMove(p.NewMove(E7, E8)) // 2.
-	p = p.MakeMove(p.NewMove(E1, E2))
-	p = p.MakeMove(p.NewMove(E8, E7)) // King has moved again.
-	p = p.MakeMove(p.NewMove(E2, E1))
-	p = p.MakeMove(p.NewMove(E7, E8)) // 3.
+	p = p.MakeMove(NewMove(p, H2, H4))
+	p = p.MakeMove(NewMove(p, A7, A5)) // 1.
+	p = p.MakeMove(NewMove(p, E1, E2))
+	p = p.MakeMove(NewMove(p, E8, E7)) // King has moved.
+	p = p.MakeMove(NewMove(p, E2, E1))
+	p = p.MakeMove(NewMove(p, E7, E8)) // 2.
+	p = p.MakeMove(NewMove(p, E1, E2))
+	p = p.MakeMove(NewMove(p, E8, E7)) // King has moved again.
+	p = p.MakeMove(NewMove(p, E2, E1))
+	p = p.MakeMove(NewMove(p, E7, E8)) // 3.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), false) // <-- Lost 0-0 right.
 
-	p = p.MakeMove(p.NewMove(E1, E2))
-	p = p.MakeMove(p.NewMove(E8, E7)) // King has moved again.
-	p = p.MakeMove(p.NewMove(E2, E1))
-	p = p.MakeMove(p.NewMove(E7, E8)) // 4.
+	p = p.MakeMove(NewMove(p, E1, E2))
+	p = p.MakeMove(NewMove(p, E8, E7)) // King has moved again.
+	p = p.MakeMove(NewMove(p, E2, E1))
+	p = p.MakeMove(NewMove(p, E7, E8)) // 4.
 	expect(t, p.isRepetition(), true)
 	expect(t, p.isTripleRepetition(), true) // <-- 3 time repetioion with lost 0-0 right.
 }
@@ -246,7 +246,7 @@ func TestPosition120(t *testing.T) {
 // Incremental hash recalculation tests (see book_test.go).
 func TestPosition200(t *testing.T) { // 1. e4
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4))
+	p = p.MakeMove(NewMove(p, E2, E4))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x823C9B50FD114196))
@@ -261,8 +261,8 @@ func TestPosition200(t *testing.T) { // 1. e4
 
 func TestPosition210(t *testing.T) { // 1. e4 d5
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4))
-	p = p.MakeMove(p.NewMove(D7, D5))
+	p = p.MakeMove(NewMove(p, E2, E4))
+	p = p.MakeMove(NewMove(p, D7, D5))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x0756B94461C50FB0))
@@ -278,9 +278,9 @@ func TestPosition210(t *testing.T) { // 1. e4 d5
 // 1. e4 d5 2. e5
 func TestPosition220(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4))
-	p = p.MakeMove(p.NewMove(D7, D5))
-	p = p.MakeMove(p.NewMove(E4, E5))
+	p = p.MakeMove(NewMove(p, E2, E4))
+	p = p.MakeMove(NewMove(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E4, E5))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x662FAFB965DB29D4))
@@ -296,10 +296,10 @@ func TestPosition220(t *testing.T) {
 // 1. e4 d5 2. e5 f5 <-- Enpassant
 func TestPosition230(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4))
-	p = p.MakeMove(p.NewMove(D7, D5))
-	p = p.MakeMove(p.NewMove(E4, E5))
-	p = p.MakeMove(p.NewEnpassant(F7, F5))
+	p = p.MakeMove(NewMove(p, E2, E4))
+	p = p.MakeMove(NewMove(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E4, E5))
+	p = p.MakeMove(NewEnpassant(p, F7, F5))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x22A48B5A8E47FF78))
@@ -315,11 +315,11 @@ func TestPosition230(t *testing.T) {
 // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
 func TestPosition240(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4))
-	p = p.MakeMove(p.NewMove(D7, D5))
-	p = p.MakeMove(p.NewMove(E4, E5))
-	p = p.MakeMove(p.NewMove(F7, F5))
-	p = p.MakeMove(p.NewMove(E1, E2))
+	p = p.MakeMove(NewMove(p, E2, E4))
+	p = p.MakeMove(NewMove(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E4, E5))
+	p = p.MakeMove(NewMove(p, F7, F5))
+	p = p.MakeMove(NewMove(p, E1, E2))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x652A607CA3F242C1))
@@ -335,12 +335,12 @@ func TestPosition240(t *testing.T) {
 // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
 func TestPosition250(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4))
-	p = p.MakeMove(p.NewMove(D7, D5))
-	p = p.MakeMove(p.NewMove(E4, E5))
-	p = p.MakeMove(p.NewMove(F7, F5))
-	p = p.MakeMove(p.NewMove(E1, E2))
-	p = p.MakeMove(p.NewMove(E8, F7))
+	p = p.MakeMove(NewMove(p, E2, E4))
+	p = p.MakeMove(NewMove(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E4, E5))
+	p = p.MakeMove(NewMove(p, F7, F5))
+	p = p.MakeMove(NewMove(p, E1, E2))
+	p = p.MakeMove(NewMove(p, E8, F7))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x00FDD303C946BDD9))
@@ -356,11 +356,11 @@ func TestPosition250(t *testing.T) {
 // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpassant
 func TestPosition260(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(A2, A4))
-	p = p.MakeMove(p.NewMove(B7, B5))
-	p = p.MakeMove(p.NewMove(H2, H4))
-	p = p.MakeMove(p.NewMove(B5, B4))
-	p = p.MakeMove(p.NewEnpassant(C2, C4))
+	p = p.MakeMove(NewMove(p, A2, A4))
+	p = p.MakeMove(NewMove(p, B7, B5))
+	p = p.MakeMove(NewMove(p, H2, H4))
+	p = p.MakeMove(NewMove(p, B5, B4))
+	p = p.MakeMove(NewEnpassant(p, C2, C4))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x3C8123EA7B067637))
@@ -376,13 +376,13 @@ func TestPosition260(t *testing.T) {
 // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
 func TestPosition270(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(A2, A4))
-	p = p.MakeMove(p.NewMove(B7, B5))
-	p = p.MakeMove(p.NewMove(H2, H4))
-	p = p.MakeMove(p.NewMove(B5, B4))
-	p = p.MakeMove(p.NewEnpassant(C2, C4))
-	p = p.MakeMove(p.NewMove(B4, C3))
-	p = p.MakeMove(p.NewMove(A1, A3))
+	p = p.MakeMove(NewMove(p, A2, A4))
+	p = p.MakeMove(NewMove(p, B7, B5))
+	p = p.MakeMove(NewMove(p, H2, H4))
+	p = p.MakeMove(NewMove(p, B5, B4))
+	p = p.MakeMove(NewEnpassant(p, C2, C4))
+	p = p.MakeMove(NewMove(p, B4, C3))
+	p = p.MakeMove(NewMove(p, A1, A3))
 	hash, hashPawns := p.polyglot()
 
 	expect(t, hash, uint64(0x5C3F9B829B279560))
@@ -400,8 +400,8 @@ func TestPosition270(t *testing.T) {
 // 1. e4 d5 2. e4xd5
 func TestPosition280(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(D7, D5))
-	p = p.MakeMove(p.NewMove(E4, D5))
+	p = p.MakeMove(NewMove(p, E2, E4)); p = p.MakeMove(NewMove(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E4, D5))
 
 	expect(t, p.balance, len(materialBase) - 1 - materialBalance[BlackPawn])
 }
@@ -409,9 +409,9 @@ func TestPosition280(t *testing.T) {
 // 1. e4 d5 2. e4xd5 Ng8-f6 3. Nb1-c3 Nf6xd5
 func TestPosition281(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(D7, D5))
-	p = p.MakeMove(p.NewMove(E4, D5)); p = p.MakeMove(p.NewMove(G8, F6))
-	p = p.MakeMove(p.NewMove(B1, C3)); p = p.MakeMove(p.NewMove(F6, D5))
+	p = p.MakeMove(NewMove(p, E2, E4)); p = p.MakeMove(NewMove(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E4, D5)); p = p.MakeMove(NewMove(p, G8, F6))
+	p = p.MakeMove(NewMove(p, B1, C3)); p = p.MakeMove(NewMove(p, F6, D5))
 
 	expect(t, p.balance, len(materialBase) - 1 - materialBalance[Pawn] - materialBalance[BlackPawn])
 }
@@ -419,10 +419,10 @@ func TestPosition281(t *testing.T) {
 // 1. e4 d5 2. e4xd5 Ng8-f6 3. Nb1-c3 Nf6xd5 4. Nc3xd5 Qd8xd5
 func TestPosition282(t *testing.T) {
 	p := NewGame().Start()
-	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(D7, D5))
-	p = p.MakeMove(p.NewMove(E4, D5)); p = p.MakeMove(p.NewMove(G8, F6))
-	p = p.MakeMove(p.NewMove(B1, C3)); p = p.MakeMove(p.NewMove(F6, D5))
-	p = p.MakeMove(p.NewMove(C3, D5)); p = p.MakeMove(p.NewMove(D8, D5))
+	p = p.MakeMove(NewMove(p, E2, E4)); p = p.MakeMove(NewMove(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E4, D5)); p = p.MakeMove(NewMove(p, G8, F6))
+	p = p.MakeMove(NewMove(p, B1, C3)); p = p.MakeMove(NewMove(p, F6, D5))
+	p = p.MakeMove(NewMove(p, C3, D5)); p = p.MakeMove(NewMove(p, D8, D5))
 
 	expect(t, p.balance, len(materialBase) - 1 - materialBalance[Pawn] - materialBalance[Knight] - materialBalance[BlackPawn] - materialBalance[BlackKnight])
 }
@@ -432,7 +432,7 @@ func TestPosition283(t *testing.T) {
 	p := NewGame(`Kh1`, `Ka8,a2,b7`).Start(Black)
 	expect(t, p.balance, 2 * materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(A2, A1).promote(Rook))
+	p = p.MakeMove(NewMove(p, A2, A1).promote(Rook))
 	expect(t, p.balance, materialBalance[BlackPawn] + materialBalance[BlackRook])
 }
 
@@ -441,7 +441,7 @@ func TestPosition284(t *testing.T) {
 	p := NewGame(`Kh1`, `Ka8,a2`).Start(Black)
 	expect(t, p.balance, materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(A2, A1).promote(Rook))
+	p = p.MakeMove(NewMove(p, A2, A1).promote(Rook))
 	expect(t, p.balance, materialBalance[BlackRook])
 }
 
@@ -450,7 +450,7 @@ func TestPosition285(t *testing.T) {
 	p := NewGame(`Kh1,Nb1,Ng1`, `Ka8,a2,b7`).Start(Black)
 	expect(t, p.balance, 2 * materialBalance[Knight] + 2 * materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
+	p = p.MakeMove(NewMove(p, A2, B1).promote(Queen))
 	expect(t, p.balance, materialBalance[Knight] + materialBalance[BlackPawn] + materialBalance[BlackQueen])
 }
 
@@ -459,7 +459,7 @@ func TestPosition286(t *testing.T) {
 	p := NewGame(`Kh1,Nb1`, `Ka8,a2,b7`).Start(Black)
 	expect(t, p.balance, materialBalance[Knight] + 2 * materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
+	p = p.MakeMove(NewMove(p, A2, B1).promote(Queen))
 	expect(t, p.balance, materialBalance[BlackPawn] + materialBalance[BlackQueen])
 }
 
@@ -468,7 +468,7 @@ func TestPosition287(t *testing.T) {
 	p := NewGame(`Kh1,Nb1,Ng1`, `Ka8,a2`).Start(Black)
 	expect(t, p.balance, 2 * materialBalance[Knight] + materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
+	p = p.MakeMove(NewMove(p, A2, B1).promote(Queen))
 	expect(t, p.balance, materialBalance[Knight] + materialBalance[BlackQueen])
 }
 
@@ -477,7 +477,7 @@ func TestPosition288(t *testing.T) {
 	p := NewGame(`Kh1,Nb1`, `Ka8,a2`).Start(Black)
 	expect(t, p.balance, materialBalance[Knight] + materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(A2, B1).promote(Queen))
+	p = p.MakeMove(NewMove(p, A2, B1).promote(Queen))
 	expect(t, p.balance, materialBalance[BlackQueen])
 }
 
@@ -486,7 +486,7 @@ func TestPosition289(t *testing.T) {
 	p := NewGame(`Kh1,Nc3,Nf3`, `Ka8,d4,e4`).Start(Black)
 	expect(t, p.balance, 2 * materialBalance[Knight] + 2 * materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(D4, C3))
+	p = p.MakeMove(NewMove(p, D4, C3))
 	expect(t, p.balance, materialBalance[Knight] + 2 * materialBalance[BlackPawn])
 }
 
@@ -495,7 +495,7 @@ func TestPosition290(t *testing.T) {
 	p := NewGame(`Kh1,Nc3`, `Ka8,d4,e4`).Start(Black)
 	expect(t, p.balance, materialBalance[Knight] + 2 * materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewMove(D4, C3))
+	p = p.MakeMove(NewMove(p, D4, C3))
 	expect(t, p.balance, 2 * materialBalance[BlackPawn])
 }
 
@@ -504,9 +504,9 @@ func TestPosition291(t *testing.T) {
 	p := NewGame().Start()
 	expect(t, p.balance, len(materialBase) - 1)
 
-	p = p.MakeMove(p.NewMove(E2, E4)); p = p.MakeMove(p.NewMove(E7, E6))
-	p = p.MakeMove(p.NewMove(E4, E5)); p = p.MakeMove(p.NewEnpassant(D7, D5))
-	p = p.MakeMove(p.NewMove(E5, D6))
+	p = p.MakeMove(NewMove(p, E2, E4)); p = p.MakeMove(NewMove(p, E7, E6))
+	p = p.MakeMove(NewMove(p, E4, E5)); p = p.MakeMove(NewEnpassant(p, D7, D5))
+	p = p.MakeMove(NewMove(p, E5, D6))
 	expect(t, p.balance, len(materialBase) - 1 - materialBalance[BlackPawn])
 }
 
@@ -515,52 +515,52 @@ func TestPosition292(t *testing.T) {
 	p := NewGame(`Kh1,c2`, `Ka8,d4`).Start(White)
 	expect(t, p.balance, materialBalance[Pawn] + materialBalance[BlackPawn])
 
-	p = p.MakeMove(p.NewEnpassant(C2, C4)); p = p.MakeMove(p.NewMove(D4, C3))
+	p = p.MakeMove(NewEnpassant(p, C2, C4)); p = p.MakeMove(NewMove(p, D4, C3))
 	expect(t, p.balance, materialBalance[BlackPawn])
 }
 
 // Position status.
 func TestPosition300(t *testing.T) {
 	p := NewGame().Start()
-	expect(t, p.status(p.NewMove(E2, E4), p.Evaluate()), InProgress)
+	expect(t, p.status(NewMove(p, E2, E4), p.Evaluate()), InProgress)
 }
 
 // Mate in 1 move.
 func TestPosition310(t *testing.T) {
 	p := NewGame(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).Start(White)
 	rootNode = node // Reset Ply().
-	expect(t, p.status(p.NewMove(H1, H6), Checkmate-Ply()), WhiteWinning)
+	expect(t, p.status(NewMove(p, H1, H6), Checkmate-Ply()), WhiteWinning)
 }
 
 // Forced stalemate.
 func TestPosition320(t *testing.T) {
 	p := NewGame(`Kf7,b2,b4,h6`, `Kh8,Ba4,b3,b5,h7`).Start(White)
-	expect(t, p.status(p.NewMove(F7, F8), 0), Stalemate)
+	expect(t, p.status(NewMove(p, F7, F8), 0), Stalemate)
 }
 
 // Self-imposed stalemate.
 func TestPosition330(t *testing.T) {
 	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black)
-	p = p.MakeMove(p.NewMove(H7, H6))
-	expect(t, p.status(p.NewMove(A1, B2), 0), Stalemate)
+	p = p.MakeMove(NewMove(p, H7, H6))
+	expect(t, p.status(NewMove(p, A1, B2), 0), Stalemate)
 }
 
 // Draw by repetition.
 func TestPosition340(t *testing.T) {
 	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).Start(Black) // Initial.
 
-	p = p.MakeMove(p.NewMove(H5, H6))
-	p = p.MakeMove(p.NewMove(A1, A2))
-	p = p.MakeMove(p.NewMove(H6, H5))
-	p = p.MakeMove(p.NewMove(A2, A1)) // Rep #2.
-	expect(t, p.status(p.NewMove(H5, H6), 0), InProgress)
+	p = p.MakeMove(NewMove(p, H5, H6))
+	p = p.MakeMove(NewMove(p, A1, A2))
+	p = p.MakeMove(NewMove(p, H6, H5))
+	p = p.MakeMove(NewMove(p, A2, A1)) // Rep #2.
+	expect(t, p.status(NewMove(p, H5, H6), 0), InProgress)
 
-	p = p.MakeMove(p.NewMove(H5, H6))
-	p = p.MakeMove(p.NewMove(A1, A2))
-	p = p.MakeMove(p.NewMove(H6, H5)) // -- No p.NewMove(A2, A1) here --
+	p = p.MakeMove(NewMove(p, H5, H6))
+	p = p.MakeMove(NewMove(p, A1, A2))
+	p = p.MakeMove(NewMove(p, H6, H5)) // -- No NewMove(p, A2, A1) here --
 
 	rootNode = node                                       // Reset Ply().
-	expect(t, p.status(p.NewMove(A2, A1), 0), Repetition) // <-- Ka2-a1 causes rep #3.
+	expect(t, p.status(NewMove(p, A2, A1), 0), Repetition) // <-- Ka2-a1 causes rep #3.
 }
 
 // Position after null move.
@@ -571,6 +571,6 @@ func TestPosition350(t *testing.T) {
 	expect(t, p.isNull(), true)
 
 	p = p.UndoNullMove()
-	p = p.MakeMove(p.NewMove(E2, E4))
+	p = p.MakeMove(NewMove(p, E2, E4))
 	expect(t, p.isNull(), false)
 }

@@ -242,19 +242,19 @@ func TestSearchDebug(t *testing.T) {
 	// Log("%s\n", p)
 
 	// move := game.Think(10)
-	// p = p.MakeMove(move); p = p.MakeMove(p.NewMove(D8, D6))
+	// p = p.MakeMove(move); p = p.MakeMove(NewMove(p, D8, D6))
 	// Log("%s\n", p)
 
 	// move = game.Think(10)
-	// p = p.MakeMove(move); p = p.MakeMove(p.NewMove(B8, D7))
+	// p = p.MakeMove(move); p = p.MakeMove(NewMove(p, B8, D7))
 	// Log("%s\n", p)
 
 	// move = game.Think(10)
-	// p = p.MakeMove(move); p = p.MakeMove(p.NewMove(E7, F6))
+	// p = p.MakeMove(move); p = p.MakeMove(NewMove(p, E7, F6))
 	// Log("%s\n", p)
 
 	// move = game.Think(10)
-	// p = p.MakeMove(move); p = p.MakeMove(p.NewMove(B7, G2))
+	// p = p.MakeMove(move); p = p.MakeMove(NewMove(p, B7, G2))
 	// Log(); defer Log()
 	// Log("%s\n", p)
 

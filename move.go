@@ -20,8 +20,26 @@ const (
 // Bits 00:0F:00:00 => Piece making the move.
 // Bits 00:F0:00:00 => Captured piece if any.
 // Bits 0F:00:00:00 => Promoted piece if any.
-// Bits F0:00:00:00 => Castle, en-passant, or pawn jump flags.
+// Bits F0:00:00:00 => Castle and en-passant flags.
 type Move uint32
+
+func NewMove(p *Position, from, to int) Move {
+	piece, capture := p.pieces[from], p.pieces[to]
+
+	if p.enpassant != 0 && to == p.enpassant {
+		capture = pawn(piece.color() ^ 1)
+	}
+
+	return Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
+}
+
+func NewCastle(p *Position, from, to int) Move {
+	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
+}
+
+func NewEnpassant(p *Position, from, to int) Move {
+	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
+}
 
 func (m Move) from() int {
 	return int(m & 0xFF)

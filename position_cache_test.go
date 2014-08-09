@@ -10,7 +10,7 @@ import (
 
 func TestCache000(t *testing.T) {
 	p := NewGame().Set(`cache`, 0.5).Start()
-	move := p.NewMove(E2, E4)
+	move := NewMove(p, E2, E4)
 	p = p.MakeMove(move).cache(move, 42, 1, cacheExact)
 
 	cached := p.probeCache()

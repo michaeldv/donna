@@ -68,9 +68,9 @@ func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
 	for targets != 0 {
 		target := targets.pop()
 		if square == homeKing[gen.p.color] && Abs(square-target) == 2 {
-			gen.add(gen.p.NewCastle(square, target))
+			gen.add(NewCastle(gen.p, square, target))
 		} else {
-			gen.add(gen.p.NewMove(square, target))
+			gen.add(NewMove(gen.p, square, target))
 		}
 	}
 	return gen
@@ -78,7 +78,7 @@ func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
 
 func (gen *MoveGen) movePiece(square int, targets Bitmask) *MoveGen {
 	for targets != 0 {
-		gen.add(gen.p.NewMove(square, targets.pop()))
+		gen.add(NewMove(gen.p, square, targets.pop()))
 	}
 	return gen
 }

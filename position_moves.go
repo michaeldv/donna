@@ -8,24 +8,6 @@ import (
 	`regexp`
 )
 
-func (p *Position) NewMove(from, to int) Move {
-	piece, capture := p.pieces[from], p.pieces[to]
-
-	if p.enpassant != 0 && to == p.enpassant {
-		capture = pawn(piece.color() ^ 1)
-	}
-
-	return Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
-}
-
-func (p *Position) NewCastle(from, to int) Move {
-	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
-}
-
-func (p *Position) NewEnpassant(from, to int) Move {
-	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
-}
-
 // Returns true if *non-evasion* move is valid, i.e. it is possible to make
 // the move in current position without violating chess rules. If the king is
 // in check the generator is expected to generate valid evasions where extra
@@ -77,17 +59,17 @@ func (p *Position) pinnedMask(square int) (mask Bitmask) {
 
 func (p *Position) pawnMove(square, target int) Move {
 	if Abs(square - target) == 16 && p.causesEnpassant(target) {
-		return p.NewEnpassant(square, target)
+		return NewEnpassant(p, square, target)
 	}
 
-	return p.NewMove(square, target)
+	return NewMove(p, square, target)
 }
 
 func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
-	return p.NewMove(square, target).promote(Queen),
-		p.NewMove(square, target).promote(Rook),
-		p.NewMove(square, target).promote(Bishop),
-		p.NewMove(square, target).promote(Knight)
+	return NewMove(p, square, target).promote(Queen),
+	       NewMove(p, square, target).promote(Rook),
+	       NewMove(p, square, target).promote(Bishop),
+	       NewMove(p, square, target).promote(Knight)
 }
 
 // Returns true if a pawn jump causes en-passant. This is done by checking whether
@@ -126,7 +108,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
 		if (p.pieces[from] != piece) || (p.targets(from)&bit[to] == 0) {
 			move = 0 // Invalid move.
 		} else {
-			move = p.NewMove(from, to)
+			move = NewMove(p, from, to)
 			if len(promo) > 0 {
 				switch promo {
 				case `Q`, `q`:
@@ -151,7 +133,7 @@ func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
 		if p.color == Black {
 			to += 56
 		}
-		move = p.NewCastle(from, to)
+		move = NewCastle(p, from, to)
 		if !move.isCastle() {
 			move = 0
 		}
