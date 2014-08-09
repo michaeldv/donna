@@ -53,14 +53,6 @@ func (p *Position) pinnedMask(square int) (mask Bitmask) {
 	return
 }
 
-func (p *Position) pawnMove(square, target int) Move {
-	if Abs(square - target) == 16 && p.causesEnpassant(target) {
-		return NewEnpassant(p, square, target)
-	}
-
-	return NewMove(p, square, target)
-}
-
 func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
 	return NewMove(p, square, target).promote(Queen),
 	       NewMove(p, square, target).promote(Rook),

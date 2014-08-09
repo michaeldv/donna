@@ -34,6 +34,15 @@ func NewMove(p *Position, from, to int) Move {
 	return Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
 }
 
+func NewPawnMove(p *Position, square, target int) Move {
+	if Abs(square - target) == 16 && p.causesEnpassant(target) {
+		return NewEnpassant(p, square, target)
+	}
+
+	return NewMove(p, square, target)
+}
+
+
 func NewCastle(p *Position, from, to int) Move {
 	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
 }
