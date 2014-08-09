@@ -52,18 +52,3 @@ func (p *Position) pinnedMask(square int) (mask Bitmask) {
 	}
 	return
 }
-
-func (p *Position) pawnPromotion(square, target int) (Move, Move, Move, Move) {
-	return NewMove(p, square, target).promote(Queen),
-	       NewMove(p, square, target).promote(Rook),
-	       NewMove(p, square, target).promote(Bishop),
-	       NewMove(p, square, target).promote(Knight)
-}
-
-// Returns true if a pawn jump causes en-passant. This is done by checking whether
-// the enemy pawns occupy squares ajacent to the target square.
-func (p *Position) causesEnpassant(target int) bool {
-	pawns := p.outposts[pawn(p.color^1)] // Opposite color pawns.
-
-	return maskIsolated[Col(target)] & maskRank[Row(target)] & pawns != 0
-}

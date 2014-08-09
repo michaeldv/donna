@@ -57,7 +57,7 @@ func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
 		if target > H1 && target < A8 {
 			gen.add(NewPawnMove(gen.p, square, target))
 		} else { // Promotion.
-			m1, m2, m3, m4 := gen.p.pawnPromotion(square, target)
+			m1, m2, m3, m4 := NewPromotion(gen.p, square, target)
 			gen.add(m1).add(m2).add(m3).add(m4)
 		}
 	}

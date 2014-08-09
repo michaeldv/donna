@@ -35,20 +35,32 @@ func NewMove(p *Position, from, to int) Move {
 }
 
 func NewPawnMove(p *Position, square, target int) Move {
-	if Abs(square - target) == 16 && p.causesEnpassant(target) {
-		return NewEnpassant(p, square, target)
+	if Abs(square - target) == 16 {
+
+		// Check if pawn jump causes en-passant. This is done by verifying
+		// whether enemy pawns occupy squares ajacent to the target square.
+		pawns := p.outposts[pawn(p.color ^ 1)]
+		if pawns & maskIsolated[Col(target)] & maskRank[Row(target)] != 0 {
+			return NewEnpassant(p, square, target)
+		}
 	}
 
 	return NewMove(p, square, target)
 }
 
+func NewEnpassant(p *Position, from, to int) Move {
+	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
+}
 
 func NewCastle(p *Position, from, to int) Move {
 	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
 }
 
-func NewEnpassant(p *Position, from, to int) Move {
-	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
+func NewPromotion(p *Position, square, target int) (Move, Move, Move, Move) {
+	return NewMove(p, square, target).promote(Queen),
+	       NewMove(p, square, target).promote(Rook),
+	       NewMove(p, square, target).promote(Bishop),
+	       NewMove(p, square, target).promote(Knight)
 }
 
 func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
