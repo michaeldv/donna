@@ -97,233 +97,146 @@ func (p *Position) setupSide(moves []string, color int) *Position {
 	return p
 }
 
-func (p *Position) movePiece(piece Piece, from, to int) *Position {
-	p.pieces[from], p.pieces[to] = 0, piece
-	p.outposts[piece] ^= bit[from] | bit[to]
-	p.outposts[piece.color()] ^= bit[from] | bit[to]
+// Sets up initial chess position.
+func NewInitialPosition(game *Game) *Position {
+	return NewPositionFromFEN(game, `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`)
+}
 
-	// Update position's hash values.
-	random := piece.polyglot(from) ^ piece.polyglot(to)
-	p.hash ^= random
-	if piece.isPawn() {
-		p.hashPawns ^= random
+// Decodes FEN string and creates new position.
+func NewPositionFromFEN(game *Game, fen string) *Position {
+	tree[node] = Position{game: game}
+	p := &tree[node]
+
+	// Expected matches of interest are as follows:
+	// [0] - Pieces (entire board).
+	// [1] - Color of side to move.
+	// [2] - Castle rights.
+	// [3] - En-passant square.
+	// [4] - Number of half-moves.
+	// [5] - Number of full moves.
+	matches := strings.Split(fen, ` `)
+	// fmt.Printf("%q\n", matches)
+	if len(matches) < 4 {
+		return nil
 	}
 
-	// Update positional score.
-	p.tally.subtract(pst[piece][from]).add(pst[piece][to])
-
-	return p
-}
-
-func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position {
-	p.pieces[from], p.pieces[to] = 0, promo
-	p.outposts[pawn] ^= bit[from]
-	p.outposts[promo] ^= bit[to]
-	p.outposts[pawn.color()] ^= bit[from] | bit[to]
-	p.count[pawn]--
-
-	// Update position's hash values, material balance and counts.
-	random := pawn.polyglot(from)
-	p.hash ^= random ^ promo.polyglot(to)
-	p.hashPawns ^= random
-	p.balance += materialBalance[promo] - materialBalance[pawn]
-	p.count[promo]++
-
-	// Update positional score.
-	p.tally.subtract(pst[pawn][from]).add(pst[promo][to])
-
-	return p
-}
-
-func (p *Position) capturePiece(capture Piece, from, to int) *Position {
-	p.outposts[capture] ^= bit[to]
-	p.outposts[capture.color()] ^= bit[to]
-	p.count[capture]--
-
-	// Update position's hash values and material balance.
-	random := capture.polyglot(to)
-	p.hash ^= random
-	if capture.isPawn() {
-		p.hashPawns ^= random
-	}
-	p.balance -= materialBalance[capture]
-
-	// Update positional score.
-	p.tally.subtract(pst[capture][to])
-
-	return p
-}
-
-func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
-	enpassant := to - eight[capture.color()^1]
-
-	p.pieces[enpassant] = 0
-	p.outposts[capture] ^= bit[enpassant]
-	p.outposts[capture.color()] ^= bit[enpassant]
-	p.count[capture]--
-
-	// Update position's hash values and material balance.
-	random := capture.polyglot(enpassant)
-	p.hash ^= random
-	p.hashPawns ^= random
-	p.balance -= materialBalance[capture]
-
-	// Update positional score.
-	p.tally.subtract(pst[capture][enpassant])
-
-	return p
-}
-
-func (p *Position) MakeMove(move Move) *Position {
-	color := move.color()
-	from, to, piece, capture := move.split()
-
-	// Copy over the contents of previous tree node to the current one.
-	node++
-	tree[node] = *p // => tree[node] = tree[node - 1]
-	pp := &tree[node]
-
-	pp.enpassant, pp.reversible = 0, true
-
-	if capture != 0 {
-		pp.reversible = false
-		if to != 0 && to == p.enpassant {
-			pp.captureEnpassant(pawn(color^1), from, to)
-			pp.hash ^= hashEnpassant[Col(p.enpassant)]
-		} else {
-			pp.capturePiece(capture, from, to)
+	// [0] - Pieces (entire board).
+	square := A8
+	for _, char := range(matches[0]) {
+		piece := Piece(0)
+		switch(char) {
+		case 'P':
+			piece = Pawn
+		case 'p':
+			piece = BlackPawn
+		case 'N':
+			piece = Knight
+		case 'n':
+			piece = BlackKnight
+		case 'B':
+			piece = Bishop
+		case 'b':
+			piece = BlackBishop
+		case 'R':
+			piece = Rook
+		case 'r':
+			piece = BlackRook
+		case 'Q':
+			piece = Queen
+		case 'q':
+			piece = BlackQueen
+		case 'K':
+			piece = King
+			p.king[White] = square
+		case 'k':
+			piece = BlackKing
+			p.king[Black] = square
+		case '/':
+			square -= 16
+		case '1', '2', '3', '4', '5', '6', '7', '8':
+			square += int(char - '0')
+		}
+		if piece != 0 {
+			p.pieces[square] = piece
+			p.outposts[piece].set(square)
+			p.outposts[piece.color()].set(square)
+			p.balance += materialBalance[piece]
+			p.count[piece]++
+			square++
 		}
 	}
 
-	if promo := move.promo(); promo == 0 {
-		pp.movePiece(piece, from, to)
-
-		if piece.isKing() {
-			pp.king[color] = to
-			if move.isCastle() {
-				pp.reversible = false
-				switch to {
-				case G1:
-					pp.movePiece(Rook, H1, F1)
-				case C1:
-					pp.movePiece(Rook, A1, D1)
-				case G8:
-					pp.movePiece(BlackRook, H8, F8)
-				case C8:
-					pp.movePiece(BlackRook, A8, D8)
-				}
-			}
-		} else if piece.isPawn() {
-			pp.reversible = false
-			if move.isEnpassant() {
-				pp.enpassant = from + eight[color] // Save the en-passant square.
-				pp.hash ^= hashEnpassant[Col(pp.enpassant)]
-			}
-		}
+	// [1] - Color of side to move.
+	if matches[1] == `w` {
+		p.color = White
 	} else {
-		pp.reversible = false
-		pp.promotePawn(piece, from, to, promo)
+		p.color = Black
 	}
 
-	// Set up the board bitmask, update castle rights, finish off incremental
-	// hash value, and flip the color.
-	pp.board = pp.outposts[White] | pp.outposts[Black]
-	pp.castles &= castleRights[from] & castleRights[to]
-	pp.hash ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
-	pp.hash ^= polyglotRandomWhite
-	pp.color ^= 1 // <-- Flip side to move.
-
-	return &tree[node] // pp
-}
-
-// Makes "null" move by copying over previous node position (i.e. preserving all pieces
-// intact) and flipping the color.
-func (p *Position) MakeNullMove() *Position {
-	node++
-	tree[node] = *p // => tree[node] = tree[node - 1]
-	pp := &tree[node]
-
-	// Flipping side to move obviously invalidates the enpassant square.
-	if pp.enpassant != 0 {
-		pp.hash ^= hashEnpassant[Col(pp.enpassant)]
-		pp.enpassant = 0
-	}
-	pp.hash ^= polyglotRandomWhite
-	pp.color ^= 1 // <-- Flip side to move.
-
-	return &tree[node] // pp
-}
-
-// Restores previous position effectively taking back the last move made.
-func (p *Position) UndoLastMove() *Position {
-	if node > 0 {
-		node--
-	}
-	return &tree[node]
-}
-
-func (p *Position) UndoNullMove() *Position {
-	p.hash ^= polyglotRandomWhite
-	p.color ^= 1
-
-	return p.UndoLastMove()
-}
-
-func (p *Position) isInCheck(color int) bool {
-	return p.isAttacked(p.king[color], color^1)
-}
-
-func (p *Position) isNull() bool {
-	return node > 0 && tree[node].board == tree[node-1].board
-}
-
-func (p *Position) isRepetition() bool {
-	if !p.reversible {
-		return false
-	}
-	for previous := node-1; previous >= 0; previous-- {
-		if !tree[previous].reversible {
-			return false
-		}
-		if tree[previous].hash == p.hash {
-			return true
+	// [2] - Castle rights.
+	for _, char := range(matches[2]) {
+		switch(char) {
+		case 'K':
+			p.castles |= castleKingside[White]
+		case 'Q':
+			p.castles |= castleQueenside[White]
+		case 'k':
+			p.castles |= castleKingside[Black]
+		case 'q':
+			p.castles |= castleQueenside[Black]
+		case '-':
+			// No castling rights.
 		}
 	}
-	return false
+
+	// [3] - En-passant square.
+	if matches[3] != `-` {
+		p.enpassant = Square(int(matches[3][1] - '1'), int(matches[3][0] - 'a'))
+
+	}
+
+	p.reversible = true
+	p.board = p.outposts[White] | p.outposts[Black]
+	p.hash, p.hashPawns = p.polyglot()
+	p.tally = p.valuation()
+
+	return p
 }
 
-func (p *Position) isTripleRepetition() bool {
-	if !p.reversible {
-		return false
-	}
-	for previous, repetitions := node-1, 1; previous >= 0; previous-- {
-		if !tree[previous].reversible {
-			return false
-		}
-		if tree[previous].hash == p.hash {
-			repetitions++
-			if repetitions == 3 {
-				return true
-			}
+// Computes initial values of position's polyglot hash, pawn hash, and material
+// hash. When making a move these values get updated incrementally.
+func (p *Position) polyglot() (hash, hashPawns uint64) {
+	board := p.board
+	for board != 0 {
+		square := board.pop()
+		piece := p.pieces[square]
+		random := piece.polyglot(square)
+		hash ^= random
+		if piece.isPawn() {
+			hashPawns ^= random
 		}
 	}
-	return false
+
+	hash ^= hashCastle[p.castles]
+	if p.enpassant != 0 {
+		hash ^= hashEnpassant[Col(p.enpassant)]
+	}
+	if p.color == White {
+		hash ^= polyglotRandomWhite
+	}
+
+	return
 }
 
-func (p *Position) canCastle(color int) (kingside, queenside bool) {
-
-	// Start off with simple checks.
-	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board == 0)
-	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board == 0)
-
-	// If it still looks like the castles are possible perform more expensive
-	// final check.
-	if kingside || queenside {
-		attacks := p.allAttacks(color ^ 1)
-		kingside = kingside && (castleKing[color] & attacks == 0)
-		queenside = queenside && (castleQueen[color] & attacks == 0)
+// Computes positional valuation score based on PST. When making a move the
+// valuation tally gets updated incrementally.
+func (p *Position) valuation() (score Score) {
+	board := p.board
+	for board != 0 {
+		square := board.pop()
+		piece := p.pieces[square]
+		score.add(pst[piece][square])
 	}
-
 	return
 }
 
@@ -371,40 +284,74 @@ func (p *Position) status(move Move, blendedScore int) int {
 	return InProgress
 }
 
-// Computes initial values of position's polyglot hash, pawn hash, and material
-// hash. When making a move these values get updated incrementally.
-func (p *Position) polyglot() (hash, hashPawns uint64) {
-	board := p.board
-	for board != 0 {
-		square := board.pop()
-		piece := p.pieces[square]
-		random := piece.polyglot(square)
-		hash ^= random
-		if piece.isPawn() {
-			hashPawns ^= random
+// Encodes position as FEN string.
+func (p *Position) fen() (fen string) {
+	fancy := Settings.Fancy
+	Settings.Fancy = false; defer func() { Settings.Fancy = fancy }()
+
+	// Board: start from A8->H8 going down to A1->H1.
+	empty := 0
+	for row := A8H8; row >= A1H1; row-- {
+		for col := A1A8; col <= H1H8; col++ {
+			square := Square(row, col)
+			piece := p.pieces[square]
+
+			if piece != 0 {
+				if empty != 0 {
+					fen += fmt.Sprintf(`%d`, empty)
+					empty = 0
+				}
+				fen += piece.String()
+			} else {
+				empty++
+			}
+
+			if col == 7 {
+				if empty != 0 {
+					fen += fmt.Sprintf(`%d`, empty)
+					empty = 0
+				}
+				if row != 0 {
+					fen += `/`
+				}
+			}
 		}
 	}
 
-	hash ^= hashCastle[p.castles]
-	if p.enpassant != 0 {
-		hash ^= hashEnpassant[Col(p.enpassant)]
-	}
+	// Side to move.
 	if p.color == White {
-		hash ^= polyglotRandomWhite
+		fen += ` w`
+	} else {
+		fen += ` b`
 	}
 
-	return
-}
-
-// Computes positional valuation score based on PST. When making a move the
-// valuation tally gets updated incrementally.
-func (p *Position) valuation() (score Score) {
-	board := p.board
-	for board != 0 {
-		square := board.pop()
-		piece := p.pieces[square]
-		score.add(pst[piece][square])
+	// Castle rights for both sides, if any.
+	if p.castles & 0x0F != 0 {
+		fen += ` `
+		if p.castles & castleKingside[White] != 0 {
+			fen += `K`
+		}
+		if p.castles & castleQueenside[White] != 0 {
+			fen += `Q`
+		}
+		if p.castles & castleKingside[Black] != 0 {
+			fen += `k`
+		}
+		if p.castles & castleQueenside[Black] != 0 {
+			fen += `q`
+		}
+	} else {
+		fen += ` -`
 	}
+
+	// En-passant square, if any.
+	if p.enpassant != 0 {
+		row, col := Coordinate(p.enpassant)
+		fen += fmt.Sprintf(` %c%d`, col + 'a', row + 1)
+	} else {
+		fen += ` -`
+	}
+
 	return
 }
 
