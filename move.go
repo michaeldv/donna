@@ -63,7 +63,7 @@ func NewPromotion(p *Position, square, target int) (Move, Move, Move, Move) {
 	       NewMove(p, square, target).promote(Knight)
 }
 
-func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
+func NewMoveFromString(p *Position, e2e4 string) (move Move) {
 	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
 	arr := re.FindStringSubmatch(e2e4)
 

@@ -67,3 +67,13 @@ func TestMove040(t *testing.T) {
 	expect(t, NewMove(p, D1, D5).value(), 90) // QxP
 	expect(t, NewMove(p, D6, D5).value(), 88) // KxP
 }
+
+// NewMoveFromString: correctly handle pawn promotion.
+func TestMove100(t *testing.T) {
+	position := NewGame(`Ke4,a7`, `Kh8`).Start(White)
+	move := NewMoveFromString(position, `a7a8Q`)
+	position = position.MakeMove(move)
+
+	expect(t, position.outposts[Pawn], maskNone)
+	expect(t, position.outposts[Queen], bit[A8])
+}

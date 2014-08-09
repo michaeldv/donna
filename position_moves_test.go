@@ -566,18 +566,8 @@ func TestPositionMoves350(t *testing.T) {
 	expect(t, pinned, bit[C6])
 }
 
-// Correctly handle pawn promotion.
-func TestPositionMoves400(t *testing.T) {
-	position := NewGame(`Ke4,a7`, `Kh8`).Start(White)
-	move := position.NewMoveFromString(`a7a8Q`)
-	position = position.MakeMove(move)
-
-	expect(t, position.outposts[Pawn], maskNone)
-	expect(t, position.outposts[Queen], bit[A8])
-}
-
 // Position after null move.
-func TestPositionMoves500(t *testing.T) {
+func TestPositionMoves400(t *testing.T) {
 	p := NewGame(`Ke1,Qd1,d2,e2`, `Kg8,Qf8,f7,g7`).Start(White)
 
 	p = p.MakeNullMove()
