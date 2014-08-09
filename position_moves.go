@@ -4,10 +4,6 @@
 
 package donna
 
-import (
-	`regexp`
-)
-
 // Returns true if *non-evasion* move is valid, i.e. it is possible to make
 // the move in current position without violating chess rules. If the king is
 // in check the generator is expected to generate valid evasions where extra
@@ -78,65 +74,4 @@ func (p *Position) causesEnpassant(target int) bool {
 	pawns := p.outposts[pawn(p.color^1)] // Opposite color pawns.
 
 	return maskIsolated[Col(target)] & maskRank[Row(target)] & pawns != 0
-}
-
-func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
-	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
-	arr := re.FindStringSubmatch(e2e4)
-
-	if len(arr) > 0 {
-		name := arr[1]
-		from := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
-		to := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
-		promo := arr[6]
-
-		var piece Piece
-		switch name {
-		case `K`, `k`:
-			piece = king(p.color)
-		case `Q`, `q`:
-			piece = queen(p.color)
-		case `R`, `r`:
-			piece = rook(p.color)
-		case `B`, `b`:
-			piece = bishop(p.color)
-		case `N`, `n`:
-			piece = knight(p.color)
-		default:
-			piece = p.pieces[from] // <-- Makes piece character optional.
-		}
-		if (p.pieces[from] != piece) || (p.targets(from)&bit[to] == 0) {
-			move = 0 // Invalid move.
-		} else {
-			move = NewMove(p, from, to)
-			if len(promo) > 0 {
-				switch promo {
-				case `Q`, `q`:
-					move = move.promote(Queen)
-				case `R`, `r`:
-					move = move.promote(Rook)
-				case `B`, `b`:
-					move = move.promote(Bishop)
-				case `N`, `n`:
-					move = move.promote(Knight)
-				default:
-					move = 0
-				}
-			}
-		}
-	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
-		from := p.king[p.color]
-		to := G1
-		if e2e4 == `0-0-0` {
-			to = C1
-		}
-		if p.color == Black {
-			to += 56
-		}
-		move = NewCastle(p, from, to)
-		if !move.isCastle() {
-			move = 0
-		}
-	}
-	return
 }

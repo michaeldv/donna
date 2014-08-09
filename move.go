@@ -6,6 +6,7 @@ package donna
 
 import (
 	`fmt`
+	`regexp`
 )
 
 const (
@@ -39,6 +40,67 @@ func NewCastle(p *Position, from, to int) Move {
 
 func NewEnpassant(p *Position, from, to int) Move {
 	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
+}
+
+func (p *Position) NewMoveFromString(e2e4 string) (move Move) {
+	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
+	arr := re.FindStringSubmatch(e2e4)
+
+	if len(arr) > 0 {
+		name := arr[1]
+		from := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
+		to := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
+		promo := arr[6]
+
+		var piece Piece
+		switch name {
+		case `K`, `k`:
+			piece = king(p.color)
+		case `Q`, `q`:
+			piece = queen(p.color)
+		case `R`, `r`:
+			piece = rook(p.color)
+		case `B`, `b`:
+			piece = bishop(p.color)
+		case `N`, `n`:
+			piece = knight(p.color)
+		default:
+			piece = p.pieces[from] // <-- Makes piece character optional.
+		}
+		if (p.pieces[from] != piece) || (p.targets(from)&bit[to] == 0) {
+			move = 0 // Invalid move.
+		} else {
+			move = NewMove(p, from, to)
+			if len(promo) > 0 {
+				switch promo {
+				case `Q`, `q`:
+					move = move.promote(Queen)
+				case `R`, `r`:
+					move = move.promote(Rook)
+				case `B`, `b`:
+					move = move.promote(Bishop)
+				case `N`, `n`:
+					move = move.promote(Knight)
+				default:
+					move = 0
+				}
+			}
+		}
+	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
+		from := p.king[p.color]
+		to := G1
+		if e2e4 == `0-0-0` {
+			to = C1
+		}
+		if p.color == Black {
+			to += 56
+		}
+		move = NewCastle(p, from, to)
+		if !move.isCastle() {
+			move = 0
+		}
+	}
+	return
 }
 
 func (m Move) from() int {
