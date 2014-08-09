@@ -35,17 +35,16 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
 }
 
 func (gen *MoveGen) kingMoves(color int) *MoveGen {
-	if king := gen.p.outposts[king(color)]; king != 0 {
-		square := king.pop()
+	if gen.p.outposts[king(color)] != 0 {
+		square := gen.p.king[color]
 		gen.moveKing(square, gen.p.targets(square))
-		if !gen.p.isInCheck(gen.p.color) {
-			kingside, queenside := gen.p.canCastle(color)
-			if kingside {
-				gen.moveKing(square, bit[G1+56*color])
-			}
-			if queenside {
-				gen.moveKing(square, bit[C1+56*color])
-			}
+
+		kingside, queenside := gen.p.canCastle(color)
+		if kingside {
+			gen.moveKing(square, bit[G1 + 56 * color])
+		}
+		if queenside {
+			gen.moveKing(square, bit[C1 + 56 * color])
 		}
 	}
 	return gen
@@ -57,8 +56,8 @@ func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
 		if target > H1 && target < A8 {
 			gen.add(NewPawnMove(gen.p, square, target))
 		} else { // Promotion.
-			m1, m2, m3, m4 := NewPromotion(gen.p, square, target)
-			gen.add(m1).add(m2).add(m3).add(m4)
+			mQ, mR, mB, mN := NewPromotion(gen.p, square, target)
+			gen.add(mQ).add(mR).add(mB).add(mN)
 		}
 	}
 	return gen
@@ -67,7 +66,7 @@ func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
 func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
 	for targets != 0 {
 		target := targets.pop()
-		if square == homeKing[gen.p.color] && Abs(square-target) == 2 {
+		if Abs(square - target) == 2 {
 			gen.add(NewCastle(gen.p, square, target))
 		} else {
 			gen.add(NewMove(gen.p, square, target))
