@@ -262,7 +262,7 @@ func (p *Position) status(move Move, blendedScore int) int {
 				return Insufficient
 			}
 		}
-		if !NewGen(p, ply+1).generateMoves().anyValid(p) {
+		if !NewGen(p, MaxPly).generateMoves().anyValid(p) {
 			return Stalemate
 		}
 	case Checkmate - ply:

@@ -23,8 +23,9 @@ type MoveGen struct {
 }
 
 // Pre-allocate move generator array (one entry per ply) to avoid garbage
-// collection overhead.
-var moveList [MaxPly]MoveGen
+// collection overhead. Last entry serves for utility move generation, ex. when
+// converting string notations or determining a stalemate.
+var moveList [MaxPly+1]MoveGen
 
 // Returns "new" move generator for the given ply. Since move generator array
 // has been pre-allocated already we simply return a pointer to the existing
@@ -38,6 +39,11 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen.pins = p.pinnedMask(p.king[p.color])
 
 	return gen
+}
+
+// Convenience method to return move generator for the current ply.
+func NewMoveGen(p *Position) *MoveGen {
+	return NewGen(p, Ply())
 }
 
 // Returns new move generator for the initial step of iterative deepening
