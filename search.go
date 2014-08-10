@@ -6,8 +6,6 @@ package donna
 
 // Root node search.
 func (p *Position) search(alpha, beta, depth int) (score int) {
-	ply := 0
-
 	inCheck := p.isInCheck(p.color)
 	cacheFlags := uint8(cacheAlpha)
 
@@ -48,15 +46,15 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 		if moveCount == 1 {
 			bestMove = move
-			p.game.pv[ply] = p.game.pv[ply][:0]
-			p.game.saveBest(ply, move)
+			p.game.pv[0] = p.game.pv[0][:0]
+			p.game.saveBest(0, move)
 		}
 
 		if score > alpha {
 			alpha = score
 			bestMove = move
 			cacheFlags = cacheExact
-			p.game.saveBest(ply, move)
+			p.game.saveBest(0, move)
 
 			if alpha >= beta {
 				cacheFlags = cacheBeta
@@ -69,7 +67,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 	if moveCount == 0 {
 		if inCheck {
-			alpha = -Checkmate + ply
+			alpha = -Checkmate
 		} else {
 			alpha = 0
 		}
