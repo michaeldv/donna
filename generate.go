@@ -48,31 +48,11 @@ func NewMoveGen(p *Position) *MoveGen {
 
 // Returns new move generator for the initial step of iterative deepening
 // (depth == 1) and existing one for subsequent iterations (depth > 1).
-//
-// This is used in iterative deepening search when all the moves are being
-// generated at depth one, and reused later as the search deepens.
-func NewRootGen(p *Position, depth int) (gen *MoveGen) {
-	if depth > 1 {
-		return moveList[0].reset().rank(p.cachedMove())
+func NewRootGen(p *Position, depth int) *MoveGen {
+	if depth == 1 {
+		return NewGen(p, 0) // Zero ply.
 	}
-
-	// 1) generate all moves or check evasions; 2) return if we've got the
-	// only move; 3) and get rid of invalid moves so that we don't do it on
-	// each iteration; 4) return sorted list.
-	gen = NewGen(p, 0)
-	if p.isInCheck(p.color) {
-		gen.generateEvasions()
-		if gen.onlyMove() {
-			return gen
-		}
-		return gen.validOnly(p).quickRank()
-	}
-
-	gen.generateMoves()
-	if gen.onlyMove() {
-		return gen
-	}
-	return gen.validOnly(p).rank(p.cachedMove())
+	return &moveList[0]
 }
 
 func (gen *MoveGen) reset() *MoveGen {
@@ -104,7 +84,7 @@ func (gen *MoveGen) isValid(move Move) bool {
 
 // Removes invalid moves from the generated list. We use in iterative deepening
 // to avoid filtering out invalid moves on each iteration.
-func (gen *MoveGen) validOnly(p *Position) *MoveGen {
+func (gen *MoveGen) validOnly() *MoveGen {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if !gen.isValid(move) {
 			gen.remove()

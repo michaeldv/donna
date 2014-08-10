@@ -12,7 +12,12 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	cacheFlags := uint8(cacheAlpha)
 
 	// Root move generator makes sure all generated moves are valid.
-	gen := NewRootGen(p, ply)
+	gen := NewRootGen(p, depth)
+	if depth == 1 {
+		gen.generateRootMoves()
+	} else {
+		gen.rearrangeRootMoves()
+	}
 
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
@@ -80,6 +85,9 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 // Testing helper method to test root search.
 func (p *Position) solve(depth int) Move {
+	if depth != 1 {
+		NewRootGen(p, 1).generateRootMoves()
+	}
 	p.search(-Checkmate, Checkmate, depth)
 	return p.game.pv[0][0]
 }

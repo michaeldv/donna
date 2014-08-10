@@ -4,6 +4,26 @@
 
 package donna
 
+func (gen *MoveGen) generateRootMoves() *MoveGen {
+	gen.generateAllMoves()
+	if gen.onlyMove() {
+		return gen
+	}
+
+	if gen.p.isInCheck(gen.p.color) {
+		return gen.validOnly().quickRank()
+	}
+	return gen.validOnly().rank(gen.p.cachedMove())
+}
+
+func (gen *MoveGen) rearrangeRootMoves() *MoveGen {
+	if gen.p.isInCheck(gen.p.color) {
+		gen.reset().quickRank()
+	}
+	return gen.reset().rank(gen.p.cachedMove())
+}
+
+
 func (gen *MoveGen) generateAllMoves() *MoveGen {
 	if gen.p.isInCheck(gen.p.color) {
 		return gen.generateEvasions()
