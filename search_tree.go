@@ -26,7 +26,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	// Repetition and/or perpetual check pruning.
-	if p.isRepetition() {
+	if p.repetition() {
 		if p.isInCheck(p.color) {
 			return 0
 		}

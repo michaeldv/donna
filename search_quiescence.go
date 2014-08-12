@@ -21,7 +21,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	}
 
 	// Repetition and/or perpetual check pruning.
-	if p.isRepetition() {
+	if p.repetition() {
 		if p.isInCheck(p.color) {
 			return 0
 		}

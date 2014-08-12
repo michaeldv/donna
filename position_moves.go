@@ -184,7 +184,7 @@ func (p *Position) isNull() bool {
 	return node > 0 && tree[node].board == tree[node-1].board
 }
 
-func (p *Position) isRepetition() bool {
+func (p *Position) repetition() bool {
 	if !p.reversible {
 		return false
 	}
@@ -199,7 +199,7 @@ func (p *Position) isRepetition() bool {
 	return false
 }
 
-func (p *Position) isTripleRepetition() bool {
+func (p *Position) thirdRepetition() bool {
 	if !p.reversible {
 		return false
 	}

@@ -256,7 +256,7 @@ func (p *Position) status(move Move, blendedScore int) int {
 	switch ply, score := Ply(), Abs(blendedScore); score {
 	case 0:
 		if ply == 1 {
-			if p.isTripleRepetition() {
+			if p.thirdRepetition() {
 				return Repetition
 			} else if p.isInsufficient() {
 				return Insufficient
