@@ -7,6 +7,7 @@ package donna
 import (
 	`fmt`
 	`regexp`
+	`strings`
 )
 
 const (
@@ -183,9 +184,22 @@ func (m Move) isQuiet() bool {
 	return m & (isCapture | isPromo) == 0
 }
 
-func (m Move) String() string {
+// Convert a move to string as expected by the UCI protocol. The tring includes
+// source and target squares as well as promoted piece if any (all lowercase).
+func (m Move) uci() (str string) {
+	from, to, _, _ := m.split()
+	col := [2]int{Col(from) + 'a', Col(to) + 'a'}
+	row := [2]int{Row(from) + 1, Row(to) + 1}
+
+	str = fmt.Sprintf(`%c%d%c%d`, col[0], row[0], col[1], row[1])
+	if m & isPromo != 0 {
+		str += strings.ToLower(m.promo().s())
+	}
+	return
+}
+
+func (m Move) String() (str string) {
 	from, to, piece, capture := m.split()
-	promo := m.promo().s()
 
 	if m.isCastle() {
 		if to > from {
@@ -198,20 +212,20 @@ func (m Move) String() string {
 	row := [2]int{Row(from) + 1, Row(to) + 1}
 
 	sign := '-'
-	if capture != 0 || (piece.isPawn() && Col(from) != Col(to)) {
+	if capture != 0 {
 		sign = 'x'
 	}
 
-	format := `%c%d%c%c%d%s`
-	if piece.isPawn() { // Skip piece name if it's a pawn.
-		return fmt.Sprintf(format, col[0], row[0], sign, col[1], row[1], promo)
-	} else {
+	str = fmt.Sprintf(`%c%d%c%c%d`, col[0], row[0], sign, col[1], row[1])
+	if !piece.isPawn() {
 		if Settings.Fancy {
-			// Fancy notation is more readable with extra space.
-			return fmt.Sprintf(`%s `+format, piece, col[0], row[0], sign, col[1], row[1], promo)
+			str = piece.String() + ` ` + str
 		} else {
-			// Use uppercase letter to representa a piece regardless of its color.
-			return fmt.Sprintf(`%s`+format, piece.s(), col[0], row[0], sign, col[1], row[1], promo)
+			str = piece.s() + str
 		}
 	}
+	if m & isPromo != 0 {
+		str += m.promo().s()
+	}
+	return
 }

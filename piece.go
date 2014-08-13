@@ -63,11 +63,11 @@ func (p Piece) kind() int {
 }
 
 func (p Piece) isWhite() bool {
-	return p & 0x01 == 0
+	return p & 1 == 0
 }
 
 func (p Piece) isBlack() bool {
-	return p & 0x01 == 1
+	return p & 1 == 1
 }
 
 func (p Piece) isKing() bool {
@@ -106,17 +106,5 @@ func (p Piece) String() string {
 
 // Colorless ASCII representation (perfect for tests).
 func (p Piece) s() string {
-	switch p.kind() {
-	case King:
-		return `K`
-	case Queen:
-		return `Q`
-	case Rook:
-		return `R`
-	case Bishop:
-		return `B`
-	case Knight:
-		return `N`
-	}
-	return ``
+	return []string{ ``, ``, ``, ``, `N`, ``, `B`, ``, `R`, ``, `Q`, ``, `K` }[p.kind()]
 }
