@@ -157,21 +157,8 @@ func (m Move) promote(kind int) Move {
 	return m | Move(int(piece) << 24)
 }
 
-func (m Move) isCastle() bool {
-	return m&isCastle != 0
-}
-
 func (m Move) castle() Move {
 	return m | isCastle
-}
-
-func (m Move) isEnpassant() bool {
-	return m & isEnpassant != 0
-}
-
-// Returns true if the move doesn't change material balance.
-func (m Move) isQuiet() bool {
-	return m & (isCapture | isPromo) == 0
 }
 
 func (m Move) enpassant() Move {
@@ -183,34 +170,48 @@ func (m Move) value() int {
 	return pieceValue[m.capture()] - m.piece().kind()
 }
 
+func (m Move) isCastle() bool {
+	return m & isCastle != 0
+}
+
+func (m Move) isEnpassant() bool {
+	return m & isEnpassant != 0
+}
+
+// Returns true if the move doesn't change material balance.
+func (m Move) isQuiet() bool {
+	return m & (isCapture | isPromo) == 0
+}
+
 func (m Move) String() string {
 	from, to, piece, capture := m.split()
 	promo := m.promo().s()
 
-	if (piece == King && from == E1 && to == G1) || (piece == BlackKing && from == E8 && to == G8) {
-		return `0-0`
-	} else if (piece == King && from == E1 && to == C1) || (piece == BlackKing && from == E8 && to == C8) {
-		return `0-0-0`
-	} else {
-		col := [2]int{Col(from) + 'a', Col(to) + 'a'}
-		row := [2]int{Row(from) + 1, Row(to) + 1}
-
-		sign := '-'
-		if capture != 0 || (piece.isPawn() && Col(from) != Col(to)) {
-			sign = 'x'
+	if m.isCastle() {
+		if to > from {
+			return `0-0`
 		}
+		return `0-0-0`
+	}
 
-		format := `%c%d%c%c%d%s`
-		if piece.isPawn() { // Skip piece name if it's a pawn.
-			return fmt.Sprintf(format, col[0], row[0], sign, col[1], row[1], promo)
+	col := [2]int{Col(from) + 'a', Col(to) + 'a'}
+	row := [2]int{Row(from) + 1, Row(to) + 1}
+
+	sign := '-'
+	if capture != 0 || (piece.isPawn() && Col(from) != Col(to)) {
+		sign = 'x'
+	}
+
+	format := `%c%d%c%c%d%s`
+	if piece.isPawn() { // Skip piece name if it's a pawn.
+		return fmt.Sprintf(format, col[0], row[0], sign, col[1], row[1], promo)
+	} else {
+		if Settings.Fancy {
+			// Fancy notation is more readable with extra space.
+			return fmt.Sprintf(`%s `+format, piece, col[0], row[0], sign, col[1], row[1], promo)
 		} else {
-			if Settings.Fancy {
-				// Fancy notation is more readable with extra space.
-				return fmt.Sprintf(`%s `+format, piece, col[0], row[0], sign, col[1], row[1], promo)
-			} else {
-				// Use uppercase letter to representa a piece regardless of its color.
-				return fmt.Sprintf(`%s`+format, piece.s(), col[0], row[0], sign, col[1], row[1], promo)
-			}
+			// Use uppercase letter to representa a piece regardless of its color.
+			return fmt.Sprintf(`%s`+format, piece.s(), col[0], row[0], sign, col[1], row[1], promo)
 		}
 	}
 }
