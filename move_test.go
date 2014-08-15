@@ -68,12 +68,33 @@ func TestMove040(t *testing.T) {
 	expect(t, NewMove(p, D6, D5).value(), 88) // KxP
 }
 
-// NewMoveFromString: correctly handle pawn promotion.
-func TestMove100(t *testing.T) {
-	position := NewGame(`Ke4,a7`, `Kh8`).Start(White)
-	move := NewMoveFromString(position, `a7a8Q`)
-	position = position.MakeMove(move)
+// Move to UCI coordinate notation.
+func TestMove200(t *testing.T) {
+	p := NewGame().Start()
+	m1 := NewMove(p, E2, E4)
+	m2 := NewMove(p, G1, F3)
 
-	expect(t, position.outposts[Pawn], maskNone)
-	expect(t, position.outposts[Queen], bit[A8])
+	expect(t, m1.notation(), `e2e4`) // Pawn.
+	expect(t, m2.notation(), `g1f3`) // Knight.
+}
+
+func TestMove210(t *testing.T) {
+	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).Start(White)
+	m1 := NewMove(p, E1, E2) // Capture.
+	m2 := NewMove(p, A7, A8).promote(Rook)  // Promo without capture.
+	m3 := NewMove(p, G7, H8).promote(Queen) // Promo with capture.
+
+	expect(t, m1.notation(), `e1e2`)
+	expect(t, m2.notation(), `a7a8r`)
+	expect(t, m3.notation(), `g7h8q`)
+}
+
+func TestMove220(t *testing.T) {
+	p1 := NewGame(`Ke1`, `Ke8,Ra8`).Start(Black)
+	m1 := NewCastle(p1, E8, C8) // 0-0-0
+	expect(t, m1.notation(), `e8c8`)
+
+	p2 := NewGame(`Ke1`, `Ke8,Rh8`).Start(Black)
+	m2 := NewCastle(p2, E8, G8) // 0-0
+	expect(t, m2.notation(), `e8g8`)
 }
