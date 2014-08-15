@@ -63,6 +63,39 @@ func NewPromotion(p *Position, square, target int) (Move, Move, Move, Move) {
 	       NewMove(p, square, target).promote(Knight)
 }
 
+// Decodes a string in coordinate notation and returns a move. The string is
+// expected to be either 4 or 5 characters long (with promotion).
+func NewMoveFromNotation(p *Position, e2e4 string) Move {
+	from := Square(int(e2e4[1] - '1'), int(e2e4[0] - 'a'))
+	to := Square(int(e2e4[3] - '1'), int(e2e4[2] - 'a'))
+
+	// Check if this is a castle.
+	if p.pieces[from].isKing() && Abs(from - to) == 2 {
+		return NewCastle(p, from, to)
+	}
+
+	// Special handling for pawn pushes because they might cause en-passant
+	// and result in promotion.
+	if p.pieces[from].isPawn() {
+		move := NewPawnMove(p, from, to)
+		if len(e2e4) > 4 {
+			switch e2e4[4] {
+			case 'q', 'Q':
+				move = move.promote(Queen)
+			case 'r', 'R':
+				move = move.promote(Rook)
+			case 'b', 'B':
+				move = move.promote(Bishop)
+			case 'n', 'N':
+				move = move.promote(Knight)
+			}
+		}
+		return move
+	}
+
+	return NewMove(p, from, to)
+}
+
 // Decodes a string in long algebraic notation and returns a move.
 func NewMoveFromString(p *Position, e2e4 string) (move Move) {
 	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
