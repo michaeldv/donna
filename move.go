@@ -5,9 +5,8 @@
 package donna
 
 import (
-	`fmt`
+	`bytes`
 	`regexp`
-	`strings`
 )
 
 const (
@@ -64,6 +63,7 @@ func NewPromotion(p *Position, square, target int) (Move, Move, Move, Move) {
 	       NewMove(p, square, target).promote(Knight)
 }
 
+// Decodes a string in long algebraic notation and returns a move.
 func NewMoveFromString(p *Position, e2e4 string) (move Move) {
 	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
 	arr := re.FindStringSubmatch(e2e4)
@@ -158,14 +158,6 @@ func (m Move) promote(kind int) Move {
 	return m | Move(int(piece) << 24)
 }
 
-func (m Move) castle() Move {
-	return m | isCastle
-}
-
-func (m Move) enpassant() Move {
-	return m | isEnpassant
-}
-
 // Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() int {
 	return pieceValue[m.capture()] - m.piece().kind()
@@ -184,23 +176,30 @@ func (m Move) isQuiet() bool {
 	return m & (isCapture | isPromo) == 0
 }
 
-// Convert a move to string as expected by the UCI protocol. The tring includes
-// source and target squares as well as promoted piece if any (all lowercase).
-func (m Move) uci() (str string) {
-	from, to, _, _ := m.split()
-	col := [2]int{Col(from) + 'a', Col(to) + 'a'}
-	row := [2]int{Row(from) + 1, Row(to) + 1}
+// Returns string representation of the move in long coordinate notation as
+// expected by UCI, ex. `g1f3`, `e4d5` or `h7h8q`.
+func (m Move) notation() string {
+	var buffer bytes.Buffer
 
-	str = fmt.Sprintf(`%c%d%c%d`, col[0], row[0], col[1], row[1])
+	from, to, _, _ := m.split()
+	buffer.WriteByte(byte(Col(from)) + 'a')
+	buffer.WriteByte(byte(Row(from)) + '1')
+	buffer.WriteByte(byte(Col(to)) + 'a')
+	buffer.WriteByte(byte(Row(to)) + '1')
 	if m & isPromo != 0 {
-		str += strings.ToLower(m.promo().s())
+		buffer.WriteByte(m.promo().char() + 32)
 	}
-	return
+
+	return buffer.String()
 }
 
+// By default the move is represented in long algebraic notation, ex. `Ng1-f3`,
+// `e4xd5` or `h7-h8Q`. This is used in tests, REPL, and when displaying
+// principal variation.
 func (m Move) String() (str string) {
-	from, to, piece, capture := m.split()
+	var buffer bytes.Buffer
 
+	from, to, piece, capture := m.split()
 	if m.isCastle() {
 		if to > from {
 			return `0-0`
@@ -208,24 +207,25 @@ func (m Move) String() (str string) {
 		return `0-0-0`
 	}
 
-	col := [2]int{Col(from) + 'a', Col(to) + 'a'}
-	row := [2]int{Row(from) + 1, Row(to) + 1}
-
-	sign := '-'
-	if capture != 0 {
-		sign = 'x'
-	}
-
-	str = fmt.Sprintf(`%c%d%c%c%d`, col[0], row[0], sign, col[1], row[1])
 	if !piece.isPawn() {
-		if Settings.Fancy {
-			str = piece.String() + ` ` + str
+		if Settings.Fancy { // Figurine notation is more readable with extra space.
+			buffer.WriteString(piece.String() + ` `)
 		} else {
-			str = piece.s() + str
+			buffer.WriteByte(piece.char())
 		}
 	}
-	if m & isPromo != 0 {
-		str += m.promo().s()
+	buffer.WriteByte(byte(Col(from)) + 'a')
+	buffer.WriteByte(byte(Row(from)) + '1')
+	if capture == 0 {
+		buffer.WriteByte('-')
+	} else {
+		buffer.WriteByte('x')
 	}
-	return
+	buffer.WriteByte(byte(Col(to)) + 'a')
+	buffer.WriteByte(byte(Row(to)) + '1')
+	if m & isPromo != 0 {
+		buffer.WriteByte(m.promo().char())
+	}
+
+	return buffer.String()
 }

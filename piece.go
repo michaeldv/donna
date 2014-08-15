@@ -94,6 +94,11 @@ func (p Piece) isPawn() bool {
 	return p & 0xFE == Pawn
 }
 
+// Returns colorless ASCII code for the piece.
+func (p Piece) char() byte {
+	return []byte{ 0, 0, 0, 0, 'N', 'N', 'B', 'B', 'R', 'R', 'Q', 'Q', 'K', 'K' }[p]
+}
+
 func (p Piece) String() string {
 	plain := []string{ ` `, ` `, `P`, `p`, `N`, `n`, `B`, `b`, `R`, `r`, `Q`, `q`, `K`, `k` }
 	fancy := []string{ ` `, ` `, "\u2659", "\u265F", "\u2658", "\u265E", "\u2657", "\u265D", "\u2656", "\u265C", "\u2655", "\u265B", "\u2654", "\u265A" }
@@ -102,9 +107,4 @@ func (p Piece) String() string {
 		return fancy[p]
 	}
 	return plain[p]
-}
-
-// Colorless ASCII representation (perfect for tests).
-func (p Piece) s() string {
-	return []string{ ``, ``, ``, ``, `N`, ``, `B`, ``, `R`, ``, `Q`, ``, `K` }[p.kind()]
 }
