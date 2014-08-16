@@ -119,6 +119,23 @@ func (b *Bitmask) spot(square, direction int, board Bitmask) *Bitmask {
 	return b
 }
 
+func (b *Bitmask) trim(row, col int) *Bitmask {
+	if row > 0 {
+		*b &= 0xFFFFFFFFFFFFFF00
+	}
+	if row < 7 {
+		*b &= 0x00FFFFFFFFFFFFFF
+	}
+	if col > 0 {
+		*b &= 0xFEFEFEFEFEFEFEFE
+	}
+	if col < 7 {
+		*b &= 0x7F7F7F7F7F7F7F7F
+	}
+
+	return b
+}
+
 func (b Bitmask) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h  ")
 	buffer.WriteString(fmt.Sprintf("0x%016X\n", uint64(b)))

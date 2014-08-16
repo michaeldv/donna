@@ -4,8 +4,6 @@
 
 package donna
 
-import ()
-
 type Magic struct {
 	mask  Bitmask
 	magic Bitmask
@@ -67,6 +65,24 @@ func initMasks() {
 	for square := A1; square <= H8; square++ {
 		row, col := Coordinate(square)
 
+		// Distance, Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
+		for i := A1; i <= H8; i++ {
+			r, c := Coordinate(i)
+
+			distance[square][i] = Max(Abs(row - r), Abs(col - c))
+			setupMasks(square, i, row, col, r, c)
+
+			if i == square || Abs(i-square) > 17 {
+				continue // No king or knight can reach that far.
+			}
+			if (Abs(r-row) == 2 && Abs(c-col) == 1) || (Abs(r-row) == 1 && Abs(c-col) == 2) {
+				knightMoves[square].set(i)
+			}
+			if Abs(r-row) <= 1 && Abs(c-col) <= 1 {
+				kingMoves[square].set(i)
+			}
+		}
+
 		// Rooks.
 		mask := createRookMask(square)
 		bits := uint(mask.count())
@@ -94,24 +110,6 @@ func initMasks() {
 			if col < 7 {
 				pawnMoves[White][square].set(Square(row + 1, col + 1))
 				pawnMoves[Black][square].set(Square(row - 1, col + 1))
-			}
-		}
-
-		// Distance, Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
-		for i := A1; i <= H8; i++ {
-			r, c := Coordinate(i)
-
-			distance[square][i] = Max(Abs(row - r), Abs(col - c))
-			setupMasks(square, i, row, col, r, c)
-
-			if i == square || Abs(i-square) > 17 {
-				continue // No king or knight can reach that far.
-			}
-			if (Abs(r-row) == 2 && Abs(c-col) == 1) || (Abs(r-row) == 1 && Abs(c-col) == 2) {
-				knightMoves[square].set(i)
-			}
-			if Abs(r-row) <= 1 && Abs(c-col) <= 1 {
-				kingMoves[square].set(i)
 			}
 		}
 
@@ -368,48 +366,31 @@ func indexedBitmask(index int, mask Bitmask) (bitmask Bitmask) {
 	return
 }
 
-func createRookMask(square int) (bitmask Bitmask) {
+func createRookMask(square int) Bitmask {
 	row, col := Coordinate(square)
+	bitmask := (maskRank[row] | maskFile[col]) ^ bit[square]
 
-	// North.
-	for r := row + 1; r < 7; r++ {
-		bitmask |= bit[r * 8 + col]
-	}
-	// West.
-	for c := col - 1; c > 0; c-- {
-		bitmask |= bit[row * 8 + c]
-	}
-	// South.
-	for r := row - 1; r > 0; r-- {
-		bitmask |= bit[r * 8 + col]
-	}
-	// East.
-	for c := col + 1; c < 7; c++ {
-		bitmask |= bit[row * 8 + c]
-	}
-	return
+	return *bitmask.trim(row, col)
 }
 
-func createBishopMask(square int) (bitmask Bitmask) {
+func createBishopMask(square int) Bitmask {
 	row, col := Coordinate(square)
+	bitmask := Bitmask(0)
 
-	// North West.
-	for c, r := col - 1, row + 1; c > 0 && r < 7; c, r = c-1, r+1 {
-		bitmask |= bit[r * 8 + c]
+	if sq := square + 7; sq <= H8 && Col(sq) == col - 1 {
+		bitmask = maskDiagonal[square][sq]
+	} else if sq := square - 7; sq >= A1 && Col(sq) == col + 1 {
+		bitmask = maskDiagonal[square][sq]
 	}
-	// South West.
-	for c, r := col - 1, row - 1; c > 0 && r > 0; c, r = c-1, r-1 {
-		bitmask |= bit[r * 8 + c]
+
+	if sq := square + 9; sq <= H8 && Col(sq) == col + 1 {
+		bitmask |= maskDiagonal[square][sq]
+	} else if sq := square - 9; sq >= A1 && Col(sq) == col - 1 {
+		bitmask |= maskDiagonal[square][sq]
 	}
-	// South East.
-	for c, r := col + 1, row - 1; c < 7 && r > 0; c, r = c+1, r-1 {
-		bitmask |= bit[r * 8 + c]
-	}
-	// North East.
-	for c, r := col + 1, row + 1; c < 7 && r < 7; c, r = c+1, r+1 {
-		bitmask |= bit[r * 8 + c]
-	}
-	return
+	bitmask ^= bit[square]
+
+	return *bitmask.trim(row, col)
 }
 
 func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
