@@ -199,51 +199,51 @@ func initMaterial() {
 	var index int
 
 	for wQ := 0; wQ < 2; wQ++ {
-	  for bQ := 0; bQ < 2; bQ++ {
-	    for wR := 0; wR < 3; wR++ {
-	      for bR := 0; bR < 3; bR++ {
-		for wB := 0; wB < 3; wB++ {
-		  for bB := 0; bB < 3; bB++ {
-		    for wN := 0; wN < 3; wN++ {
-		      for bN := 0; bN < 3; bN++ {
-			for wP := 0; wP < 9; wP++ {
-			  for bP := 0; bP < 9; bP++ {
-				index = wQ * materialBalance[Queen]       +
-					bQ * materialBalance[BlackQueen]  +
-					wR * materialBalance[Rook]        +
-					bR * materialBalance[BlackRook]   +
-					wB * materialBalance[Bishop]      +
-					bB * materialBalance[BlackBishop] +
-					wN * materialBalance[Knight]      +
-					bN * materialBalance[BlackKnight] +
-					wP * materialBalance[Pawn]        +
-					bP * materialBalance[BlackPawn]
+		for bQ := 0; bQ < 2; bQ++ {
+			for wR := 0; wR < 3; wR++ {
+				for bR := 0; bR < 3; bR++ {
+					for wB := 0; wB < 3; wB++ {
+						for bB := 0; bB < 3; bB++ {
+							for wN := 0; wN < 3; wN++ {
+								for bN := 0; bN < 3; bN++ {
+									for wP := 0; wP < 9; wP++ {
+										for bP := 0; bP < 9; bP++ {
+		index = wQ * materialBalance[Queen]       +
+			bQ * materialBalance[BlackQueen]  +
+			wR * materialBalance[Rook]        +
+			bR * materialBalance[BlackRook]   +
+			wB * materialBalance[Bishop]      +
+			bB * materialBalance[BlackBishop] +
+			wN * materialBalance[Knight]      +
+			bN * materialBalance[BlackKnight] +
+			wP * materialBalance[Pawn]        +
+			bP * materialBalance[BlackPawn]
 
-				// Compute game phase.
-				materialBase[index].phase = 12 * (wN + bN + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
+		// Compute game phase.
+		materialBase[index].phase = 12 * (wN + bN + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
 
-				// Set up evaluation flags and endgame handlers.
-				materialBase[index].flags,
-				materialBase[index].endgame = endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ)
+		// Set up evaluation flags and endgame handlers.
+		materialBase[index].flags,
+		materialBase[index].endgame = endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ)
 
-				// Compute material imbalance scores.
-				if wQ != bQ || wR != bR || wB != bB || wN != bN || wP != bP {
-					white := imbalance(wB/2, wP, wN, wB, wR, wQ,  bB/2, bP, bN, bB, bR, bQ)
-					black := imbalance(bB/2, bP, bN, bB, bR, bQ,  wB/2, wP, wN, wB, wR, wQ)
+		// Compute material imbalance scores.
+		if wQ != bQ || wR != bR || wB != bB || wN != bN || wP != bP {
+			white := imbalance(wB/2, wP, wN, wB, wR, wQ,  bB/2, bP, bN, bB, bR, bQ)
+			black := imbalance(bB/2, bP, bN, bB, bR, bQ,  wB/2, wP, wN, wB, wR, wQ)
 
-					adjustment := (white - black) / 32
-					materialBase[index].score.midgame += adjustment
-					materialBase[index].score.endgame += adjustment
-				}
-			  }
-			}
-		      }
-		    }
-		  }
+			adjustment := (white - black) / 32
+			materialBase[index].score.midgame += adjustment
+			materialBase[index].score.endgame += adjustment
 		}
-	      }
-	    }
-	  }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
