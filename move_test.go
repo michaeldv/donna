@@ -68,6 +68,54 @@ func TestMove040(t *testing.T) {
 	expect(t, NewMove(p, D6, D5).value(), 88) // KxP
 }
 
+// NewMoveFromString: move from algebraic notation.
+func TestMove100(t *testing.T) {
+	p := NewGame().Start()
+	m1 := NewMove(p, E2, E4)
+	m2 := NewMove(p, G1, F3)
+
+	expect(t, NewMoveFromString(p, `e2e4`), m1)
+	expect(t, NewMoveFromString(p, `e2-e4`), m1)
+	expect(t, NewMoveFromString(p, `Ng1f3`), m2)
+	expect(t, NewMoveFromString(p, `Ng1-f3`), m2)
+	expect(t, NewMoveFromString(p, `Rg1-f3`), Move(0))
+}
+
+func TestMove110(t *testing.T) {
+	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).Start(White)
+	m1 := NewMove(p, E1, E2) // Capture.
+	m2 := NewMove(p, A7, A8).promote(Rook)  // Promo without capture.
+	m3 := NewMove(p, G7, H8).promote(Queen) // Promo with capture.
+
+	expect(t, NewMoveFromString(p, `Ke1e2`), m1)
+	expect(t, NewMoveFromString(p, `Ke1xe2`), m1)
+	expect(t, NewMoveFromString(p, `a7a8R`), m2)
+	expect(t, NewMoveFromString(p, `a7-a8R`), m2)
+	expect(t, NewMoveFromString(p, `g7h8Q`), m3)
+	expect(t, NewMoveFromString(p, `g7xh8Q`), m3)
+}
+
+func TestMove120(t *testing.T) {
+	p1 := NewGame(`Ke1`, `Ke8,Ra8`).Start(Black)
+	m1 := NewCastle(p1, E8, C8)
+	expect(t, NewMoveFromString(p1, `0-0-0`), m1)
+
+	p2 := NewGame(`Ke1`, `Ke8,Rh8`).Start(Black)
+	m2 := NewCastle(p2, E8, G8)
+	expect(t, NewMoveFromString(p2, `0-0`), m2)
+}
+
+func TestMove130(t *testing.T) {
+	p := NewGame().Start()
+	p = p.MakeMove(NewPawnMove(p, E2, E4))
+	p = p.MakeMove(NewPawnMove(p, E7, E6))
+	p = p.MakeMove(NewPawnMove(p, E4, E5))
+	move := NewPawnMove(p, D7, D5) // Causes en-passant on D6.
+
+	expect(t, NewMoveFromString(p, `d7d5`), move)
+	expect(t, NewMoveFromString(p, `d7-d5`).isEnpassant(), true)
+}
+
 // Move to UCI coordinate notation.
 func TestMove200(t *testing.T) {
 	p := NewGame().Start()

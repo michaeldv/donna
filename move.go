@@ -98,61 +98,45 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 
 // Decodes a string in long algebraic notation and returns a move.
 func NewMoveFromString(p *Position, e2e4 string) (move Move) {
-	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])-?([a-h])([1-8])([QqRrBbNn]?)`)
-	arr := re.FindStringSubmatch(e2e4)
+	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])[-x]?([a-h])([1-8])([QqRrBbNn]?)`)
+	matches := re.FindStringSubmatch(e2e4)
 
-	if len(arr) > 0 {
-		name := arr[1]
-		from := Square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
-		to := Square(int(arr[5][0]-'1'), int(arr[4][0]-'a'))
-		promo := arr[6]
+	if len(matches) == 7 { // Full regex match.
+		if letter := matches[1]; letter != `` {
+			var piece Piece
 
-		var piece Piece
-		switch name {
-		case `K`, `k`:
-			piece = king(p.color)
-		case `Q`, `q`:
-			piece = queen(p.color)
-		case `R`, `r`:
-			piece = rook(p.color)
-		case `B`, `b`:
-			piece = bishop(p.color)
-		case `N`, `n`:
-			piece = knight(p.color)
-		default:
-			piece = p.pieces[from] // <-- Makes piece character optional.
-		}
-		if (p.pieces[from] != piece) || (p.targets(from)&bit[to] == 0) {
-			move = 0 // Invalid move.
-		} else {
-			move = NewMove(p, from, to)
-			if len(promo) > 0 {
-				switch promo {
-				case `Q`, `q`:
-					move = move.promote(Queen)
-				case `R`, `r`:
-					move = move.promote(Rook)
-				case `B`, `b`:
-					move = move.promote(Bishop)
-				case `N`, `n`:
-					move = move.promote(Knight)
-				default:
-					move = 0
-				}
+			// Validate optional piece character to make sure the actual piece it
+			// represents is there.
+			switch letter {
+			case `K`, `k`:
+				piece = king(p.color)
+			case `Q`, `q`:
+				piece = queen(p.color)
+			case `R`, `r`:
+				piece = rook(p.color)
+			case `B`, `b`:
+				piece = bishop(p.color)
+			case `N`, `n`:
+				piece = knight(p.color)
+			}
+			square := Square(int(matches[3][0] - '1'), int(matches[2][0] - 'a'))
+			if p.pieces[square] != piece {
+				return Move(0)
 			}
 		}
-	} else if e2e4 == `0-0` || e2e4 == `0-0-0` {
-		from := p.king[p.color]
-		to := G1
-		if e2e4 == `0-0-0` {
-			to = C1
+		return NewMoveFromNotation(p, matches[2] + matches[3] + matches[4] + matches[5] + matches[6])
+	}
+
+	// Special castle move notation.
+	if e2e4 == `0-0` || e2e4 == `0-0-0` {
+		kingside, queenside := p.canCastle(p.color)
+		if e2e4 == `0-0` && kingside {
+			from, to := p.king[p.color], G1 + p.color * A8
+			return NewCastle(p, from, to)
 		}
-		if p.color == Black {
-			to += 56
-		}
-		move = NewCastle(p, from, to)
-		if !move.isCastle() {
-			move = 0
+		if e2e4 == `0-0-0` && queenside {
+			from, to := p.king[p.color], C1 + p.color * A8
+			return NewCastle(p, from, to)
 		}
 	}
 	return
