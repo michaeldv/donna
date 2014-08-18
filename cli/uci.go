@@ -73,11 +73,27 @@ func Uci() {
 		fmt.Printf("%s\n", position)
 	}
 
+	// "go [[wtime winc | btime binc ] movestogo] | depth | movetime"
+	doGo := func(args []string) {
+		fmt.Printf("%q\n", args)
+	}
+
+	// Stop calculating as soon as possible.
+	doStop := func(args []string) {
+	}
+
+	// Quit the program as soon as possible.
+	doQuit := func(args []string) {
+		fmt.Printf("%q\n", args)
+	}
 	var commands = map[string]func([]string){
 		`isready`: doIsReady,      
 		`uci`: doUci,
 		`ucinewgame`: doUciNewGame,
 		`position`: doPosition,
+		`go`: doGo,
+		`stop`: doStop,
+		`quict`: doQuit,
 	}
 
  	bio := bufio.NewReader(os.Stdin)
