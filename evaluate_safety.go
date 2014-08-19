@@ -8,7 +8,7 @@ func (e *Evaluation) analyzeSafety() {
 	var cover, safety Total
 	color := e.position.color
 
-	if Settings.Trace {
+	if engine.trace {
 		defer func() {
 			var his, her Score
 			e.checkpoint(`+King`, Total{*his.add(cover.white).add(safety.white), *her.add(cover.black).add(safety.black)})

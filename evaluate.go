@@ -64,7 +64,7 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 	eval.init(p)
 	eval.metrics = make(Metrics)
 
-	Settings.Trace = true
+	engine.trace = true
 	defer func() {
 		var tempo Total
 		var final Score
@@ -81,7 +81,7 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 		eval.checkpoint(`PST`, p.tally)
 		eval.checkpoint(`Tempo`, tempo)
 		eval.checkpoint(`Final`, final)
-		Settings.Trace = false
+		engine.trace = false
 	}()
 
 	return eval.run(), eval.metrics

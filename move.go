@@ -225,7 +225,7 @@ func (m Move) String() (str string) {
 	}
 
 	if !piece.isPawn() {
-		if Settings.Fancy { // Figurine notation is more readable with extra space.
+		if engine.fancy { // Figurine notation is more readable with extra space.
 			buffer.WriteString(piece.String() + ` `)
 		} else {
 			buffer.WriteByte(piece.char())

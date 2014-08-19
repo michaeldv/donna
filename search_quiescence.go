@@ -16,7 +16,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	p.game.pv[ply] = p.game.pv[ply][:0]
 
 	// Return if it's time to stop search.
-	if ply >= MaxPly || p.game.clock.halt {
+	if ply >= MaxPly || engine.clock.halt {
 		return p.Evaluate()
 	}
 
@@ -109,7 +109,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, false)
 			position.UndoLastMove()
 
-			if p.game.clock.halt {
+			if engine.clock.halt {
 				p.game.qnodes += moveCount
 				//Log("searchQui at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
 				return alpha

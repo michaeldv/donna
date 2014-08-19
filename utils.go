@@ -10,14 +10,6 @@ import (
 	`time`
 )
 
-type Globals struct {
-	Log   bool // Enable logging.
-	Trace bool // Trace evaluation scores.
-	Fancy bool // Represent pieces as UTF-8 characters.
-}
-
-var Settings Globals
-
 // Returns row number for the given bit index.
 func Row(n int) int {
 	return n >> 3 // n / 8
@@ -143,20 +135,20 @@ func Log(args ...interface{}) {
 	switch len(args) {
 	case 0:
 		// Calling Log() with no arguments flips the logging setting.
-		Settings.Log = !Settings.Log
-		Settings.Fancy = !Settings.Fancy
+		engine.log = !engine.log
+		engine.fancy = !engine.fancy
 	case 1:
 		switch args[0].(type) {
 		case bool:
-			Settings.Log = args[0].(bool)
-			Settings.Fancy = args[0].(bool)
+			engine.log = args[0].(bool)
+			engine.fancy = args[0].(bool)
 		default:
-			if Settings.Log {
+			if engine.log {
 				fmt.Println(args...)
 			}
 		}
 	default:
-		if Settings.Log {
+		if engine.log {
 			fmt.Printf(args[0].(string), args[1:]...)
 		}
 	}

@@ -11,12 +11,11 @@ import (
 )
 
 func main() {
-	donna.Settings.Log = false
-	donna.Settings.Fancy = true
+	engine := donna.Self().Set(`fancy`, true)
 
 	if len(os.Args) > 1 && os.Args[1] == `-i` {
-		cli.Repl()
+		cli.Repl(engine)
 	} else {
-		cli.Uci()
+		cli.Uci(engine)
 	}
 }

@@ -14,7 +14,7 @@ import(
 
 // Brain-damaged universal chess interface (UCI) protocol as described at
 // http://wbec-ridderkerk.nl/html/UCIProtocol.html
-func Uci() {
+func Uci(engine *donna.Engine) {
 	var game *donna.Game
 	var position *donna.Position
 
@@ -41,7 +41,8 @@ func Uci() {
 
 		// Make sure we've started the game since "ucinewgame" is optional.
 		if game == nil || position == nil {
-			game = donna.NewGame().Set(`cache`, 64, `movetime`, 5000) // 5s per move.
+			engine.Set(`cache`, 64, `movetime`, 5000) // 5s per move.
+			game = donna.NewGame()
 			position = game.Start()
 		}
 

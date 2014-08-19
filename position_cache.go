@@ -26,8 +26,11 @@ type CacheEntry struct {
 type Cache []CacheEntry
 
 func NewCache(megaBytes float64) Cache {
-	cacheSize := uint(1024*1024*megaBytes) / uint(unsafe.Sizeof(CacheEntry{}))
-	return make(Cache, cacheSize)
+	if megaBytes > 0.0 {
+		cacheSize := uint(1024*1024*megaBytes) / uint(unsafe.Sizeof(CacheEntry{}))
+		return make(Cache, cacheSize)
+	}
+	return nil
 }
 
 func (p *Position) cache(move Move, score, depth int, flags uint8) *Position {

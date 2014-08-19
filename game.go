@@ -25,8 +25,6 @@ type Game struct {
 	killers  Killers  // Killer moves.
 	rootpv   Pv 	  // Principal variation for root moves.
 	pv       PvTable  // Principal variations for each ply.
-	options  Options  // Game options, might be set by REPL or UCI.
-	clock    Clock    // Time controls.
 }
 
 // Use single statically allocated variable.
@@ -41,6 +39,7 @@ var game Game
 func NewGame(args ...string) *Game {
 	game = Game{}
 	pawnCache = [8192]PawnEntry{}
+	game.cache = NewCache(engine.cache)
 
 	game.rootpv = make([]Move, 0, MaxPly)
 	for ply := 0;  ply < MaxPly; ply++ {
@@ -100,12 +99,12 @@ func (game *Game) Think() Move {
 	alpha, beta := -Checkmate, Checkmate
 
 	done := func(depth int) bool {
-		return game.clock.halt || (game.options.maxDepth > 0 && depth > game.options.maxDepth)
+		return engine.clock.halt || (engine.options.maxDepth > 0 && depth > engine.options.maxDepth)
 	}
 
 	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
 
-	game.startClock(); defer game.stopClock();
+	engine.startClock(); defer engine.stopClock();
 	for depth := 1; !done(depth); depth++ {
 		game.nodes, game.qnodes = 0, 0
 
@@ -137,7 +136,7 @@ func (game *Game) Think() Move {
 					game.rootpv = append(game.rootpv[:0], game.pv[0]...)
 				}
 
-				if game.clock.halt {
+				if engine.clock.halt {
 					break
 				}
 
@@ -156,7 +155,7 @@ func (game *Game) Think() Move {
 		}
 		finish := time.Since(start).Seconds()
 
-		if game.clock.halt {
+		if engine.clock.halt {
 			//Log("\ttimed out pv => %v\n\ttimed out rv => %v\n", game.pv[0], game.rootpv)
 			score = bestScore
 		}

@@ -8,7 +8,7 @@ func (e *Evaluation) analyzeThreats() {
 	white := e.threats(White, e.attacks[White], e.attacks[Black])
 	black := e.threats(Black, e.attacks[Black], e.attacks[White])
 
-	if Settings.Trace {
+	if engine.trace {
 		defer func() {
 			e.checkpoint(`Threats`, Total{white, black})
 		}()

@@ -103,7 +103,7 @@ func (p Piece) String() string {
 	plain := []string{ ` `, ` `, `P`, `p`, `N`, `n`, `B`, `b`, `R`, `r`, `Q`, `q`, `K`, `k` }
 	fancy := []string{ ` `, ` `, "\u2659", "\u265F", "\u2658", "\u265E", "\u2657", "\u265D", "\u2656", "\u265C", "\u2655", "\u265B", "\u2654", "\u265A" }
 
-	if Settings.Fancy {
+	if engine.fancy {
 		return fancy[p]
 	}
 	return plain[p]

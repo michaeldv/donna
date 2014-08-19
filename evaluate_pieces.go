@@ -9,7 +9,7 @@ func (e *Evaluation) analyzePieces() {
 	var mobile Score
 	var knight, bishop, rook, queen, mobility Total
 
-	if Settings.Trace {
+	if engine.trace {
 		defer func() {
 			var his, her Score
 			e.checkpoint(`Mobility`, mobility)

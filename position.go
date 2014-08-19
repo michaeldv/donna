@@ -286,8 +286,8 @@ func (p *Position) status(move Move, blendedScore int) int {
 
 // Encodes position as FEN string.
 func (p *Position) fen() (fen string) {
-	fancy := Settings.Fancy
-	Settings.Fancy = false; defer func() { Settings.Fancy = fancy }()
+	fancy := engine.fancy
+	engine.fancy = false; defer func() { engine.fancy = fancy }()
 
 	// Board: start from A8->H8 going down to A1->H1.
 	empty := 0
