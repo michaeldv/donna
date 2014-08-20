@@ -27,19 +27,25 @@ type Cache []CacheEntry
 
 func NewCache(megaBytes float64) Cache {
 	if megaBytes > 0.0 {
-		cacheSize := uint(1024*1024*megaBytes) / uint(unsafe.Sizeof(CacheEntry{}))
-		return make(Cache, cacheSize)
+		cacheSize := int(1024*1024*megaBytes) / int(unsafe.Sizeof(CacheEntry{}))
+		// If cache size has changed then create a new cache; otherwise
+		// simply clear the existing one.
+		if cacheSize != len(game.cache) {
+			return make(Cache, cacheSize)
+		}
+		game.cache = Cache{}
+		return game.cache
 	}
 	return nil
 }
 
 func (p *Position) cache(move Move, score, depth int, flags uint8) *Position {
-	if cacheSize := len(p.game.cache); cacheSize > 0 {
+	if cacheSize := len(game.cache); cacheSize > 0 {
 		index := p.hash % uint64(cacheSize)
-		// fmt.Printf("cache size %d entries, index %d\n", len(p.game.cache), index)
-		entry := &p.game.cache[index]
+		// fmt.Printf("cache size %d entries, index %d\n", len(game.cache), index)
+		entry := &game.cache[index]
 
-		if depth > entry.depth || p.game.token != entry.token {
+		if depth > entry.depth || game.token != entry.token {
 			if score > Checkmate-MaxPly && score <= Checkmate {
 				entry.score = score + Ply()
 			} else if score >= -Checkmate && score < -Checkmate+MaxPly {
@@ -50,7 +56,7 @@ func (p *Position) cache(move Move, score, depth int, flags uint8) *Position {
 			entry.move = move
 			entry.depth = depth
 			entry.flags = flags
-			entry.token = p.game.token
+			entry.token = game.token
 			entry.hash = p.hash
 		}
 	}
@@ -59,9 +65,9 @@ func (p *Position) cache(move Move, score, depth int, flags uint8) *Position {
 }
 
 func (p *Position) probeCache() *CacheEntry {
-	if cacheSize := len(p.game.cache); cacheSize > 0 {
+	if cacheSize := len(game.cache); cacheSize > 0 {
 		index := p.hash % uint64(cacheSize)
-		if entry := &p.game.cache[index]; entry.hash == p.hash {
+		if entry := &game.cache[index]; entry.hash == p.hash {
 			return entry
 		}
 	}

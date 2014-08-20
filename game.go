@@ -12,19 +12,20 @@ import (
 
 type History [14][64]int
 type Killers [MaxPly][2]Move
-type Pv      []Move
-type PvTable [MaxPly]Pv
+type RootPv  []Move
+type Pv      [MaxPly]RootPv
 
 type Game struct {
-	nodes    int 	  // Number of regular nodes searched.
-	qnodes   int 	  // Number of quiescence nodes searched.
-	token    uint8 	  // Expiration token for cache.
-	initial  string   // Initial position (FEN or algebraic).
-	cache    Cache 	  // Transposition table.
-	history  History  // Good moves history.
-	killers  Killers  // Killer moves.
-	rootpv   Pv 	  // Principal variation for root moves.
-	pv       PvTable  // Principal variations for each ply.
+	nodes      int 	  	// Number of regular nodes searched.
+	qnodes     int 	  	// Number of quiescence nodes searched.
+	token      uint8 	// Expiration token for cache.
+	initial    string   	// Initial position (FEN or algebraic).
+	history    History  	// Good moves history.
+	killers    Killers  	// Killer moves.
+	rootpv     RootPv 	// Principal variation for root moves.
+	pv         Pv 		// Principal variations for each ply.
+	cache      Cache 	// Transposition table.
+	pawnCache  PawnCache 	// Cache of pawn structures.
 }
 
 // Use single statically allocated variable.
@@ -38,8 +39,8 @@ var game Game
 // much more useful when writing tests from memory.
 func NewGame(args ...string) *Game {
 	game = Game{}
-	pawnCache = [8192]PawnEntry{}
-	game.cache = NewCache(engine.cache)
+	game.cache = NewCache(engine.cacheSize)
+	game.pawnCache = PawnCache{}
 
 	game.rootpv = make([]Move, 0, MaxPly)
 	for ply := 0;  ply < MaxPly; ply++ {

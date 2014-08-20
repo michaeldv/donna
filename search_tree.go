@@ -10,7 +10,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	ply := Ply()
 
 	// Reset principal variation.
-	p.game.pv[ply] = p.game.pv[ply][:0]
+	game.pv[ply] = game.pv[ply][:0]
 
 	// Return if it's time to stop search.
 	if ply >= MaxPly || engine.clock.halt {
@@ -63,7 +63,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			   cached.flags == cacheBeta && score >= beta {
 
 				// if score >= beta && !inCheck {
-				// 	p.game.saveGood(depth, cachedMove)
+				// 	game.saveGood(depth, cachedMove)
 				// }
 
 				return score
@@ -115,7 +115,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	// Null move pruning.
 	if !inCheck && !isNull && depth > 1 && p.outposts[p.color].count() > 5 {
 		position := p.MakeNullMove()
-		p.game.nodes++
+		game.nodes++
 		nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)
 		position.UndoNullMove()
 
@@ -130,8 +130,8 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	// Internal iterative deepening.
 	if cachedMove == 0 && depth > 4 {
 		p.searchTree(alpha, beta, depth - 4)
-		if len(p.game.pv[ply]) > 0 {
-			cachedMove = p.game.pv[ply][0]
+		if len(game.pv[ply]) > 0 {
+			cachedMove = game.pv[ply][0]
 		}
 	}
 
@@ -200,7 +200,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		position.UndoLastMove()
 
 		if engine.clock.halt {
-			p.game.nodes += moveCount
+			game.nodes += moveCount
 			//Log("searchTree at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
 			return alpha
 		}
@@ -209,7 +209,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			alpha = score
 			bestMove = move
 			cacheFlags = cacheExact
-			p.game.saveBest(ply, move)
+			game.saveBest(ply, move)
 
 			if alpha >= beta {
 				cacheFlags = cacheBeta
@@ -218,7 +218,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		}
 	}
 
-	p.game.nodes += moveCount
+	game.nodes += moveCount
 
 	if moveCount == 0 {
 		if inCheck {
@@ -227,7 +227,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			alpha = 0
 		}
 	} else if score >= beta && !inCheck {
-		p.game.saveGood(depth, bestMove)
+		game.saveGood(depth, bestMove)
 	}
 
 	score = alpha

@@ -10,14 +10,14 @@ type PawnEntry struct {
 	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
 
-var pawnCache [8192]PawnEntry
+type PawnCache [8192]PawnEntry
 
 func (e *Evaluation) analyzePawns() {
 	key := e.position.hashPawns
 
 	// Since pawn hash is fairly small we can use much faster 32-bit index.
-	index := uint32(key) % uint32(len(pawnCache))
-	e.pawns = &pawnCache[index]
+	index := uint32(key) % uint32(len(game.pawnCache))
+	e.pawns = &game.pawnCache[index]
 
 	// Bypass pawns cache if evaluation tracing is enabled.
 	if e.pawns.hash != key || engine.trace {

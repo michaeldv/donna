@@ -13,7 +13,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	ply := Ply()
 
 	// Reset principal variation.
-	p.game.pv[ply] = p.game.pv[ply][:0]
+	game.pv[ply] = game.pv[ply][:0]
 
 	// Return if it's time to stop search.
 	if ply >= MaxPly || engine.clock.halt {
@@ -93,7 +93,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 				cacheFlags = cacheBeta
 				break
 			}
-			p.game.saveBest(ply, move)
+			game.saveBest(ply, move)
 		}
 	}
 
@@ -110,7 +110,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 			position.UndoLastMove()
 
 			if engine.clock.halt {
-				p.game.qnodes += moveCount
+				game.qnodes += moveCount
 				//Log("searchQui at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
 				return alpha
 			}
@@ -124,12 +124,12 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 					cacheFlags = cacheBeta
 					break
 				}
-				p.game.saveBest(ply, move)
+				game.saveBest(ply, move)
 			}
 		}
 	}
 
-	p.game.qnodes += moveCount
+	game.qnodes += moveCount
 
 	score = alpha
 	if inCheck && moveCount == 0 {

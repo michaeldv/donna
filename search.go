@@ -39,22 +39,22 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		position.UndoLastMove()
 
 		if engine.clock.halt {
-			p.game.nodes += moveCount
-			//Log("searchRoot: bestMove %s pv[0][0] %s alpha %d\n", bestMove, p.game.pv[0][0], alpha)
+			game.nodes += moveCount
+			//Log("searchRoot: bestMove %s pv[0][0] %s alpha %d\n", bestMove, game.pv[0][0], alpha)
 			return alpha
 		}
 
 		if moveCount == 1 {
 			bestMove = move
-			p.game.pv[0] = p.game.pv[0][:0]
-			p.game.saveBest(0, move)
+			game.pv[0] = game.pv[0][:0]
+			game.saveBest(0, move)
 		}
 
 		if score > alpha {
 			alpha = score
 			bestMove = move
 			cacheFlags = cacheExact
-			p.game.saveBest(0, move)
+			game.saveBest(0, move)
 
 			if alpha >= beta {
 				cacheFlags = cacheBeta
@@ -63,7 +63,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		}
 	}
 
-	p.game.nodes += moveCount
+	game.nodes += moveCount
 
 	if moveCount == 0 {
 		if inCheck {
@@ -72,7 +72,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			alpha = 0
 		}
 	} else if score >= beta && !inCheck {
-		p.game.saveGood(depth, bestMove)
+		game.saveGood(depth, bestMove)
 	}
 
 	score = alpha
@@ -87,7 +87,7 @@ func (p *Position) solve(depth int) Move {
 		NewRootGen(p, 1).generateRootMoves()
 	}
 	p.search(-Checkmate, Checkmate, depth)
-	return p.game.pv[0][0]
+	return game.pv[0][0]
 }
 
 func (p *Position) Perft(depth int) (total int64) {

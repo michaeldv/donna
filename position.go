@@ -15,7 +15,6 @@ var tree [1024]Position
 var node, rootNode int
 
 type Position struct {
-	game         *Game
 	enpassant    int         // En-passant square caused by previous move.
 	color        int         // Side to make next move.
 	balance      int 	 // Material balance index.
@@ -32,7 +31,7 @@ type Position struct {
 }
 
 func NewPosition(game *Game, white, black string, color int) *Position {
-	tree[node] = Position{game: game, color: color}
+	tree[node] = Position{color: color}
 	p := &tree[node]
 
 	p.setupSide(strings.Split(white, `,`), White)
@@ -104,7 +103,7 @@ func NewInitialPosition(game *Game) *Position {
 
 // Decodes FEN string and creates new position.
 func NewPositionFromFEN(game *Game, fen string) *Position {
-	tree[node] = Position{game: game}
+	tree[node] = Position{}
 	p := &tree[node]
 
 	// Expected matches of interest are as follows:

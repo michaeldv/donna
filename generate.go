@@ -109,7 +109,7 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 		return gen
 	}
 
-	for i, game := gen.head, gen.p.game; i < gen.tail; i++ {
+	for i := gen.head; i < gen.tail; i++ {
 		move := gen.list[i].move
 		if move == bestMove {
 			gen.list[i].score = 0xFFFF
@@ -133,7 +133,7 @@ func (gen *MoveGen) quickRank() *MoveGen {
 		return gen
 	}
 
-	for i, game := gen.head, gen.p.game; i < gen.tail; i++ {
+	for i := gen.head; i < gen.tail; i++ {
 		if move := gen.list[i].move; move & isCapture != 0 {
 			gen.list[i].score = 8192 + move.value()
 		} else {
