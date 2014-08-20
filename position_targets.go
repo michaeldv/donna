@@ -136,10 +136,10 @@ func (p *Position) attackers(square, color int, board Bitmask) Bitmask {
 
 func (p *Position) isAttacked(square, color int) bool {
 	return (knightMoves[square] & p.outposts[knight(color)]) != 0 ||
-		(maskPawn[color][square] & p.outposts[pawn(color)]) != 0 ||
-		(kingMoves[square] & p.outposts[king(color)]) != 0 ||
-		(p.rookMoves(square) & (p.outposts[rook(color)]|p.outposts[queen(color)])) != 0 ||
-		(p.bishopMoves(square) & (p.outposts[bishop(color)]|p.outposts[queen(color)])) != 0
+	       (maskPawn[color][square] & p.outposts[pawn(color)]) != 0 ||
+	       (kingMoves[square] & p.outposts[king(color)]) != 0 ||
+	       (p.rookMoves(square) & (p.outposts[rook(color)] | p.outposts[queen(color)])) != 0 ||
+	       (p.bishopMoves(square) & (p.outposts[bishop(color)] | p.outposts[queen(color)])) != 0
 }
 
 func (p *Position) pawnAttacks(color int) (bitmask Bitmask) {
