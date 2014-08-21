@@ -19,7 +19,7 @@ type Position struct {
 	color        int         // Side to make next move.
 	balance      int 	 // Material balance index.
 	hash         uint64      // Polyglot hash value for the position.
-	hashPawns    uint64      // Polyglot hash value for position's pawn structure.
+	pawnHash     uint64      // Polyglot hash value for position's pawn structure.
 	board        Bitmask     // Bitmask of all pieces on the board.
 	king         [2]int      // King's square for both colors.
 	count        [14]int     // Counts of each piece on the board.
@@ -65,7 +65,7 @@ func NewPosition(game *Game, white, black string, color int) *Position {
 
 	p.reversible = true
 	p.board = p.outposts[White] | p.outposts[Black]
-	p.hash, p.hashPawns = p.polyglot()
+	p.hash, p.pawnHash = p.polyglot()
 	p.tally = p.valuation()
 
 	return p
@@ -196,7 +196,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 	p.reversible = true
 	p.board = p.outposts[White] | p.outposts[Black]
-	p.hash, p.hashPawns = p.polyglot()
+	p.hash, p.pawnHash = p.polyglot()
 	p.tally = p.valuation()
 
 	return p
@@ -204,7 +204,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 // Computes initial values of position's polyglot hash, pawn hash, and material
 // hash. When making a move these values get updated incrementally.
-func (p *Position) polyglot() (hash, hashPawns uint64) {
+func (p *Position) polyglot() (hash, pawnHash uint64) {
 	board := p.board
 	for board != 0 {
 		square := board.pop()
@@ -212,7 +212,7 @@ func (p *Position) polyglot() (hash, hashPawns uint64) {
 		random := piece.polyglot(square)
 		hash ^= random
 		if piece.isPawn() {
-			hashPawns ^= random
+			pawnHash ^= random
 		}
 	}
 

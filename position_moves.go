@@ -13,7 +13,7 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	random := piece.polyglot(from) ^ piece.polyglot(to)
 	p.hash ^= random
 	if piece.isPawn() {
-		p.hashPawns ^= random
+		p.pawnHash ^= random
 	}
 
 	// Update positional score.
@@ -32,7 +32,7 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 	// Update position's hash values, material balance and counts.
 	random := pawn.polyglot(from)
 	p.hash ^= random ^ promo.polyglot(to)
-	p.hashPawns ^= random
+	p.pawnHash ^= random
 	p.balance += materialBalance[promo] - materialBalance[pawn]
 	p.count[promo]++
 
@@ -51,7 +51,7 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	random := capture.polyglot(to)
 	p.hash ^= random
 	if capture.isPawn() {
-		p.hashPawns ^= random
+		p.pawnHash ^= random
 	}
 	p.balance -= materialBalance[capture]
 
@@ -72,7 +72,7 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	// Update position's hash values and material balance.
 	random := capture.polyglot(enpassant)
 	p.hash ^= random
-	p.hashPawns ^= random
+	p.pawnHash ^= random
 	p.balance -= materialBalance[capture]
 
 	// Update positional score.
