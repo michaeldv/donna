@@ -4,9 +4,7 @@
 
 package donna
 
-import (
-	`testing`
-)
+import(`github.com/michaeldv/donna/expect`; `testing`)
 
 func TestCache000(t *testing.T) {
 	engine.Set(`cache`, 0.5)
@@ -15,9 +13,9 @@ func TestCache000(t *testing.T) {
 	p = p.MakeMove(move).cache(move, 42, 1, cacheExact)
 
 	cached := p.probeCache()
-	expect(t, cached.move, move)
-	expect(t, cached.score, 42)
-	expect(t, cached.depth, 1)
-	expect(t, cached.flags, uint8(cacheExact))
-	expect(t, cached.hash, p.hash)
+	expect.Eq(t, cached.move, move)
+	expect.Eq(t, cached.score, 42)
+	expect.Eq(t, cached.depth, 1)
+	expect.Eq(t, cached.flags, uint8(cacheExact))
+	expect.Eq(t, cached.hash, p.hash)
 }

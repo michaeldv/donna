@@ -4,7 +4,7 @@
 
 package donna
 
-import `testing`
+import(`github.com/michaeldv/donna/expect`; `testing`)
 
 // Rooks.
 func TestEvaluatePieces000(t *testing.T) {
@@ -14,10 +14,10 @@ func TestEvaluatePieces000(t *testing.T) {
 	// H1 rook boxed (can castle): 1x penalty.
 	NewGame(`Ke1,Ra1,Rh1,a2,b2,c2,f2,g2,h2`, `Ke8,e7`).Start(White).EvaluateWithTrace()
 	rooks := eval.metrics[`-Rooks`].(Total).white
-	expect(t, rooks.minus(baseline), rookBoxed.times(-1))
+	expect.Eq(t, rooks.minus(baseline), rookBoxed.times(-1))
 
 	// H1 rook boxed (can't castle): 2x penalty.
 	NewGame(`Ke1,Ra1,Rf1,a2,b2,c2,f2,g2,h2`, `Ke8,e7`).Start(White).EvaluateWithTrace()
 	boxed := eval.metrics[`-Rooks`].(Total).white
-	expect(t, boxed.minus(baseline), rookBoxed.times(-2))
+	expect.Eq(t, boxed.minus(baseline), rookBoxed.times(-2))
 }
