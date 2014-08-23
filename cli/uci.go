@@ -7,8 +7,10 @@ package cli
 import(
 	`github.com/michaeldv/donna`
 	`bufio`
+	`io`
 	`fmt`
 	`os`
+	`strconv`
 	`strings`
 )
 
@@ -77,16 +79,47 @@ func Uci(engine *donna.Engine) {
 	// "go [[wtime winc | btime binc ] movestogo] | depth | movetime"
 	doGo := func(args []string) {
 		fmt.Printf("%q\n", args)
+		assign := func(key, value string) {
+			fmt.Printf("assign(key `%s` value `%s`)\n", key, value)
+			if n, err := strconv.Atoi(value); err == nil {
+				engine.Set(key, n)
+			}
+		}
+		for i, token := range args {
+			fmt.Printf("\t%d len %d Token [%v]\n", i, len(args), token)
+			// Boolen "infinite" and "ponder" commands have no arguments, while "depth",
+			// "nodes" etc. come with numeric argument.
+			if token == `infinite` || token == `ponder` {
+				engine.Set(token, true)
+			} else if len(args) > i+1 {
+				switch token {
+				case `depth`, `nodes`, `movetime`, `movestogo`:
+					assign(token, args[i+1])
+				case `wtime`:
+					if position.WhiteToMove() {
+						assign(`time`, args[i+1])
+					}
+				case `btime`:
+					if !position.WhiteToMove() {
+						assign(`time`, args[i+1])
+					}
+				case `winc`:
+					if position.WhiteToMove() {
+						assign(`timeinc`, args[i+1])
+					}
+				case `binc`:
+					if !position.WhiteToMove() {
+						assign(`timeinc`, args[i+1])
+					}
+				}
+			}
+		}
 	}
 
 	// Stop calculating as soon as possible.
 	doStop := func(args []string) {
 	}
 
-	// Quit the program as soon as possible.
-	doQuit := func(args []string) {
-		fmt.Printf("%q\n", args)
-	}
 	var commands = map[string]func([]string){
 		`isready`: doIsReady,      
 		`uci`: doUci,
@@ -94,18 +127,19 @@ func Uci(engine *donna.Engine) {
 		`position`: doPosition,
 		`go`: doGo,
 		`stop`: doStop,
-		`quict`: doQuit,
 	}
 
  	bio := bufio.NewReader(os.Stdin)
 	for {
-		command, _ := bio.ReadString('\n')
-		args := strings.Split(command[:len(command)-1], ` `)
-		if args[0] == `quit` {
-			break
-		}
-		if handler, found := commands[args[0]]; found {
-			handler(args[1:])
+		command, err := bio.ReadString('\n')
+		if err != io.EOF {
+			args := strings.Split(command[:len(command)-1], ` `)
+			if args[0] == `quit` {
+				break
+			}
+			if handler, found := commands[args[0]]; found {
+				handler(args[1:])
+			}
 		}
 	}
 }

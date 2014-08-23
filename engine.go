@@ -17,12 +17,14 @@ type Clock struct {
 }
 
 type Options struct {
-	infinite     bool     // (-) Search until the "stop" command.
-	maxDepth     int      // Search X plies only.
-	maxNodes     int      // (-) Search X nodes only.
-	gameTime     int64    // Time for all remaining moves is X milliseconds.
-	moveTime     int64    // Search exactly X milliseconds per move.
-	moveTimeInc  int64    // Time increment after the move is X milliseconds.
+	ponder      bool     // (-) Pondering mode.
+	infinite    bool     // (-) Search until the "stop" command.
+	maxDepth    int      // Search X plies only.
+	maxNodes    int      // (-) Search X nodes only.
+	movesToGo   int      // Number of moves to make till time control.
+	moveTime    int64    // Search exactly X milliseconds per move.
+	timeLeft    int64    // Time left for all remaining moves.
+	timeInc     int64    // Time increment after the move is made.
 }
 
 type Engine struct {
@@ -30,7 +32,7 @@ type Engine struct {
 	trace        bool     // Trace evaluation scores.
 	fancy        bool     // Represent pieces as UTF-8 characters.
 	status       uint8    // Engine status.
-	cache        float64  // Default cache size.
+	cacheSize    float64  // Default cache size.
 	clock        Clock
 	options      Options
 }
@@ -46,7 +48,7 @@ func Self() *Engine {
 func (e *Engine) startClock() {
 	e.clock.halt = false
 
-	if e.options.moveTime == 0 && e.options.gameTime == 0 {
+	if e.options.moveTime == 0 && e.options.timeLeft == 0 {
 		return
 	}
 
@@ -78,6 +80,7 @@ func (e *Engine) stopClock() {
 func (e *Engine) Set(args ...interface{}) *Engine {
 	for i := 0; i < len(args); i += 2 {
 		key, value := args[i], args[i+1]
+		//fmt.Printf("engine.Set(key `%s` value %v)\n", key, value)
 		switch key {
 		case `fancy`:
 			e.fancy = value.(bool)
@@ -88,30 +91,46 @@ func (e *Engine) Set(args ...interface{}) *Engine {
 		case `cache`:
 			switch value.(type) {
 			default: // :-)
-				e.cache = value.(float64)
+				e.cacheSize = value.(float64)
 			case int:
-				e.cache = float64(value.(int))
+				e.cacheSize = float64(value.(int))
 			}
+		case `ponder`:
+			e.options = Options{}
+			e.options.ponder = true
+		case `infinite`:
+			e.options = Options{}
+			e.options.infinite = true
 		case `depth`:
 			e.options = Options{}
 			e.options.maxDepth = value.(int)
-		case `time`:
-			e.options.infinite = false
-			e.options.maxDepth = 0
-			e.options.maxNodes = 0
-			e.options.moveTime = 0
-			e.options.gameTime = int64(value.(int))
-		case `timeinc`:
-			e.options.infinite = false
-			e.options.maxDepth = 0
-			e.options.maxNodes = 0
-			e.options.moveTime = 0
-			e.options.moveTimeInc = int64(value.(int))
 		case `movetime`:
 			e.options = Options{}
 			e.options.moveTime = int64(value.(int))
+		case `time`:
+			e.options.ponder   = false
+			e.options.infinite = false
+			e.options.maxDepth = 0
+			e.options.maxNodes = 0
+			e.options.moveTime = 0
+			e.options.timeLeft = int64(value.(int))
+		case `timeinc`:
+			e.options.ponder   = false
+			e.options.infinite = false
+			e.options.maxDepth = 0
+			e.options.maxNodes = 0
+			e.options.moveTime = 0
+			e.options.timeInc  = int64(value.(int))
+		case `movestogo`:
+			e.options.ponder   = false
+			e.options.infinite = false
+			e.options.maxDepth = 0
+			e.options.maxNodes = 0
+			e.options.moveTime = 0
+			e.options.movesToGo = value.(int)
 		}
 	}
+	// fmt.Printf("Engine options: %v\n", e.options)
 
 	return e
 }
