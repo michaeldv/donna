@@ -131,12 +131,12 @@ func (eng *Engine) Uci() *Engine {
  	bio := bufio.NewReader(os.Stdin)
 	for {
 		command, err := bio.ReadString('\n')
-		if err != io.EOF {
+		if err != io.EOF && len(command) > 0 {
 			args := strings.Split(command[:len(command)-1], ` `)
 			if args[0] == `quit` {
 				break
 			}
-			if handler, found := commands[args[0]]; found {
+			if handler, ok := commands[args[0]]; ok {
 				handler(args[1:])
 			}
 		}
