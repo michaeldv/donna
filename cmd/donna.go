@@ -6,16 +6,15 @@ package main
 
 import (
 	`github.com/michaeldv/donna`
-	`github.com/michaeldv/donna/cli`
 	`os`
 )
 
 func main() {
-	engine := donna.Self().Set(`fancy`, true)
+	engine := donna.NewEngine().Set(`fancy`, true)
 
 	if len(os.Args) > 1 && os.Args[1] == `-i` {
-		cli.Repl(engine)
+		engine.Repl()
 	} else {
-		cli.Uci(engine)
+		engine.Uci()
 	}
 }

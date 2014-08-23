@@ -2,10 +2,9 @@
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
-package cli
+package donna
 
 import (
-	`github.com/michaeldv/donna`
 	`github.com/michaeldv/donna/expect`
 	`testing`
 	`io/ioutil`
@@ -54,8 +53,7 @@ func TestUci000(t *testing.T) {
 	if err != nil {
 		t.Errorf(err.Error())
 	} else {
-		engine := donna.Self()
-		Uci(engine)
+		engine := NewEngine().Uci()
 		expect.Contain(t, engine, ` moveTime:1234 `)
 		expect.Contain(t, engine, ` timeLeft:0 `)
 		expect.Contain(t, engine, ` timeInc:0`)
@@ -69,8 +67,7 @@ func TestUci010(t *testing.T) {
 	if err != nil {
 		t.Errorf(err.Error())
 	} else {
-		engine := donna.Self()
-		Uci(engine)
+		engine := NewEngine().Uci()
 		expect.Contain(t, engine, ` timeLeft:12345 `)
 		expect.Contain(t, engine, ` movesToGo:42 `)
 		expect.Contain(t, engine, ` moveTime:0 `)
@@ -85,8 +82,7 @@ func TestUci020(t *testing.T) {
 	if err != nil {
 		t.Errorf(err.Error())
 	} else {
-		engine := donna.Self()
-		Uci(engine)
+		engine := NewEngine().Uci()
 		expect.Contain(t, engine, ` timeLeft:98765 `)
 		expect.Contain(t, engine, ` movesToGo:42 `)
 		expect.Contain(t, engine, ` moveTime:0 `)

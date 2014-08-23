@@ -40,7 +40,7 @@ type Engine struct {
 // Use single statically allocated variable.
 var engine Engine
 
-func Self() *Engine {
+func NewEngine() *Engine {
 	engine = Engine{}
 	return &engine
 }

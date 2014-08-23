@@ -202,11 +202,6 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	return p
 }
 
-// Returns true if white has the right to move.
-func (p *Position) WhiteToMove() bool {
-	return p.color == White
-}
-
 // Computes initial values of position's polyglot hash, pawn hash, and material
 // hash. When making a move these values get updated incrementally.
 func (p *Position) polyglot() (hash, pawnHash uint64) {

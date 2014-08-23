@@ -2,10 +2,9 @@
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
-package cli
+package donna
 
 import(
-	`github.com/michaeldv/donna`
 	`bufio`
 	`io`
 	`fmt`
@@ -16,9 +15,9 @@ import(
 
 // Brain-damaged universal chess interface (UCI) protocol as described at
 // http://wbec-ridderkerk.nl/html/UCIProtocol.html
-func Uci(engine *donna.Engine) {
-	var game *donna.Game
-	var position *donna.Position
+func (eng *Engine) Uci() *Engine {
+	var game *Game
+	var position *Position
 
 	// "uci" command handler.
 	doUci := func(args []string) {
@@ -43,15 +42,15 @@ func Uci(engine *donna.Engine) {
 
 		// Make sure we've started the game since "ucinewgame" is optional.
 		if game == nil || position == nil {
-			engine.Set(`cache`, 64, `movetime`, 5000) // 5s per move.
-			game = donna.NewGame()
+			eng.Set(`cache`, 64, `movetime`, 5000) // 5s per move.
+			game = NewGame()
 			position = game.Start()
 		}
 
 		switch args[0] {
 		case `startpos`:
 			args = args[1:]
-			position = donna.NewInitialPosition(game)
+			position = NewInitialPosition(game)
 		case `fen`:
 			fen := []string{}
 			for _, token := range args[1:] {
@@ -62,7 +61,7 @@ func Uci(engine *donna.Engine) {
 				fen = append(fen, token)
 			}
 			fmt.Printf("fen: %s\n", strings.Join(fen, ` `))
-			position = donna.NewPositionFromFEN(game, strings.Join(fen, ` `))
+			position = NewPositionFromFEN(game, strings.Join(fen, ` `))
 		default: return
 		}
 
@@ -70,7 +69,7 @@ func Uci(engine *donna.Engine) {
 		if position != nil && len(args) > 0 && args[0] == `moves` {
 			for _, move := range args[1:] {
 				args = args[1:] // Shift the move.
-				position = position.MakeMove(donna.NewMoveFromNotation(position, move))
+				position = position.MakeMove(NewMoveFromNotation(position, move))
 			}
 		}
 		fmt.Printf("%s\n", position)
@@ -82,7 +81,7 @@ func Uci(engine *donna.Engine) {
 		assign := func(key, value string) {
 			fmt.Printf("assign(key `%s` value `%s`)\n", key, value)
 			if n, err := strconv.Atoi(value); err == nil {
-				engine.Set(key, n)
+				eng.Set(key, n)
 			}
 		}
 		for i, token := range args {
@@ -90,25 +89,25 @@ func Uci(engine *donna.Engine) {
 			// Boolen "infinite" and "ponder" commands have no arguments, while "depth",
 			// "nodes" etc. come with numeric argument.
 			if token == `infinite` || token == `ponder` {
-				engine.Set(token, true)
+				eng.Set(token, true)
 			} else if len(args) > i+1 {
 				switch token {
 				case `depth`, `nodes`, `movetime`, `movestogo`:
 					assign(token, args[i+1])
 				case `wtime`:
-					if position.WhiteToMove() {
+					if position.color == White {
 						assign(`time`, args[i+1])
 					}
 				case `btime`:
-					if !position.WhiteToMove() {
+					if position.color == Black {
 						assign(`time`, args[i+1])
 					}
 				case `winc`:
-					if position.WhiteToMove() {
+					if position.color == White {
 						assign(`timeinc`, args[i+1])
 					}
 				case `binc`:
-					if !position.WhiteToMove() {
+					if position.color == Black {
 						assign(`timeinc`, args[i+1])
 					}
 				}
@@ -142,4 +141,5 @@ func Uci(engine *donna.Engine) {
 			}
 		}
 	}
+	return eng
 }
