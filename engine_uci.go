@@ -117,6 +117,7 @@ func (eng *Engine) Uci() *Engine {
 
 	// Stop calculating as soon as possible.
 	doStop := func(args []string) {
+		engine.halt = true
 	}
 
 	var commands = map[string]func([]string){
