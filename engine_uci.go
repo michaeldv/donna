@@ -15,7 +15,7 @@ import(
 
 // Brain-damaged universal chess interface (UCI) protocol as described at
 // http://wbec-ridderkerk.nl/html/UCIProtocol.html
-func (eng *Engine) Uci() *Engine {
+func (e *Engine) Uci() *Engine {
 	var game *Game
 	var position *Position
 
@@ -42,7 +42,6 @@ func (eng *Engine) Uci() *Engine {
 
 		// Make sure we've started the game since "ucinewgame" is optional.
 		if game == nil || position == nil {
-			eng.Set(`cache`, 64, `movetime`, 5000) // 5s per move.
 			game = NewGame()
 			position = game.Start()
 		}
@@ -81,7 +80,7 @@ func (eng *Engine) Uci() *Engine {
 		assign := func(key, value string) {
 			fmt.Printf("assign(key `%s` value `%s`)\n", key, value)
 			if n, err := strconv.Atoi(value); err == nil {
-				eng.Set(key, n)
+				e.Set(key, n)
 			}
 		}
 		for i, token := range args {
@@ -89,7 +88,7 @@ func (eng *Engine) Uci() *Engine {
 			// Boolen "infinite" and "ponder" commands have no arguments, while "depth",
 			// "nodes" etc. come with numeric argument.
 			if token == `infinite` || token == `ponder` {
-				eng.Set(token, true)
+				e.Set(token, true)
 			} else if len(args) > i+1 {
 				switch token {
 				case `depth`, `nodes`, `movetime`, `movestogo`:
@@ -117,7 +116,7 @@ func (eng *Engine) Uci() *Engine {
 
 	// Stop calculating as soon as possible.
 	doStop := func(args []string) {
-		engine.halt = true
+		e.clock.halt = true
 	}
 
 	var commands = map[string]func([]string){
@@ -142,5 +141,5 @@ func (eng *Engine) Uci() *Engine {
 			}
 		}
 	}
-	return eng
+	return e
 }

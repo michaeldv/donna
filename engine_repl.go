@@ -9,13 +9,12 @@ import(
 	`time`
 )
 
-func (eng *Engine) Repl() *Engine {
+func (e *Engine) Repl() *Engine {
 	var game *Game
 	var position *Position
 
 	setup := func() {
 		if game == nil || position == nil {
-			eng.Set(`cache`, 64, `movetime`, 5000) // 5s per move.
 			game = NewGame()
 			position = game.Start()
 			fmt.Printf("%s\n", position)
@@ -30,7 +29,11 @@ func (eng *Engine) Repl() *Engine {
 	}
 
 	benchmark := func() {
-		eng.Set(`cache`, 64, `depth`, 11)
+		maxDepth, moveTime := e.options.maxDepth, e.options.moveTime
+		e.options.maxDepth, e.options.moveTime = 11, 0
+		defer func() {
+			e.options.maxDepth, e.options.moveTime = maxDepth, moveTime
+		}()
 
 		// Sergey Kaminer, 1935
 		// 1.h8Q+ Kxh8 2.Ng4+ Kg7 3.Qh7+ Kf8 4.Qg8+ Ke7 5.Qe8+ Kd6 6.Qd7+ Kc5 7.Qb5+ Kd6
@@ -96,7 +99,7 @@ func (eng *Engine) Repl() *Engine {
 		case `bench`:
 			benchmark()
 		case `exit`, `quit`:
-			return eng
+			return e
 		case `go`:
 			setup()
 			think()
@@ -137,5 +140,5 @@ func (eng *Engine) Repl() *Engine {
 			fmt.Printf("%s appears to be an invalid move.\n", command)
 		}
 	}
-	return eng
+	return e
 }

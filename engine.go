@@ -40,8 +40,28 @@ type Engine struct {
 // Use single statically allocated variable.
 var engine Engine
 
-func NewEngine() *Engine {
+func NewEngine(args ...interface{}) *Engine {
 	engine = Engine{}
+	for i := 0; i < len(args); i += 2 {
+		key, value := args[i], args[i+1]
+		//fmt.Printf("engine.Set(key `%s` value %v)\n", key, value)
+		switch key {
+		case `fancy`:
+			engine.fancy = value.(bool)
+		case `log`:
+			engine.log = value.(bool)
+		case `trace`:
+			engine.trace = value.(bool)
+		case `cache`:
+			switch value.(type) {
+			default: // :-)
+				engine.cacheSize = value.(float64)
+			case int:
+				engine.cacheSize = float64(value.(int))
+			}
+		}
+	}
+
 	return &engine
 }
 

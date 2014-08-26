@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	engine := donna.NewEngine().Set(`fancy`, true)
+	// Default engine settings: 64MB transposition table, 5s per move.
+	engine := donna.NewEngine(`fancy`, true, `cache`, 64, `movetime`, 5000)
 
 	if len(os.Args) > 1 && os.Args[1] == `-i` {
 		engine.Repl()
