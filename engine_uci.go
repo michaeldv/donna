@@ -74,44 +74,70 @@ func (e *Engine) Uci() *Engine {
 		fmt.Printf("%s\n", position)
 	}
 
-	// "go [[wtime winc | btime binc ] movestogo] | depth | movetime"
+	// "go [[wtime winc | btime binc ] movestogo] | depth | nodes | movetime"
 	doGo := func(args []string) {
+		options := e.options
 		fmt.Printf("%q\n", args)
-		assign := func(key, value string) {
-			fmt.Printf("assign(key `%s` value `%s`)\n", key, value)
-			if n, err := strconv.Atoi(value); err == nil {
-				e.Set(key, n)
-			}
-		}
+		fmt.Printf("-> e.options: %+v\n", e.options)
+
 		for i, token := range args {
 			fmt.Printf("\t%d len %d Token [%v]\n", i, len(args), token)
-			// Boolen "infinite" and "ponder" commands have no arguments, while "depth",
-			// "nodes" etc. come with numeric argument.
-			if token == `infinite` || token == `ponder` {
-				e.Set(token, true)
+			// Boolen "infinite" and "ponder" commands have no arguments.
+			if token == `infinite` {
+				options = Options{ infinite: true }
+			} else if token == `ponder` {
+				options = Options{ ponder: true }
 			} else if len(args) > i+1 {
 				switch token {
-				case `depth`, `nodes`, `movetime`, `movestogo`:
-					assign(token, args[i+1])
+				case `depth`:
+					if n, err := strconv.Atoi(args[i+1]); err == nil {
+						options = Options{ maxDepth: n }
+					}
+				case `movetime`:
+					if n, err := strconv.Atoi(args[i+1]); err == nil {
+						options = Options{ maxDepth: n }
+					}
+				case `nodes`:
+					if n, err := strconv.Atoi(args[i+1]); err == nil {
+						options = Options{ maxNodes: n }
+					}
 				case `wtime`:
 					if position.color == White {
-						assign(`time`, args[i+1])
+						if n, err := strconv.Atoi(args[i+1]); err == nil {
+							options.timeLeft = int64(n)
+						}
 					}
 				case `btime`:
 					if position.color == Black {
-						assign(`time`, args[i+1])
+						if n, err := strconv.Atoi(args[i+1]); err == nil {
+							options.timeLeft = int64(n)
+						}
 					}
 				case `winc`:
 					if position.color == White {
-						assign(`timeinc`, args[i+1])
+						if n, err := strconv.Atoi(args[i+1]); err == nil {
+							options.timeInc = int64(n)
+						}
 					}
 				case `binc`:
 					if position.color == Black {
-						assign(`timeinc`, args[i+1])
+						if n, err := strconv.Atoi(args[i+1]); err == nil {
+							options.timeInc = int64(n)
+						}
+					}
+				case `movestogo`:
+					if n, err := strconv.Atoi(args[i+1]); err == nil {
+						options.movesToGo = n
 					}
 				}
 			}
 		}
+		if options.timeLeft != 0 || options.timeInc != 0 || options.movesToGo != 0 {
+			options.ponder, options.infinite = false, false
+			options.maxDepth, options.maxNodes, options.moveTime = 0, 0, 0
+		}
+		e.options = options
+		fmt.Printf("=> e.options: %+v\n", e.options)
 	}
 
 	// Stop calculating as soon as possible.
