@@ -28,13 +28,14 @@ type Options struct {
 }
 
 type Engine struct {
-	log          bool     // Enable logging.
-	trace        bool     // Trace evaluation scores.
-	fancy        bool     // Represent pieces as UTF-8 characters.
-	status       uint8    // Engine status.
-	cacheSize    float64  // Default cache size.
-	clock        Clock
-	options      Options
+	log         bool     // Enable logging.
+	uci	    bool     // Use UCI protocol.
+	trace       bool     // Trace evaluation scores.
+	fancy       bool     // Represent pieces as UTF-8 characters.
+	status      uint8    // Engine status.
+	cacheSize   float64  // Default cache size.
+	clock       Clock
+	options     Options
 }
 
 // Use single statically allocated variable.
@@ -46,12 +47,14 @@ func NewEngine(args ...interface{}) *Engine {
 		key, value := args[i], args[i+1]
 		//fmt.Printf("engine.Set(key `%s` value %v)\n", key, value)
 		switch key {
-		case `fancy`:
-			engine.fancy = value.(bool)
 		case `log`:
 			engine.log = value.(bool)
+		case `uci`:
+			engine.uci = value.(bool)
 		case `trace`:
 			engine.trace = value.(bool)
+		case `fancy`:
+			engine.fancy = value.(bool)
 		case `cache`:
 			switch value.(type) {
 			default: // :-)
