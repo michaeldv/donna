@@ -93,13 +93,13 @@ func (e *Engine) Uci() *Engine {
 					if n, err := strconv.Atoi(args[i+1]); err == nil {
 						options = Options{ maxDepth: n }
 					}
-				case `movetime`:
-					if n, err := strconv.Atoi(args[i+1]); err == nil {
-						options = Options{ maxDepth: n }
-					}
 				case `nodes`:
 					if n, err := strconv.Atoi(args[i+1]); err == nil {
 						options = Options{ maxNodes: n }
+					}
+				case `movetime`:
+					if n, err := strconv.Atoi(args[i+1]); err == nil {
+						options = Options{ maxDepth: n }
 					}
 				case `wtime`:
 					if position.color == White {
@@ -133,10 +133,10 @@ func (e *Engine) Uci() *Engine {
 			}
 		}
 		if options.timeLeft != 0 || options.timeInc != 0 || options.movesToGo != 0 {
-			options.ponder, options.infinite = false, false
-			options.maxDepth, options.maxNodes, options.moveTime = 0, 0, 0
+			e.variableLimits(options)
+		} else {
+			e.fixedLimit(options)
 		}
-		e.options = options
 		fmt.Printf("=> e.options: %+v\n", e.options)
 	}
 

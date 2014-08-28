@@ -97,60 +97,17 @@ func (e *Engine) stopClock() {
 	}
 }
 
-func (e *Engine) Set(args ...interface{}) *Engine {
-	for i := 0; i < len(args); i += 2 {
-		key, value := args[i], args[i+1]
-		//fmt.Printf("engine.Set(key `%s` value %v)\n", key, value)
-		switch key {
-		case `fancy`:
-			e.fancy = value.(bool)
-		case `log`:
-			e.log = value.(bool)
-		case `trace`:
-			e.trace = value.(bool)
-		case `cache`:
-			switch value.(type) {
-			default: // :-)
-				e.cacheSize = value.(float64)
-			case int:
-				e.cacheSize = float64(value.(int))
-			}
-		case `ponder`:
-			e.options = Options{}
-			e.options.ponder = true
-		case `infinite`:
-			e.options = Options{}
-			e.options.infinite = true
-		case `depth`:
-			e.options = Options{}
-			e.options.maxDepth = value.(int)
-		case `movetime`:
-			e.options = Options{}
-			e.options.moveTime = int64(value.(int))
-		case `time`:
-			e.options.ponder   = false
-			e.options.infinite = false
-			e.options.maxDepth = 0
-			e.options.maxNodes = 0
-			e.options.moveTime = 0
-			e.options.timeLeft = int64(value.(int))
-		case `timeinc`:
-			e.options.ponder   = false
-			e.options.infinite = false
-			e.options.maxDepth = 0
-			e.options.maxNodes = 0
-			e.options.moveTime = 0
-			e.options.timeInc  = int64(value.(int))
-		case `movestogo`:
-			e.options.ponder   = false
-			e.options.infinite = false
-			e.options.maxDepth = 0
-			e.options.maxNodes = 0
-			e.options.moveTime = 0
-			e.options.movesToGo = value.(int)
-		}
-	}
-	// fmt.Printf("Engine options: %v\n", e.options)
+func (e *Engine) fixedLimit(options Options) *Engine {
+	e.options = options
+	return e
+}
 
+func (e *Engine) variableLimits(options Options) *Engine {
+	e.options = options
+	options.ponder = false
+	options.infinite = false
+	options.maxDepth = 0
+	options.maxNodes = 0
+	options.moveTime = 0
 	return e
 }
