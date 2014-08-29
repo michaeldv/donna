@@ -4,7 +4,7 @@
 
 package donna
 
-import `time`
+import (`fmt`; `os`; `time`)
 
 const Ping = 125 // Check time 8 times a second.
 
@@ -66,6 +66,32 @@ func NewEngine(args ...interface{}) *Engine {
 	}
 
 	return &engine
+}
+
+// Dumps the string to standard output.
+func (e *Engine) out(arg string) {
+	os.Stdout.WriteString(arg)
+}
+
+// Appends the string to log file.
+func (e *Engine) jot(arg string) {
+	logFile, err := os.OpenFile("donna.log", os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+	if err == nil {
+		defer logFile.Close()
+		logFile.WriteString(arg) // f.Write() and friends flush.
+	}
+}
+
+// Dumps the string to standard output and logs it to file.
+func (e *Engine) reply(args ...interface{}) {
+	if len := len(args); len > 1 {
+		data := fmt.Sprintf(args[0].(string), args[1:]...)
+		e.out(data)
+		e.jot(data)
+	} else if len == 1 {
+		e.out(args[0].(string))
+		e.jot(args[0].(string))
+	}
 }
 
 func (e *Engine) startClock() {
