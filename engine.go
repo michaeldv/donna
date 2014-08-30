@@ -44,9 +44,7 @@ var engine Engine
 func NewEngine(args ...interface{}) *Engine {
 	engine = Engine{}
 	for i := 0; i < len(args); i += 2 {
-		key, value := args[i], args[i+1]
-		//fmt.Printf("engine.Set(key `%s` value %v)\n", key, value)
-		switch key {
+		switch value := args[i+1]; args[i] {
 		case `log`:
 			engine.log = value.(bool)
 		case `uci`:
@@ -55,6 +53,10 @@ func NewEngine(args ...interface{}) *Engine {
 			engine.trace = value.(bool)
 		case `fancy`:
 			engine.fancy = value.(bool)
+		case `depth`:
+			engine.options.maxDepth = value.(int)
+		case `movetime`:
+			engine.options.moveTime = int64(value.(int))
 		case `cache`:
 			switch value.(type) {
 			default: // :-)
@@ -75,7 +77,7 @@ func (e *Engine) print(arg string) {
 
 // Appends the string to log file.
 func (e *Engine) debug(arg string) {
-	logFile, err := os.OpenFile("donna.log", os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+	logFile, err := os.OpenFile("/tmp/donna.log", os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
 	if err == nil {
 		defer logFile.Close()
 		logFile.WriteString(arg) // f.Write() and friends flush.
@@ -94,36 +96,67 @@ func (e *Engine) reply(args ...interface{}) {
 	}
 }
 
-func (e *Engine) startClock() {
+func (e *Engine) startClock() *Engine {
 	e.clock.halt = false
 
 	if e.options.moveTime == 0 && e.options.timeLeft == 0 {
-		return
+		return e
 	}
 
 	if e.options.moveTime > 0 {
-		start := time.Now()
-		e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
-		go func() {
-			if len(game.rootpv) == 0 {
-				return // Haven't found the move yet.
-			}
-			for now := range e.clock.ticker.C {
-				elapsed := now.Sub(start).Nanoseconds() / 1000000
-				//Log("    ->clock %d limit %d left %d\n", elapsed, e.options.moveTime, (e.options.moveTime - elapsed))
-				if elapsed >= e.options.moveTime - Ping {
-					//Log("    <-CLOCK %d limit %d left %d\n", elapsed, e.options.moveTime, (e.options.moveTime - elapsed))
-					e.clock.halt = true
-				}
-			}
-		}()
+		return e.fixedMoveTime()
 	}
+
+	return e.varyingMoveTime()
 }
 
-func (e *Engine) stopClock() {
+func (e *Engine) stopClock() *Engine {
 	if e.clock.ticker != nil {
 		e.clock.ticker.Stop()
 	}
+	return e
+}
+
+func (e *Engine) fixedMoveTime() *Engine {
+	start := time.Now()
+	e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
+
+	go func() {
+		if len(game.rootpv) == 0 {
+			return // Haven't found the move yet.
+		}
+		for now := range e.clock.ticker.C {
+			elapsed := now.Sub(start).Nanoseconds() / 1000000
+			Log("    ->clock %d limit %d left %d\n", elapsed, e.options.moveTime, (e.options.moveTime - elapsed))
+			if elapsed >= e.options.moveTime - Ping {
+				Log("    <-CLOCK %d limit %d left %d\n", elapsed, e.options.moveTime, (e.options.moveTime - elapsed))
+				e.clock.halt = true
+			}
+		}
+	}()
+
+	return e
+}
+
+func (e *Engine) varyingMoveTime() *Engine {
+	start := time.Now()
+	e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
+
+	go func() {
+		if len(game.rootpv) == 0 {
+			return // Haven't found the move yet.
+		}
+		for now := range e.clock.ticker.C {
+			elapsed := now.Sub(start).Nanoseconds() / 1000000
+			e.debug(fmt.Sprintf("# tick %d limit %d left %d\n", elapsed, e.clock.checkpoint, e.clock.checkpoint - elapsed))
+			if elapsed >= int64(e.clock.checkpoint - Ping) {
+				e.debug(fmt.Sprintf("# halt %d limit %d left %d\n", elapsed, e.clock.checkpoint, e.clock.checkpoint - elapsed))
+				e.clock.halt = true
+			}
+		}
+	}()
+
+	return e
 }
 
 func (e *Engine) fixedLimit(options Options) *Engine {
@@ -131,7 +164,7 @@ func (e *Engine) fixedLimit(options Options) *Engine {
 	return e
 }
 
-func (e *Engine) variableLimits(options Options) *Engine {
+func (e *Engine) varyingLimits(options Options) *Engine {
 	var moves, soft, hard int64
 
 	e.options = options
