@@ -69,12 +69,12 @@ func NewEngine(args ...interface{}) *Engine {
 }
 
 // Dumps the string to standard output.
-func (e *Engine) out(arg string) {
+func (e *Engine) print(arg string) {
 	os.Stdout.WriteString(arg)
 }
 
 // Appends the string to log file.
-func (e *Engine) jot(arg string) {
+func (e *Engine) debug(arg string) {
 	logFile, err := os.OpenFile("donna.log", os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
 	if err == nil {
 		defer logFile.Close()
@@ -86,11 +86,11 @@ func (e *Engine) jot(arg string) {
 func (e *Engine) reply(args ...interface{}) {
 	if len := len(args); len > 1 {
 		data := fmt.Sprintf(args[0].(string), args[1:]...)
-		e.out(data)
-		e.jot(data)
+		e.print(data)
+		e.debug(data)
 	} else if len == 1 {
-		e.out(args[0].(string))
-		e.jot(args[0].(string))
+		e.print(args[0].(string))
+		e.debug(args[0].(string))
 	}
 }
 
@@ -132,11 +132,36 @@ func (e *Engine) fixedLimit(options Options) *Engine {
 }
 
 func (e *Engine) variableLimits(options Options) *Engine {
+	var moves, soft, hard int64
+
 	e.options = options
-	options.ponder = false
-	options.infinite = false
-	options.maxDepth = 0
-	options.maxNodes = 0
-	options.moveTime = 0
+	e.options.ponder = false
+	e.options.infinite = false
+	e.options.maxDepth = 0
+	e.options.maxNodes = 0
+	e.options.moveTime = 0
+
+	// Estimated number of moves till the end of the game. TODO: calculate
+	// based on game phase.
+	moves = int64(40)
+
+	// Calculate hard and soft stops.
+	hard = options.timeLeft + options.timeInc * (moves - 1)
+	soft = Max64(0, hard / moves * 120 / 100) * 4
+
+	// Adjust hard stop to leave some emergency reserve plus account for
+	// possible I/O lag.
+	hard -= hard * (moves - 1) / 50
+	hard -= Max64(50, hard * 5 / 100) // 5% or 50ms.
+	hard = Max64(0, hard)
+
+	e.clock.hardStop = hard
+	e.clock.softStop = Min64(hard, soft)
+	e.clock.checkpoint = Min64(hard, soft / 4)
+	e.debug(fmt.Sprintf("# Make %d moves in %02d:%02ds\n", moves, e.options.timeLeft / 1000 / 60, e.options.timeLeft / 1000 % 60))
+	e.debug(fmt.Sprintf("# checkpoint: %8d -> %02d:%02ds\n", e.clock.checkpoint, e.clock.checkpoint / 1000 / 60, e.clock.checkpoint / 1000 % 60))
+	e.debug(fmt.Sprintf("#   softStop: %8d -> %02d:%02ds\n", e.clock.softStop, e.clock.softStop / 1000 / 60, e.clock.softStop / 1000 % 60))
+	e.debug(fmt.Sprintf("#   hardStop: %8d -> %02d:%02ds\n", e.clock.hardStop, e.clock.hardStop / 1000 / 60, e.clock.hardStop / 1000 % 60))
+
 	return e
 }

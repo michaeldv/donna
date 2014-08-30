@@ -80,6 +80,20 @@ func Max(x, y int) int {
 	return y
 }
 
+func Min64(x, y int64) int64 {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func Max64(x, y int64) int64 {
+	if x > y {
+		return x
+	}
+	return y
+}
+
 // Returns, as an integer, a non-negative pseudo-random number
 // in [0, limit) range. It panics if limit <= 0.
 func Random(limit int) int {
