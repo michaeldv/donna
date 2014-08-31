@@ -166,6 +166,8 @@ func (gen *MoveGen) allMoves() (moves []Move) {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		moves = append(moves, move)
 	}
+	gen.reset()
+
 	return
 }
 
