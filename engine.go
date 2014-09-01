@@ -113,6 +113,7 @@ func (e *Engine) startClock() *Engine {
 func (e *Engine) stopClock() *Engine {
 	if e.clock.ticker != nil {
 		e.clock.ticker.Stop()
+		e.clock.ticker = nil
 	}
 	return e
 }
@@ -122,15 +123,14 @@ func (e *Engine) fixedMoveTime() *Engine {
 	e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
 
 	go func() {
-		if len(game.rootpv) == 0 {
-			return // Haven't found the move yet.
-		}
 		for now := range e.clock.ticker.C {
+			if len(game.rootpv) == 0 {
+				continue // Haven't found the move yet.
+			}
 			elapsed := now.Sub(start).Nanoseconds() / 1000000
-			Log("    ->clock %d limit %d left %d\n", elapsed, e.options.moveTime, (e.options.moveTime - elapsed))
 			if elapsed >= e.options.moveTime - Ping {
-				Log("    <-CLOCK %d limit %d left %d\n", elapsed, e.options.moveTime, (e.options.moveTime - elapsed))
 				e.clock.halt = true
+				return
 			}
 		}
 	}()
@@ -143,15 +143,19 @@ func (e *Engine) varyingMoveTime() *Engine {
 	e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
 
 	go func() {
-		if len(game.rootpv) == 0 {
-			return // Haven't found the move yet.
-		}
 		for now := range e.clock.ticker.C {
+			if len(game.rootpv) == 0 {
+				continue // Haven't found the move yet.
+			}
 			elapsed := now.Sub(start).Nanoseconds() / 1000000
-			e.debug(fmt.Sprintf("# tick %d limit %d left %d\n", elapsed, e.clock.checkpoint, e.clock.checkpoint - elapsed))
+			// TODO:
+			// - UCI info reporting
+			// - better time management taking into account fail
+			//   high/dropping scores and oft/hard time limits.
 			if elapsed >= int64(e.clock.checkpoint - Ping) {
 				e.debug(fmt.Sprintf("# halt %d limit %d left %d\n", elapsed, e.clock.checkpoint, e.clock.checkpoint - elapsed))
 				e.clock.halt = true
+				return
 			}
 		}
 	}()
@@ -174,9 +178,11 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 	e.options.maxNodes = 0
 	e.options.moveTime = 0
 
-	// Estimated number of moves till the end of the game. TODO: calculate
-	// based on game phase.
-	moves = int64(40)
+	// Use known number of moves till the end of the game or time control.
+	moves = int64(e.options.movesToGo)
+	if moves == 0 {
+		moves = int64(40) // Default. TODO: calculate based on game phase.
+	}
 
 	// Calculate hard and soft stops.
 	hard = options.timeLeft + options.timeInc * (moves - 1)
