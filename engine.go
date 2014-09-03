@@ -71,21 +71,23 @@ func NewEngine(args ...interface{}) *Engine {
 }
 
 // Dumps the string to standard output.
-func (e *Engine) print(arg string) {
+func (e *Engine) print(arg string) *Engine {
 	os.Stdout.WriteString(arg)
+	return e
 }
 
 // Appends the string to log file.
-func (e *Engine) debug(arg string) {
+func (e *Engine) debug(arg string) *Engine {
 	logFile, err := os.OpenFile("/tmp/donna.log", os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
 	if err == nil {
 		defer logFile.Close()
-		logFile.WriteString(arg) // f.Write() and friends flush.
+		logFile.WriteString(arg) // f.Write() and friends are unbuffered.
 	}
+	return e
 }
 
 // Dumps the string to standard output and logs it to file.
-func (e *Engine) reply(args ...interface{}) {
+func (e *Engine) reply(args ...interface{}) *Engine {
 	if len := len(args); len > 1 {
 		data := fmt.Sprintf(args[0].(string), args[1:]...)
 		e.print(data)
@@ -94,6 +96,7 @@ func (e *Engine) reply(args ...interface{}) {
 		e.print(args[0].(string))
 		e.debug(args[0].(string))
 	}
+	return e
 }
 
 func (e *Engine) startClock() *Engine {
@@ -123,6 +126,9 @@ func (e *Engine) fixedMoveTime() *Engine {
 	e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
 
 	go func() {
+		if e.clock.ticker == nil {
+			return
+		}
 		for now := range e.clock.ticker.C {
 			if len(game.rootpv) == 0 {
 				continue // Haven't found the move yet.
@@ -143,6 +149,9 @@ func (e *Engine) varyingMoveTime() *Engine {
 	e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
 
 	go func() {
+		if e.clock.ticker == nil {
+			return
+		}
 		for now := range e.clock.ticker.C {
 			if len(game.rootpv) == 0 {
 				continue // Haven't found the move yet.
