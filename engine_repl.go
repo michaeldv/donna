@@ -9,6 +9,53 @@ import(
 	`time`
 )
 
+func (e *Engine) replBestMove(move Move) *Engine {
+	fmt.Printf("Donna's move: %s", move)
+	if game.nodes == 0 {
+		fmt.Printf(" (book)")
+	}
+	fmt.Println("\n")
+
+	return e
+}
+
+func (e *Engine) replPrincipal(depth, score, status int, duration float64) {
+	mm := func() int {
+		return int(duration) / 60
+	}
+	ss := func() int {
+		return int(duration) % 60
+	}
+	nps := func() float64 {
+		return float64(game.nodes + game.qnodes) / duration
+	}
+	scr := func() float32 {
+		return float32(score) / float32(onePawn)
+	}
+
+	switch status {
+	case WhiteWon:
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1-0 White Checkmates\n",
+			depth, mm(), ss(), game.nodes, game.qnodes, nps())
+	case BlackWon:
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   0-1 Black Checkmates\n",
+			depth, mm(), ss(), game.nodes, game.qnodes, nps())
+	case Stalemate:
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1/2 Stalemate\n",
+			depth, mm(), ss(), game.nodes, game.qnodes, nps())
+	case Repetition:
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
+			depth, mm(), ss(), game.nodes, game.qnodes, nps())
+	case WhiteWinning, BlackWinning:
+		movesLeft := Checkmate - Abs(score)
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
+			depth, mm(), ss(), game.nodes, game.qnodes, nps(), movesLeft / 2, game.rootpv)
+	default:
+		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
+			depth, mm(), ss(), game.nodes, game.qnodes, nps(), scr(), game.rootpv)
+	}
+}
+
 func (e *Engine) Repl() *Engine {
 	var game *Game
 	var position *Position
@@ -91,6 +138,7 @@ func (e *Engine) Repl() *Engine {
 		fmt.Printf("Nodes/s: %.2f\n", float64(total)/finish)
 	}
 
+	fmt.Printf("Donna v%s Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.\nType ? for help.\n\n", Version)
 	for command := ``; ; command = `` {
 		fmt.Print(`donna> `)
 		fmt.Scanf(`%s`, &command)

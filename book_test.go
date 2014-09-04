@@ -7,7 +7,7 @@ package donna
 import(`github.com/michaeldv/donna/expect`; `testing`)
 
 func openBook() (*Book, *Position) {
-	return NewBook(`/tmp`), NewGame().Start()
+	return &Book{}, NewGame().Start()
 }
 
 func polyglotEntry(source, target int) Entry {

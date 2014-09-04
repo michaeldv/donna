@@ -7,7 +7,14 @@ package donna
 import (
 	`encoding/binary`
 	`os`
+	`path`
 	`sort`
+)
+
+// Opening book from http://www.chess2u.com/t5834-gm-polyglot-book
+const (
+	BookDir = `books`
+	BookFile = `gm2001.bin`
 )
 
 type Book struct {
@@ -23,15 +30,17 @@ type Entry struct {
 	Learn uint32
 }
 
-func NewBook(fileName string) *Book {
-	book := new(Book)
+func NewBook() (*Book, error) {
+	book := &Book{}
+	// dir, _ := os.Getwd()
 
-	book.fileName = fileName
+	book.fileName = path.Join(`/tmp`, BookDir, BookFile)
 	if fi, err := os.Stat(book.fileName); err == nil {
 		book.entries = fi.Size() / 16
+		return book, nil
+	} else {
+		return nil, err
 	}
-
-	return book
 }
 
 func (b *Book) pickMove(position *Position) Move {

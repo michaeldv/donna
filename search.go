@@ -21,6 +21,9 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.MakeMove(move)
 		moveCount++
+		if engine.uci {
+			engine.uciMove(move, moveCount, depth)
+		}
 
 		// Search depth extension.
 		newDepth := depth - 1
@@ -39,8 +42,11 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		position.UndoLastMove()
 
 		if engine.clock.halt {
-			game.nodes += moveCount
 			//Log("searchRoot: bestMove %s pv[0][0] %s alpha %d\n", bestMove, game.pv[0][0], alpha)
+			game.nodes += moveCount
+			if engine.uci { // Report alpha as score since we're returning alpha.
+				engine.uciScore(depth, alpha, alpha, beta)
+			}
 			return alpha
 		}
 
@@ -63,20 +69,29 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		}
 	}
 
-	game.nodes += moveCount
 
 	if moveCount == 0 {
 		if inCheck {
-			alpha = -Checkmate
+			score = -Checkmate
 		} else {
-			alpha = 0
+			score = 0
 		}
-	} else if score >= beta && !inCheck {
+		if engine.uci {
+			engine.uciScore(depth, score, alpha, beta)
+		}
+		return
+	}
+
+	game.nodes += moveCount
+	if score >= beta && !inCheck {
 		game.saveGood(depth, bestMove)
 	}
 
 	score = alpha
 	p.cache(bestMove, score, depth, cacheFlags)
+	if engine.uci {
+		engine.uciScore(depth, score, alpha, beta)
+	}
 
 	return
 }

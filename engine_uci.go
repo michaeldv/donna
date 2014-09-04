@@ -4,13 +4,65 @@
 
 package donna
 
-import(
+import (
 	`bufio`
+	`fmt`
 	`io`
 	`os`
 	`strconv`
 	`strings`
 )
+
+func (e *Engine) uciScore(depth, score, alpha, beta int) *Engine {
+	str := fmt.Sprintf("info depth %d score", depth)
+
+	if Abs(score) < Checkmate-MaxPly {
+		str += fmt.Sprintf(" cp %d", score*100/onePawn)
+	} else {
+		mate := -Checkmate - score
+		if score > 0 {
+			mate = Checkmate - score + 1
+		}
+		str += fmt.Sprintf(" mate %d", mate/2)
+	}
+	if score <= alpha {
+		str += " upperbound"
+	} else if score >= beta {
+		str += " lowerbound"
+	}
+
+	return engine.reply(str + "\n")
+}
+
+func (e *Engine) uciMove(move Move, moveno, depth int) *Engine {
+	return engine.reply("info depth %d currmove %s currmovenumber %d\n", depth, move.notation(), moveno)
+}
+
+func (e *Engine) uciBestMove(move Move, duration float64) *Engine {
+	return engine.reply("info nodes %d time %d\nbestmove %s\n", game.nodes+game.qnodes, int64(duration*1000), move.notation())
+}
+
+func (e *Engine) uciPrincipal(depth, score, status int, duration float64) *Engine {
+	str := fmt.Sprintf("info depth %d score", depth)
+
+	if Abs(score) < Checkmate-MaxPly {
+		str += fmt.Sprintf(" cp %d", score*100/onePawn)
+	} else {
+		mate := -Checkmate - score
+		if score > 0 {
+			mate = Checkmate - score + 1
+		}
+		str += fmt.Sprintf(" mate %d", mate/2)
+	}
+	nodes := game.nodes + game.qnodes
+	str += fmt.Sprintf(" nodes %d nps %d time %d pv", nodes, int(float64(nodes)/duration), int64(duration*1000))
+
+	for i := 0; i < len(game.rootpv); i++ {
+		str += " " + game.rootpv[i].notation()
+	}
+
+	return engine.reply(str + "\n")
+}
 
 // Brain-damaged universal chess interface (UCI) protocol as described at
 // http://wbec-ridderkerk.nl/html/UCIProtocol.html
@@ -22,9 +74,15 @@ func (e *Engine) Uci() *Engine {
 
 	// "uci" command handler.
 	doUci := func(args []string) {
-		e.reply("Donna v1.0.0 Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.\n")
-		e.reply("id name Donna v1.0.0\n")
+		e.reply("Donna v%s Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.\n", Version)
+		e.reply("id name Donna %s\n", Version)
 		e.reply("id author Michael Dvorkin\n")
+		e.reply("option name Hash type spin default %d min 1 max 1024\n", 64)
+		e.reply("option name Mobility type spin default %d min 0 max 100\n", weights[0].midgame)
+		e.reply("option name PawnStructure type spin default %d min 0 max 100\n", weights[1].midgame)
+		e.reply("option name PassedPawns type spin default %d min 0 max 100\n", weights[2].midgame)
+		e.reply("option name KingSafety type spin default %d min 0 max 100\n", weights[3].midgame)
+		e.reply("option name EnemyKingSafety type spin default %d min 0 max 100\n", weights[4].midgame)
 		e.reply("uciok\n")
 	}
 
@@ -60,7 +118,8 @@ func (e *Engine) Uci() *Engine {
 				fen = append(fen, token)
 			}
 			position = NewPositionFromFEN(game, strings.Join(fen, ` `))
-		default: return
+		default:
+			return
 		}
 
 		if position != nil && len(args) > 0 && args[0] == `moves` {
@@ -73,14 +132,17 @@ func (e *Engine) Uci() *Engine {
 
 	// "go [[wtime winc | btime binc ] movestogo] | depth | nodes | movetime"
 	doGo := func(args []string) {
+		think := true
 		options := e.options
 
 		for i, token := range args {
 			// Boolen "infinite" and "ponder" commands have no arguments.
 			if token == `infinite` {
-				options = Options{ infinite: true }
+				options = Options{infinite: true}
 			} else if token == `ponder` {
-				options = Options{ ponder: true }
+				options = Options{ponder: true}
+			} else if token == `test` { // <-- Custom token for use in tests.
+				think = false
 			} else if len(args) > i+1 {
 				switch token {
 				case `depth`:
@@ -131,7 +193,12 @@ func (e *Engine) Uci() *Engine {
 		} else {
 			e.fixedLimit(options)
 		}
-		game.Think()
+
+		// Start "thinking" and come up with best move unless when running
+		// tests where we verify argument parsing only.
+		if think {
+			game.Think()
+		}
 	}
 
 	// Stop calculating as soon as possible.
@@ -140,24 +207,22 @@ func (e *Engine) Uci() *Engine {
 	}
 
 	var commands = map[string]func([]string){
-		`isready`: doIsReady,      
-		`uci`: doUci,
+		`isready`:    doIsReady,
+		`uci`:        doUci,
 		`ucinewgame`: doUciNewGame,
-		`position`: doPosition,
-		`go`: doGo,
-		`stop`: doStop,
+		`position`:   doPosition,
+		`go`:         doGo,
+		`stop`:       doStop,
 	}
 
- 	bio := bufio.NewReader(os.Stdin)
+	bio := bufio.NewReader(os.Stdin)
 	for {
 		command, err := bio.ReadString('\n')
 		if err != io.EOF && len(command) > 0 {
 			e.debug("> " + command)
-			args := strings.Split(command[:len(command)-1], ` `)
+			args := strings.Split(strings.Trim(command, " \t\r\n"), ` `)
 			if args[0] == `quit` {
 				break
-			} else if args[0] == `debug` {
-				engine.log = true
 			}
 			if handler, ok := commands[args[0]]; ok {
 				handler(args[1:])

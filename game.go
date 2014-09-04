@@ -61,6 +61,7 @@ func NewGame(args ...string) *Game {
 
 // The color parameter is optional.
 func (game *Game) Start(args ...int) *Position {
+	engine.clock.halt = false
 	tree, node, rootNode = [1024]Position{}, 0, 0
 
 	// Was the game started with FEN or algebraic notation?
@@ -76,12 +77,15 @@ func (game *Game) Position() *Position {
 }
 
 func (game *Game) Think() Move {
+	start := time.Now()
 	position := game.Position()
+	game.nodes, game.qnodes = 0, 0
 
-	book := NewBook("./books/gm2001.bin") // From http://www.chess2u.com/t5834-gm-polyglot-book
-	if move := book.pickMove(position); move != 0 {
-		fmt.Printf("Book move: %s\n", move)
-		return move
+	if book, err := NewBook(); err == nil {
+		if move := book.pickMove(position); move != 0 {
+			game.printBestMove(move, time.Since(start).Seconds())
+			return move
+		}
 	}
 
 	// Reset principal variation, killer moves and move history, and update
@@ -103,18 +107,19 @@ func (game *Game) Think() Move {
 		return engine.clock.halt || (engine.options.maxDepth > 0 && depth > engine.options.maxDepth)
 	}
 
-	fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
+	if engine.uci {
+		engine.debug(game.String())
+	} else {
+		fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
+	}
 
 	engine.startClock(); defer engine.stopClock();
 	for depth := 1; !done(depth); depth++ {
-		game.nodes, game.qnodes = 0, 0
-
 		// Save previous best score in case search gets interrupted.
 		bestScore := score
 
 		// At low depths do the search with full alpha/beta spread.
 		// Aspiration window searches kick in at depth 5 and up.
-		start := time.Now()
 		if depth < 5 {
 			score = position.search(alpha, beta, depth)
 			if score > alpha {
@@ -154,8 +159,6 @@ func (game *Game) Think() Move {
 			}
 			// TBD: position.cache(game.rootpv[0], score, 0, 0)
 		}
-		finish := time.Since(start).Seconds()
-
 		if engine.clock.halt {
 			//Log("\ttimed out pv => %v\n\ttimed out rv => %v\n", game.pv[0], game.rootpv)
 			score = bestScore
@@ -163,50 +166,39 @@ func (game *Game) Think() Move {
 
 		move = game.rootpv[0]
 		status = position.status(move, score)
-		game.printBestLine(depth, score, status, finish)
+		game.printPrincipal(depth, score, status, time.Since(start).Seconds())
 
 		// No reason to search deeper if the game is over or mate in X moves was
 		// found at current depth.
-		if status != InProgress {
+		if engine.clock.halt || status != InProgress {
 			break
 		}
-
 	}
 
-	fmt.Printf("\nDonna's move: %s\n\n", move)
+	game.printBestMove(move, time.Since(start).Seconds())
+
 	return move
 }
 
-func (game *Game) printBestLine(depth, score, status int, finish float64) {
-	switch status {
-	case WhiteWon:
-		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1-0 White Checkmates\n",
-			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish)
-	case BlackWon:
-		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   0-1 Black Checkmates\n",
-			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish)
-	case Stalemate:
-		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1/2 Stalemate\n",
-			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish)
-	case Repetition:
-		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
-			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish)
-	case WhiteWinning, BlackWinning:
-		movesLeft := Checkmate - Abs(score)
-		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
-			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, movesLeft/2, game.rootpv)
-	default:
+func (game *Game) printBestMove(move Move, duration float64) {
+	if engine.uci {
+		engine.uciBestMove(move, duration)
+	} else {
+		engine.replBestMove(move)
+	}
+}
+
+// Prints principal variation. Note that in REPL advantage white is always +score
+// and advantage black is -score whereas in UCI +score is advantage current side
+// and -score is advantage opponent.
+func (game *Game) printPrincipal(depth, score, status int, duration float64) {
+	if engine.uci {
+		engine.uciPrincipal(depth, score, status, duration)
+	} else {
 		if game.Position().color == Black {
 			score = -score
 		}
-		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %5.2f   %v\n",
-			depth, int(finish)/60, int(finish)%60, game.nodes, game.qnodes,
-			float64(game.nodes+game.qnodes)/finish, float32(score)/float32(onePawn), game.rootpv)
+		engine.replPrincipal(depth, score, status, duration)
 	}
 }
 
