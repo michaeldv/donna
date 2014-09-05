@@ -78,7 +78,7 @@ func (e *Engine) print(arg string) *Engine {
 
 // Appends the string to log file.
 func (e *Engine) debug(arg string) *Engine {
-	logFile, err := os.OpenFile("/tmp/donna.log", os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+	logFile, err := os.OpenFile(`/tmp/donna.log`, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
 	if err == nil {
 		defer logFile.Close()
 		logFile.WriteString(arg) // f.Write() and friends are unbuffered.

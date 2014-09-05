@@ -4,22 +4,22 @@
 
 package donna
 
-import (`math`)
+const Version = `0.9`
 
-const Checkmate = math.MaxInt16 // = 32,767 = 0x7FFF
-const MaxPly = 64
-const MaxDepth = 32
+// Limits and conventions.
+const (
+	MaxPly = 64
+	MaxDepth = 32
+	Checkmate = 0x7FFF // = math.MaxInt16 = 32,767
+)
 
+// Colors.
 const (
 	White = iota
 	Black
-	maskNone = Bitmask(0x0000000000000000)
-	maskFull = Bitmask(0xFFFFFFFFFFFFFFFF)
-	maskDark = Bitmask(0xAA55AA55AA55AA55)
-	maskA1H8 = Bitmask(0x8040201008040201)
-	maskH1A8 = Bitmask(0x0102040810204080)
 )
 
+// Game states.
 const (
 	InProgress = iota
 	WhiteWinning    // White mates in X moves.
@@ -31,6 +31,7 @@ const (
 	Insufficient    // Draw by insufficient material.
 )
 
+// Square indices.
 const (
 	A1 = iota
 	    B1; C1; D1; E1; F1; G1; H1
@@ -43,9 +44,18 @@ const (
 	A8; B8; C8; D8; E8; F8; G8; H8
 )
 
-// Ranks and files.
-const ( A1H1 = iota; A2H2; A3H3; A4H4; A5H5; A6H6; A7H7; A8H8 )
-const ( A1A8 = iota; B1B8; C1C8; D1D8; E1E8; F1F8; G1G8; H1H8 )
+// Rank and file indices.
+const (A1H1 = iota; A2H2; A3H3; A4H4; A5H5; A6H6; A7H7; A8H8)
+const (A1A8 = iota; B1B8; C1C8; D1D8; E1E8; F1F8; G1G8; H1H8)
+
+// Useful masks.
+const (
+	maskNone = Bitmask(0x0000000000000000)
+	maskFull = Bitmask(0xFFFFFFFFFFFFFFFF)
+	maskDark = Bitmask(0xAA55AA55AA55AA55)
+	maskA1H8 = Bitmask(0x8040201008040201)
+	maskH1A8 = Bitmask(0x0102040810204080)
+)
 
 var bit = [64]Bitmask{
 	1<<A1, 1<<B1, 1<<C1, 1<<D1, 1<<E1, 1<<F1, 1<<G1, 1<<H1,
