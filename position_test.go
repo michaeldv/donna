@@ -135,3 +135,9 @@ func TestPosition240(t *testing.T) {
 	rootNode = node                                       // Reset Ply().
 	expect.Eq(t, p.status(NewMove(p, A2, A1), 0), Repetition) // <-- Ka2-a1 causes rep #3.
 }
+
+// Insufficient material.
+func TestPosition250(t *testing.T) {
+	p := NewGame(`Ka1,Bb2`, `Kh5`).Start(White)
+	expect.True(t, p.insufficient())
+}
