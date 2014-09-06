@@ -55,6 +55,9 @@ var eval Evaluation
 
 // Main position evaluation method that returns single blended score.
 func (p *Position) Evaluate() int {
+	if p.insufficient() {
+		return 0
+	}
 	return eval.init(p).run()
 }
 
@@ -112,16 +115,8 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	return e
 }
 
-func (e *Evaluation) analyzeMaterialNew() {
-	e.material = &materialBase[e.position.balance]
-	e.score.add(e.material.score)
-}
-
 func (e *Evaluation) run() int {
 	e.material = &materialBase[e.position.balance]
-	if e.material.flags & materialDraw != 0 {
-		return 0
-	}
 
 	e.score.add(e.material.score)
 	if e.material.flags & knownEndgame != 0 {
