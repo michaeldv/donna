@@ -20,12 +20,9 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 		return p.Evaluate()
 	}
 
-	// Repetition and/or perpetual check pruning.
-	if p.repetition() {
-		if p.isInCheck(p.color) {
-			return 0
-		}
-		return p.Evaluate()
+	// Insufficient material and repetition/perpetual check pruning.
+	if p.insufficient() || p.repetition() {
+		return 0
 	}
 
 	// Probe cache.

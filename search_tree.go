@@ -25,12 +25,9 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		}
 	}
 
-	// Repetition and/or perpetual check pruning.
-	if p.repetition() {
-		if p.isInCheck(p.color) {
-			return 0
-		}
-		return p.Evaluate()
+	// Insufficient material and repetition/perpetual check pruning.
+	if p.insufficient() || p.repetition() {
+		return 0
 	}
 
 	// Initialize node search conditions.

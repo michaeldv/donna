@@ -239,9 +239,9 @@ func (p *Position) valuation() (score Score) {
 	return
 }
 
-// Stub.
-func (p *Position) isInsufficient() bool {
-	return false
+// Returns true if material balance is insufficient to win the game.
+func (p *Position) insufficient() bool {
+	return materialBase[p.balance].flags & materialDraw != 0
 }
 
 // Reports game status for current position or after the given move. The status
@@ -255,10 +255,10 @@ func (p *Position) status(move Move, blendedScore int) int {
 	switch ply, score := Ply(), Abs(blendedScore); score {
 	case 0:
 		if ply == 1 {
-			if p.thirdRepetition() {
-				return Repetition
-			} else if p.isInsufficient() {
+			if p.insufficient() {
 				return Insufficient
+			} else if p.thirdRepetition() {
+				return Repetition
 			}
 		}
 		if !NewGen(p, MaxPly).generateMoves().anyValid(p) {
