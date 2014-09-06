@@ -17,17 +17,17 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		return p.Evaluate()
 	}
 
+	// Insufficient material and repetition/perpetual check pruning.
+	if p.insufficient() || p.repetition() {
+		return 0
+	}
+
 	// Checkmate distance pruning.
 	if score := Abs(ply - Checkmate); score < beta {
 		beta = score
 		if score <= alpha {
 			return alpha
 		}
-	}
-
-	// Insufficient material and repetition/perpetual check pruning.
-	if p.insufficient() || p.repetition() {
-		return 0
 	}
 
 	// Initialize node search conditions.

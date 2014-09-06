@@ -55,9 +55,6 @@ var eval Evaluation
 
 // Main position evaluation method that returns single blended score.
 func (p *Position) Evaluate() int {
-	if p.insufficient() {
-		return 0
-	}
 	return eval.init(p).run()
 }
 
