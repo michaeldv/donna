@@ -42,7 +42,7 @@ func (e *Engine) uciBestMove(move Move, duration float64) *Engine {
 	return engine.reply("info nodes %d time %d\nbestmove %s\n", game.nodes+game.qnodes, int64(duration*1000), move.notation())
 }
 
-func (e *Engine) uciPrincipal(depth, score, status int, duration float64) *Engine {
+func (e *Engine) uciPrincipal(depth, score int, duration float64) *Engine {
 	str := fmt.Sprintf("info depth %d score", depth)
 
 	if Abs(score) < Checkmate-MaxPly {

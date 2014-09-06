@@ -76,6 +76,23 @@ func (game *Game) Position() *Position {
 	return &tree[node]
 }
 
+// Resets principal variation as well as killer moves and move history. Cache
+// entries get expired by incrementing cache token. Root node gets set to the
+// current tree node to match the position.
+func (game *Game) getReady() *Game {
+	game.rootpv = game.rootpv[:0]
+	for ply := 0;  ply < MaxPly; ply++ {
+		game.pv[ply] = game.pv[ply][:0]
+	}
+
+	game.killers = Killers{}
+	game.history = History{}
+	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
+
+	rootNode = node
+	return game
+}
+
 func (game *Game) Think() Move {
 	start := time.Now()
 	position := game.Position()
@@ -88,33 +105,17 @@ func (game *Game) Think() Move {
 		}
 	}
 
-	// Reset principal variation, killer moves and move history, and update
-	// cache token to ignore existing cache entries.
-	rootNode = node
-	game.killers = Killers{}
-	game.history = History{}
-	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
-
-	game.rootpv = game.rootpv[:0]
-	for ply := 0;  ply < MaxPly; ply++ {
-		game.pv[ply] = game.pv[ply][:0]
-	}
-
-	move, score, status := Move(0), 0, InProgress
-	alpha, beta := -Checkmate, Checkmate
-
-	done := func(depth int) bool {
-		return engine.clock.halt || (engine.options.maxDepth > 0 && depth > engine.options.maxDepth)
-	}
+	game.getReady()
+	score, move, status, alpha, beta := 0, Move(0), InProgress, -Checkmate, Checkmate
 
 	if engine.uci {
-		engine.debug(game.String())
+		engine.debug(position.String())
 	} else {
 		fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
 	}
 
 	engine.startClock(); defer engine.stopClock();
-	for depth := 1; !done(depth); depth++ {
+	for depth := 1; game.keepThinking(depth, status); depth++ {
 		// Save previous best score in case search gets interrupted.
 		bestScore := score
 
@@ -167,17 +168,19 @@ func (game *Game) Think() Move {
 		move = game.rootpv[0]
 		status = position.status(move, score)
 		game.printPrincipal(depth, score, status, time.Since(start).Seconds())
-
-		// No reason to search deeper if the game is over or mate in X moves was
-		// found at current depth.
-		if engine.clock.halt || status != InProgress {
-			break
-		}
 	}
 
 	game.printBestMove(move, time.Since(start).Seconds())
 
 	return move
+}
+
+func (game *Game) keepThinking(depth, status int) bool {
+	if engine.clock.halt || status != InProgress || (engine.options.maxDepth > 0 && depth > engine.options.maxDepth) {
+		return false
+	}
+
+	return true
 }
 
 func (game *Game) printBestMove(move Move, duration float64) {
@@ -193,7 +196,7 @@ func (game *Game) printBestMove(move Move, duration float64) {
 // and -score is advantage opponent.
 func (game *Game) printPrincipal(depth, score, status int, duration float64) {
 	if engine.uci {
-		engine.uciPrincipal(depth, score, status, duration)
+		engine.uciPrincipal(depth, score, duration)
 	} else {
 		if game.Position().color == Black {
 			score = -score
