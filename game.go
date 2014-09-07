@@ -186,7 +186,12 @@ func (game *Game) keepThinking(depth, status int, move Move) bool {
 		return false
 	}
 
-	// TODO: Stop if the move seems to be obvious and we've searched deep enough.
+	// Stop if the move seems to be obvious and we've searched deep enough.
+	if gen.obvious == move {
+		return depth < 9
+	} else {
+		gen.obvious = Move(0) // The move is no longer obvious.
+	}
 
 	// TODO: Get some more thinking time if the position looks complicated or the
 	// score is dropping.

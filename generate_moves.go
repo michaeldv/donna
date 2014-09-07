@@ -9,7 +9,14 @@ func (gen *MoveGen) generateRootMoves() *MoveGen {
 	if gen.onlyMove() {
 		return gen
 	}
-	return gen.validOnly().quickRank()
+	gen.validOnly().quickRank()
+
+	// Check if the top move is obvious, i.e. it scores 2+ pawns above the
+	// next move.
+	if gen.list[0].score - gen.list[1].score > 2 * onePawn {
+		gen.obvious = gen.list[0].move
+	}
+	return gen
 }
 
 func (gen *MoveGen) rearrangeRootMoves() *MoveGen {
