@@ -9,11 +9,7 @@ func (gen *MoveGen) generateRootMoves() *MoveGen {
 	if gen.onlyMove() {
 		return gen
 	}
-
-	if gen.p.isInCheck(gen.p.color) {
-		return gen.validOnly().quickRank()
-	}
-	return gen.validOnly().rank(gen.p.cachedMove())
+	return gen.validOnly().quickRank()
 }
 
 func (gen *MoveGen) rearrangeRootMoves() *MoveGen {

@@ -115,7 +115,7 @@ func (game *Game) Think() Move {
 	}
 
 	engine.startClock(); defer engine.stopClock();
-	for depth := 1; game.keepThinking(depth, status); depth++ {
+	for depth := 1; game.keepThinking(depth, status, move); depth++ {
 		// Save previous best score in case search gets interrupted.
 		bestScore := score
 
@@ -175,10 +175,24 @@ func (game *Game) Think() Move {
 	return move
 }
 
-func (game *Game) keepThinking(depth, status int) bool {
+func (game *Game) keepThinking(depth, status int, move Move) bool {
 	if engine.clock.halt || status != InProgress || (engine.options.maxDepth > 0 && depth > engine.options.maxDepth) {
 		return false
 	}
+
+	// Stop deepening if it's the only move.
+	gen := moveList[0]
+	if depth == 2 && gen.onlyMove() {
+		return false
+	}
+
+	// TODO: Stop if the move seems to be obvious and we've searched deep enough.
+
+	// TODO: Get some more thinking time if the position looks complicated or the
+	// score is dropping.
+
+	// TODO: Stop if the time left is not enough to gets through the next depth iteration.
+
 
 	return true
 }
