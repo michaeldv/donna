@@ -54,6 +54,8 @@ func TestUci000(t *testing.T) {
 		t.Errorf(err.Error())
 	} else {
 		defer unmockStdin(mock)
+		defer NewEngine()
+
 		engine := NewEngine().Uci()
 		expect.Eq(t, engine.options.moveTime, int64(12345))
 		expect.Eq(t, engine.options.timeLeft, int64(0))
@@ -69,6 +71,8 @@ func TestUci010(t *testing.T) {
 		t.Errorf(err.Error())
 	} else {
 		defer unmockStdin(mock)
+		defer NewEngine()
+
 		engine := NewEngine().Uci()
 		expect.Eq(t, engine.options.timeLeft, int64(12345))
 		expect.Eq(t, engine.options.moveTime, int64(0))
@@ -85,6 +89,8 @@ func TestUci020(t *testing.T) {
 		t.Errorf(err.Error())
 	} else {
 		defer unmockStdin(mock)
+		defer NewEngine()
+
 		engine := NewEngine().Uci()
 		expect.Eq(t, engine.options.timeLeft, int64(98765))
 		expect.Eq(t, engine.options.moveTime, int64(0))
