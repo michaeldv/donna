@@ -35,7 +35,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			score = -position.searchTree(-beta, -alpha, newDepth)
 		} else {
 			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
-			if score > alpha && score < beta {
+			if score > alpha { // && score < beta {
 				score = -position.searchTree(-beta, -alpha, newDepth)
 			}
 		}
@@ -50,18 +50,12 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			return alpha
 		}
 
-		if moveCount == 1 {
-			bestMove = move
-			game.pv[0] = game.pv[0][:0]
-			game.saveBest(0, move)
-		}
-
-		if score > alpha {
-			alpha = score
+		if moveCount == 1 || score > alpha {
 			bestMove = move
 			cacheFlags = cacheExact
 			game.saveBest(0, move)
 
+			alpha = Max(score, alpha)
 			if alpha >= beta {
 				cacheFlags = cacheBeta
 				break
