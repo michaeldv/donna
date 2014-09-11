@@ -10,6 +10,10 @@ func Eq(t *testing.T, actual, expected interface{}) {
 	log(t, actual, expected, equal(actual, expected))
 }
 
+func Ne(t *testing.T, actual, expected interface{}) {
+	log(t, actual, expected, !equal(actual, expected))
+}
+
 func True(t *testing.T, actual interface{}) {
 	log(t, actual, true, equal(actual, true))
 }
