@@ -186,3 +186,29 @@ func TestMove330(t *testing.T) {
 	expect.Eq(t, NewMoveFromNotation(p, `d7d5`), move)
 	expect.True(t, NewMoveFromNotation(p, `d7d5`).isEnpassant())
 }
+
+// Only pawns can do en-passant capture.
+func TestMove340(t *testing.T) {
+	p := NewGame(`Kg1,d2`, `Kc2,Qa3,Rh3,Be4,Nc1,c4`).Start(White)
+	p = p.MakeMove(NewEnpassant(p, D2, D4)) // Causes en-passant on D3.
+	bQ := NewMove(p, A3, D3)
+	bR := NewMove(p, H3, D3)
+	bB := NewMove(p, E4, D3)
+	bN := NewMove(p, C1, D3)
+	bK := NewMove(p, C2, D3)
+	bP := NewMove(p, C4, D3)
+
+	expect.Eq(t, bQ.capture(), Piece(0))
+	expect.Eq(t, bR.capture(), Piece(0))
+	expect.Eq(t, bB.capture(), Piece(0))
+	expect.Eq(t, bN.capture(), Piece(0))
+	expect.Eq(t, bK.capture(), Piece(0))
+	expect.Eq(t, bP.capture(), Piece(Pawn))
+
+	expect.Eq(t, bQ & isCapture, Move(0))
+	expect.Eq(t, bR & isCapture, Move(0))
+	expect.Eq(t, bB & isCapture, Move(0))
+	expect.Eq(t, bN & isCapture, Move(0))
+	expect.Eq(t, bK & isCapture, Move(0))
+	expect.Ne(t, bP & isCapture, Move(0)) // Ne() for Pawn.
+}

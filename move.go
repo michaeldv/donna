@@ -27,7 +27,7 @@ type Move uint32
 func NewMove(p *Position, from, to int) Move {
 	piece, capture := p.pieces[from], p.pieces[to]
 
-	if p.enpassant != 0 && to == p.enpassant {
+	if p.enpassant != 0 && to == p.enpassant && piece.isPawn() {
 		capture = pawn(piece.color() ^ 1)
 	}
 
