@@ -94,6 +94,14 @@ func Max64(x, y int64) int64 {
 	return y
 }
 
+// Formats time duration in milliseconds in human readable form: MM:SS.XXX
+func ms(duration int64) string {
+	mm := duration / 1000 / 60
+	ss := duration / 1000 % 60
+	xx := duration - mm * 1000 * 60 - ss * 1000
+	return fmt.Sprintf(`%02d:%02d.%03ds`, mm, ss, xx)
+}
+
 // Returns, as an integer, a non-negative pseudo-random number
 // in [0, limit) range. It panics if limit <= 0.
 func Random(limit int) int {
