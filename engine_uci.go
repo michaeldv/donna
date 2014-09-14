@@ -183,7 +183,7 @@ func (e *Engine) Uci() *Engine {
 					}
 				case `movestogo`:
 					if n, err := strconv.Atoi(args[i+1]); err == nil {
-						options.movesToGo = n
+						options.movesToGo = int64(n)
 					}
 				}
 			}

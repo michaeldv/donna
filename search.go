@@ -4,12 +4,15 @@
 
 package donna
 
+import `fmt`
+
 // Root node search.
 func (p *Position) search(alpha, beta, depth int) (score int) {
 	inCheck := p.isInCheck(p.color)
 	cacheFlags := uint8(cacheAlpha)
 
-	// Root move generator makes sure all generated moves are valid.
+	// Root move generator makes sure all generated moves are valid. The
+	// best move found so far is always the first one we search.
 	gen := NewRootGen(p, depth)
 	if depth == 1 {
 		gen.generateRootMoves()
@@ -32,10 +35,10 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		}
 
 		if moveCount == 1 {
-			game.firstMove = true
+			game.deepening = true
 			score = -position.searchTree(-beta, -alpha, newDepth)
 		} else {
-			game.firstMove = false
+			game.deepening = false
 			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 			if score > alpha { // && score < beta {
 				score = -position.searchTree(-beta, -alpha, newDepth)
@@ -59,6 +62,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 			if moveCount > 1 {
 				game.volatility++
+				engine.debug(fmt.Sprintf("# New move %s Depth %d Volatility %.2f\n", move, depth, game.volatility))
 			}
 
 			alpha = Max(score, alpha)

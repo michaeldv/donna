@@ -16,16 +16,19 @@ type RootPv  []Move
 type Pv      [MaxPly]RootPv
 
 type Game struct {
-	nodes      int 	  	// Number of regular nodes searched.
-	qnodes     int 	  	// Number of quiescence nodes searched.
-	token      uint8 	// Expiration token for cache.
-	initial    string   	// Initial position (FEN or algebraic).
-	history    History  	// Good moves history.
-	killers    Killers  	// Killer moves.
-	rootpv     RootPv 	// Principal variation for root moves.
-	pv         Pv 		// Principal variations for each ply.
-	cache      Cache 	// Transposition table.
-	pawnCache  PawnCache 	// Cache of pawn structures.
+	nodes       int 	// Number of regular nodes searched.
+	qnodes      int 	// Number of quiescence nodes searched.
+	token       uint8 	// Cache's expiration token.
+	deepening   bool 	// True when searching first root move.
+	improving   bool 	// True when root search score is not falling.
+	volatility  float32 	// Root search stability count.
+	initial     string   	// Initial position (FEN or algebraic).
+	history     History  	// Good moves history.
+	killers     Killers  	// Killer moves.
+	rootpv      RootPv 	// Principal variation for root moves.
+	pv          Pv 		// Principal variations for each ply.
+	cache       Cache 	// Transposition table.
+	pawnCache   PawnCache 	// Cache of pawn structures.
 }
 
 // Use single statically allocated variable.
@@ -87,6 +90,9 @@ func (game *Game) getReady() *Game {
 
 	game.killers = Killers{}
 	game.history = History{}
+	game.deepening = false
+	game.improving = true
+	game.volatility = 0.0
 	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
 
 	rootNode = node
@@ -114,10 +120,16 @@ func (game *Game) Think() Move {
 		fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
 	}
 
-	engine.startClock(); defer engine.stopClock();
-	for depth := 1; game.keepThinking(depth, status, move); depth++ {
+	if !engine.fixedDepth() {
+		engine.startClock(); defer engine.stopClock();
+	}
+
+	for depth := 1; status == InProgress && game.keepThinking(depth, move); depth++ {
 		// Save previous best score in case search gets interrupted.
 		bestScore := score
+
+		// Assume volatility decreases with each new iteration.
+		game.volatility /= 2.0
 
 		// At low depths do the search with full alpha/beta spread.
 		// Aspiration window searches kick in at depth 5 and up.
@@ -143,21 +155,22 @@ func (game *Game) Think() Move {
 					game.rootpv = append(game.rootpv[:0], game.pv[0]...)
 				}
 
-				if engine.clock.halt {
+				if !engine.fixedDepth() && engine.clock.halt {
 					break
 				}
 
 				if score <= alpha {
-					//Log("\tscore %d <= alpha %d, new alpha %d\n", score, alpha, score - aspiration)
+					game.improving = false
 					alpha = Max(score - aspiration, -Checkmate)
 				} else if score >= beta {
-					//Log("\tscore %d >= beta %d, new beta %d\n", score, beta, score + aspiration)
 					beta = Min(score + aspiration, Checkmate)
 				} else {
 					break;
 				}
+
 				aspiration *= 2
 			}
+			game.improving = true
 			// TBD: position.cache(game.rootpv[0], score, 0, 0)
 		}
 		if engine.clock.halt {
@@ -175,29 +188,47 @@ func (game *Game) Think() Move {
 	return move
 }
 
-func (game *Game) keepThinking(depth, status int, move Move) bool {
-	if engine.clock.halt || status != InProgress || (engine.options.maxDepth > 0 && depth > engine.options.maxDepth) {
+func (game *Game) keepThinking(depth int, move Move) bool {
+	if depth == 1 {
+		return true
+	}
+
+	if engine.fixedDepth() {
+		return depth <= engine.options.maxDepth
+	} else if engine.clock.halt {
+		engine.debug(fmt.Sprintf("# Depth %02d Early out with %s\n", depth, move))
 		return false
 	}
 
 	// Stop deepening if it's the only move.
-	gen := moveList[0]
+	gen := NewRootGen(nil, depth)
 	if depth == 2 && gen.onlyMove() {
+		engine.debug(fmt.Sprintf("# Depth %02d Only move %s\n", depth, move))
 		return false
 	}
 
 	// Stop if the move seems to be obvious and we've searched deep enough.
-	if gen.obvious == move {
-		return depth < 9
-	} else {
-		gen.obvious = Move(0) // The move is no longer obvious.
+	if gen.obvious != Move(0) {
+		if move == gen.obvious {
+			engine.debug(fmt.Sprintf("# Depth %02d Kinda obvious %s\n", depth, move))
+			return depth < 9
+		} else { // The move is no longer obvious.
+			engine.debug(fmt.Sprintf("# Depth %02d No longer obvious %s\n", depth, move))
+			gen.obvious = Move(0)
+		}
 	}
 
-	// TODO: Get some more thinking time if the position looks complicated or the
-	// score is dropping.
+	// Stop if the time left is not enough to gets through the next iteration.
+	if engine.varyingTime() {
+		elapsed := engine.elapsed(time.Now())
+		remaining := engine.factor(depth, game.volatility).remaining()
 
-	// TODO: Stop if the time left is not enough to gets through the next depth iteration.
-
+		engine.debug(fmt.Sprintf("# Depth %02d Volatility %.2f Elapsed %s Remaining %s\n", depth, game.volatility, ms(elapsed), ms(remaining)))
+		if elapsed > engine.factor(depth, game.volatility).remaining() {
+			engine.debug(fmt.Sprintf("# Depth %02d Bailing out with %s\n", depth, move))
+			return false
+		}
+	}
 
 	return true
 }
