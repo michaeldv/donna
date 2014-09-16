@@ -76,7 +76,7 @@ func TestUci010(t *testing.T) {
 		expect.Eq(t, engine.options.timeLeft, int64(12345))
 		expect.Eq(t, engine.options.moveTime, int64(0))
 		expect.Eq(t, engine.options.timeInc, int64(0))
-		expect.Eq(t, engine.options.movesToGo, 42)
+		expect.Eq(t, engine.options.movesToGo, int64(42))
 	}
 }
 
@@ -93,6 +93,6 @@ func TestUci020(t *testing.T) {
 		expect.Eq(t, engine.options.timeLeft, int64(98765))
 		expect.Eq(t, engine.options.moveTime, int64(0))
 		expect.Eq(t, engine.options.timeInc, int64(0))
-		expect.Eq(t, engine.options.movesToGo, 42)
+		expect.Eq(t, engine.options.movesToGo, int64(42))
 	}
 }
