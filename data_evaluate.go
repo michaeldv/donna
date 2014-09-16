@@ -26,8 +26,8 @@ var (
 	queenOn7th     = Score{  1,  4 }  // Bonus for queen on 7th rank.
 	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
 	hangingAttack  = Score{ 10, 12 }  // Bonus for attacking enemy pieces that are hanging.
-	coverMissing   = Score{ 45,  0 }  // Penalty for missing cover pawn.
-	coverDistance  = Score{  8,  0 }  // Penalty for cover pawn being distant from the king.
+	coverMissing   = Score{ 50,  0 }  // Penalty for missing cover pawn.
+	coverDistance  = Score{ 13,  0 }  // Penalty for cover pawn being distant from the king.
 )
 
 // Weight percentages applied to evaluation scores before computing the overall
