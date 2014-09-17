@@ -241,15 +241,13 @@ func (p *Position) canCastle(color int) (kingside, queenside bool) {
 func (p *Position) isValid(move Move, pins Bitmask) bool {
 	color := move.color() // TODO: make color part of move split.
 	from, to, piece, capture := move.split()
-
 	// For rare en-passant pawn captures we validate the move by actually
 	// making it, and then taking it back.
+
 	if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
-		if position := p.MakeMove(move); position != nil {
-			position.UndoLastMove()
-			return true
-		}
-		return false
+		position := p.MakeMove(move)
+		defer position.UndoLastMove()
+		return !position.isInCheck(color)
 	}
 
 	// King's move is valid when a) the move is a castle or b) the destination

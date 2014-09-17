@@ -6,13 +6,13 @@ package donna
 
 import(`github.com/michaeldv/donna/expect`; `testing`)
 
-// func TestGenerate010(t *testing.T) {
-// 	game := NewGame(`Ka1,a2,b3,c4,d2,e6,f5,g4,h3`, `Kc1`)
-// 	gen := NewMoveGen(game.Start(White)).generateMoves().rank(Move(0))
+// Default move ordering.
+func TestGenerate010(t *testing.T) {
+	game := NewGame(`Ka1,a2,b3,c4,d2,e6,f5,g4,h3`, `Kc1`)
+	gen := NewMoveGen(game.Start(White)).generateMoves().rank(Move(0))
 
-// 	// TODO: moves should be sorted by good moves history.
-// 	expect.Eq(t, gen.allMoves(), `[e6-e7 f5-f6 d2-d4 c4-c5 g4-g5 b3-b4 d2-d3 a2-a4 h3-h4 a2-a3 Ka1-b2 Ka1-b1]`)
-// }
+	expect.Eq(t, gen.allMoves(), `[a2-a3 a2-a4 d2-d3 d2-d4 b3-b4 h3-h4 c4-c5 g4-g5 f5-f6 e6-e7 Ka1-b1 Ka1-b2]`)
+}
 
 // LVA/MVV capture ordering.
 func TestGenerate110(t *testing.T) {
@@ -48,4 +48,23 @@ func TestGenerate150(t *testing.T) {
 	gen := NewMoveGen(game.Start(White)).generateCaptures().rank(Move(0))
 
 	expect.Eq(t, gen.allMoves(), `[e4xd5 Nf4xd5 Bc4xd5 Ra5xd5 Kd4xd5 e4xf5 Qh5xf5 Nf4xg6 Qh5xg6 Nf4xh3 Qh5xh3 Nf4xe2 Bc4xe2 Qh5xe2]`)
+}
+
+// Vaditaing generated moves.
+func TestGenerate200(t *testing.T) {
+	p := NewGame(`Ke1,Qe2,d2`, `Ke8,e4`).Start(White)
+	p = p.MakeMove(NewEnpassant(p, D2, D4))
+
+	// No e4xd3 en-passant capture.
+	black := NewMoveGen(p).generateMoves().validOnly()
+	expect.Eq(t, black.allMoves(), `[e4-e3 Ke8-d7 Ke8-e7 Ke8-f7 Ke8-d8 Ke8-f8]`)
+}
+
+func TestGenerate210(t *testing.T) {
+	p := NewGame(`Ke1,Qg2,d2`, `Ka8,e4`).Start(White)
+	p = p.MakeMove(NewEnpassant(p, D2, D4))
+
+	// Neither e4-e3 nor e4xd3 en-passant capture.
+	black := NewMoveGen(p).generateMoves().validOnly()
+	expect.Eq(t, black.allMoves(), `[Ka8-a7 Ka8-b7 Ka8-b8]`)
 }
