@@ -45,6 +45,34 @@ func (b Bitmask) first() int {
 	return deBruijn[((b ^ (b-1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
+// MSB: Eugene Nalimov's bitScanReverse.
+func (b Bitmask) last() int {
+	position := 0
+	if b > 0xFFFFFFFF {
+		b >>= 32
+		position = 32
+	}
+
+	if b > 0xFFFF {
+		b >>= 16
+		position += 16
+	}
+
+	if b > 0xFF {
+		b >>= 8
+		position += 8
+	}
+
+       return position + msbLookup[b]
+}
+
+func (b Bitmask) closest(color int) int {
+	if color == White {
+		return b.first()
+	}
+	return b.last()
+}
+
 func (b Bitmask) pushed(color int) Bitmask {
 	if color == White {
 		return b << 8
@@ -155,32 +183,14 @@ func (b Bitmask) String() string {
 	return buffer.String()
 }
 
-// 0x0123456789ABCDEF
-//   a b c d e f g h
-// [0123456789ABCDEF]
-// 8 X ⋅ ⋅ ⋅ ⋅ ⋅ ⋅ ⋅
-// 7 X X ⋅ ⋅ ⋅ X ⋅ ⋅
-// 6 X ⋅ X ⋅ ⋅ ⋅ X ⋅
-// 5 X X X ⋅ ⋅ X X ⋅
-// 4 X ⋅ ⋅ X ⋅ ⋅ ⋅ X
-// 3 X X ⋅ X ⋅ X ⋅ X
-// 2 X ⋅ X X ⋅ ⋅ X X
-// 1 X X X X ⋅ X X X
-//
-// 7:  1   0   0   0   0   0   0   0
-//     56  57  58  59  60  61  62  63
-// 6:  1   1   0   0   0   1   0   0
-//     48  49  50  51  52  53  54  55
-// 5:  1   0   1   0   0   0   1   0
-//     40  41  42  43  44  45  46  47
-// 4:  1   1   1   0   0   1   1   0
-//     32  33  34  35  36  37  38  39
-// 3:  1   0   0   1   0   0   0   1
-//     24  25  26  27  28  29  30  31
-// 2:  1   1   0   1   0   1   0   1
-//     16  17  18  19  20  21  22  23
-// 1:  1   0   1   1   0   0   1   1
-//     08  09  10  11  12  13  14  15
-// 0:  1   1   1   1   0   1   1   1
-//     00  01  02  03  04  05  06  07
-//
+//     A   B   C   D   E   F   G   H
+// 7>  56  57  58  59  60  61  62  63
+// 6>  48  49  50  51  52  53  54  55
+// 5>  40  41  42  43  44  45  46  47
+// 4>  32  33  34  35  36  37  38  39
+// 3>  24  25  26  27  28  29  30  31
+// 2>  16  17  18  19  20  21  22  23
+// 1>  08  09  10  11  12  13  14  15
+// 0>  00  01  02  03  04  05  06  07
+//     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//     0   1   2   3   4   5   6   7

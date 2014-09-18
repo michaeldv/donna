@@ -49,6 +49,9 @@ var (
 	// Distance between two squares.
 	distance [64][64]int
 
+	// Most-significant bit (MSB) lookup table.
+	msbLookup[256]int
+
 	// Precomputed database of material imbalance scores, evaluation flags,
 	// and endgame handlers.
 	materialBase [2*2*3*3*3*3*3*3*9*9]MaterialEntry
@@ -148,6 +151,25 @@ func initMasks() {
 }
 
 func initArrays() {
+
+	// MSB lookup table.
+	for i := 0; i < len(msbLookup); i++ {
+		if i > 127 {
+			msbLookup[i] = 7
+		} else if i > 63 {
+			msbLookup[i] = 6
+		} else if i > 31 {
+			msbLookup[i] = 5
+		} else if i > 15 {
+			msbLookup[i] = 4
+		} else if i > 7 {
+			msbLookup[i] = 3
+		} else if i > 3 {
+			msbLookup[i] = 2
+		} else if i > 1 {
+			msbLookup[i] = 1
+		}
+	}
 
 	// Castle hash values.
 	for mask := uint8(0); mask < 16; mask++ {
