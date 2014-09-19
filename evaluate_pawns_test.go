@@ -118,21 +118,21 @@ func TestEvaluatePawns505(t *testing.T) {
 	game := NewGame(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,f7,g6,h7,Qa6,Na5`) // h2,g2,h2 vs f7,G6,h7
 	score := game.Start(White).Evaluate()
 
-	expect.Eq(t, score, 14)
+	expect.Eq(t, score, 13)
 }
 
 func TestEvaluatePawns510(t *testing.T) {
 	game := NewGame(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,f5,g6,h7,Qa6,Na5`) // h2,g2,h2 vs F5,G6,h7
 	score := game.Start(White).Evaluate()
 
-	expect.Eq(t, score, 22)
+	expect.Eq(t, score, 26)
 }
 
 func TestEvaluatePawns520(t *testing.T) {
 	game := NewGame(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,a7,f7,g7,Qa6,Na5`) // h2,g2,h2 vs A7,f7,g7
 	score := game.Start(White).Evaluate()
 
-	expect.Eq(t, score, 45)
+	expect.Eq(t, score, 47)
 }
 
 func TestEvaluatePawns530(t *testing.T) {
@@ -146,14 +146,14 @@ func TestEvaluatePawns540(t *testing.T) {
 	game := NewGame(`Kb1,a3,b4,c2,Qh3,Nh4`, `Kb8,a7,b7,c7,Qh6,Nh5`) // A3,B4,c2 vs a7,b7,c7
 	score := game.Start(White).Evaluate()
 
-	expect.Eq(t, score, -5)
+	expect.Eq(t, score, -9)
 }
 
 func TestEvaluatePawns550(t *testing.T) {
 	game := NewGame(`Kb1,b2,c2,h2,Qh3,Nh4`, `Kb8,a7,b7,c7,Qh6,Nh5`) // b2,c2,H2 vs a7,b7,c7
 	score := game.Start(White).Evaluate()
 
-	expect.Eq(t, score, -29)
+	expect.Eq(t, score, -31)
 }
 
 func TestEvaluatePawns560(t *testing.T) {
