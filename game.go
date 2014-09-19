@@ -170,7 +170,6 @@ func (game *Game) Think() Move {
 
 				aspiration *= 2
 			}
-			game.improving = true
 			// TBD: position.cache(game.rootpv[0], score, 0, 0)
 		}
 		if engine.clock.halt {
