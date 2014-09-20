@@ -184,8 +184,16 @@ func (m Move) isCastle() bool {
 	return m & isCastle != 0
 }
 
+func (m Move) isCapture() bool {
+	return m & isCapture != 0
+}
+
 func (m Move) isEnpassant() bool {
 	return m & isEnpassant != 0
+}
+
+func (m Move) isPromo() bool {
+	return m & isPromo != 0
 }
 
 // Returns true if the move doesn't change material balance.
