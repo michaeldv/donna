@@ -576,3 +576,13 @@ func TestPositionMoves400(t *testing.T) {
 	expect.False(t, p.isNull())
 }
 
+// isInCheck
+func TestPositionMoves410(t *testing.T) {
+	p := NewGame().Start()
+	p = p.MakeMove(NewMove(p, E2, E4))
+	p = p.MakeMove(NewMove(p, F7, F6))
+	position := p.MakeMove(NewMove(p, D1, H5))
+
+	expect.True(t, position.isInCheck(position.color))
+	expect.True(t, position.isInCheck(p.color^1))
+}
