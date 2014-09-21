@@ -47,22 +47,12 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			} else if score >= -Checkmate && score < -Checkmate + MaxPly {
 				score += ply
 			}
-
-			// if cached.flags == cacheExact {
-			// 	return score
-			// } else if cached.flags == cacheAlpha && score <= alpha {
-			// 	return alpha
-			// } else if cached.flags == cacheBeta && score >= beta {
-			// 	return beta
-			// }
-			if cached.flags == cacheExact ||
-			   cached.flags == cacheAlpha && score <= alpha ||
-			   cached.flags == cacheBeta && score >= beta {
-
-				// if score >= beta && !inCheck {
-				// 	game.saveGood(depth, cachedMove)
-				// }
-
+			if (cached.flags == cacheExact && isPrincipal) ||
+			   (cached.flags == cacheBeta  && score >= beta) ||
+			   (cached.flags == cacheAlpha && score <= alpha) {
+				if score >= beta && !inCheck && cachedMove != 0 && cachedMove.isQuiet() {
+					game.saveGood(depth, cachedMove)
+				}
 				return score
 			}
 		}
@@ -151,7 +141,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		newDepth := depth - 1
 
 		// Search depth extension.
-		giveCheck := position.isInCheck(p.color^1)
+		giveCheck := position.isInCheck(position.color)
 		if giveCheck {
 			newDepth++
 		}
