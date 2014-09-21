@@ -25,7 +25,9 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 		return 0
 	}
 
+
 	// Probe cache.
+	isPrincipal := (beta - alpha > 1)
 	cacheFlags := uint8(cacheAlpha)
 	if cached := p.probeCache(); cached != nil {
 		if cached.depth >= depth {
@@ -35,32 +37,25 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 			} else if score >= -Checkmate && score < -Checkmate + MaxPly {
 				score += ply
 			}
-
-			// if cached.flags == cacheExact {
-			// 	return score
-			// } else if cached.flags == cacheAlpha && score <= alpha {
-			// 	return alpha
-			// } else if cached.flags == cacheBeta && score >= beta {
-			// 	return beta
-			// }
-			if cached.flags == cacheExact ||
-			   cached.flags == cacheAlpha && score <= alpha ||
-			   cached.flags == cacheBeta && score >= beta {
+			if (cached.flags == cacheExact && isPrincipal) ||
+			   (cached.flags == cacheBeta  && score >= beta) ||
+			   (cached.flags == cacheAlpha && score <= alpha) {
 				return score
 			}
-
 		}
 	}
 
 	inCheck := p.isInCheck(p.color)
-	staticScore := p.Evaluate()
-	if !inCheck && staticScore > alpha {
-		alpha = staticScore
-	}
-	if alpha >= beta {
-		return beta
+	staticScore := alpha
+	if !inCheck {
+		staticScore = p.Evaluate()
+		alpha = Max(alpha, staticScore)
+		if alpha >= beta {
+			return beta
+		}
 	}
 
+	// Generate check evasions or captures.
 	gen := NewGen(p, ply)
 	if inCheck {
 		gen.generateEvasions()
@@ -69,15 +64,25 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	}
 	gen.quickRank()
 
-
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if !gen.isValid(move) || (!inCheck && p.exchange(move) < 0) {
 			continue
 		}
 
+		// Check if the move is an useless capture.
+		useless := !inCheck && !isPrincipal && !move.isPromo() && staticScore + pieceValue[move.capture()] + 64 < alpha
+
 		position := p.MakeMove(move)
 		moveCount++
+
+		// Prune useless captures -- but make sure it's not a capture move
+		// that checks.
+		if useless && !position.isInCheck(position.color) {
+			position.UndoLastMove()
+			continue
+		}
+
 		score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, true)
 		position.UndoLastMove()
 
