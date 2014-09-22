@@ -8,6 +8,11 @@ func (e *Evaluation) analyzeSafety() {
 	var cover, safety Total
 	color := e.position.color
 
+	// Any pawn move invalidates king's square in the pawns hash so that we
+	// could detect it here.
+	whiteKingMoved := e.position.king[White] != e.pawns.king[White]
+	blackKingMoved := e.position.king[Black] != e.pawns.king[Black]
+
 	if engine.trace {
 		defer func() {
 			var his, her Score
@@ -17,34 +22,55 @@ func (e *Evaluation) analyzeSafety() {
 		}()
 	}
 
-	oppositeBishops := func(c, s Score) bool {
-		return e.material.flags & singleBishops != 0 && c.midgame + s.midgame < -onePawn/2 && e.oppositeBishops()
+	oppositeBishops := func(margin int) bool {
+		return e.material.flags & singleBishops != 0 && margin < -onePawn / 2 && e.oppositeBishops()
 	}
 
+	// Set the initial value of king's cover by checking his proximity from
+	// friendly pawns.
+	if whiteKingMoved {
+		cover.white.endgame = e.kingPawnProximity(White)
+		e.pawns.king[White] = e.position.king[White]
+	}
+	if blackKingMoved {
+		cover.black.endgame = e.kingPawnProximity(Black)
+		e.pawns.king[Black] = e.position.king[Black]
+	}
+
+	// Check white king's cover and safety.
 	if e.material.flags & whiteKingSafety != 0 {
-		cover.white = e.kingCover(White)
+		if whiteKingMoved {
+			e.pawns.cover[White] = e.kingCover(White)
+		}
+		cover.white.add(e.pawns.cover[White])
+
 		safety.white = e.kingSafety(White)
-		if oppositeBishops(cover.white, safety.white) {
+		if oppositeBishops(cover.white.midgame + safety.white.midgame) {
 			safety.white.midgame -= bishopDanger.midgame
 		}
 
-		// Apply weights by mapping White (0) to our king safety index
-		// (3), and Black (1) to enemy's king safety index (4).
+		// Apply weights by mapping White to our king safety index [3],
+		// and Black to enemy's king safety index [4].
 		cover.white.apply(weights[3+color])
 		safety.white.apply(weights[3+color])
 
 		e.score.add(cover.white).add(safety.white)
 	}
 
+	// Check black king's cover and safety.
 	if e.material.flags & blackKingSafety != 0 {
-		cover.black = e.kingCover(Black)
+		if blackKingMoved {
+			e.pawns.cover[Black] = e.kingCover(Black)
+		}
+		cover.black.add(e.pawns.cover[Black])
+
 		safety.black = e.kingSafety(Black)
-		if oppositeBishops(cover.black, safety.black) {
+		if oppositeBishops(cover.black.midgame + safety.black.midgame) {
 			safety.black.midgame -= bishopDanger.midgame
 		}
 
-		// Apply weights by mapping Black (1) to our king safety index
-		// (3), and White (0) to enemy's king safety index (4).
+		// Apply weights by mapping Black to our king safety index [3],
+		// and White to enemy's king safety index [4].
 		cover.black.apply(weights[4-color])
 		safety.black.apply(weights[4-color])
 
@@ -134,39 +160,65 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 	return
 }
 
-func (e *Evaluation) kingCover(color int) (penalty Score) {
-	p := e.position
-	pawns := p.outposts[pawn(color)]
-
-	// Pass if the king is on the initial square and has castle rights.
-	hasCastleRights := (p.castles & (castleKingside[color] | castleQueenside[color]) != 0)
-	if p.king[color] == homeKing[color] && hasCastleRights {
-		return
-	}
+func (e *Evaluation) kingCover(color int) (bonus Score) {
+	p, square := e.position, e.position.king[color]
 
 	// Calculate relative square for the king so we could treat black king
 	// as white. Don't bother with the cover if the king is too far.
-	square := Flip(color^1, p.king[color])
-	if square > H3 {
+	relative := Flip(color^1, square)
+	if relative > H3 {
 		return
 	}
-	row, col := Coordinate(square)
-	from, to := Max(0, col-1), Min(7, col+1)
 
-	// For each of the cover columns find the closest same color pawn. The
-	// penalty is carried if the pawn is missing or is too far from the king
-	// (more than one row apart).
+	// If we still have castle rights encourage castle pawns to stay intact
+	// by scoring least safe castle.
+	bonus.midgame = e.kingCoverBonus(color, square, relative)
+	if p.castles & castleKingside[color] != 0 {
+		bonus.midgame = Max(bonus.midgame, e.kingCoverBonus(color, homeKing[color] + 2, G1))
+	}
+	if p.castles & castleQueenside[color] != 0 {
+		bonus.midgame = Max(bonus.midgame, e.kingCoverBonus(color, homeKing[color] - 2, C1))
+	}
+
+	return
+}
+
+func (e *Evaluation) kingCoverBonus(color, square, relative int) (bonus int) {
+	row, col := Coordinate(relative)
+	from, to := Max(0, col-1), Min(7, col+1)
+	bonus = onePawn + onePawn / 3
+
+	// Get friendly pawns adjacent and in front of the king.
+	adjacent := maskIsolated[col] & maskRank[Row(square)]
+	pawns := e.position.outposts[pawn(color)] & (adjacent | maskPassed[color][square])
+
+	// For each of the cover files find the closest friendly pawn. The penalty
+	// is carried if the pawn is missing or is too far from the king (more than
+	// one rank apart).
 	for column := from; column <= to; column++ {
 		if cover := (pawns & maskFile[column]); cover != 0 {
-			closest := Flip(color^1, cover.first()) // Make it relative.
-			if distance := Abs(Row(closest) - row); distance > 1 {
-				penalty.midgame += distance * -coverDistance.midgame
-			}
+			closest := RelRow(cover.closest(color), color)
+			bonus -= penaltyCover[closest - row]
 		} else {
-			penalty.midgame += -coverMissing.midgame
+			bonus -= coverMissing.midgame
 		}
 	}
-	// Log("penalty[%s] => %d\n", C(color), penalty)
+
+	// Log("penalty[%s] => %+v\n", C(color), penalty)
+	return
+}
+
+// Calculates endgame penalty to encourage a king stay closer to friendly pawns.
+func (e *Evaluation) kingPawnProximity(color int) (penalty int) {
+	if pawns := e.position.outposts[pawn(color)]; pawns != 0 {
+		proximity, king := 8, e.position.king[color]
+
+		for pawns != 0 {
+			proximity = Min(proximity, distance[king][pawns.pop()])
+		}
+		penalty = -kingByPawn.endgame * (proximity - 1)
+	}
+
 	return
 }
 

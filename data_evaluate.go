@@ -26,8 +26,8 @@ var (
 	queenOn7th     = Score{  1,  4 }  // Bonus for queen on 7th rank.
 	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
 	hangingAttack  = Score{ 10, 12 }  // Bonus for attacking enemy pieces that are hanging.
+	kingByPawn     = Score{  0,  8 }  // Penalty king being too far from friendly pawns.
 	coverMissing   = Score{ 50,  0 }  // Penalty for missing cover pawn.
-	coverDistance  = Score{ 13,  0 }  // Penalty for cover pawn being distant from the king.
 )
 
 // Weight percentages applied to evaluation scores before computing the overall
@@ -36,8 +36,8 @@ var weights = []Score{
 	{ 100, 100 }, 	// [0] Mobility.
 	{ 100, 100 }, 	// [1] Pawn structure.
 	{ 100, 100 }, 	// [2] Passed pawns.
-	{ 100,   0 }, 	// [3] King safety.
-	{ 100,   0 }, 	// [4] Enemy's king safety.
+	{ 100, 100 }, 	// [3] King safety.
+	{ 100, 100 }, 	// [4] Enemy's king safety.
 }
 
 // Piece values for calculating most valueable victim/least valueable attacker,
@@ -295,12 +295,12 @@ var penaltyPawnThreat = [6]Score {
 
 // Penalty for doubled pawn: A to H, midgame/endgame.
 var penaltyDoubledPawn = [8]Score{
-	{7, 22}, {10, 24}, {12, 24}, {12, 24}, {12, 24}, {12, 24}, {10, 24}, {7, 22},
+	{22, 22}, {10, 24}, {12, 24}, {12, 24}, {12, 24}, {12, 24}, {10, 24}, {22, 22},
 }
 
 // Penalty for isolated pawn that is *not* exposed: A to H, midgame/endgame.
 var penaltyIsolatedPawn = [8]Score{
-	{12, 15}, {18, 17}, {20, 17}, {20, 17}, {20, 17}, {20, 17}, {18, 17}, {12, 15},
+	{16, 15}, {18, 17}, {20, 17}, {20, 17}, {20, 17}, {20, 17}, {18, 17}, {16, 15},
 }
 
 // Penalty for isolated pawn that is exposed: A to H, midgame/endgame.
@@ -316,6 +316,11 @@ var penaltyBackwardPawn = [8]Score{
 // Penalty for backward pawn that is exposed: A to H, midgame/endgame.
 var penaltyWeakBackwardPawn = [8]Score{
 	{15, 21}, {22, 23}, {25, 23}, {25, 23}, {25, 23}, {25, 23}, {22, 23}, {15, 21},
+}
+
+// Penalty for the weak king cover indexed by rank, midgame only.
+var penaltyCover = [8]int {
+	0, 0, 14, 36, 46, coverMissing.midgame, coverMissing.midgame, coverMissing.midgame,
 }
 
 var mobilityKnight = [9]Score{

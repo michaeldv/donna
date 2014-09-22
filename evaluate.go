@@ -78,6 +78,7 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 		}
 
 		eval.checkpoint(`Phase`, eval.material.phase)
+		eval.checkpoint(`Imbalance`, eval.material.score)
 		eval.checkpoint(`PST`, p.tally)
 		eval.checkpoint(`Tempo`, tempo)
 		eval.checkpoint(`Final`, final)

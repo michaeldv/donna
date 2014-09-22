@@ -5,9 +5,11 @@
 package donna
 
 type PawnEntry struct {
-	hash     uint64 	// Pawn hash key.
-	score    Score 		// Static score for the given pawn structure.
-	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
+	hash       uint64 	// Pawn hash key.
+	score      Score 	// Static score for the given pawn structure.
+	king       [2]int 	// King square for both sides.
+	cover      [2]Score 	// King cover penalties for both sides.
+	passers    [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
 
 type PawnCache [8192]PawnEntry
@@ -25,6 +27,11 @@ func (e *Evaluation) analyzePawns() {
 		white.apply(weights[1]); black.apply(weights[1]) // <-- Pawn structure weight.
 		e.pawns.score.clear().add(white).subtract(black)
 		e.pawns.hash = key
+
+		// Force full king shelter evaluation since any legit king square
+		// will be viewed as if the king has moved.
+		e.pawns.king[White], e.pawns.king[Black] = -1, -1
+
 		if engine.trace {
 			e.checkpoint(`Pawns`, Total{white, black})
 		}
@@ -55,7 +62,13 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 	herPawns := e.position.outposts[pawn(color^1)]
 	e.pawns.passers[color] = 0
 
+	// Encourage center pawn moves at the opening.
 	pawns := hisPawns
+	if e.material.phase == 256 && (pawns & maskCenter != 0) {
+		score.midgame += []int{ 0, 60, 80, 80, 80 }[(pawns & maskCenter).count()]
+		// score.midgame -= onePawn / 2 // 5 * 6
+	}
+
 	for pawns != 0 {
 		square := pawns.pop()
 		row, col := Coordinate(square)

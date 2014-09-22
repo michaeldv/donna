@@ -112,6 +112,8 @@ var homeKing = [2]int{ E1, E8 }
 var mask7th = [2]Bitmask{ maskRank[6], maskRank[1] }
 var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
 
+var maskCenter = Bitmask(bit[D4]|bit[E4]|bit[D5]|bit[E5])
+
 // Castle squares that should be *empty* in order for the castle to be valid.
 var gapKing = [2]Bitmask{
 	bit[F1]|bit[G1], bit[F8]|bit[G8],
