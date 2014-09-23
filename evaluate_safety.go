@@ -210,7 +210,7 @@ func (e *Evaluation) kingCoverBonus(color, square, relative int) (bonus int) {
 
 // Calculates endgame penalty to encourage a king stay closer to friendly pawns.
 func (e *Evaluation) kingPawnProximity(color int) (penalty int) {
-	if pawns := e.position.outposts[pawn(color)]; pawns != 0 {
+	if pawns := e.position.outposts[pawn(color)]; pawns != 0 && pawns & e.attacks[king(color)] == 0 {
 		proximity, king := 8, e.position.king[color]
 
 		for pawns != 0 {
