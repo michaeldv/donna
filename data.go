@@ -55,6 +55,7 @@ const (
 	maskDark = Bitmask(0xAA55AA55AA55AA55)
 	maskA1H8 = Bitmask(0x8040201008040201)
 	maskH1A8 = Bitmask(0x0102040810204080)
+	maskCenter = Bitmask(0x0000001818000000)
 )
 
 var bit = [64]Bitmask{
@@ -111,8 +112,6 @@ var eight = [2]int{ 8, -8 }
 var homeKing = [2]int{ E1, E8 }
 var mask7th = [2]Bitmask{ maskRank[6], maskRank[1] }
 var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
-
-var maskCenter = Bitmask(bit[D4]|bit[E4]|bit[D5]|bit[E5])
 
 // Castle squares that should be *empty* in order for the castle to be valid.
 var gapKing = [2]Bitmask{
