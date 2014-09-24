@@ -133,8 +133,8 @@ func (e *Evaluation) run() int {
 
 func (e *Evaluation) wrapUp() {
 
-	// Adjust the score if we have lesser known endgame.
-	if e.material.flags & lesserKnownEndgame != 0 {
+	// Adjust the endgame score if we have lesser known endgame.
+	if e.score.endgame != 0 && e.material.flags & lesserKnownEndgame != 0 {
 		e.inspectEndgame()
 	}
 
