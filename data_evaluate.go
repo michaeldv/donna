@@ -33,10 +33,10 @@ var (
 // Weight percentages applied to evaluation scores before computing the overall
 // blended score.
 var weights = []Score{
-	{ 100, 100 }, 	// [0] Mobility.
-	{ 100, 100 }, 	// [1] Pawn structure.
-	{ 100, 100 }, 	// [2] Passed pawns.
-	{ 100, 100 }, 	// [3] King safety.
+	{ 110, 135 }, 	// [0] Mobility.
+	{ 110,  80 }, 	// [1] Pawn structure.
+	{  85, 105 }, 	// [2] Passed pawns.
+	{ 125, 100 }, 	// [3] King safety.
 	{ 100, 100 }, 	// [4] Enemy's king safety.
 }
 
@@ -286,6 +286,11 @@ var bonusSupportedPawn = [64]int{
 	  0,  1,  1,  2,  2,  1,  1,  0,
 	  0,  0,  0,  0,  0,  0,  0,  0,
      // ^^^^^^^^^^^^^ White ^^^^^^^^^^^^
+}
+
+// Score adjustment based on number of pawns on the center squares in the opening.
+var bonusPawnCenter = [5]int{
+	-50, 25, 75, 80, 80,
 }
 
 // [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen

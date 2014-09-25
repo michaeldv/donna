@@ -62,11 +62,10 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 	herPawns := e.position.outposts[pawn(color^1)]
 	e.pawns.passers[color] = 0
 
-	// Encourage center pawn moves at the opening.
+	// Encourage center pawn moves in the opening.
 	pawns := hisPawns
-	if e.material.phase == 256 && (pawns & maskCenter != 0) {
-		score.midgame += []int{ 0, 60, 80, 80, 80 }[(pawns & maskCenter).count()]
-		// score.midgame -= onePawn / 2 // 5 * 6
+	if e.material.phase > 240 && (pawns & maskCenter) == 0 {
+		score.midgame += bonusPawnCenter[(pawns & maskCenter).count()]
 	}
 
 	for pawns != 0 {
