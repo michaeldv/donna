@@ -30,3 +30,22 @@ func TestEndgame030(t *testing.T) {
 	score, _ := p.EvaluateWithTrace()
 	expect.True(t, score != 0)
 }
+
+// No pawns left.
+func TestEndgame100(t *testing.T) {
+	p := NewGame(`Ke1,Bc1,a2,b2`, `Kd8,Bc8,Nb8`).Start(White)
+	score, _ := p.EvaluateWithTrace()
+	expect.True(t, score != 0)
+}
+
+func TestEndgame110(t *testing.T) {
+	p := NewGame(`Ke1,Bc1`, `Kd8,d5`).Start(White)
+	score, _ := p.EvaluateWithTrace()
+	expect.True(t, score == 0)
+}
+
+func TestEndgame120(t *testing.T) {
+	p := NewGame(`Ke1,Nb1`, `Kd8,a5`).Start(White)
+	score, _ := p.EvaluateWithTrace()
+	expect.True(t, score != 0)
+}
