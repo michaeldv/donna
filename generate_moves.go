@@ -13,19 +13,34 @@ func (gen *MoveGen) generateRootMoves() *MoveGen {
 
 	// Check if the top move is obvious, i.e. it scores 2+ pawns above the
 	// next move.
-	if gen.list[0].score - gen.list[1].score > 2 * onePawn {
-		gen.obvious = gen.list[0].move
-	}
+	//- if gen.list[0].score - gen.list[1].score > 2 * onePawn {
+	//- 	gen.obvious = gen.list[0].move
+	//- }
 	return gen
 }
 
 func (gen *MoveGen) rearrangeRootMoves() *MoveGen {
-	if gen.p.isInCheck(gen.p.color) {
-		gen.reset().quickRank()
+	if len(game.rootpv) > 0 {
+		return gen.reset().rootRank(game.rootpv[0])
 	}
-	return gen.reset().rank(gen.p.cachedMove())
+	return gen.reset().rootRank(Move(0))
 }
 
+func (gen *MoveGen) cleanupRootMoves(depth int) *MoveGen {
+	if gen.size() < 2 {
+		return gen
+	}
+
+	// Always preserve first higest ranking move.
+	for i := 1; i < gen.tail; i++ {
+		if gen.list[i].score == -depth + 1 {
+			gen.tail = i
+			break
+		}
+	}
+
+	return gen.reset()
+}
 
 func (gen *MoveGen) generateAllMoves() *MoveGen {
 	if gen.p.isInCheck(gen.p.color) {

@@ -18,6 +18,9 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		gen.generateRootMoves()
 	} else {
 		gen.rearrangeRootMoves()
+		if depth == 8 { // Skip moves that failed all iterations so far.
+			gen.cleanupRootMoves(depth)
+		}
 	}
 
 	moveCount, bestMove := 0, Move(0)
@@ -25,7 +28,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		position := p.MakeMove(move)
 		moveCount++
 		if engine.uci {
-			engine.uciMove(move, moveCount, depth)
+			engine.uciMove(move, moveCount, depth, gen.list[gen.head-1].score)
 		}
 
 		// Search depth extension.
@@ -59,6 +62,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			bestMove = move
 			cacheFlags = cacheExact
 			game.saveBest(0, move)
+			gen.scoreMove(depth, score)
 
 			if moveCount > 1 {
 				game.volatility++
@@ -70,6 +74,8 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 				cacheFlags = cacheBeta
 				break
 			}
+		} else {
+			gen.scoreMove(depth, -depth)
 		}
 	}
 

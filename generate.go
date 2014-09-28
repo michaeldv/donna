@@ -106,6 +106,21 @@ func (gen *MoveGen) anyValid(p *Position) bool {
 	return false
 }
 
+// Assigns given score to the last move returned by the gen.NextMove().
+func (gen *MoveGen) scoreMove(depth, score int) *MoveGen {
+	current := &gen.list[gen.head - 1]
+
+	//Log("-> Depth %d score %d current.score %d\n", depth, score, current.score)
+	if depth == 1 || current.score == score + 1 {
+		current.score = score
+	} else if score != -depth || (score == -depth && current.score != score) {
+		current.score += score // Fix up aspiration search drop.
+	}
+	//Log("=> Depth %d score %d current.score %d\n", depth, score, current.score)
+
+	return gen
+}
+
 func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 	if gen.size() < 2 {
 		return gen
@@ -141,6 +156,41 @@ func (gen *MoveGen) quickRank() *MoveGen {
 		} else {
 			gen.list[i].score = game.good(move)
 		}
+	}
+
+	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
+	return gen
+}
+
+func (gen *MoveGen) rootRank(bestMove Move) *MoveGen {
+	if gen.size() < 2 {
+		return gen
+	}
+
+	// Find the best move and assign it the highest score.
+	best, killer, semikiller, highest := -1, -1, -1, -Checkmate
+	for i := gen.head; i < gen.tail; i++ {
+		current := &gen.list[i]
+		if current.move == bestMove {
+			best = i
+		} else if current.move == game.killers[gen.ply][0] {
+			killer = i
+		} else if current.move == game.killers[gen.ply][1] {
+			semikiller = i
+		}
+		current.score += game.good(current.move) >> 3
+		if current.score > highest {
+			highest = current.score
+		}
+	}
+	if best != -1 {
+		gen.list[best].score = highest + 10
+	}
+	if killer != -1 {
+		gen.list[killer].score = highest + 2
+	}
+	if semikiller != -1 {
+		gen.list[semikiller].score = highest + 1
 	}
 
 	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
