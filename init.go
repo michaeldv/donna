@@ -358,10 +358,20 @@ func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame 
 		flags |= lesserKnownEndgame
 		endgame = (*Evaluation).rookAndPawnVsRook
 
+	// Lesser known endgame: no pawns left.
+	} else if (wP == 0 || bP == 0) && wMajor - bMajor == 0 && Abs(wMinor - bMinor) <= 1 {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).noPawnsLeft
+
+	// Lesser known endgame: single pawn with not a lot of material.
+	} else if (wP == 1 || bP == 1) && wMajor - bMajor == 0 && Abs(wMinor - bMinor) <= 1 {
+		flags |= lesserKnownEndgame
+		endgame = (*Evaluation).lastPawnLeft
+
 	// Check for potential opposite-colored bishops.
 	} else if wB * bB == 1 {
 		flags |= singleBishops
-		if allMajor == 0 && allMinor == 2 && Abs(wP - bP) < 3 {
+		if allMajor == 0 && allMinor == 2 {
 			flags |= lesserKnownEndgame
 			endgame = (*Evaluation).bishopsAndPawns
 		} else if flags & (whiteKingSafety | blackKingSafety) == 0 {

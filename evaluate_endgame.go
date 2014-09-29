@@ -14,8 +14,13 @@ func (e *Evaluation) evaluateEndgame() int {
 
 func (e *Evaluation) inspectEndgame() {
 	markdown := e.material.endgame(e)
-	if markdown >= 0 {
-		e.score.endgame = e.score.endgame * markdown / 128
+	if markdown == 0 {
+		e.score = Score{0, 0}
+	} else if markdown > 0xFFFF {
+		mul, div := markdown >> 16, markdown & 0xFFFF
+		e.score.endgame = e.score.endgame * mul / div
+	} else if markdown > 0 {
+		e.score.endgame /= markdown
 	}
 }
 
@@ -63,20 +68,22 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	return -1
 }
 
-// Checks if we have drawish bishop-only endgame with the opposite-colored bishops.
+// Bishop-only endgame: drop the score if we have opposite-colored bishops.
 func (e *Evaluation) bishopsAndPawns() int {
 	if e.oppositeBishops() {
-		pawns := Abs(e.position.count[Pawn] - e.position.count[BlackPawn])
-		return 4 * pawns * pawns + 1
+		if pawns := Abs(e.position.count[Pawn] - e.position.count[BlackPawn]); pawns == 1 {
+			return 8 // --> 1/8 of original score.
+		}
+		return 2 // --> 1/2 of original score.
 	}
 
 	return -1
 }
 
-// Checks if we are to reduce the score because of opposite-colored bishops.
+// Single bishops plus some minors: drop the score if we have opposite-colored bishops.
 func (e *Evaluation) drawishBishops() int {
 	if e.oppositeBishops() {
-		return 64 // Drop endgame score by the factor of 2.
+		return 4 // --> 1/4 of original score.
 	}
 	return -1
 }
@@ -95,4 +102,50 @@ func (e *Evaluation) rookAndPawnVsRook() int { // STUB.
 
 func (e *Evaluation) queenVsRookAndPawns() int { // STUB.
 	return -1 // 96
+}
+
+func (e *Evaluation) lastPawnLeft() int {
+	color := e.strongerSide()
+	count := &e.position.count
+
+	if (color == White && count[Pawn] == 1) || (color == Black && count[BlackPawn] == 1) {
+		return (3 << 16) | 4 // --> 3/4 of original score.
+	}
+
+	return -1
+}
+
+func (e *Evaluation) noPawnsLeft() int {
+	color := e.strongerSide()
+	count := &e.position.count
+	whiteMinorOnly := count[Queen] + count[Rook] == 0 && count[Bishop] + count[Knight] == 1
+	blackMinorOnly := count[BlackQueen] + count[BlackRook] == 0 && count[BlackBishop] + count[BlackKnight] == 1
+
+	if color == White && count[Pawn] == 0 {
+		if whiteMinorOnly {
+			// There is a theoretical chance of winning if opponent's pawns are on
+			// edge files (ex. some puzzles).
+			if e.position.outposts[BlackPawn] & (maskFile[0] | maskFile[7]) != 0 {
+				return 64 // --> 1/64 of original score.
+			}
+			return 0
+		} else if blackMinorOnly {
+			return 16 // --> 1/16 of original score.
+		}
+		return (3 << 16) | 16 // --> 3/16 of original score.
+	}
+
+	if color == Black && count[BlackPawn] == 0 {
+		if blackMinorOnly {
+			if e.position.outposts[Pawn] & (maskFile[0] | maskFile[7]) != 0 {
+				return 64 // --> 1/64 of original score.
+			}
+			return 0
+		} else if whiteMinorOnly {
+			return 16 // --> 1/16 of original score.
+		}
+		return (3 << 16) | 16 // --> 3/16 of original score.
+	}
+
+	return -1
 }
