@@ -94,7 +94,7 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 
 	// Initialize the score with incremental PST value and right to move.
 	e.score = p.tally
-	if e.position.color == White {
+	if p.color == White {
 		e.score.add(rightToMove)
 	} else {
 		e.score.subtract(rightToMove)
@@ -153,5 +153,5 @@ func (e *Evaluation) checkpoint(tag string, metric interface{}) {
 func (e *Evaluation) oppositeBishops() bool {
 	bishops := e.position.outposts[Bishop] | e.position.outposts[BlackBishop]
 
-	return bishops & maskDark == 0 || bishops & ^maskDark == 0
+	return bishops & maskDark != 0 && bishops & ^maskDark != 0
 }
