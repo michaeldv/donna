@@ -217,11 +217,11 @@ func TestMaterial130(t *testing.T) {
 
 // Single bishops (midgame).
 func TestMaterial140(t *testing.T) {
-	balance := materialBalance[Bishop] + materialBalance[Knight] + materialBalance[Rook] + materialBalance[BlackBishop] + materialBalance[BlackKnight] + materialBalance[BlackRook]
+	balance := materialBalance[Pawn] * 2 + materialBalance[Bishop] + materialBalance[Knight] + materialBalance[Rook] + materialBalance[BlackPawn] * 2 + materialBalance[BlackBishop] + materialBalance[BlackKnight] + materialBalance[BlackRook]
 	expect.Eq(t, materialBase[balance].flags, uint8(singleBishops | lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).drawishBishops)
 
-	p := NewGame(`Ke1,Ra1,Bc1,Nb1`, `Ke8,Rh8,Bf8,Ng8`).Start(White)
+	p := NewGame(`Ke1,Ra1,Bc1,Nb1,d2,e2`, `Ke8,Rh8,Bf8,Ng8,d7,e7`).Start(White)
 	expect.Eq(t, p.balance, balance)
 }
 
