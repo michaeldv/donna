@@ -201,7 +201,7 @@ func (game *Game) keepThinking(depth int, move Move) bool {
 
 	// Stop deepening if it's the only move.
 	gen := NewRootGen(nil, depth)
-	if depth == 2 && gen.onlyMove() {
+	if gen.onlyMove() {
 		engine.debug(fmt.Sprintf("# Depth %02d Only move %s\n", depth, move))
 		return false
 	}
