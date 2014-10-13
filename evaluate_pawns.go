@@ -64,7 +64,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 
 	// Encourage center pawn moves in the opening.
 	pawns := hisPawns
-	if e.material.phase > 240 && (pawns & maskCenter) == 0 {
+	if e.material.phase > 255 && (pawns & maskCenter) == 0 {
 		score.midgame += bonusPawnCenter[(pawns & maskCenter).count()]
 	}
 
@@ -110,6 +110,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 		}
 
 		// Penalty if the pawn is backward.
+		backward := false
 		if (!passed && !supported && !isolated) {
 
 			// Backward pawn should not be attacking enemy pawns.
@@ -122,6 +123,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 					// preventing its advance.
 					enemy := pawnMoves[color][square].pushed(color)
 					if (enemy | enemy.pushed(color)) & herPawns != 0 {
+						backward = true
 						if !exposed {
 							score.subtract(penaltyBackwardPawn[col])
 						} else {
@@ -133,7 +135,18 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 		}
 
 		// TODO: Bonus if the pawn has good chance to become a passed pawn.
+		if exposed && supported && !passed && !backward {
+			his := maskPassed[color^1][square + eight[color]] & maskIsolated[col] & hisPawns
+			her := maskPassed[color][square] & maskIsolated[col] & herPawns
+			if his.count() >= her.count() {
+				score.add(bonusSemiPassedPawn[RelRow(square, color)])
+			}
+		}
 	}
+
+	// Penalty for blocked pawns.
+	blocked := (hisPawns.pushed(color) & e.position.board).count()
+	score.subtract(pawnBlocked.times(blocked))
 
 	return
 }
@@ -195,10 +208,6 @@ func (e *Evaluation) pawnPassers(color int) (score Score) {
 		}
 		score.add(bonus)
 	}
-
-	// Penalty for blocked pawns.
-	blocked := (p.outposts[pawn(color)].pushed(color) & p.board).count()
-	score.subtract(pawnBlocked.times(blocked))
 
 	return
 }
