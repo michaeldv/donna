@@ -36,7 +36,8 @@ type Function func(*Evaluation) int
 type MaterialEntry struct {
 	score     Score 	// Score adjustment for the given material.
 	endgame   Function 	// Function to analyze an endgame position.
-	phase     int 		// Game phase, based on available material.
+	phase     int 		// Game phase based on available material.
+	turf      int 		// Home turf score for the game opening.
 	flags     uint8    	// Evaluation flags based on material balance.
 }
 

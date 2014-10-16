@@ -241,8 +241,9 @@ func initMaterial() {
 			wP * materialBalance[Pawn]        +
 			bP * materialBalance[BlackPawn]
 
-		// Compute game phase.
+		// Compute game phase and home turf values.
 		materialBase[index].phase = 12 * (wN + bN + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
+		materialBase[index].turf = (wN + bN + wB + bB) * 25
 
 		// Set up evaluation flags and endgame handlers.
 		materialBase[index].flags,

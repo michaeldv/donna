@@ -113,6 +113,12 @@ var homeKing = [2]int{ E1, E8 }
 var mask7th = [2]Bitmask{ maskRank[6], maskRank[1] }
 var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
 
+// Home turf in the center.
+var homeTurf = [2]Bitmask{
+	(maskFile[A2H2]|maskFile[A3H3]|maskFile[A4H4]) & (maskRank[C1C8]|maskRank[D1D8]|maskRank[E1E8]|maskRank[F1F8]),
+	(maskFile[A7H7]|maskFile[A6H6]|maskFile[A5H5]) & (maskRank[C1C8]|maskRank[D1D8]|maskRank[E1E8]|maskRank[F1F8]),
+}
+
 // Castle squares that should be *empty* in order for the castle to be valid.
 var gapKing = [2]Bitmask{
 	bit[F1]|bit[G1], bit[F8]|bit[G8],

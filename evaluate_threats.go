@@ -5,16 +5,29 @@
 package donna
 
 func (e *Evaluation) analyzeThreats() {
-	white := e.threats(White, e.attacks[White], e.attacks[Black])
-	black := e.threats(Black, e.attacks[Black], e.attacks[White])
+	var threats, center Total
 
 	if engine.trace {
 		defer func() {
-			e.checkpoint(`Threats`, Total{white, black})
+			e.checkpoint(`Threats`, threats)
+			if e.material.turf != 0 && e.material.flags & (whiteKingSafety | blackKingSafety) != 0 {
+				e.checkpoint(`Center`, center)
+			}
 		}()
 	}
 
-	e.score.add(white).subtract(black)
+	threats.white = e.threats(White, e.attacks[White], e.attacks[Black])
+	threats.black = e.threats(Black, e.attacks[Black], e.attacks[White])
+	e.score.add(threats.white).subtract(threats.black)
+
+	if e.material.turf != 0 && e.material.flags & whiteKingSafety != 0 {
+		center.white = e.center(White, e.attacks[White], e.attacks[Black], e.attacks[pawn(Black)])
+		e.score.add(center.white)
+	}
+	if e.material.turf != 0 && e.material.flags & blackKingSafety != 0 {
+		center.black = e.center(Black, e.attacks[Black], e.attacks[White], e.attacks[pawn(White)])
+		e.score.subtract(center.black)
+	}
 }
 
 func (e *Evaluation) threats(color int, hisAttacks, herAttacks Bitmask) (score Score) {
@@ -53,5 +66,26 @@ func (e *Evaluation) threats(color int, hisAttacks, herAttacks Bitmask) (score S
 			score.add(hangingAttack.times(hanging))
 		}
 	}
+	return
+}
+
+func (e *Evaluation) center(color int, hisAttacks, herAttacks, herPawnAttacks Bitmask) (score Score) {
+	pawns := e.position.outposts[pawn(color)]
+	safe := homeTurf[color] & ^pawns & ^herPawnAttacks & (hisAttacks | ^herAttacks)
+	turf := safe & pawns
+
+	if color == White {
+		turf |= turf >> 8   // A4..H4 -> A3..H3
+		turf |= turf >> 16  // A4..H4 | A3..H3 -> A2..H2 | A1..H1
+		turf &= safe 	    // Keep safe squares only.
+		safe <<= 32 	    // Move up to black's half of the board.
+	} else {
+		turf |= turf << 8   // A5..H5 -> A6..H6
+		turf |= turf << 16  // A5..H5 | A6..H6 -> A7..H7 | A8..H8
+		turf &= safe 	    // Keep safe squares only.
+		safe >>= 32 	    // Move down to white's half of the board.
+	}
+
+	score.midgame = (safe | turf).count() * e.material.turf / 100
 	return
 }
