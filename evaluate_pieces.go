@@ -262,9 +262,9 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 
 			// Kingside box: king on E/F/G vs. rook on H/G/F files.
 			if column > kingColumn && rookBoxH[color].isSet(square) && kingBoxH[color].isSet(kingSquare) {
-				score.midgame -= rookBoxed.midgame + safeSquares * 10
+				score.midgame -= (rookBoxed.midgame - safeSquares * 10)
 				if p.castles & castleKingside[color] == 0 {
-					score.midgame -= rookBoxed.midgame + safeSquares * 10
+					score.midgame -= (rookBoxed.midgame - safeSquares * 10)
 				}
 			}
 		}
