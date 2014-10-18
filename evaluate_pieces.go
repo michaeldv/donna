@@ -109,7 +109,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if knight is behind friendly pawn.
-		if RelRow(color, square) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
+		if RelRow(square, color) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -150,12 +150,8 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
 
 		// Penalty for light/dark-colored pawns restricting a bishop.
-		// This applies to single bishop only since pawns blocking a
-		// pair of bishops are penalized when evaluating material.
-		if p.count[bishop(color)] == 1 {
-			if count := (SameAs(square) & p.outposts[pawn(color)]).count(); count > 0 {
-				score.subtract(bishopPawn.times(count))
-			}
+		if count := (SameAs(square) & p.outposts[pawn(color)]).count(); count > 0 {
+			score.subtract(bishopPawn.times(count))
 		}
 
 		// Penalty if bishop is attacked by enemy's pawn.
@@ -164,7 +160,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if bishop is behind friendly pawn.
-		if RelRow(color, square) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
+		if RelRow(square, color) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -228,13 +224,15 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 		mobility.add(mobilityRook[safeSquares])
 
 		// Penalty if rook is attacked by enemy's pawn.
-		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
+		if maskPawn[color^1][square] & herPawns != 0 {
 			score.subtract(penaltyPawnThreat[Rook/2])
 		}
 
 		// Bonus if rook is attacking enemy's pawns.
-		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 {
-			score.add(rookOnPawn.times(count))
+		if RelRow(square, color) >= 4 {
+			if count := (attacks & herPawns).count(); count > 0 {
+				score.add(rookOnPawn.times(count))
+			}
 		}
 
 		// Bonuses if rook is on open or semi-open file.
@@ -301,7 +299,7 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened b
 		}
 
 		// Bonus if queen is out and attacking enemy's pawns.
-		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(color, square) > 3 {
+		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(square, color) > 3 {
 			score.add(queenOnPawn.times(count))
 		}
 
