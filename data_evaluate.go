@@ -293,11 +293,6 @@ var bonusSupportedPawn = [64]int{
      //^^^^^^^^^^^^^^ White ^^^^^^^^^^^^
 }
 
-// Score adjustment based on number of pawns on the center squares in the opening.
-var bonusPawnCenter = [5]int{
-	-25, 35, 40, 40, 40,
-}
-
 // [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
 var penaltyPawnThreat = [6]Score {
 	{0, 0}, {0, 0}, {26, 35}, {26, 35}, {38, 49}, {43, 59},

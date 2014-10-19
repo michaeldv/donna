@@ -64,9 +64,6 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 
 	// Encourage center pawn moves in the opening.
 	pawns := hisPawns
-	if e.material.phase > 255 && (pawns & maskCenter) == 0 {
-		score.midgame += bonusPawnCenter[(pawns & maskCenter).count()]
-	}
 
 	for pawns != 0 {
 		square := pawns.pop()
@@ -134,7 +131,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 			}
 		}
 
-		// TODO: Bonus if the pawn has good chance to become a passed pawn.
+		// Bonus if the pawn has good chance to become a passed pawn.
 		if exposed && supported && !passed && !backward {
 			his := maskPassed[color^1][square + eight[color]] & maskIsolated[col] & hisPawns
 			her := maskPassed[color][square] & maskIsolated[col] & herPawns
@@ -142,6 +139,15 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 				score.add(bonusSemiPassedPawn[RelRow(square, color)])
 			}
 		}
+
+		// Encourage center pawn moves, even more so if the pawns are connected.
+		if bit[square] & maskCenter != 0 {
+			score.midgame += bonusPawn[color][square]
+			if supported {
+				score.midgame += bonusPawn[color][square]
+			}
+		}
+
 	}
 
 	// Penalty for blocked pawns.
