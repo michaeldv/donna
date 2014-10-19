@@ -12,7 +12,7 @@ func TestSafety000(t *testing.T) {
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
-	expect.Eq(t, black.midgame, 0)
+	expect.Eq(t, black.midgame, 133)
 	expect.Eq(t, black.endgame, 0)
 	expect.Eq(t, white, black)
 }
@@ -23,7 +23,7 @@ func TestSafety010(t *testing.T) {
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
-	expect.Eq(t, black.midgame, -penaltyCover[2])
+	expect.Eq(t, black.midgame, 133 - penaltyCover[2])
 	expect.Eq(t, white, black)
 }
 
@@ -33,7 +33,7 @@ func TestSafety020(t *testing.T) {
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
-	expect.Eq(t, black.midgame, -penaltyCover[3])
+	expect.Eq(t, black.midgame, 133 - penaltyCover[3])
 	expect.Eq(t, white, black)
 }
 
@@ -43,7 +43,7 @@ func TestSafety030(t *testing.T) {
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
-	expect.Eq(t, black.midgame, -penaltyCover[4])
+	expect.Eq(t, black.midgame, 133 - penaltyCover[4])
 	expect.Eq(t, white, black)
 }
 
@@ -53,7 +53,7 @@ func TestSafety040(t *testing.T) {
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
-	expect.Eq(t, black.midgame, -penaltyCover[2] - penaltyCover[3])
+	expect.Eq(t, black.midgame, 133 - penaltyCover[2] - penaltyCover[3])
 	expect.Eq(t, white, black)
 }
 
@@ -63,8 +63,8 @@ func TestSafety100(t *testing.T) {
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
-	expect.Eq(t, white.midgame, -penaltyCover[2])
-	expect.Eq(t, black.midgame, -penaltyCover[2])
+	expect.Eq(t, white.midgame, 133 - penaltyCover[2])
+	expect.Eq(t, black.midgame, 133 - penaltyCover[2])
 	expect.Eq(t, white, black)
 }
 
@@ -74,29 +74,25 @@ func TestSafety110(t *testing.T) {
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
-	expect.Eq(t, white.midgame, penaltyCover[0])
-	expect.Eq(t, black.midgame, penaltyCover[0])
+	expect.Eq(t, white.midgame, 133 - penaltyCover[0])
+	expect.Eq(t, black.midgame, 133 - penaltyCover[0])
 	expect.Eq(t, white, black)
 }
 
 func TestSafety120(t *testing.T) {
-Log(); defer Log()
 	game := NewGame(`Ke1,Qf3,Ra1,Rh1,Bc1,Bf1,Nc3,a2,b2,c2,d4,e3,f2,g2,h3`, `Ke8,Qd8,Ra8,Rh8,Bf8,Nc6,Nf6,a7,b7,c7,d5,e7,f7,g7,h7`)
 	game.Start(White).EvaluateWithTrace()
-Log(game)
 	white := eval.metrics[`-Cover`].(Total).white
 
-	expect.Eq(t, white.midgame, penaltyCover[0])
+	expect.Eq(t, white.midgame, 119)
 }
 
 func TestSafety130(t *testing.T) {
-Log(); defer Log()
 	game := NewGame(`Ke1,Qd1,Ra1,Rh1,Bc1,Bf1,Nc3,a2,b2,c2,d4,e3,f2,f3,h3`, `Ke8,Qd8,Ra8,Rh8,Bf8,Nc6,Nf6,a7,b7,c7,d5,e7,f7,g7,h7`)
 	game.Start(White).EvaluateWithTrace()
-Log(game)
 	white := eval.metrics[`-Cover`].(Total).white
 
-	expect.Eq(t, white.midgame, penaltyCover[0])
+	expect.Eq(t, white.midgame, 95)
 }
 
 // Friendly pawn distance.
