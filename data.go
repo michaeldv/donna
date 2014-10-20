@@ -106,6 +106,7 @@ var maskFile = [8]Bitmask{ // A to H
 var maskIsolated = [8]Bitmask{
 	0x0202020202020202, 0x0505050505050505, 0x0A0A0A0A0A0A0A0A, 0x1414141414141414,
 	0x2828282828282828, 0x5050505050505050, 0xA0A0A0A0A0A0A0A0, 0x4040404040404040,
+
 }
 
 var eight = [2]int{ 8, -8 }
@@ -115,8 +116,7 @@ var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
 
 // Home turf in the center.
 var homeTurf = [2]Bitmask{
-	(maskFile[A2H2]|maskFile[A3H3]|maskFile[A4H4]) & (maskRank[C1C8]|maskRank[D1D8]|maskRank[E1E8]|maskRank[F1F8]),
-	(maskFile[A7H7]|maskFile[A6H6]|maskFile[A5H5]) & (maskRank[C1C8]|maskRank[D1D8]|maskRank[E1E8]|maskRank[F1F8]),
+	0x000000003C3C3C00, 0x003C3C3C00000000,
 }
 
 // Castle squares that should be *empty* in order for the castle to be valid.
