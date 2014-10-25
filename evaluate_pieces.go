@@ -109,7 +109,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if knight is behind friendly pawn.
-		if RelRow(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
+		if rank(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -160,7 +160,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if bishop is behind friendly pawn.
-		if RelRow(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
+		if rank(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -229,7 +229,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 		}
 
 		// Bonus if rook is attacking enemy's pawns.
-		if RelRow(square, color) >= 4 {
+		if rank(square, color) >= 4 {
 			if count := (attacks & herPawns).count(); count > 0 {
 				score.add(rookOnPawn.times(count))
 			}
@@ -299,7 +299,7 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened b
 		}
 
 		// Bonus if queen is out and attacking enemy's pawns.
-		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && RelRow(square, color) > 3 {
+		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && rank(square, color) > 3 {
 			score.add(queenOnPawn.times(count))
 		}
 

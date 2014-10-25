@@ -136,7 +136,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 			his := maskPassed[color^1][square + eight[color]] & maskIsolated[col] & hisPawns
 			her := maskPassed[color][square] & maskIsolated[col] & herPawns
 			if his.count() >= her.count() {
-				score.add(bonusSemiPassedPawn[RelRow(square, color)])
+				score.add(bonusSemiPassedPawn[rank(square, color)])
 			}
 		}
 
@@ -163,11 +163,11 @@ func (e *Evaluation) pawnPassers(color int) (score Score) {
 	pawns := e.pawns.passers[color]
 	for pawns != 0 {
 		square := pawns.pop()
-		row := RelRow(square, color)
-		bonus := bonusPassedPawn[row]
+		rank := rank(square, color)
+		bonus := bonusPassedPawn[rank]
 
-		if row > A2H2 {
-			extra := extraPassedPawn[row]
+		if rank > A2H2 {
+			extra := extraPassedPawn[rank]
 			nextSquare := square + eight[color]
 
 			// Adjust endgame bonus based on how close the kings are from the

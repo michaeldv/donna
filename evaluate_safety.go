@@ -168,12 +168,12 @@ func (e *Evaluation) kingCover(color int) (bonus Score) {
 }
 
 func (e *Evaluation) kingCoverBonus(color, square, relative int) (bonus int) {
-	row, col := Coordinate(relative)
-	from, to := Max(0, col-1), Min(7, col+1)
+	r, c := Coordinate(relative)
+	from, to := Max(0, c - 1), Min(7, c + 1)
 	bonus = onePawn + onePawn / 3
 
 	// Get friendly pawns adjacent and in front of the king.
-	adjacent := maskIsolated[col] & maskRank[Row(square)]
+	adjacent := maskIsolated[c] & maskRank[row(square)]
 	pawns := e.position.outposts[pawn(color)] & (adjacent | maskPassed[color][square])
 
 	// For each of the cover files find the closest friendly pawn. The penalty
@@ -181,8 +181,8 @@ func (e *Evaluation) kingCoverBonus(color, square, relative int) (bonus int) {
 	// one rank apart).
 	for column := from; column <= to; column++ {
 		if cover := (pawns & maskFile[column]); cover != 0 {
-			closest := RelRow(cover.closest(color), color)
-			bonus -= penaltyCover[closest - row]
+			closest := rank(cover.closest(color), color)
+			bonus -= penaltyCover[closest - r]
 		} else {
 			bonus -= coverMissing.midgame
 		}

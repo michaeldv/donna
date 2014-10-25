@@ -4,8 +4,6 @@
 
 package donna
 
-import ()
-
 // Non-capturing checks.
 func (gen *MoveGen) generateChecks() *MoveGen {
 	p := gen.p
@@ -93,8 +91,8 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					case King:
 						// Make sure the king steps out of attack file or rank.
 						prohibit := maskNone
-						if row := Row(from); row == Row(square) {
-							prohibit = maskRank[row]
+						if r := row(from); r == row(square) {
+							prohibit = maskRank[r]
 						} else {
 							prohibit = maskFile[Col(square)]
 						}

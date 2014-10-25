@@ -10,23 +10,25 @@ import (
 	`time`
 )
 
-// Returns row number for the given bit index.
-func Row(n int) int {
-	return n >> 3 // n / 8
+// Returns row number in 0..7 range for the given square.
+func row(square int) int {
+	return square >> 3
 }
 
-// Returns column number for the given bit index.
-func Col(n int) int {
-	return n & 7 // n % 8
+// Returns column number in 0..7 range for the given square.
+func Col(square int) int {
+	return square & 7
 }
 
-// Returns row and column numbers for the given bit index.
+// Returns both row and column numbers for the given square.
 func Coordinate(n int) (int, int) {
-	return Row(n), Col(n)
+	return row(n), Col(n)
 }
 
-func RelRow(square, color int) int {
-	return Row(square) ^ (color * 7)
+// Returns relative rank for the square in 0..7 range. For example E2 is rank 1
+// for white and rank 6 for black.
+func rank(square, color int) int {
+	return row(square) ^ (color * 7)
 }
 
 // Returns 0..63 square number for the given row/column coordinate.

@@ -1620,7 +1620,7 @@ func Bitbase() {
 			for moves != 0 {
 				outcome |= base[pack(Black, moves.pop(), bKing, wPawn)]
 			}
-			if row := Row(wPawn); row < A7H7 {
+			if row := row(wPawn); row < A7H7 {
 				push := wPawn + 8
 				outcome |= base[pack(Black, wKing, bKing, push)]
 

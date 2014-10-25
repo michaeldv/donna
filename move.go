@@ -40,7 +40,7 @@ func NewPawnMove(p *Position, square, target int) Move {
 		// Check if pawn jump causes en-passant. This is done by verifying
 		// whether enemy pawns occupy squares ajacent to the target square.
 		pawns := p.outposts[pawn(p.color ^ 1)]
-		if pawns & maskIsolated[Col(target)] & maskRank[Row(target)] != 0 {
+		if pawns & maskIsolated[Col(target)] & maskRank[row(target)] != 0 {
 			return NewEnpassant(p, square, target)
 		}
 	}
@@ -208,9 +208,9 @@ func (m Move) notation() string {
 
 	from, to, _, _ := m.split()
 	buffer.WriteByte(byte(Col(from)) + 'a')
-	buffer.WriteByte(byte(Row(from)) + '1')
+	buffer.WriteByte(byte(row(from)) + '1')
 	buffer.WriteByte(byte(Col(to)) + 'a')
-	buffer.WriteByte(byte(Row(to)) + '1')
+	buffer.WriteByte(byte(row(to)) + '1')
 	if m & isPromo != 0 {
 		buffer.WriteByte(m.promo().char() + 32)
 	}
@@ -240,14 +240,14 @@ func (m Move) String() (str string) {
 		}
 	}
 	buffer.WriteByte(byte(Col(from)) + 'a')
-	buffer.WriteByte(byte(Row(from)) + '1')
+	buffer.WriteByte(byte(row(from)) + '1')
 	if capture == 0 {
 		buffer.WriteByte('-')
 	} else {
 		buffer.WriteByte('x')
 	}
 	buffer.WriteByte(byte(Col(to)) + 'a')
-	buffer.WriteByte(byte(Row(to)) + '1')
+	buffer.WriteByte(byte(row(to)) + '1')
 	if m & isPromo != 0 {
 		buffer.WriteByte(m.promo().char())
 	}

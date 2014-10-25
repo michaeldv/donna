@@ -21,7 +21,7 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
 		// while for pawns on the 7th file the moves include captures
 		// as well as promotion on empty square in front of the pawn.
 		//
-		if row := RelRow(square, color); row != 6 {
+		if rank := rank(square, color); rank != 6 {
 			gen.movePawn(square, gen.p.targets(square)&gen.p.outposts[enemy])
 		} else {
 			gen.movePawn(square, gen.p.targets(square))
