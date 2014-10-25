@@ -5,17 +5,17 @@
 *.tmproj
 tmtags
 
-# Emacs
-*~
-\#*
-.\#*
-
 # Vim
 *.swp
 
 # Other
 ~*
+*~
 *.*~
+
+# Builds, logs and tools.
+donna
+cmd/donna
 logs/*
 tools/*
 
