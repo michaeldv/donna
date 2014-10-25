@@ -78,7 +78,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 						// If pawn and rook share the same file then non-capturing
 						// discovered check is not possible since the pawn is going
 						// to stay on the same file no matter what.
-						if Col(from) == Col(to) {
+						if col(from) == col(to) {
 							continue
 						}
 						// Block pawn promotions (since they are treated as captures)
@@ -94,7 +94,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 						if r := row(from); r == row(square) {
 							prohibit = maskRank[r]
 						} else {
-							prohibit = maskFile[Col(square)]
+							prohibit = maskFile[col(square)]
 						}
 						gen.moveKing(to, p.targets(to) & ^p.board & ^prohibit)
 					default:
@@ -106,7 +106,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	}
 
 	// Non-capturing Pawn checks.
-	outposts = p.outposts[pawn(color)] & maskIsolated[Col(square)]
+	outposts = p.outposts[pawn(color)] & maskIsolated[col(square)]
 	for outposts != 0 {
 		from := outposts.pop()
 		if target := maskPawn[color][square] & p.targets(from); target != 0 {

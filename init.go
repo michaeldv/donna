@@ -66,11 +66,11 @@ func init() {
 
 func initMasks() {
 	for square := A1; square <= H8; square++ {
-		row, col := Coordinate(square)
+		row, col := coordinate(square)
 
 		// Distance, Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
 		for i := A1; i <= H8; i++ {
-			r, c := Coordinate(i)
+			r, c := coordinate(i)
 
 			distance[square][i] = Max(Abs(row - r), Abs(col - c))
 			setupMasks(square, i, row, col, r, c)
@@ -398,34 +398,34 @@ func indexedBitmask(index int, mask Bitmask) (bitmask Bitmask) {
 }
 
 func createRookMask(square int) Bitmask {
-	row, col := Coordinate(square)
+	row, col := coordinate(square)
 	bitmask := (maskRank[row] | maskFile[col]) ^ bit[square]
 
 	return *bitmask.trim(row, col)
 }
 
 func createBishopMask(square int) Bitmask {
-	row, col := Coordinate(square)
+	r, c := coordinate(square)
 	bitmask := Bitmask(0)
 
-	if sq := square + 7; sq <= H8 && Col(sq) == col - 1 {
+	if sq := square + 7; sq <= H8 && col(sq) == c - 1 {
 		bitmask = maskDiagonal[square][sq]
-	} else if sq := square - 7; sq >= A1 && Col(sq) == col + 1 {
+	} else if sq := square - 7; sq >= A1 && col(sq) == c + 1 {
 		bitmask = maskDiagonal[square][sq]
 	}
 
-	if sq := square + 9; sq <= H8 && Col(sq) == col + 1 {
+	if sq := square + 9; sq <= H8 && col(sq) == c + 1 {
 		bitmask |= maskDiagonal[square][sq]
-	} else if sq := square - 9; sq >= A1 && Col(sq) == col - 1 {
+	} else if sq := square - 9; sq >= A1 && col(sq) == c - 1 {
 		bitmask |= maskDiagonal[square][sq]
 	}
 	bitmask ^= bit[square]
 
-	return *bitmask.trim(row, col)
+	return *bitmask.trim(r, c)
 }
 
 func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
-	row, col := Coordinate(square)
+	row, col := coordinate(square)
 
 	// North.
 	for c, r := col, row + 1; r <= 7; r++ {
@@ -463,7 +463,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 }
 
 func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
-	row, col := Coordinate(square)
+	row, col := coordinate(square)
 
 	// North East.
 	for c, r := col + 1, row + 1; c <= 7 && r <= 7; c, r = c+1, r+1 {

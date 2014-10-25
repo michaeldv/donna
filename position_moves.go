@@ -96,7 +96,7 @@ func (p *Position) MakeMove(move Move) *Position {
 		pp.reversible = false
 		if to != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(color^1), from, to)
-			pp.hash ^= hashEnpassant[Col(p.enpassant)]
+			pp.hash ^= hashEnpassant[col(p.enpassant)]
 		} else {
 			pp.capturePiece(capture, from, to)
 		}
@@ -124,7 +124,7 @@ func (p *Position) MakeMove(move Move) *Position {
 			pp.reversible = false
 			if move.isEnpassant() {
 				pp.enpassant = from + eight[color] // Save the en-passant square.
-				pp.hash ^= hashEnpassant[Col(pp.enpassant)]
+				pp.hash ^= hashEnpassant[col(pp.enpassant)]
 			}
 		}
 	} else {
@@ -152,7 +152,7 @@ func (p *Position) MakeNullMove() *Position {
 
 	// Flipping side to move obviously invalidates the enpassant square.
 	if pp.enpassant != 0 {
-		pp.hash ^= hashEnpassant[Col(pp.enpassant)]
+		pp.hash ^= hashEnpassant[col(pp.enpassant)]
 		pp.enpassant = 0
 	}
 	pp.hash ^= polyglotRandomWhite

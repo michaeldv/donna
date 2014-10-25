@@ -67,7 +67,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 
 	for pawns != 0 {
 		square := pawns.pop()
-		row, col := Coordinate(square)
+		row, col := coordinate(square)
 
 		// Penalty if the pawn is isolated, i.e. has no friendly pawns
 		// on adjacent files. The penalty goes up if isolated pawn is

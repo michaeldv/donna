@@ -75,7 +75,7 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	color := e.strongerSide()
 
 	pawns := e.position.outposts[pawn(color)]
-	row, col := Coordinate(e.position.king[color^1])
+	row, col := coordinate(e.position.king[color^1])
 
 	// Pawns on A file with bare king opposing them.
 	if (pawns & ^maskFile[A1] == 0) && (pawns & ^maskInFront[color^1][row*8] == 0) && col <= B1 {

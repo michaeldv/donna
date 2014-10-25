@@ -218,7 +218,7 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 
 	hash ^= hashCastle[p.castles]
 	if p.enpassant != 0 {
-		hash ^= hashEnpassant[Col(p.enpassant)]
+		hash ^= hashEnpassant[col(p.enpassant)]
 	}
 	if p.color == White {
 		hash ^= polyglotRandomWhite
@@ -345,7 +345,7 @@ func (p *Position) fen() (fen string) {
 
 	// En-passant square, if any.
 	if p.enpassant != 0 {
-		row, col := Coordinate(p.enpassant)
+		row, col := coordinate(p.enpassant)
 		fen += fmt.Sprintf(` %c%d`, col + 'a', row + 1)
 	} else {
 		fen += ` -`

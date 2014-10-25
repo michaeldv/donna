@@ -11,8 +11,8 @@ func openBook() (*Book, *Position) {
 }
 
 func polyglotEntry(source, target int) Entry {
-	return Entry{Move: uint16(row(source)<<9) | uint16(Col(source)<<6) |
-		uint16(row(target)<<3) | uint16(Col(target))}
+	return Entry{Move: uint16(row(source)<<9) | uint16(col(source)<<6) |
+		uint16(row(target)<<3) | uint16(col(target))}
 }
 
 // See test key values at http://hardy.uhasselt.be/Toga/book_format.html

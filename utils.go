@@ -16,13 +16,13 @@ func row(square int) int {
 }
 
 // Returns column number in 0..7 range for the given square.
-func Col(square int) int {
+func col(square int) int {
 	return square & 7
 }
 
 // Returns both row and column numbers for the given square.
-func Coordinate(n int) (int, int) {
-	return row(n), Col(n)
+func coordinate(square int) (int, int) {
+	return row(square), col(square)
 }
 
 // Returns relative rank for the square in 0..7 range. For example E2 is rank 1

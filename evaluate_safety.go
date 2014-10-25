@@ -168,7 +168,7 @@ func (e *Evaluation) kingCover(color int) (bonus Score) {
 }
 
 func (e *Evaluation) kingCoverBonus(color, square, relative int) (bonus int) {
-	r, c := Coordinate(relative)
+	r, c := coordinate(relative)
 	from, to := Max(0, c - 1), Min(7, c + 1)
 	bonus = onePawn + onePawn / 3
 

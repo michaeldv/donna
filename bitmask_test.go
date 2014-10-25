@@ -10,11 +10,11 @@ func TestBitmask000(t *testing.T) { // White
 	passed := [8]Bitmask{0}
 	for square := A2; square <= H2; square++ {
 		i := square - A2
-		if Col(square) > 0 {
+		if col(square) > 0 {
 			passed[i].fill(square-1, 8, 0, 0x00FFFFFFFFFFFFFF)
 		}
 		passed[i].fill(square, 8, 0, 0x00FFFFFFFFFFFFFF)
-		if Col(square) < 7 {
+		if col(square) < 7 {
 			passed[i].fill(square+1, 8, 0, 0x00FFFFFFFFFFFFFF)
 		}
 	}
@@ -32,11 +32,11 @@ func TestBitmask010(t *testing.T) { // Black
 	passed := [8]Bitmask{0}
 	for square := A7; square <= H7; square++ {
 		i := square - A7
-		if Col(square) > 0 {
+		if col(square) > 0 {
 			passed[i].fill(square-1, -8, 0, 0xFFFFFFFFFFFFFF00)
 		}
 		passed[i].fill(square, -8, 0, 0xFFFFFFFFFFFFFF00)
-		if Col(square) < 7 {
+		if col(square) < 7 {
 			passed[i].fill(square+1, -8, 0, 0xFFFFFFFFFFFFFF00)
 		}
 	}

@@ -236,7 +236,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 		}
 
 		// Bonuses if rook is on open or semi-open file.
-		column := Col(square)
+		column := col(square)
 		isFileAjar := (hisPawns & maskFile[column] == 0)
 		if isFileAjar {
 			if herPawns & maskFile[column] == 0 {
@@ -250,7 +250,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 		// rights have been lost.
 		if safeSquares <= 3 || !isFileAjar {
 			kingSquare := p.king[color]
-			kingColumn := Col(kingSquare)
+			kingColumn := col(kingSquare)
 
 			// Queenside box: king on D/C/B vs. rook on A/B/C files. Increase the
 			// the penalty since no castle is possible.
