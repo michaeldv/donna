@@ -142,7 +142,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 
 		// Encourage center pawn moves, even more so if the pawns are connected.
 		if bit[square] & maskCenter != 0 {
-			bonus := bonusPawn[0][Flip(color, square)]
+			bonus := bonusPawn[0][Flip(color, square)] / 2
 			if supported {
 				bonus *= 2
 			}
