@@ -48,7 +48,7 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
 
 		// If the last move set the en-passant square and it is diagonally adjacent
 		// to the current pawn, then add en-passant to the pawn's attack targets.
-		if p.enpassant != 0 && maskPawn[color][p.enpassant].isSet(square) {
+		if p.enpassant != 0 && maskPawn[color][p.enpassant].on(square) {
 			bitmask.set(p.enpassant)
 		}
 	case Knight:

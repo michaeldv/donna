@@ -109,7 +109,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if knight is behind friendly pawn.
-		if RelRow(square, color) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
+		if RelRow(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -118,7 +118,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		// exchanged.
 		flip := Flip(color, square)
 		if extra := extraKnight[flip]; extra > 0 {
-			if p.pawnAttacks(color).isSet(square) {
+			if p.pawnAttacks(color).on(square) {
 				if p.count[knight(color^1)] == 0 {
 					extra *= 2 // No knights to exchange.
 				}
@@ -160,7 +160,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if bishop is behind friendly pawn.
-		if RelRow(square, color) < 4 && p.outposts[pawn(color)].isSet(square + eight[color]) {
+		if RelRow(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -184,7 +184,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		// exchanged.
 		flip := Flip(color, square)
 		if extra := extraBishop[flip]; extra > 0 {
-			if p.pawnAttacks(color).isSet(square) {
+			if p.pawnAttacks(color).on(square) {
 				if p.count[bishop(color^1)] == 0 {
 					extra *= 2 // No bishops to exchange.
 				}
@@ -254,12 +254,12 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 
 			// Queenside box: king on D/C/B vs. rook on A/B/C files. Increase the
 			// the penalty since no castle is possible.
-			if column < kingColumn && rookBoxA[color].isSet(square) && kingBoxA[color].isSet(kingSquare) {
+			if column < kingColumn && rookBoxA[color].on(square) && kingBoxA[color].on(kingSquare) {
 				score.midgame -= (rookBoxed.midgame - safeSquares * 10) * 2
 			}
 
 			// Kingside box: king on E/F/G vs. rook on H/G/F files.
-			if column > kingColumn && rookBoxH[color].isSet(square) && kingBoxH[color].isSet(kingSquare) {
+			if column > kingColumn && rookBoxH[color].on(square) && kingBoxH[color].on(kingSquare) {
 				score.midgame -= (rookBoxed.midgame - safeSquares * 10)
 				if p.castles & castleKingside[color] == 0 {
 					score.midgame -= (rookBoxed.midgame - safeSquares * 10)

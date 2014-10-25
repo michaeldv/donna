@@ -4,30 +4,39 @@
 
 package donna
 
-import (
-	`bytes`
-	`fmt`
-)
+import(`bytes`; `fmt`)
 
 type Bitmask uint64
 
+var deBruijn = [64]int{
+	 0, 47,  1, 56, 48, 27,  2, 60,
+	57, 49, 41, 37, 28, 16,  3, 61,
+	54, 58, 35, 52, 50, 42, 21, 44,
+	38, 32, 29, 23, 17, 11,  4, 62,
+	46, 55, 26, 59, 40, 36, 15, 53,
+	34, 51, 20, 43, 31, 22, 10, 45,
+	25, 39, 14, 33, 19, 30,  9, 24,
+	13, 18,  8, 12,  7,  6,  5, 63,
+}
+
 // Returns true if all bitmask bits are clear.
-func (b Bitmask) isEmpty() bool {
+func (b Bitmask) empty() bool {
 	return b == 0
 }
 
-func (b Bitmask) isNotEmpty() bool {
+// Returns true if at least one bit is set.
+func (b Bitmask) any() bool {
 	return b != 0
 }
 
-// Returns true if a bit at given position is set.
-func (b Bitmask) isSet(position int) bool {
-	return b & (1 << uint(position)) != 0
+// Returns true if a bit at given offset is set.
+func (b Bitmask) on(offset int) bool {
+	return b & (1 << uint(offset)) != 0
 }
 
-// Returns true if a bit at given position is clear.
-func (b Bitmask) isClear(position int) bool {
-	return !b.isSet(position)
+// Returns true if a bit at given offset is clear.
+func (b Bitmask) off(offset int) bool {
+	return !b.on(offset)
 }
 
 // Returns number of bits set.
@@ -47,23 +56,23 @@ func (b Bitmask) first() int {
 
 // MSB: Eugene Nalimov's bitScanReverse.
 func (b Bitmask) last() int {
-	position := 0
+	offset := 0
 	if b > 0xFFFFFFFF {
 		b >>= 32
-		position = 32
+		offset = 32
 	}
 
 	if b > 0xFFFF {
 		b >>= 16
-		position += 16
+		offset += 16
 	}
 
 	if b > 0xFF {
 		b >>= 8
-		position += 8
+		offset += 8
 	}
 
-       return position + msbLookup[b]
+       return offset + msbLookup[b]
 }
 
 func (b Bitmask) closest(color int) int {
@@ -89,15 +98,15 @@ func (b *Bitmask) pop() int {
 	return index
 }
 
-// Sets a bit at given position.
-func (b *Bitmask) set(position int) *Bitmask {
-	*b |= 1 << uint(position)
+// Sets a bit at given offset.
+func (b *Bitmask) set(offset int) *Bitmask {
+	*b |= 1 << uint(offset)
 	return b
 }
 
-// Clears a bit at given position.
-func (b *Bitmask) clear(position int) *Bitmask {
-	*b &= ^(1 << uint(position))
+// Clears a bit at given offset.
+func (b *Bitmask) clear(offset int) *Bitmask {
+	*b &= ^(1 << uint(offset))
 	return b
 }
 
@@ -131,9 +140,9 @@ func (b *Bitmask) shift(offset int) *Bitmask {
 func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
 	mask := bit[square] & board
 
-	for mask.shift(direction); mask.isNotEmpty(); mask.shift(direction) {
+	for mask.shift(direction); mask.any(); mask.shift(direction) {
 		b.combine(mask)
-		if (mask & occupied).isNotEmpty() {
+		if (mask & occupied).any() {
 			break
 		}
 		mask.intersect(board)
@@ -170,9 +179,9 @@ func (b Bitmask) String() string {
 	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0; col <= 7; col++ {
-			position := row << 3 + col
+			offset := row << 3 + col
 			buffer.WriteByte(' ')
-			if b.isSet(position) {
+			if b.on(offset) {
 				buffer.WriteString("\u2022") // Set
 			} else {
 				buffer.WriteString("\u22C5") // Clear

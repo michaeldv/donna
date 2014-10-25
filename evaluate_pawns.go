@@ -175,7 +175,7 @@ func (e *Evaluation) pawnPassers(color int) (score Score) {
 			bonus.endgame += (distance[p.king[color^1]][nextSquare] * 5 - distance[p.king[color]][nextSquare] * 2) * extra
 
 			// Check if the pawn can step forward.
-			if p.board.isClear(nextSquare) {
+			if p.board.off(nextSquare) {
 				boost := 0
 
 				// Assume all squares in front of the pawn are under attack.
@@ -185,7 +185,7 @@ func (e *Evaluation) pawnPassers(color int) (score Score) {
 				// Boost the bonus if squares in front of the pawn are protected.
 				if protected == attacked {
 					boost += 6 // All squares.
-				} else if protected.isSet(nextSquare) {
+				} else if protected.on(nextSquare) {
 					boost += 4 // Next square only.
 				}
 
@@ -203,7 +203,7 @@ func (e *Evaluation) pawnPassers(color int) (score Score) {
 				// or at least safely step forward.
 				if attacked == 0 {
 					boost += 15 // Remaining squares are not under attack.
-				} else if attacked.isClear(nextSquare) {
+				} else if attacked.off(nextSquare) {
 					boost += 9  // Next square is not under attack.
 				}
 
