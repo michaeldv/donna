@@ -44,8 +44,30 @@ func (e *Evaluation) twoBishopsVsBareKing() int { // STUB.
 	return e.score.blended(e.material.phase)
 }
 
-func (e *Evaluation) kingAndPawnVsBareKing() int { // STUB.
-	return e.score.blended(e.material.phase)
+func (e *Evaluation) kingAndPawnVsBareKing() int {
+	var color, wKing, bKing, wPawn int
+
+	if e.strongerSide() == White {
+		color = e.position.color
+		wKing = e.position.king[White]
+		bKing = e.position.king[Black]
+		wPawn = e.position.outposts[Pawn].last()
+	} else {
+		color = e.position.color^1
+		wKing = 64 + ^e.position.king[Black]
+		bKing = 64 + ^e.position.king[White]
+		wPawn = 64 + ^e.position.outposts[BlackPawn].last()
+	}
+
+	index := color + (wKing << 1) + (bKing << 7) + ((wPawn - 8) << 13)
+	if bitbase[index / 64] & (1 << uint(index & 0x3F)) == 0 {
+		return 0
+	}
+
+	if color == Black {
+		return -DecisiveAdvantage
+	}
+	return DecisiveAdvantage
 }
 
 // Lesser known endgames where we calculate endgame score markdown.

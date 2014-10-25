@@ -11,6 +11,7 @@ const (
 	MaxPly = 64
 	MaxDepth = 32
 	Checkmate = 0x7FFF // = math.MaxInt16 = 32,767
+	DecisiveAdvantage = Checkmate / 3
 )
 
 // Colors.
@@ -19,7 +20,7 @@ const (
 	Black
 )
 
-// Game states.
+// Game status.
 const (
 	InProgress = iota
 	WhiteWinning    // White mates in X moves.
