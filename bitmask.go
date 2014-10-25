@@ -173,6 +173,20 @@ func (b *Bitmask) trim(row, col int) *Bitmask {
 	return b
 }
 
+func (b Bitmask) magicify(index int) (bitmask Bitmask) {
+	count := b.count()
+
+	for i, his := 0, b; i < count; i++ {
+		her := ((his - 1) & his) ^ his
+		his &= his - 1
+		if (1 << uint(i)) & index != 0 {
+			bitmask |= her
+		}
+	}
+	return
+}
+
+
 func (b Bitmask) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h  ")
 	buffer.WriteString(fmt.Sprintf("0x%016X\n", uint64(b)))

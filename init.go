@@ -90,7 +90,7 @@ func initMasks() {
 		mask := createRookMask(sq)
 		bits := uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := indexedBitmask(i, mask)
+			bitmask := mask.magicify(i)
 			index := (bitmask * rookMagic[sq].magic) >> 52
 			rookMagicMoves[sq][index] = createRookAttacks(sq, bitmask)
 		}
@@ -99,7 +99,7 @@ func initMasks() {
 		mask = createBishopMask(sq)
 		bits = uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := indexedBitmask(i, mask)
+			bitmask := mask.magicify(i)
 			index := (bitmask * bishopMagic[sq].magic) >> 55
 			bishopMagicMoves[sq][index] = createBishopAttacks(sq, bitmask)
 		}
@@ -381,19 +381,6 @@ func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame 
 		}
 	}
 
-	return
-}
-
-func indexedBitmask(index int, mask Bitmask) (bitmask Bitmask) {
-	count := mask.count()
-
-	for i, his := 0, mask; i < count; i++ {
-		her := ((his - 1) & his) ^ his
-		his &= his - 1
-		if (1 << uint(i)) & index != 0 {
-			bitmask |= her
-		}
-	}
 	return
 }
 
