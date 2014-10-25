@@ -128,12 +128,12 @@ func (b *Book) move(p *Position, entry Entry) Move {
 
 // Converts polyglot encoded "from" coordinate to our square.
 func (e *Entry) from() int {
-	return Square(int((e.Move >> 9) & 7), int((e.Move >> 6) & 7))
+	return square(int((e.Move >> 9) & 7), int((e.Move >> 6) & 7))
 }
 
 // Converts polyglot encoded "to" coordinate to our square.
 func (e *Entry) to() int {
-	return Square(int((e.Move >> 3) & 7), int(e.Move & 7))
+	return square(int((e.Move >> 3) & 7), int(e.Move & 7))
 }
 
 // Polyglot encodes "promotion piece" as follows:

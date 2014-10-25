@@ -65,88 +65,88 @@ func init() {
 }
 
 func initMasks() {
-	for square := A1; square <= H8; square++ {
-		row, col := coordinate(square)
+	for sq := A1; sq <= H8; sq++ {
+		row, col := coordinate(sq)
 
 		// Distance, Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
 		for i := A1; i <= H8; i++ {
 			r, c := coordinate(i)
 
-			distance[square][i] = Max(Abs(row - r), Abs(col - c))
-			setupMasks(square, i, row, col, r, c)
+			distance[sq][i] = Max(Abs(row - r), Abs(col - c))
+			setupMasks(sq, i, row, col, r, c)
 
-			if i == square || Abs(i-square) > 17 {
+			if i == sq || Abs(i-sq) > 17 {
 				continue // No king or knight can reach that far.
 			}
 			if (Abs(r-row) == 2 && Abs(c-col) == 1) || (Abs(r-row) == 1 && Abs(c-col) == 2) {
-				knightMoves[square].set(i)
+				knightMoves[sq].set(i)
 			}
 			if Abs(r-row) <= 1 && Abs(c-col) <= 1 {
-				kingMoves[square].set(i)
+				kingMoves[sq].set(i)
 			}
 		}
 
 		// Rooks.
-		mask := createRookMask(square)
+		mask := createRookMask(sq)
 		bits := uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
 			bitmask := indexedBitmask(i, mask)
-			index := (bitmask * rookMagic[square].magic) >> 52
-			rookMagicMoves[square][index] = createRookAttacks(square, bitmask)
+			index := (bitmask * rookMagic[sq].magic) >> 52
+			rookMagicMoves[sq][index] = createRookAttacks(sq, bitmask)
 		}
 
 		// Bishops.
-		mask = createBishopMask(square)
+		mask = createBishopMask(sq)
 		bits = uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
 			bitmask := indexedBitmask(i, mask)
-			index := (bitmask * bishopMagic[square].magic) >> 55
-			bishopMagicMoves[square][index] = createBishopAttacks(square, bitmask)
+			index := (bitmask * bishopMagic[sq].magic) >> 55
+			bishopMagicMoves[sq][index] = createBishopAttacks(sq, bitmask)
 		}
 
 		// Pawns.
 		if row >= A2H2 && row <= A7H7 {
 			if col > 0 {
-				pawnMoves[White][square].set(Square(row + 1, col - 1))
-				pawnMoves[Black][square].set(Square(row - 1, col - 1))
+				pawnMoves[White][sq].set(square(row + 1, col - 1))
+				pawnMoves[Black][sq].set(square(row - 1, col - 1))
 			}
 			if col < 7 {
-				pawnMoves[White][square].set(Square(row + 1, col + 1))
-				pawnMoves[Black][square].set(Square(row - 1, col + 1))
+				pawnMoves[White][sq].set(square(row + 1, col + 1))
+				pawnMoves[Black][sq].set(square(row - 1, col + 1))
 			}
 		}
 
 		// Pawn attacks.
 		if row > 1 { // White pawns can't attack first two ranks.
 			if col != 0 {
-				maskPawn[White][square] |= bit[square-9]
+				maskPawn[White][sq] |= bit[sq-9]
 			}
 			if col != 7 {
-				maskPawn[White][square] |= bit[square-7]
+				maskPawn[White][sq] |= bit[sq-7]
 			}
 		}
 		if row < 6 { // Black pawns can attack 7th and 8th ranks.
 			if col != 0 {
-				maskPawn[Black][square] |= bit[square+7]
+				maskPawn[Black][sq] |= bit[sq+7]
 			}
 			if col != 7 {
-				maskPawn[Black][square] |= bit[square+9]
+				maskPawn[Black][sq] |= bit[sq+9]
 			}
 		}
 
-		// Vertical squares in front of a pawn.
-		maskInFront[White][square] = (maskBlock[square][A8+col] | bit[A8+col]) & ^bit[square]
-		maskInFront[Black][square] = (maskBlock[A1+col][square] | bit[A1+col]) & ^bit[square]
+		// Vertical sqs in front of a pawn.
+		maskInFront[White][sq] = (maskBlock[sq][A8+col] | bit[A8+col]) & ^bit[sq]
+		maskInFront[Black][sq] = (maskBlock[A1+col][sq] | bit[A1+col]) & ^bit[sq]
 
 		// Masks to check for passed pawns.
 		if col > 0 {
-			maskPassed[White][square] |= maskInFront[White][square-1]
-			maskPassed[Black][square] |= maskInFront[Black][square-1]
-			maskPassed[White][square-1] |= maskInFront[White][square]
-			maskPassed[Black][square-1] |= maskInFront[Black][square]
+			maskPassed[White][sq] |= maskInFront[White][sq-1]
+			maskPassed[Black][sq] |= maskInFront[Black][sq-1]
+			maskPassed[White][sq-1] |= maskInFront[White][sq]
+			maskPassed[Black][sq-1] |= maskInFront[Black][sq]
 		}
-		maskPassed[White][square] |= maskInFront[White][square]
-		maskPassed[Black][square] |= maskInFront[Black][square]
+		maskPassed[White][sq] |= maskInFront[White][sq]
+		maskPassed[Black][sq] |= maskInFront[Black][sq]
 	}
 }
 
@@ -398,10 +398,10 @@ func indexedBitmask(index int, mask Bitmask) (bitmask Bitmask) {
 }
 
 func createRookMask(square int) Bitmask {
-	row, col := coordinate(square)
-	bitmask := (maskRank[row] | maskFile[col]) ^ bit[square]
+	r, c := coordinate(square)
+	bitmask := (maskRank[r] | maskFile[c]) ^ bit[square]
 
-	return *bitmask.trim(row, col)
+	return *bitmask.trim(r, c)
 }
 
 func createBishopMask(square int) Bitmask {
@@ -424,12 +424,12 @@ func createBishopMask(square int) Bitmask {
 	return *bitmask.trim(r, c)
 }
 
-func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
-	row, col := coordinate(square)
+func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
+	row, col := coordinate(sq)
 
 	// North.
 	for c, r := col, row + 1; r <= 7; r++ {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
@@ -437,7 +437,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// East.
 	for c, r := col + 1, row; c <= 7; c++ {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
@@ -445,7 +445,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// South.
 	for c, r := col, row - 1; r >= 0; r-- {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
@@ -453,7 +453,7 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// West
 	for c, r := col - 1, row; c >= 0; c-- {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
@@ -462,12 +462,12 @@ func createRookAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	return
 }
 
-func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
-	row, col := coordinate(square)
+func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
+	row, col := coordinate(sq)
 
 	// North East.
 	for c, r := col + 1, row + 1; c <= 7 && r <= 7; c, r = c+1, r+1 {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
@@ -475,7 +475,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// South East.
 	for c, r := col + 1, row - 1; c <= 7 && r >= 0; c, r = c+1, r-1 {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
@@ -483,7 +483,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// South West.
 	for c, r := col - 1, row - 1; c >= 0 && r >= 0; c, r = c-1, r-1 {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
@@ -491,7 +491,7 @@ func createBishopAttacks(square int, mask Bitmask) (bitmask Bitmask) {
 	}
 	// North West.
 	for c, r := col - 1, row + 1; c >= 0 && r <= 7; c, r = c-1, r+1 {
-		b := bit[Square(r, c)]
+		b := bit[square(r, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break

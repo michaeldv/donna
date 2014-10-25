@@ -66,8 +66,8 @@ func NewPromotion(p *Position, square, target int) (Move, Move, Move, Move) {
 // Decodes a string in coordinate notation and returns a move. The string is
 // expected to be either 4 or 5 characters long (with promotion).
 func NewMoveFromNotation(p *Position, e2e4 string) Move {
-	from := Square(int(e2e4[1] - '1'), int(e2e4[0] - 'a'))
-	to := Square(int(e2e4[3] - '1'), int(e2e4[2] - 'a'))
+	from := square(int(e2e4[1] - '1'), int(e2e4[0] - 'a'))
+	to := square(int(e2e4[3] - '1'), int(e2e4[2] - 'a'))
 
 	// Check if this is a castle.
 	if p.pieces[from].isKing() && Abs(from - to) == 2 {
@@ -119,7 +119,7 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move) {
 			case `N`, `n`:
 				piece = knight(p.color)
 			}
-			square := Square(int(matches[3][0] - '1'), int(matches[2][0] - 'a'))
+			square := square(int(matches[3][0] - '1'), int(matches[2][0] - 'a'))
 			if p.pieces[square] != piece {
 				return Move(0)
 			}

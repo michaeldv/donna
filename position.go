@@ -90,7 +90,7 @@ func (p *Position) setupSide(moves []string, color int) *Position {
 		case `N`: piece = knight(color)
 		default:  piece = pawn(color)
 		}
-		p.pieces[Square(row, col)] = piece
+		p.pieces[square(row, col)] = piece
 	}
 
 	return p
@@ -120,7 +120,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	}
 
 	// [0] - Pieces (entire board).
-	square := A8
+	sq := A8
 	for _, char := range(matches[0]) {
 		piece := Piece(0)
 		switch(char) {
@@ -146,22 +146,22 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 			piece = BlackQueen
 		case 'K':
 			piece = King
-			p.king[White] = square
+			p.king[White] = sq
 		case 'k':
 			piece = BlackKing
-			p.king[Black] = square
+			p.king[Black] = sq
 		case '/':
-			square -= 16
+			sq -= 16
 		case '1', '2', '3', '4', '5', '6', '7', '8':
-			square += int(char - '0')
+			sq += int(char - '0')
 		}
 		if piece != 0 {
-			p.pieces[square] = piece
-			p.outposts[piece].set(square)
-			p.outposts[piece.color()].set(square)
+			p.pieces[sq] = piece
+			p.outposts[piece].set(sq)
+			p.outposts[piece.color()].set(sq)
 			p.balance += materialBalance[piece]
 			p.count[piece]++
-			square++
+			sq++
 		}
 	}
 
@@ -190,7 +190,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 	// [3] - En-passant square.
 	if matches[3] != `-` {
-		p.enpassant = Square(int(matches[3][1] - '1'), int(matches[3][0] - 'a'))
+		p.enpassant = square(int(matches[3][1] - '1'), int(matches[3][0] - 'a'))
 
 	}
 
@@ -292,7 +292,7 @@ func (p *Position) fen() (fen string) {
 	empty := 0
 	for row := A8H8; row >= A1H1; row-- {
 		for col := A1A8; col <= H1H8; col++ {
-			square := Square(row, col)
+			square := square(row, col)
 			piece := p.pieces[square]
 
 			if piece != 0 {
@@ -364,7 +364,7 @@ func (p *Position) String() string {
 	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0; col <= 7; col++ {
-			square := Square(row, col)
+			square := square(row, col)
 			buffer.WriteByte(' ')
 			if piece := p.pieces[square]; piece != 0 {
 				buffer.WriteString(piece.String())

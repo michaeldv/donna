@@ -32,7 +32,7 @@ func rank(square, color int) int {
 }
 
 // Returns 0..63 square number for the given row/column coordinate.
-func Square(row, column int) int {
+func square(row, column int) int {
 	return (row << 3) + column
 }
 
