@@ -65,35 +65,35 @@ func Ply() int {
 }
 
 // Integer version of math/abs.
-func Abs(n int) int {
+func abs(n int) int {
 	if n < 0 {
 		return -n
 	}
 	return n
 }
 
-func Min(x, y int) int {
+func min(x, y int) int {
 	if x < y {
 		return x
 	}
 	return y
 }
 
-func Max(x, y int) int {
+func max(x, y int) int {
 	if x > y {
 		return x
 	}
 	return y
 }
 
-func Min64(x, y int64) int64 {
+func min64(x, y int64) int64 {
 	if x < y {
 		return x
 	}
 	return y
 }
 
-func Max64(x, y int64) int64 {
+func max64(x, y int64) int64 {
 	if x > y {
 		return x
 	}

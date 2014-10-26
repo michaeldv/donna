@@ -93,7 +93,7 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 // Bishop-only endgame: drop the score if we have opposite-colored bishops.
 func (e *Evaluation) bishopsAndPawns() int {
 	if e.oppositeBishops() {
-		if pawns := Abs(e.position.count[Pawn] - e.position.count[BlackPawn]); pawns == 1 {
+		if pawns := abs(e.position.count[Pawn] - e.position.count[BlackPawn]); pawns == 1 {
 			return 8 // --> 1/8 of original score.
 		}
 		return 2 // --> 1/2 of original score.

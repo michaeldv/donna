@@ -141,8 +141,8 @@ func (game *Game) Think() Move {
 			}
 		} else {
 			aspiration := onePawn / 3
-			alpha = Max(score - aspiration, -Checkmate)
-			beta = Min(score + aspiration, Checkmate)
+			alpha = max(score - aspiration, -Checkmate)
+			beta = min(score + aspiration, Checkmate)
 
 			// Do the search with smaller alpha/beta spread based on
 			// previous iteration score, and re-search with the bigger
@@ -161,9 +161,9 @@ func (game *Game) Think() Move {
 
 				if score <= alpha {
 					game.improving = false
-					alpha = Max(score - aspiration, -Checkmate)
+					alpha = max(score - aspiration, -Checkmate)
 				} else if score >= beta {
-					beta = Min(score + aspiration, Checkmate)
+					beta = min(score + aspiration, Checkmate)
 				} else {
 					break;
 				}

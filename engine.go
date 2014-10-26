@@ -257,11 +257,11 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 	//    10+ moves left: 64% of optimal * number of moves.
 	//
 	if moves > 0 { // The last move gets all remaining time and doesn't need the reserve.
-		percent := Max64(64, 100 - 4 * moves)
+		percent := max64(64, 100 - 4 * moves)
 		hard = hard - e.clock.optimal * moves * percent / 100
 		e.debug(fmt.Sprintf("# Reserve %d%% Hard stop %s\n", percent, ms(hard)))
 		if hard < e.clock.optimal {
-			hard = Min64(e.clock.optimal, options.timeLeft / e.options.movesToGo)
+			hard = min64(e.clock.optimal, options.timeLeft / e.options.movesToGo)
 			e.debug(fmt.Sprintf("# Optimal adjusted hard stop %s\n", ms(hard)))
 		}
 	}

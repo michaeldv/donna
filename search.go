@@ -69,7 +69,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 				engine.debug(fmt.Sprintf("# New move %s Depth %d Volatility %.2f\n", move, depth, game.volatility))
 			}
 
-			alpha = Max(score, alpha)
+			alpha = max(score, alpha)
 			if alpha >= beta {
 				cacheFlags = cacheBeta
 				break

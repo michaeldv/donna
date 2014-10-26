@@ -49,7 +49,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	staticScore := alpha
 	if !inCheck {
 		staticScore = p.Evaluate()
-		alpha = Max(alpha, staticScore)
+		alpha = max(alpha, staticScore)
 		if alpha >= beta {
 			return beta
 		}

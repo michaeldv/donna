@@ -47,7 +47,7 @@ func (e *Engine) replPrincipal(depth, score, status int, duration float64) {
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   1/2 Repetition\n",
 			depth, mm(), ss(), game.nodes, game.qnodes, nps())
 	case WhiteWinning, BlackWinning:
-		movesLeft := Checkmate - Abs(score)
+		movesLeft := Checkmate - abs(score)
 		fmt.Printf("%2d %02d:%02d    %8d    %8d   %9.1f   %4dX   %v Checkmate\n",
 			depth, mm(), ss(), game.nodes, game.qnodes, nps(), movesLeft / 2, game.rootpv)
 	default:

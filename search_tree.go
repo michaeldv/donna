@@ -23,7 +23,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	// Checkmate distance pruning.
-	if score := Abs(ply - Checkmate); score < beta {
+	if score := abs(ply - Checkmate); score < beta {
 		beta = score
 		if score <= alpha {
 			return alpha
@@ -86,7 +86,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 		// Futility pruning is only applicable if we don't have winning score
 		// yet and there are pieces other than pawns.
-		if !isNull && depth < 14 && Abs(beta) < Checkmate - MaxPly &&
+		if !isNull && depth < 14 && abs(beta) < Checkmate - MaxPly &&
 		   p.outposts[p.color] & ^(p.outposts[king(p.color)] | p.outposts[pawn(p.color)]) != 0 {
 			futilityMargin := func (depth int) int {
 				return 256 * depth
@@ -107,7 +107,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		position.UndoNullMove()
 
 		if nullScore >= beta {
-			if Abs(nullScore) >= Checkmate - MaxPly {
+			if abs(nullScore) >= Checkmate - MaxPly {
 				return beta
 			}
 			return nullScore

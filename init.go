@@ -72,16 +72,16 @@ func initMasks() {
 		for i := A1; i <= H8; i++ {
 			r, c := coordinate(i)
 
-			distance[sq][i] = Max(Abs(row - r), Abs(col - c))
+			distance[sq][i] = max(abs(row - r), abs(col - c))
 			setupMasks(sq, i, row, col, r, c)
 
-			if i == sq || Abs(i-sq) > 17 {
+			if i == sq || abs(i-sq) > 17 {
 				continue // No king or knight can reach that far.
 			}
-			if (Abs(r-row) == 2 && Abs(c-col) == 1) || (Abs(r-row) == 1 && Abs(c-col) == 2) {
+			if (abs(r-row) == 2 && abs(c-col) == 1) || (abs(r-row) == 1 && abs(c-col) == 2) {
 				knightMoves[sq].set(i)
 			}
-			if Abs(r-row) <= 1 && Abs(c-col) <= 1 {
+			if abs(r-row) <= 1 && abs(c-col) <= 1 {
 				kingMoves[sq].set(i)
 			}
 		}
@@ -360,12 +360,12 @@ func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame 
 		endgame = (*Evaluation).rookAndPawnVsRook
 
 	// Lesser known endgame: no pawns left.
-	} else if (wP == 0 || bP == 0) && wMajor - bMajor == 0 && Abs(wMinor - bMinor) <= 1 {
+	} else if (wP == 0 || bP == 0) && wMajor - bMajor == 0 && abs(wMinor - bMinor) <= 1 {
 		flags |= lesserKnownEndgame
 		endgame = (*Evaluation).noPawnsLeft
 
 	// Lesser known endgame: single pawn with not a lot of material.
-	} else if (wP == 1 || bP == 1) && wMajor - bMajor == 0 && Abs(wMinor - bMinor) <= 1 {
+	} else if (wP == 1 || bP == 1) && wMajor - bMajor == 0 && abs(wMinor - bMinor) <= 1 {
 		flags |= lesserKnownEndgame
 		endgame = (*Evaluation).lastPawnLeft
 

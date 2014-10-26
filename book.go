@@ -55,7 +55,7 @@ func (b *Book) pickMove(position *Position) Move {
 	default:
 		// Sort book entries by score and pick among two best moves.
 		sort.Sort(byBookScore{entries})
-		best := Min(2, len(entries))
+		best := min(2, len(entries))
 		return b.move(position, entries[Random(best)])
 	}
 }

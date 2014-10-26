@@ -35,7 +35,7 @@ func NewMove(p *Position, from, to int) Move {
 }
 
 func NewPawnMove(p *Position, square, target int) Move {
-	if Abs(square - target) == 16 {
+	if abs(square - target) == 16 {
 
 		// Check if pawn jump causes en-passant. This is done by verifying
 		// whether enemy pawns occupy squares ajacent to the target square.
@@ -70,7 +70,7 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 	to := square(int(e2e4[3] - '1'), int(e2e4[2] - 'a'))
 
 	// Check if this is a castle.
-	if p.pieces[from].isKing() && Abs(from - to) == 2 {
+	if p.pieces[from].isKing() && abs(from - to) == 2 {
 		return NewCastle(p, from, to)
 	}
 

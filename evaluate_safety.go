@@ -134,8 +134,8 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 			safetyIndex += bonusDistanceCheck[Queen/2] * checks.count()
 		}
 
-		threatIndex := Min(12, e.safety[color].attackers * e.safety[color].threats / 3) + (e.safety[color].attacks + weak.count()) * 2
-		safetyIndex = Min(63, safetyIndex + threatIndex)
+		threatIndex := min(12, e.safety[color].attackers * e.safety[color].threats / 3) + (e.safety[color].attacks + weak.count()) * 2
+		safetyIndex = min(63, safetyIndex + threatIndex)
 
 		score.midgame -= kingSafety[safetyIndex]
 		score.endgame -= bonusKing[1][flip(color, square)]
@@ -158,10 +158,10 @@ func (e *Evaluation) kingCover(color int) (bonus Score) {
 	// by scoring least safe castle.
 	bonus.midgame = e.kingCoverBonus(color, square, flipped)
 	if p.castles & castleKingside[color] != 0 {
-		bonus.midgame = Max(bonus.midgame, e.kingCoverBonus(color, homeKing[color] + 2, G1))
+		bonus.midgame = max(bonus.midgame, e.kingCoverBonus(color, homeKing[color] + 2, G1))
 	}
 	if p.castles & castleQueenside[color] != 0 {
-		bonus.midgame = Max(bonus.midgame, e.kingCoverBonus(color, homeKing[color] - 2, C1))
+		bonus.midgame = max(bonus.midgame, e.kingCoverBonus(color, homeKing[color] - 2, C1))
 	}
 
 	return
@@ -169,7 +169,7 @@ func (e *Evaluation) kingCover(color int) (bonus Score) {
 
 func (e *Evaluation) kingCoverBonus(color, square, flipped int) (bonus int) {
 	r, c := coordinate(flipped)
-	from, to := Max(0, c - 1), Min(7, c + 1)
+	from, to := max(0, c - 1), min(7, c + 1)
 	bonus = onePawn + onePawn / 3
 
 	// Get friendly pawns adjacent and in front of the king.
@@ -198,7 +198,7 @@ func (e *Evaluation) kingPawnProximity(color int) (penalty int) {
 		proximity, king := 8, e.position.king[color]
 
 		for pawns != 0 {
-			proximity = Min(proximity, distance[king][pawns.pop()])
+			proximity = min(proximity, distance[king][pawns.pop()])
 		}
 		penalty = -kingByPawn.endgame * (proximity - 1)
 	}
