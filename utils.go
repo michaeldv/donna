@@ -36,7 +36,8 @@ func square(row, column int) int {
 	return (row << 3) + column
 }
 
-func Flip(color, square int) int {
+// Flips the square verically for white (ex. E2 becomes E7).
+func flip(color, square int) int {
 	if color == White {
 		return square ^ 56
 	}
@@ -45,15 +46,18 @@ func Flip(color, square int) int {
 
 // Returns a bitmask with light or dark squares set matching the color of the
 // square.
-func SameAs(square int) Bitmask {
+func same(square int) Bitmask {
 	if bit[square] & maskDark != 0 {
 		return maskDark
 	}
 	return ^maskDark
 }
 
-func IsBetween(from, to, between int) bool {
-	return ((maskStraight[from][to] | maskDiagonal[from][to]) & bit[between]) != 0
+// Returns true if the square resides between two other squares on the same line
+// or diagonal, including the edge squares. For example, between(A1, H8, C3) is
+// true.
+func between(from, to, between int) bool {
+	return (maskStraight[from][to] | maskDiagonal[from][to]).on(between)
 }
 
 func Ply() int {

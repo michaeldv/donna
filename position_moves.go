@@ -259,7 +259,7 @@ func (p *Position) isValid(move Move, pins Bitmask) bool {
 	// For all other peices the move is valid when it doesn't cause a
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
-	return pins == 0 || pins.off(from) || IsBetween(from, to, p.king[color])
+	return pins == 0 || pins.off(from) || between(from, to, p.king[color])
 }
 
 // Returns a bitmask of all pinned pieces preventing a check for the king on

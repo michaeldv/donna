@@ -138,7 +138,7 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 		safetyIndex = Min(63, safetyIndex + threatIndex)
 
 		score.midgame -= kingSafety[safetyIndex]
-		score.endgame -= bonusKing[1][Flip(color, square)]
+		score.endgame -= bonusKing[1][flip(color, square)]
 	}
 
 	return
@@ -149,14 +149,14 @@ func (e *Evaluation) kingCover(color int) (bonus Score) {
 
 	// Calculate relative square for the king so we could treat black king
 	// as white. Don't bother with the cover if the king is too far.
-	relative := Flip(color^1, square)
-	if relative > H3 {
+	flipped := flip(color^1, square)
+	if flipped > H3 {
 		return
 	}
 
 	// If we still have castle rights encourage castle pawns to stay intact
 	// by scoring least safe castle.
-	bonus.midgame = e.kingCoverBonus(color, square, relative)
+	bonus.midgame = e.kingCoverBonus(color, square, flipped)
 	if p.castles & castleKingside[color] != 0 {
 		bonus.midgame = Max(bonus.midgame, e.kingCoverBonus(color, homeKing[color] + 2, G1))
 	}
@@ -167,8 +167,8 @@ func (e *Evaluation) kingCover(color int) (bonus Score) {
 	return
 }
 
-func (e *Evaluation) kingCoverBonus(color, square, relative int) (bonus int) {
-	r, c := coordinate(relative)
+func (e *Evaluation) kingCoverBonus(color, square, flipped int) (bonus int) {
+	r, c := coordinate(flipped)
 	from, to := Max(0, c - 1), Min(7, c + 1)
 	bonus = onePawn + onePawn / 3
 

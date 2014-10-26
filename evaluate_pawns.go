@@ -94,8 +94,8 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 		// or previous ranks.
 		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].pushed(color^1)) & hisPawns != 0)
 		if supported {
-			flip := Flip(color, square)
-			score.add(Score{bonusSupportedPawn[flip], bonusSupportedPawn[flip]})
+			flipped := flip(color, square)
+			score.add(Score{bonusSupportedPawn[flipped], bonusSupportedPawn[flipped]})
 		}
 
 		// The pawn is passed if a) there are no enemy pawns in the same
@@ -142,7 +142,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 
 		// Encourage center pawn moves, even more so if the pawns are connected.
 		if bit[square] & maskCenter != 0 {
-			bonus := bonusPawn[0][Flip(color, square)] / 2
+			bonus := bonusPawn[0][flip(color, square)] / 2
 			if supported {
 				bonus *= 2
 			}

@@ -116,8 +116,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		// Extra bonus if knight is in the center. Increase the extra
 		// bonus if the knight is supported by a pawn and can't be
 		// exchanged.
-		flip := Flip(color, square)
-		if extra := extraKnight[flip]; extra > 0 {
+		if extra := extraKnight[flip(color, square)]; extra > 0 {
 			if p.pawnAttacks(color).on(square) {
 				if p.count[knight(color^1)] == 0 {
 					extra *= 2 // No knights to exchange.
@@ -150,7 +149,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
 
 		// Penalty for light/dark-colored pawns restricting a bishop.
-		if count := (SameAs(square) & p.outposts[pawn(color)]).count(); count > 0 {
+		if count := (same(square) & p.outposts[pawn(color)]).count(); count > 0 {
 			score.subtract(bishopPawn.times(count))
 		}
 
@@ -182,8 +181,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		// Extra bonus if bishop is in the center. Increase the extra
 		// bonus if the bishop is supported by a pawn and can't be
 		// exchanged.
-		flip := Flip(color, square)
-		if extra := extraBishop[flip]; extra > 0 {
+		if extra := extraBishop[flip(color, square)]; extra > 0 {
 			if p.pawnAttacks(color).on(square) {
 				if p.count[bishop(color^1)] == 0 {
 					extra *= 2 // No bishops to exchange.
