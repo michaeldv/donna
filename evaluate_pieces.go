@@ -113,15 +113,14 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 			score.add(behindPawn)
 		}
 
-		// Extra bonus if knight is in the center. Increase the extra
-		// bonus if the knight is supported by a pawn and can't be
-		// exchanged.
+		// Extra bonus if knight is in the center. Increase the extra bonus
+		// if the knight is supported by a pawn and can't be exchanged.
 		if extra := extraKnight[flip(color, square)]; extra > 0 {
 			if p.pawnAttacks(color).on(square) {
-				if p.count[knight(color^1)] == 0 {
-					extra *= 2 // No knights to exchange.
-				}
 				extra += extra / 2 // Supported by a pawn.
+				if p.count[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
+					extra += extra * 2 / 3 // No knights or bishops to exchange.
+				}
 			}
 			score.adjust(extra)
 		}
@@ -178,15 +177,14 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 			}
 		}
 
-		// Extra bonus if bishop is in the center. Increase the extra
-		// bonus if the bishop is supported by a pawn and can't be
-		// exchanged.
+		// Extra bonus if bishop is in the center. Increase the extra bonus
+		// if the bishop is supported by a pawn and can't be exchanged.
 		if extra := extraBishop[flip(color, square)]; extra > 0 {
 			if p.pawnAttacks(color).on(square) {
-				if p.count[bishop(color^1)] == 0 {
-					extra *= 2 // No bishops to exchange.
-				}
 				extra += extra / 2 // Supported by a pawn.
+				if p.count[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
+					extra += extra * 2 / 3 // No knights or bishops to exchange.
+				}
 			}
 			score.adjust(extra)
 		}
@@ -289,7 +287,7 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened b
 		attacks := p.attacks(square)
 
 		// Bonus for queen's mobility.
-		mobility.add(mobilityQueen[Min(15, (attacks & maskSafe).count())])
+		mobility.add(mobilityQueen[min(15, (attacks & maskSafe).count())])
 
 		// Penalty if queen is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
