@@ -93,7 +93,8 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 // Bishop-only endgame: drop the score if we have opposite-colored bishops.
 func (e *Evaluation) bishopsAndPawns() int {
 	if e.oppositeBishops() {
-		if pawns := abs(e.position.count[Pawn] - e.position.count[BlackPawn]); pawns == 1 {
+		outposts := &e.position.outposts
+		if (outposts[Pawn] | outposts[BlackPawn]).count() == 2 {
 			return 8 // --> 1/8 of original score.
 		}
 		return 2 // --> 1/2 of original score.
@@ -128,9 +129,9 @@ func (e *Evaluation) queenVsRookAndPawns() int { // STUB.
 
 func (e *Evaluation) lastPawnLeft() int {
 	color := e.strongerSide()
-	count := &e.position.count
+	outposts := &e.position.outposts
 
-	if (color == White && count[Pawn] == 1) || (color == Black && count[BlackPawn] == 1) {
+	if (color == White && outposts[Pawn].count() == 1) || (color == Black && outposts[BlackPawn].count() == 1) {
 		return (3 << 16) | 4 // --> 3/4 of original score.
 	}
 
@@ -139,15 +140,15 @@ func (e *Evaluation) lastPawnLeft() int {
 
 func (e *Evaluation) noPawnsLeft() int {
 	color := e.strongerSide()
-	count := &e.position.count
-	whiteMinorOnly := count[Queen] + count[Rook] == 0 && count[Bishop] + count[Knight] == 1
-	blackMinorOnly := count[BlackQueen] + count[BlackRook] == 0 && count[BlackBishop] + count[BlackKnight] == 1
+	outposts := &e.position.outposts
+	whiteMinorOnly := outposts[Queen] == 0 && outposts[Rook] == 0 && (outposts[Bishop] | outposts[Knight]).count() == 1
+	blackMinorOnly := outposts[BlackQueen] == 0 && outposts[BlackRook] == 0 && (outposts[BlackBishop] | outposts[BlackKnight]).count() == 1
 
-	if color == White && count[Pawn] == 0 {
+	if color == White && outposts[Pawn] == 0 {
 		if whiteMinorOnly {
 			// There is a theoretical chance of winning if opponent's pawns are on
 			// edge files (ex. some puzzles).
-			if e.position.outposts[BlackPawn] & (maskFile[0] | maskFile[7]) != 0 {
+			if outposts[BlackPawn] & (maskFile[0] | maskFile[7]) != 0 {
 				return 64 // --> 1/64 of original score.
 			}
 			return 0
@@ -157,9 +158,9 @@ func (e *Evaluation) noPawnsLeft() int {
 		return (3 << 16) | 16 // --> 3/16 of original score.
 	}
 
-	if color == Black && count[BlackPawn] == 0 {
+	if color == Black && outposts[BlackPawn] == 0 {
 		if blackMinorOnly {
-			if e.position.outposts[Pawn] & (maskFile[0] | maskFile[7]) != 0 {
+			if outposts[Pawn] & (maskFile[0] | maskFile[7]) != 0 {
 				return 64 // --> 1/64 of original score.
 			}
 			return 0

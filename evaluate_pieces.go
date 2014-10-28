@@ -38,29 +38,29 @@ func (e *Evaluation) analyzePieces() {
 	}
 
 	// Evaluate white pieces except the queen.
-	if p.count[Knight] > 0 {
+	if p.outposts[Knight] != 0 {
 		knight.white, mobile = e.knights(White, maskSafeForWhite, isBlackKingThreatened)
 		mobility.white.add(mobile)
 	}
-	if p.count[Bishop] > 0 {
+	if p.outposts[Bishop] != 0 {
 		bishop.white, mobile = e.bishops(White, maskSafeForWhite, isBlackKingThreatened)
 		mobility.white.add(mobile)
 	}
-	if p.count[Rook] > 0 {
+	if p.outposts[Rook] != 0 {
 		rook.white, mobile = e.rooks(White, maskSafeForWhite, isBlackKingThreatened)
 		mobility.white.add(mobile)
 	}
 
 	// Evaluate black pieces except the queen.
-	if p.count[BlackKnight] > 0 {
+	if p.outposts[BlackKnight] != 0 {
 		knight.black, mobile = e.knights(Black, maskSafeForBlack, isWhiteKingThreatened)
 		mobility.black.add(mobile)
 	}
-	if p.count[BlackBishop] > 0 {
+	if p.outposts[BlackBishop] != 0 {
 		bishop.black, mobile = e.bishops(Black, maskSafeForBlack, isWhiteKingThreatened)
 		mobility.black.add(mobile)
 	}
-	if p.count[BlackRook] > 0 {
+	if p.outposts[BlackRook] != 0 {
 		rook.black, mobile = e.rooks(Black, maskSafeForBlack, isWhiteKingThreatened)
 		mobility.black.add(mobile)
 	}
@@ -68,12 +68,12 @@ func (e *Evaluation) analyzePieces() {
 	// Now that we've built all attack bitmasks we can adjust mobility to
 	// exclude attacks by enemy's knights, bishops, and rooks and evaluate
 	// the queens.
-	if p.count[Queen] > 0 {
+	if p.outposts[Queen] != 0 {
 		maskSafeForWhite &= ^(e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook])
 		queen.white, mobile = e.queens(White, maskSafeForWhite, isBlackKingThreatened)
 		mobility.white.add(mobile)
 	}
-	if p.count[BlackQueen] > 0 {
+	if p.outposts[BlackQueen] != 0 {
 		maskSafeForBlack &= ^(e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook])
 		queen.black, mobile = e.queens(Black, maskSafeForBlack, isWhiteKingThreatened)
 		mobility.black.add(mobile)
@@ -118,7 +118,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		if extra := extraKnight[flip(color, square)]; extra > 0 {
 			if p.pawnAttacks(color).on(square) {
 				extra += extra / 2 // Supported by a pawn.
-				if p.count[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
+				if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
 					extra += extra * 2 / 3 // No knights or bishops to exchange.
 				}
 			}
@@ -182,7 +182,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		if extra := extraBishop[flip(color, square)]; extra > 0 {
 			if p.pawnAttacks(color).on(square) {
 				extra += extra / 2 // Supported by a pawn.
-				if p.count[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
+				if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
 					extra += extra * 2 / 3 // No knights or bishops to exchange.
 				}
 			}

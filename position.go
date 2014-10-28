@@ -22,7 +22,6 @@ type Position struct {
 	pawnHash     uint64      // Polyglot hash value for position's pawn structure.
 	board        Bitmask     // Bitmask of all pieces on the board.
 	king         [2]int      // King's square for both colors.
-	count        [14]int     // Counts of each piece on the board.
 	pieces       [64]Piece   // Array of 64 squares with pieces on them.
 	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	tally        Score       // Positional valuation score based on PST.
@@ -55,7 +54,6 @@ func NewPosition(game *Game, white, black string, color int) *Position {
 		if piece != 0 {
 			p.outposts[piece].set(square)
 			p.outposts[piece.color()].set(square)
-			p.count[piece]++
 			if piece.isKing() {
 				p.king[piece.color()] = square
 			}
@@ -160,7 +158,6 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 			p.outposts[piece].set(sq)
 			p.outposts[piece.color()].set(sq)
 			p.balance += materialBalance[piece]
-			p.count[piece]++
 			sq++
 		}
 	}

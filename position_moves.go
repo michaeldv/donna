@@ -27,14 +27,12 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 	p.outposts[pawn] ^= bit[from]
 	p.outposts[promo] ^= bit[to]
 	p.outposts[pawn.color()] ^= bit[from] | bit[to]
-	p.count[pawn]--
 
-	// Update position's hash values, material balance and counts.
+	// Update position's hash values and material balance.
 	random := pawn.polyglot(from)
 	p.hash ^= random ^ promo.polyglot(to)
 	p.pawnHash ^= random
 	p.balance += materialBalance[promo] - materialBalance[pawn]
-	p.count[promo]++
 
 	// Update positional score.
 	p.tally.subtract(pst[pawn][from]).add(pst[promo][to])
@@ -45,7 +43,6 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	p.outposts[capture] ^= bit[to]
 	p.outposts[capture.color()] ^= bit[to]
-	p.count[capture]--
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(to)
@@ -67,7 +64,6 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	p.pieces[enpassant] = 0
 	p.outposts[capture] ^= bit[enpassant]
 	p.outposts[capture.color()] ^= bit[enpassant]
-	p.count[capture]--
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(enpassant)
