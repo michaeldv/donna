@@ -300,12 +300,12 @@ var penaltyPawnThreat = [6]Score {
 
 // Penalty for doubled pawn: A to H, midgame/endgame.
 var penaltyDoubledPawn = [8]Score{
-	{22, 22}, {10, 24}, {10, 24}, {12, 24}, {12, 24}, {10, 24}, {10, 24}, {22, 22},
+	{7, 21}, {10, 24}, {12, 24}, {12, 24}, {12, 24}, {12, 24}, {10, 24}, {7, 21},
 }
 
 // Penalty for isolated pawn that is *not* exposed: A to H, midgame/endgame.
 var penaltyIsolatedPawn = [8]Score{
-	{16, 15}, {18, 17}, {20, 17}, {20, 17}, {20, 17}, {20, 17}, {18, 17}, {16, 15},
+	{12, 15}, {18, 17}, {20, 17}, {20, 17}, {20, 17}, {20, 17}, {18, 17}, {12, 15},
 }
 
 // Penalty for isolated pawn that is exposed: A to H, midgame/endgame.
