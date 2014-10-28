@@ -10,7 +10,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int) int {
 }
 
 func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly bool) (score int) {
-	ply := Ply()
+	ply := ply()
 
 	// Reset principal variation.
 	game.pv[ply] = game.pv[ply][:0]
@@ -100,7 +100,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	}
 
 	if !inCheck && !capturesOnly {
-		gen = NewGen(p, Ply()).generateChecks().quickRank()
+		gen = NewMoveGen(p).generateChecks().quickRank()
 		for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 			if !gen.isValid(move) || p.exchange(move) < 0 {
 				continue

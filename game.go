@@ -266,7 +266,7 @@ func (game *Game) saveBest(ply int, move Move) *Game {
 }
 
 func (game *Game) saveGood(depth int, move Move) *Game {
-	if ply := Ply(); move.isQuiet() && move != game.killers[ply][0] {
+	if ply := ply(); move.isQuiet() && move != game.killers[ply][0] {
 		game.killers[ply][1] = game.killers[ply][0]
 		game.killers[ply][0] = move
 		game.history[move.piece()][move.to()] += depth * depth

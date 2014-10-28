@@ -252,7 +252,7 @@ func (p *Position) status(move Move, blendedScore int) int {
 		defer func() { p = p.UndoLastMove() }()
 	}
 
-	switch ply, score := Ply(), abs(blendedScore); score {
+	switch ply, score := ply(), abs(blendedScore); score {
 	case 0:
 		if ply == 1 {
 			if p.insufficient() {

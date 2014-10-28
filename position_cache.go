@@ -47,9 +47,9 @@ func (p *Position) cache(move Move, score, depth int, flags uint8) *Position {
 
 		if depth > entry.depth || game.token != entry.token {
 			if score > Checkmate-MaxPly && score <= Checkmate {
-				entry.score = score + Ply()
+				entry.score = score + ply()
 			} else if score >= -Checkmate && score < -Checkmate+MaxPly {
-				entry.score = score - Ply()
+				entry.score = score - ply()
 			} else {
 				entry.score = score
 			}

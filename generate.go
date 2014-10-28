@@ -45,7 +45,7 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 
 // Convenience method to return move generator for the current ply.
 func NewMoveGen(p *Position) *MoveGen {
-	return NewGen(p, Ply())
+	return NewGen(p, ply())
 }
 
 // Returns new move generator for the initial step of iterative deepening

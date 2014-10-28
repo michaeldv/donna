@@ -7,7 +7,7 @@ package donna
 import ()
 
 func (p *Position) searchTree(alpha, beta, depth int) (score int) {
-	ply := Ply()
+	ply := ply()
 
 	// Reset principal variation.
 	game.pv[ply] = game.pv[ply][:0]

@@ -60,7 +60,8 @@ func between(from, to, between int) bool {
 	return (maskStraight[from][to] | maskDiagonal[from][to]).on(between)
 }
 
-func Ply() int {
+// Returns distance between current and root node.
+func ply() int {
 	return node - rootNode
 }
 

@@ -101,8 +101,8 @@ func TestPosition200(t *testing.T) {
 // Mate in 1 move.
 func TestPosition210(t *testing.T) {
 	p := NewGame(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).Start(White)
-	rootNode = node // Reset Ply().
-	expect.Eq(t, p.status(NewMove(p, H1, H6), Checkmate-Ply()), WhiteWinning)
+	rootNode = node // Reset ply().
+	expect.Eq(t, p.status(NewMove(p, H1, H6), Checkmate - ply()), WhiteWinning)
 }
 
 // Forced stalemate.
@@ -132,7 +132,7 @@ func TestPosition240(t *testing.T) {
 	p = p.MakeMove(NewMove(p, A1, A2))
 	p = p.MakeMove(NewMove(p, H6, H5)) // -- No NewMove(p, A2, A1) here --
 
-	rootNode = node                                       // Reset Ply().
+	rootNode = node // Reset ply().
 	expect.Eq(t, p.status(NewMove(p, A2, A1), 0), Repetition) // <-- Ka2-a1 causes rep #3.
 }
 
