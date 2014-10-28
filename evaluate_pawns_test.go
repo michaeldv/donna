@@ -17,7 +17,7 @@ func TestEvaluatePawns110(t *testing.T) {
 	game := NewGame(`Ke1,h2,h3`, `Ke8,a7,h7`)
 	score := game.Start(White).Evaluate()
 
-	expect.Eq(t, score, -19)
+	expect.Eq(t, score, -18)
 }
 
 func TestEvaluatePawns120(t *testing.T) {
