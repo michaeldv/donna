@@ -159,7 +159,7 @@ func Summary(metrics map[string]interface{}) {
 }
 
 // Logging wrapper around fmt.Printf() that could be turned on as needed. Typical
-// usage is Log(true); defer Log(false) in tests.
+// usage is Log(); defer Log() in tests.
 func Log(args ...interface{}) {
 	switch len(args) {
 	case 0:

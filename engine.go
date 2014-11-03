@@ -35,6 +35,7 @@ type Engine struct {
 	trace       bool     // Trace evaluation scores.
 	fancy       bool     // Represent pieces as UTF-8 characters.
 	status      uint8    // Engine status.
+	logFile     string   // Log file name.
 	cacheSize   float64  // Default cache size.
 	clock       Clock
 	options     Options
@@ -49,6 +50,8 @@ func NewEngine(args ...interface{}) *Engine {
 		switch value := args[i+1]; args[i] {
 		case `log`:
 			engine.log = value.(bool)
+		case `logfile`:
+			engine.logFile = value.(string)
 		case `uci`:
 			engine.uci = value.(bool)
 		case `trace`:
@@ -78,17 +81,24 @@ func (e *Engine) print(arg string) *Engine {
 	return e
 }
 
-// Appends the string to log file.
-func (e *Engine) debug(arg string) *Engine {
-	logFile, err := os.OpenFile(`/tmp/donna.log`, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
-	if err == nil {
-		defer logFile.Close()
-		logFile.WriteString(arg) // f.Write() and friends are unbuffered.
+// Appends the string to log file. No flush is required as f.Write() and friends
+// are unbuffered.
+func (e *Engine) debug(args ...interface{}) *Engine {
+	if len(e.logFile) != 0 {
+		logFile, err := os.OpenFile(e.logFile, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+		if err == nil {
+			defer logFile.Close()
+			if len := len(args); len > 1 {
+				logFile.WriteString(fmt.Sprintf(args[0].(string), args[1:]...))
+			} else {
+				logFile.WriteString(args[0].(string))
+			}
+		}
 	}
 	return e
 }
 
-// Dumps the string to standard output and logs it to file.
+// Dumps the string to standard output and optionally logs it to file.
 func (e *Engine) reply(args ...interface{}) *Engine {
 	if len := len(args); len > 1 {
 		data := fmt.Sprintf(args[0].(string), args[1:]...)
@@ -199,8 +209,8 @@ func (e *Engine) varyingTimeTicker() *Engine {
 			}
 			elapsed := e.elapsed(now)
 			if (game.deepening && game.improving && elapsed > e.remaining() * 4 / 5) || elapsed > e.clock.hardStop {
-				e.debug(fmt.Sprintf("# Halt: Flags %v Elapsed %s Remaining %s Hard stop %s\n",
-					game.deepening && game.improving, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop)))
+				e.debug("# Halt: Flags %v Elapsed %s Remaining %s Hard stop %s\n",
+					game.deepening && game.improving, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop))
 				e.clock.halt = true
 				return
 			}
@@ -243,8 +253,8 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 	if timeControl {
 		e.clock.optimal = soft
 	}
-	e.debug(fmt.Sprintf("#\n# Make %d moves in %s Optimal %s\n", e.options.movesToGo, ms(e.options.timeLeft), ms(e.clock.optimal)))
-	e.debug(fmt.Sprintf("# First soft stop %s Hard stop %s\n", ms(soft), ms(hard)))
+	e.debug("#\n# Make %d moves in %s Optimal %s\n", e.options.movesToGo, ms(e.options.timeLeft), ms(e.clock.optimal))
+	e.debug("# First soft stop %s Hard stop %s\n", ms(soft), ms(hard))
 
 	// Adjust hard stop to leave enough time reserve for the remaining moves.
 	// The time reserve is calculated as follows:
@@ -259,10 +269,10 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 	if moves > 0 { // The last move gets all remaining time and doesn't need the reserve.
 		percent := max64(64, 100 - 4 * moves)
 		hard = hard - e.clock.optimal * moves * percent / 100
-		e.debug(fmt.Sprintf("# Reserve %d%% Hard stop %s\n", percent, ms(hard)))
+		e.debug("# Reserve %d%% Hard stop %s\n", percent, ms(hard))
 		if hard < e.clock.optimal {
 			hard = min64(e.clock.optimal, options.timeLeft / e.options.movesToGo)
-			e.debug(fmt.Sprintf("# Optimal adjusted hard stop %s\n", ms(hard)))
+			e.debug("# Optimal adjusted hard stop %s\n", ms(hard))
 		}
 	}
 
@@ -280,7 +290,7 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 		e.clock.hardStop = options.timeLeft // Oh well...
 	}
 
-	e.debug(fmt.Sprintf("# Final soft stop %s Hard stop %s\n#\n", ms(e.clock.softStop), ms(e.clock.hardStop)))
+	e.debug("# Final soft stop %s Hard stop %s\n#\n", ms(e.clock.softStop), ms(e.clock.hardStop))
 
 	return e
 }

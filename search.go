@@ -4,8 +4,6 @@
 
 package donna
 
-import `fmt`
-
 // Root node search.
 func (p *Position) search(alpha, beta, depth int) (score int) {
 	inCheck := p.isInCheck(p.color)
@@ -66,7 +64,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 			if moveCount > 1 {
 				game.volatility++
-				engine.debug(fmt.Sprintf("# New move %s Depth %d Volatility %.2f\n", move, depth, game.volatility))
+				engine.debug("# New move %s Depth %d Volatility %.2f\n", move, depth, game.volatility)
 			}
 
 			alpha = max(score, alpha)
