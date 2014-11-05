@@ -101,13 +101,13 @@ func (e *Engine) Uci() *Engine {
 		// Make sure we've started the game since "ucinewgame" is optional.
 		if game == nil || position == nil {
 			game = NewGame()
-			position = game.Start()
+			position = game.start()
 		}
 
 		switch args[0] {
 		case `startpos`:
 			args = args[1:]
-			position = game.Start()
+			position = game.start()
 		case `fen`:
 			fen := []string{}
 			for _, token := range args[1:] {

@@ -62,8 +62,7 @@ func NewGame(args ...string) *Game {
 	return &game
 }
 
-// The color parameter is optional.
-func (game *Game) Start(args ...int) *Position {
+func (game *Game) start(args ...int) *Position {
 	engine.clock.halt = false
 	tree, node, rootNode = [1024]Position{}, 0, 0
 
@@ -75,7 +74,7 @@ func (game *Game) Start(args ...int) *Position {
 	return NewPositionFromFEN(game, game.initial)
 }
 
-func (game *Game) Position() *Position {
+func (game *Game) position() *Position {
 	return &tree[node]
 }
 
@@ -101,7 +100,7 @@ func (game *Game) getReady() *Game {
 
 func (game *Game) Think() Move {
 	start := time.Now()
-	position := game.Position()
+	position := game.position()
 	game.nodes, game.qnodes = 0, 0
 
 	if book, err := NewBook(); err == nil {
@@ -247,7 +246,7 @@ func (game *Game) printPrincipal(depth, score, status int, duration float64) {
 	if engine.uci {
 		engine.uciPrincipal(depth, score, duration)
 	} else {
-		if game.Position().color == Black {
+		if game.position().color == Black {
 			score = -score
 		}
 		engine.replPrincipal(depth, score, status, duration)
@@ -282,5 +281,5 @@ func (game *Game) good(move Move) int {
 }
 
 func (game *Game) String() string {
-	return game.Position().String()
+	return game.position().String()
 }

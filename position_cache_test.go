@@ -8,7 +8,7 @@ import(`github.com/michaeldv/donna/expect`; `testing`)
 
 func TestCache000(t *testing.T) {
 	engine.cacheSize = 0.5
-	p := NewGame().Start()
+	p := NewGame().start()
 	move := NewMove(p, E2, E4)
 	p = p.MakeMove(move).cache(move, 42, 1, cacheExact)
 
