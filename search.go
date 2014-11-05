@@ -26,7 +26,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		position := p.makeMove(move)
 		moveCount++
 		if engine.uci {
-			engine.uciMove(move, moveCount, depth, gen.list[gen.head-1].score)
+			engine.uciMove(move, moveCount, depth)
 		}
 
 		// Search depth extension.

@@ -34,8 +34,8 @@ func (e *Engine) uciScore(depth, score, alpha, beta int) *Engine {
 	return engine.reply(str + "\n")
 }
 
-func (e *Engine) uciMove(move Move, moveno, depth, score int) *Engine {
-	return engine.reply("info depth %d currmove %s currmovenumber %d # %d\n", depth, move.notation(), moveno, score)
+func (e *Engine) uciMove(move Move, moveno, depth int) *Engine {
+	return engine.reply("info depth %d currmove %s currmovenumber %d\n", depth, move.notation(), moveno)
 }
 
 func (e *Engine) uciBestMove(move Move, duration float64) *Engine {
