@@ -77,7 +77,7 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	return p
 }
 
-func (p *Position) MakeMove(move Move) *Position {
+func (p *Position) makeMove(move Move) *Position {
 	color := move.color()
 	from, to, piece, capture := move.split()
 
@@ -141,7 +141,7 @@ func (p *Position) MakeMove(move Move) *Position {
 
 // Makes "null" move by copying over previous node position (i.e. preserving all pieces
 // intact) and flipping the color.
-func (p *Position) MakeNullMove() *Position {
+func (p *Position) makeNullMove() *Position {
 	node++
 	tree[node] = *p // => tree[node] = tree[node - 1]
 	pp := &tree[node]
@@ -158,18 +158,18 @@ func (p *Position) MakeNullMove() *Position {
 }
 
 // Restores previous position effectively taking back the last move made.
-func (p *Position) UndoLastMove() *Position {
+func (p *Position) undoLastMove() *Position {
 	if node > 0 {
 		node--
 	}
 	return &tree[node]
 }
 
-func (p *Position) UndoNullMove() *Position {
+func (p *Position) undoNullMove() *Position {
 	p.hash ^= polyglotRandomWhite
 	p.color ^= 1
 
-	return p.UndoLastMove()
+	return p.undoLastMove()
 }
 
 func (p *Position) isInCheck(color int) bool {
@@ -241,8 +241,8 @@ func (p *Position) isValid(move Move, pins Bitmask) bool {
 	// making it, and then taking it back.
 
 	if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
-		position := p.MakeMove(move)
-		defer position.UndoLastMove()
+		position := p.makeMove(move)
+		defer position.undoLastMove()
 		return !position.isInCheck(color)
 	}
 

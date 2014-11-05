@@ -114,7 +114,7 @@ func TestPosition220(t *testing.T) {
 // Self-imposed stalemate.
 func TestPosition230(t *testing.T) {
 	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).start(Black)
-	p = p.MakeMove(NewMove(p, H7, H6))
+	p = p.makeMove(NewMove(p, H7, H6))
 	expect.Eq(t, p.status(NewMove(p, A1, B2), 0), Stalemate)
 }
 
@@ -122,15 +122,15 @@ func TestPosition230(t *testing.T) {
 func TestPosition240(t *testing.T) {
 	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).start(Black) // Initial.
 
-	p = p.MakeMove(NewMove(p, H5, H6))
-	p = p.MakeMove(NewMove(p, A1, A2))
-	p = p.MakeMove(NewMove(p, H6, H5))
-	p = p.MakeMove(NewMove(p, A2, A1)) // Rep #2.
+	p = p.makeMove(NewMove(p, H5, H6))
+	p = p.makeMove(NewMove(p, A1, A2))
+	p = p.makeMove(NewMove(p, H6, H5))
+	p = p.makeMove(NewMove(p, A2, A1)) // Rep #2.
 	expect.Eq(t, p.status(NewMove(p, H5, H6), 0), InProgress)
 
-	p = p.MakeMove(NewMove(p, H5, H6))
-	p = p.MakeMove(NewMove(p, A1, A2))
-	p = p.MakeMove(NewMove(p, H6, H5)) // -- No NewMove(p, A2, A1) here --
+	p = p.makeMove(NewMove(p, H5, H6))
+	p = p.makeMove(NewMove(p, A1, A2))
+	p = p.makeMove(NewMove(p, H6, H5)) // -- No NewMove(p, A2, A1) here --
 
 	rootNode = node // Reset ply().
 	expect.Eq(t, p.status(NewMove(p, A2, A1), 0), Repetition) // <-- Ka2-a1 causes rep #3.

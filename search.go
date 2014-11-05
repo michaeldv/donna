@@ -23,7 +23,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		position := p.MakeMove(move)
+		position := p.makeMove(move)
 		moveCount++
 		if engine.uci {
 			engine.uciMove(move, moveCount, depth, gen.list[gen.head-1].score)
@@ -45,7 +45,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 				score = -position.searchTree(-beta, -alpha, newDepth)
 			}
 		}
-		position.UndoLastMove()
+		position.undoLastMove()
 
 		if engine.clock.halt {
 			//Log("searchRoot: bestMove %s pv[0][0] %s alpha %d\n", bestMove, game.pv[0][0], alpha)
@@ -123,9 +123,9 @@ func (p *Position) Perft(depth int) (total int64) {
 		if !gen.isValid(move) {
 			continue
 		}
-		position := p.MakeMove(move)
+		position := p.makeMove(move)
 		total += position.Perft(depth - 1)
-		position.UndoLastMove()
+		position.undoLastMove()
 	}
 	return
 }

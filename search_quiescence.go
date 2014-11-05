@@ -73,18 +73,18 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 		// Check if the move is an useless capture.
 		useless := !inCheck && !isPrincipal && !move.isPromo() && staticScore + pieceValue[move.capture()] + 64 < alpha
 
-		position := p.MakeMove(move)
+		position := p.makeMove(move)
 		moveCount++
 
 		// Prune useless captures -- but make sure it's not a capture move
 		// that checks.
 		if useless && !position.isInCheck(position.color) {
-			position.UndoLastMove()
+			position.undoLastMove()
 			continue
 		}
 
 		score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, true)
-		position.UndoLastMove()
+		position.undoLastMove()
 
 		if score > alpha {
 			alpha = score
@@ -106,10 +106,10 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 				continue
 			}
 
-			position := p.MakeMove(move)
+			position := p.makeMove(move)
 			moveCount++
 			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, false)
-			position.UndoLastMove()
+			position.undoLastMove()
 
 			if engine.clock.halt {
 				game.qnodes += moveCount

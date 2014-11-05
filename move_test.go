@@ -105,9 +105,9 @@ func TestMove120(t *testing.T) {
 
 func TestMove130(t *testing.T) {
 	p := NewGame().start()
-	p = p.MakeMove(NewPawnMove(p, E2, E4))
-	p = p.MakeMove(NewPawnMove(p, E7, E6))
-	p = p.MakeMove(NewPawnMove(p, E4, E5))
+	p = p.makeMove(NewPawnMove(p, E2, E4))
+	p = p.makeMove(NewPawnMove(p, E7, E6))
+	p = p.makeMove(NewPawnMove(p, E4, E5))
 	move := NewPawnMove(p, D7, D5) // Causes en-passant on D6.
 
 	expect.Eq(t, NewMoveFromString(p, `d7d5`), move)
@@ -178,9 +178,9 @@ func TestMove320(t *testing.T) {
 
 func TestMove330(t *testing.T) {
 	p := NewGame().start()
-	p = p.MakeMove(NewPawnMove(p, E2, E4))
-	p = p.MakeMove(NewPawnMove(p, E7, E6))
-	p = p.MakeMove(NewPawnMove(p, E4, E5))
+	p = p.makeMove(NewPawnMove(p, E2, E4))
+	p = p.makeMove(NewPawnMove(p, E7, E6))
+	p = p.makeMove(NewPawnMove(p, E4, E5))
 	move := NewPawnMove(p, D7, D5) // Causes en-passant on D6.
 
 	expect.Eq(t, NewMoveFromNotation(p, `d7d5`), move)
@@ -190,7 +190,7 @@ func TestMove330(t *testing.T) {
 // Only pawns can do en-passant capture.
 func TestMove340(t *testing.T) {
 	p := NewGame(`Kg1,d2`, `Kc2,Qa3,Rh3,Be4,Nc1,c4`).start(White)
-	p = p.MakeMove(NewEnpassant(p, D2, D4)) // Causes en-passant on D3.
+	p = p.makeMove(NewEnpassant(p, D2, D4)) // Causes en-passant on D3.
 	bQ := NewMove(p, A3, D3)
 	bR := NewMove(p, H3, D3)
 	bB := NewMove(p, E4, D3)

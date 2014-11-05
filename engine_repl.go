@@ -70,7 +70,7 @@ func (e *Engine) Repl() *Engine {
 
 	think := func() {
 		if move := game.Think(); move != 0 {
-			position = position.MakeMove(move)
+			position = position.makeMove(move)
 			fmt.Printf("%s\n", position)
 		}
 	}
@@ -172,13 +172,13 @@ func (e *Engine) Repl() *Engine {
 			Summary(metrics)
 		case `undo`:
 			if position != nil {
-				position = position.UndoLastMove()
+				position = position.undoLastMove()
 				fmt.Printf("%s\n", position)
 			}
 		default:
 			setup()
 			if move := NewMoveFromString(position, command); move != 0 {
-				if advance := position.MakeMove(move); advance != nil {
+				if advance := position.makeMove(move); advance != nil {
 					position = advance
 					think()
 					continue

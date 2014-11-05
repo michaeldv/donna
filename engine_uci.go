@@ -125,7 +125,7 @@ func (e *Engine) Uci() *Engine {
 		if position != nil && len(args) > 0 && args[0] == `moves` {
 			for _, move := range args[1:] {
 				args = args[1:] // Shift the move.
-				position = position.MakeMove(NewMoveFromNotation(position, move))
+				position = position.makeMove(NewMoveFromNotation(position, move))
 			}
 		}
 	}

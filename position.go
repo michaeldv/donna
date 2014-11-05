@@ -245,8 +245,8 @@ func (p *Position) insufficient() bool {
 // help to determine whether to continue with search or if the game is over.
 func (p *Position) status(move Move, blendedScore int) int {
 	if move != Move(0) {
-		p = p.MakeMove(move)
-		defer func() { p = p.UndoLastMove() }()
+		p = p.makeMove(move)
+		defer func() { p = p.undoLastMove() }()
 	}
 
 	switch ply, score := ply(), abs(blendedScore); score {
