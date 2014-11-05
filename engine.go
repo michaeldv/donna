@@ -36,6 +36,7 @@ type Engine struct {
 	fancy       bool     // Represent pieces as UTF-8 characters.
 	status      uint8    // Engine status.
 	logFile     string   // Log file name.
+	bookFile    string   // Polyglot opening book file name.
 	cacheSize   float64  // Default cache size.
 	clock       Clock
 	options     Options
@@ -52,6 +53,8 @@ func NewEngine(args ...interface{}) *Engine {
 			engine.log = value.(bool)
 		case `logfile`:
 			engine.logFile = value.(string)
+		case `bookfile`:
+			engine.bookFile = value.(string)
 		case `uci`:
 			engine.uci = value.(bool)
 		case `trace`:

@@ -7,14 +7,7 @@ package donna
 import (
 	`encoding/binary`
 	`os`
-	`path`
 	`sort`
-)
-
-// Opening book from http://www.chess2u.com/t5834-gm-polyglot-book
-const (
-	BookDir = `books`
-	BookFile = `gm2001.bin`
 )
 
 type Book struct {
@@ -30,11 +23,10 @@ type Entry struct {
 	Learn uint32
 }
 
-func NewBook() (*Book, error) {
+func NewBook(bookFile string) (*Book, error) {
 	book := &Book{}
-	// dir, _ := os.Getwd()
 
-	book.fileName = path.Join(`/tmp`, BookDir, BookFile)
+	book.fileName = bookFile
 	if fi, err := os.Stat(book.fileName); err == nil {
 		book.entries = fi.Size() / 16
 		return book, nil

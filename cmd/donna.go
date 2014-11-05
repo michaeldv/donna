@@ -11,7 +11,13 @@ import (
 
 func main() {
 	// Default engine settings are: 128MB transposition table, 5s per move.
-	engine := donna.NewEngine(`fancy`, true, `cache`, 128, `movetime`, 5000, `logfile`, os.Getenv(`DONNA_LOG`))
+	engine := donna.NewEngine(
+		`fancy`, true,
+		`cache`, 128,
+		`movetime`, 5000,
+		`logfile`, os.Getenv(`DONNA_LOG`),
+		`bookfile`, os.Getenv(`DONNA_BOOK`),
+	)
 
 	if len(os.Args) > 1 && os.Args[1] == `-i` {
 		engine.Repl()

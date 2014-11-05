@@ -103,10 +103,12 @@ func (game *Game) Think() Move {
 	position := game.position()
 	game.nodes, game.qnodes = 0, 0
 
-	if book, err := NewBook(); err == nil {
-		if move := book.pickMove(position); move != 0 {
-			game.printBestMove(move, time.Since(start).Seconds())
-			return move
+	if len(engine.bookFile) != 0 {
+		if book, err := NewBook(engine.bookFile); err == nil {
+			if move := book.pickMove(position); move != 0 {
+				game.printBestMove(move, time.Since(start).Seconds())
+				return move
+			}
 		}
 	}
 
