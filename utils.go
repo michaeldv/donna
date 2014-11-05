@@ -136,7 +136,7 @@ func Summary(metrics map[string]interface{}) {
 	fmt.Printf("%-12s    -      -    %5.2f  |    -      -    %5.2f  >  %5.2f\n", `Imbalance`,
 		float32(material.midgame)/units, float32(material.endgame)/units, float32(material.blended(phase))/units)
 
-	for _, tag := range([]string{`Tempo`, `Threats`, `Pawns`, `Passers`, `Mobility`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
+	for _, tag := range([]string{`Tempo`, `Center`, `Threats`, `Pawns`, `Passers`, `Mobility`, `+Pieces`, `-Knights`, `-Bishops`, `-Rooks`, `-Queens`, `+King`, `-Cover`, `-Safety`}) {
 		white := metrics[tag].(Total).white
 		black := metrics[tag].(Total).black
 
