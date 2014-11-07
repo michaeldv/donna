@@ -55,8 +55,8 @@ func NewGame(args ...string) *Game {
 		game.initial = `rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`
 	case 1: // Genuine FEN.
 		game.initial = args[0]
-	case 2: // Standard algebraic notation (white and black).
-		game.initial = args[0] + `:` + args[1]
+	case 2: // Donna chess format (white and black).
+		game.initial = args[0] + ` : ` + args[1]
 	}
 
 	return &game
@@ -67,7 +67,7 @@ func (game *Game) start(args ...int) *Position {
 	tree, node, rootNode = [1024]Position{}, 0, 0
 
 	// Was the game started with FEN or algebraic notation?
-	sides := strings.Split(game.initial, `:`)
+	sides := strings.Split(game.initial, ` : `)
 	if len(sides) == 2 {
 		return NewPosition(game, sides[White], sides[Black], args[0])
 	}

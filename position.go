@@ -7,7 +7,6 @@ package donna
 import (
 	`bytes`
 	`fmt`
-	`regexp`
 	`strings`
 )
 
@@ -33,8 +32,8 @@ func NewPosition(game *Game, white, black string, color int) *Position {
 	tree[node] = Position{color: color}
 	p := &tree[node]
 
-	p.setupSide(strings.Split(white, `,`), White)
-	p.setupSide(strings.Split(black, `,`), Black)
+	p.setupSide(white, White)
+	p.setupSide(black, Black)
 
 	p.castles = castleKingside[White] | castleQueenside[White] | castleKingside[Black] | castleQueenside[Black]
 	if p.pieces[E1] != King || p.pieces[H1] != Rook {
@@ -69,26 +68,62 @@ func NewPosition(game *Game, white, black string, color int) *Position {
 	return p
 }
 
-func (p *Position) setupSide(moves []string, color int) *Position {
-	re := regexp.MustCompile(`([KQRBN]?)([a-h])([1-8])`)
+// Parses Donna chess format string for one side. Besides [K]ing, [Q]ueen, [R]ook,
+// [B]ishop, and k[N]ight the following pseudo pieces could be specified:
+//
+// [M]ove:      specifies the right to move along with the optional move number.
+//              For example, "M42" for Black means the Black is making 42nd move.
+//              Default value is "M1" for White.
+//
+// [C]astle:    specifies castle right squares. For example, "Cg1" and "Cc8" encode
+//              allowed kingside castle for White, and queenside castle for Black.
+//              By default all castles are allowed, i.e. defult value is "Cc1,Cg1"
+//              for White and "Cc8,Cg8" for Black. The actual castle rights are
+//              checked during position setup to make sure they do not violate
+//              chess rules. If castle rights are specified incorrectly they get
+//              quietly ignored.
+//
+// [E]npassant: specifies en-passant square if any. For example, "Ed3" marks D3
+//              square as en-passant. Default value is no en-passant.
+//
+func (p *Position) setupSide(str string, color int) *Position {
+	invalid := func (move string, color int) {
+		panic(fmt.Sprintf("Invalid notation '%s' for %s\n", move, C(color)))
+	}
 
-	for _, move := range moves {
-		arr := re.FindStringSubmatch(move)
-		if len(arr) == 0 {
-			panic(fmt.Sprintf("Invalid notation '%s' for %s\n", move, C(color)))
-		}
-		name, col, row := arr[1], int(arr[2][0]-'a'), int(arr[3][0]-'1')
+	for _, move := range strings.Split(str, `,`) {
+		if move[0] == 'M' { // TODO: parse move number.
+			p.color = color
+		} else {
+			arr := reMove.FindStringSubmatch(move)
+			if len(arr) == 0 {
+				invalid(move, color)
+			}
+			square := square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
 
-		var piece Piece
-		switch name {
-		case `K`: piece = king(color)
-		case `Q`: piece = queen(color)
-		case `R`: piece = rook(color)
-		case `B`: piece = bishop(color)
-		case `N`: piece = knight(color)
-		default:  piece = pawn(color)
+			switch move[0] {
+			case 'K':
+				p.pieces[square] = king(color)
+			case 'Q':
+				p.pieces[square] = queen(color)
+			case 'R':
+				p.pieces[square] = rook(color)
+			case 'B':
+				p.pieces[square] = bishop(color)
+			case 'N':
+				p.pieces[square] = knight(color)
+			case 'E':
+				p.enpassant = square
+			case 'C':
+				if (square == C1 + color) || (square == B8 + color) {
+					p.castles |= castleQueenside[color]
+				} else if (square == G1 + color) || (square == F8 + color) {
+					p.castles |= castleKingside[color]
+				}
+			default:
+				p.pieces[square] = pawn(color)
+			}
 		}
-		p.pieces[square(row, col)] = piece
 	}
 
 	return p
@@ -112,7 +147,6 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	// [4] - Number of half-moves.
 	// [5] - Number of full moves.
 	matches := strings.Split(fen, ` `)
-	// fmt.Printf("%q\n", matches)
 	if len(matches) < 4 {
 		return nil
 	}
@@ -348,7 +382,79 @@ func (p *Position) fen() (fen string) {
 		fen += ` -`
 	}
 
+	// TODO: Number of half-moves and number of full moves.
+	fen += ` 0 1`
+
 	return
+}
+
+// Encodes position as DCF string (Donna Chess Format).
+func (p *Position) dcf() string {
+	fancy := engine.fancy
+	engine.fancy = false; defer func() { engine.fancy = fancy }()
+
+	encode := func (square int) string {
+		var buffer bytes.Buffer
+
+		buffer.WriteByte(byte(col(square)) + 'a')
+		buffer.WriteByte(byte(row(square)) + '1')
+
+		return buffer.String()
+	}
+
+	var pieces [2][]string
+
+	for color := White; color <= Black; color++ {
+		// Right to move and (TODO) move number.
+		if color == p.color {
+			pieces[color] = append(pieces[color], `M`)
+		}
+
+		// King.
+		pieces[color] = append(pieces[color], `K` + encode(p.king[color]))
+
+		// Queens, Rooks, Bishops, and Knights.
+		outposts := p.outposts[queen(color)]
+		for outposts != 0 {
+			pieces[color] = append(pieces[color], `Q` + encode(outposts.pop()))
+		}
+		outposts = p.outposts[rook(color)]
+		for outposts != 0 {
+			pieces[color] = append(pieces[color], `R` + encode(outposts.pop()))
+		}
+		outposts = p.outposts[bishop(color)]
+		for outposts != 0 {
+			pieces[color] = append(pieces[color], `B` + encode(outposts.pop()))
+		}
+		outposts = p.outposts[knight(color)]
+		for outposts != 0 {
+			pieces[color] = append(pieces[color], `N` + encode(outposts.pop()))
+		}
+
+		// Castle rights.
+		if p.castles & castleQueenside[color] == 0 || p.castles & castleKingside[color] == 0 {
+			if p.castles & castleQueenside[color] != 0 {
+				pieces[color] = append(pieces[color], `C` + encode(C1 + 56 * color))
+			}
+			if p.castles & castleKingside[color] != 0 {
+				pieces[color] = append(pieces[color], `C` + encode(G1 + 56 * color))
+			}
+		}
+
+		// En-passant square if any. Note that this gets assigned to the
+		// current side to move.
+		if p.enpassant != 0 && color == p.color {
+			pieces[color] = append(pieces[color], `E` + encode(p.enpassant))
+		}
+
+		// Pawns.
+		outposts = p.outposts[pawn(color)]
+		for outposts != 0 {
+			pieces[color] = append(pieces[color], encode(outposts.pop()))
+		}
+	}
+
+	return strings.Join(pieces[White], `,`) + ` : ` + strings.Join(pieces[Black], `,`)
 }
 
 func (p *Position) String() string {

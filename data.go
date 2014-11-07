@@ -4,6 +4,8 @@
 
 package donna
 
+import `regexp`
+
 const Version = `0.9`
 
 // Limits and conventions.
@@ -82,6 +84,8 @@ var castleRights = [64]uint8{
 	15, 15, 15, 15, 15, 15, 15, 15,
 	 7, 15, 15, 15,  3, 15, 15, 11,
 }
+
+var reMove = regexp.MustCompile(`([KQRBNEC]?)([a-h])([1-8])`)
 
 var maskRank = [8]Bitmask{ // 0 to 8
 	0x00000000000000FF, 0x000000000000FF00, 0x0000000000FF0000, 0x00000000FF000000,
