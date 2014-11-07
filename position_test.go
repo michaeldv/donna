@@ -109,7 +109,7 @@ func TestPosition150(t *testing.T) {
 	p := NewGame(`1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 42 42`).start()
 	expect.Eq(t, p.dcf(), `M,Kb2,Qg6,Rd2,Ne2,Ee6,c2,b3,f3,d5 : Kf8,Qc7,Rb8,Rc8,e5,h5,d6,a7`)
 
-	pp := NewGame(`M,Kb2,Qg6,Rd2,Ne2,Ee6,c2,b3,f3,d5`, `Kf8,Qc7,Rb8,Rc8,e5,h5,d6,a7`).start(White)
+	pp := NewGame(`M,Kb2,Qg6,Rd2,Ne2,Ee6,c2,b3,f3,d5`, `Kf8,Qc7,Rb8,Rc8,e5,h5,d6,a7`).start()
 	expect.Eq(t, pp.fen(), `1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 0 1`)
 }
 
@@ -121,27 +121,27 @@ func TestPosition200(t *testing.T) {
 
 // Mate in 1 move.
 func TestPosition210(t *testing.T) {
-	p := NewGame(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).start(White)
+	p := NewGame(`Kf8,Rh1,g6`, `Kh8,Bg8,g7,h7`).start()
 	rootNode = node // Reset ply().
 	expect.Eq(t, p.status(NewMove(p, H1, H6), Checkmate - ply()), WhiteWinning)
 }
 
 // Forced stalemate.
 func TestPosition220(t *testing.T) {
-	p := NewGame(`Kf7,b2,b4,h6`, `Kh8,Ba4,b3,b5,h7`).start(White)
+	p := NewGame(`Kf7,b2,b4,h6`, `Kh8,Ba4,b3,b5,h7`).start()
 	expect.Eq(t, p.status(NewMove(p, F7, F8), 0), Stalemate)
 }
 
 // Self-imposed stalemate.
 func TestPosition230(t *testing.T) {
-	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).start(Black)
+	p := NewGame(`Ka1,g3,h2`, `M,Kh5,h3,g4,g5,g6,h7`).start()
 	p = p.makeMove(NewMove(p, H7, H6))
 	expect.Eq(t, p.status(NewMove(p, A1, B2), 0), Stalemate)
 }
 
 // Draw by repetition.
 func TestPosition240(t *testing.T) {
-	p := NewGame(`Ka1,g3,h2`, `Kh5,h3,g4,g5,g6,h7`).start(Black) // Initial.
+	p := NewGame(`Ka1,g3,h2`, `M,Kh5,h3,g4,g5,g6,h7`).start() // Initial.
 
 	p = p.makeMove(NewMove(p, H5, H6))
 	p = p.makeMove(NewMove(p, A1, A2))
@@ -159,6 +159,6 @@ func TestPosition240(t *testing.T) {
 
 // Insufficient material.
 func TestPosition250(t *testing.T) {
-	p := NewGame(`Ka1,Bb2`, `Kh5`).start(White)
+	p := NewGame(`Ka1,Bb2`, `Kh5`).start()
 	expect.True(t, p.insufficient())
 }

@@ -28,12 +28,11 @@ type Position struct {
 	castles      uint8       // Castle rights mask.
 }
 
-func NewPosition(game *Game, white, black string, color int) *Position {
-	tree[node] = Position{color: color}
+func NewPosition(game *Game, white, black string) *Position {
+	tree[node] = Position{}
 	p := &tree[node]
 
-	p.setupSide(white, White)
-	p.setupSide(black, Black)
+	p.setupSide(white, White).setupSide(black, Black)
 
 	p.castles = castleKingside[White] | castleQueenside[White] | castleKingside[Black] | castleQueenside[Black]
 	if p.pieces[E1] != King || p.pieces[H1] != Rook {

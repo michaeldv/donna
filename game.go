@@ -62,14 +62,14 @@ func NewGame(args ...string) *Game {
 	return &game
 }
 
-func (game *Game) start(args ...int) *Position {
+func (game *Game) start() *Position {
 	engine.clock.halt = false
 	tree, node, rootNode = [1024]Position{}, 0, 0
 
 	// Was the game started with FEN or algebraic notation?
 	sides := strings.Split(game.initial, ` : `)
 	if len(sides) == 2 {
-		return NewPosition(game, sides[White], sides[Black], args[0])
+		return NewPosition(game, sides[White], sides[Black])
 	}
 	return NewPositionFromFEN(game, game.initial)
 }

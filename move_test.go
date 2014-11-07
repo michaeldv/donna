@@ -9,7 +9,7 @@ import(`github.com/michaeldv/donna/expect`; `testing`)
 // PxQ, NxQ, BxQ, RxQ, QxQ, KxQ
 func TestMove000(t *testing.T) {
 	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Qd5`)
-	p := game.start(White)
+	p := game.start()
 	expect.Eq(t, NewMove(p, E4, D5).value(), 1258) // PxQ
 	expect.Eq(t, NewMove(p, C3, D5).value(), 1256) // NxQ
 	expect.Eq(t, NewMove(p, C4, D5).value(), 1254) // BxQ
@@ -21,7 +21,7 @@ func TestMove000(t *testing.T) {
 // PxR, NxR, BxR, RxR, QxR, KxR
 func TestMove010(t *testing.T) {
 	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Rd5`)
-	p := game.start(White)
+	p := game.start()
 	expect.Eq(t, NewMove(p, E4, D5).value(), 633) // PxR
 	expect.Eq(t, NewMove(p, C3, D5).value(), 631) // NxR
 	expect.Eq(t, NewMove(p, C4, D5).value(), 629) // BxR
@@ -33,7 +33,7 @@ func TestMove010(t *testing.T) {
 // PxB, NxB, BxB, RxB, QxB, KxB
 func TestMove020(t *testing.T) {
 	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Bd5`)
-	p := game.start(White)
+	p := game.start()
 	expect.Eq(t, NewMove(p, E4, D5).value(), 416) // PxB
 	expect.Eq(t, NewMove(p, C3, D5).value(), 414) // NxB
 	expect.Eq(t, NewMove(p, C4, D5).value(), 412) // BxB
@@ -45,7 +45,7 @@ func TestMove020(t *testing.T) {
 // PxN, NxN, BxN, RxN, QxN, KxN
 func TestMove030(t *testing.T) {
 	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,Nd5`)
-	p := game.start(White)
+	p := game.start()
 	expect.Eq(t, NewMove(p, E4, D5).value(), 406) // PxN
 	expect.Eq(t, NewMove(p, C3, D5).value(), 404) // NxN
 	expect.Eq(t, NewMove(p, C4, D5).value(), 402) // BxN
@@ -57,7 +57,7 @@ func TestMove030(t *testing.T) {
 // PxP, NxP, BxP, RxP, QxP, KxP
 func TestMove040(t *testing.T) {
 	game := NewGame(`Kd6,Qd1,Ra5,Nc3,Bc4,e4`, `Kh8,d5`)
-	p := game.start(White)
+	p := game.start()
 	expect.Eq(t, NewMove(p, E4, D5).value(), 98) // PxP
 	expect.Eq(t, NewMove(p, C3, D5).value(), 96) // NxP
 	expect.Eq(t, NewMove(p, C4, D5).value(), 94) // BxP
@@ -80,7 +80,7 @@ func TestMove100(t *testing.T) {
 }
 
 func TestMove110(t *testing.T) {
-	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).start(White)
+	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).start()
 	m1 := NewMove(p, E1, E2) // Capture.
 	m2 := NewMove(p, A7, A8).promote(Rook)  // Promo without capture.
 	m3 := NewMove(p, G7, H8).promote(Queen) // Promo with capture.
@@ -94,11 +94,11 @@ func TestMove110(t *testing.T) {
 }
 
 func TestMove120(t *testing.T) {
-	p1 := NewGame(`Ke1`, `Ke8,Ra8`).start(Black)
+	p1 := NewGame(`Ke1`, `M,Ke8,Ra8`).start()
 	m1 := NewCastle(p1, E8, C8)
 	expect.Eq(t, NewMoveFromString(p1, `0-0-0`), m1)
 
-	p2 := NewGame(`Ke1`, `Ke8,Rh8`).start(Black)
+	p2 := NewGame(`Ke1`, `M,Ke8,Rh8`).start()
 	m2 := NewCastle(p2, E8, G8)
 	expect.Eq(t, NewMoveFromString(p2, `0-0`), m2)
 }
@@ -125,7 +125,7 @@ func TestMove200(t *testing.T) {
 }
 
 func TestMove210(t *testing.T) {
-	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).start(White)
+	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).start()
 	m1 := NewMove(p, E1, E2) // Capture.
 	m2 := NewMove(p, A7, A8).promote(Rook)  // Promo without capture.
 	m3 := NewMove(p, G7, H8).promote(Queen) // Promo with capture.
@@ -136,11 +136,11 @@ func TestMove210(t *testing.T) {
 }
 
 func TestMove220(t *testing.T) {
-	p1 := NewGame(`Ke1`, `Ke8,Ra8`).start(Black)
+	p1 := NewGame(`Ke1`, `M,Ke8,Ra8`).start()
 	m1 := NewCastle(p1, E8, C8) // 0-0-0
 	expect.Eq(t, m1.notation(), `e8c8`)
 
-	p2 := NewGame(`Ke1`, `Ke8,Rh8`).start(Black)
+	p2 := NewGame(`Ke1`, `M,Ke8,Rh8`).start()
 	m2 := NewCastle(p2, E8, G8) // 0-0
 	expect.Eq(t, m2.notation(), `e8g8`)
 }
@@ -156,7 +156,7 @@ func TestMove300(t *testing.T) {
 }
 
 func TestMove310(t *testing.T) {
-	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).start(White)
+	p := NewGame(`Ke1,g7,a7`, `Ke8,Rh8,e2`).start()
 	m1 := NewMove(p, E1, E2) // Capture.
 	m2 := NewMove(p, A7, A8).promote(Rook)  // Promo without capture.
 	m3 := NewMove(p, G7, H8).promote(Queen) // Promo with capture.
@@ -167,11 +167,11 @@ func TestMove310(t *testing.T) {
 }
 
 func TestMove320(t *testing.T) {
-	p1 := NewGame(`Ke1`, `Ke8,Ra8`).start(Black)
+	p1 := NewGame(`Ke1`, `M,Ke8,Ra8`).start()
 	m1 := NewCastle(p1, E8, C8) // 0-0-0
 	expect.Eq(t, NewMoveFromNotation(p1, `e8c8`), m1)
 
-	p2 := NewGame(`Ke1`, `Ke8,Rh8`).start(Black)
+	p2 := NewGame(`Ke1`, `M,Ke8,Rh8`).start()
 	m2 := NewCastle(p2, E8, G8) // 0-0
 	expect.Eq(t, NewMoveFromNotation(p2, `e8g8`), m2)
 }
@@ -189,7 +189,7 @@ func TestMove330(t *testing.T) {
 
 // Only pawns can do en-passant capture.
 func TestMove340(t *testing.T) {
-	p := NewGame(`Kg1,d2`, `Kc2,Qa3,Rh3,Be4,Nc1,c4`).start(White)
+	p := NewGame(`Kg1,d2`, `Kc2,Qa3,Rh3,Be4,Nc1,c4`).start()
 	p = p.makeMove(NewEnpassant(p, D2, D4)) // Causes en-passant on D3.
 	bQ := NewMove(p, A3, D3)
 	bR := NewMove(p, H3, D3)

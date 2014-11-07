@@ -8,7 +8,7 @@ import(`github.com/michaeldv/donna/expect`; `testing`)
 
 // f2/g2/h2 and f7/g7/h7 (perfect cover).
 func TestSafety000(t *testing.T) {
-	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f2,g2,h2`, `Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g7,h7`).start(Black).EvaluateWithTrace()
+	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f2,g2,h2`, `M,Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g7,h7`).start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
@@ -19,7 +19,7 @@ func TestSafety000(t *testing.T) {
 
 // f2,g2,H3 vs f7/G6/h7 (one square pawn distance).
 func TestSafety010(t *testing.T) {
-	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f2,g2,h3`, `Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g6,h7`).start(Black).EvaluateWithTrace()
+	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f2,g2,h3`, `M,Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g6,h7`).start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
@@ -29,7 +29,7 @@ func TestSafety010(t *testing.T) {
 
 // F4,g2,h2 vs f7/g7/H5 (two squares pawn distance).
 func TestSafety020(t *testing.T) {
-	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f4,g2,h2`, `Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g7,h5`).start(Black).EvaluateWithTrace()
+	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f4,g2,h2`, `M,Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g7,h5`).start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
@@ -39,7 +39,7 @@ func TestSafety020(t *testing.T) {
 
 // F5,g2,h2 vs f7/g7/H4 (three squares pawn distance).
 func TestSafety030(t *testing.T) {
-	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f5,g2,h2`, `Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g7,h4`).start(Black).EvaluateWithTrace()
+	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f5,g2,h2`, `M,Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g7,h4`).start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
@@ -49,7 +49,7 @@ func TestSafety030(t *testing.T) {
 
 // F4,G3,h2 vs f7/G6/H5 (one and two squares pawn distances).
 func TestSafety040(t *testing.T) {
-	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f4,g3,h2`, `Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g6,h5`).start(Black).EvaluateWithTrace()
+	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f4,g3,h2`, `M,Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g6,h5`).start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
@@ -59,7 +59,7 @@ func TestSafety040(t *testing.T) {
 
 // F3,F4,g2,h2 vs F6/F5,g7/h7 (one square, doubled pawns).
 func TestSafety100(t *testing.T) {
-	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f3,f4,g2,h2`, `Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f6,f5,g7,h7`).start(Black).EvaluateWithTrace()
+	NewGame(`Kg1,Qd1,Ra1,Rf1,Nf3,a2,d4,f3,f4,g2,h2`, `M,Kg8,Qd8,Ra8,Rf8,Nf6,a7,d5,f6,f5,g7,h7`).start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
@@ -70,7 +70,7 @@ func TestSafety100(t *testing.T) {
 
 // Kg2,f2,G3,h2 vs Kg7,f7,G7/h7 (ajacent).
 func TestSafety110(t *testing.T) {
-	NewGame(`Kg2,Qd1,Ra1,Rf1,Nf3,a2,d4,f2,g3,h2`, `Kg7,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g6,h7`).start(Black).EvaluateWithTrace()
+	NewGame(`Kg2,Qd1,Ra1,Rf1,Nf3,a2,d4,f2,g3,h2`, `M,Kg7,Qd8,Ra8,Rf8,Nf6,a7,d5,f7,g6,h7`).start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 	black := eval.metrics[`-Cover`].(Total).black
 
@@ -81,7 +81,7 @@ func TestSafety110(t *testing.T) {
 
 func TestSafety120(t *testing.T) {
 	game := NewGame(`Ke1,Qf3,Ra1,Rh1,Bc1,Bf1,Nc3,a2,b2,c2,d4,e3,f2,g2,h3`, `Ke8,Qd8,Ra8,Rh8,Bf8,Nc6,Nf6,a7,b7,c7,d5,e7,f7,g7,h7`)
-	game.start(White).EvaluateWithTrace()
+	game.start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 
 	expect.Eq(t, white.midgame, 119)
@@ -89,7 +89,7 @@ func TestSafety120(t *testing.T) {
 
 func TestSafety130(t *testing.T) {
 	game := NewGame(`Ke1,Qd1,Ra1,Rh1,Bc1,Bf1,Nc3,a2,b2,c2,d4,e3,f2,f3,h3`, `Ke8,Qd8,Ra8,Rh8,Bf8,Nc6,Nf6,a7,b7,c7,d5,e7,f7,g7,h7`)
-	game.start(White).EvaluateWithTrace()
+	game.start().EvaluateWithTrace()
 	white := eval.metrics[`-Cover`].(Total).white
 
 	expect.Eq(t, white.midgame, 95)
@@ -97,19 +97,19 @@ func TestSafety130(t *testing.T) {
 
 // Friendly pawn distance.
 func TestSafety200(t *testing.T) {
-	NewGame(`Ke1,Qd1`, `Ke8,Qd8,f7`).start(Black).EvaluateWithTrace()
+	NewGame(`Ke1,Qd1`, `M,Ke8,Qd8,f7`).start().EvaluateWithTrace()
 	black := eval.metrics[`-Cover`].(Total).black
 	expect.Eq(t, black.endgame, 0)
 
-	NewGame(`Ke1,Qd1`, `Ke8,Qd8,g7`).start(Black).EvaluateWithTrace()
+	NewGame(`Ke1,Qd1`, `M,Ke8,Qd8,g7`).start().EvaluateWithTrace()
 	black = eval.metrics[`-Cover`].(Total).black
 	expect.Eq(t, black.endgame, -kingByPawn.endgame * 1)
 
-	NewGame(`Ke1,Qd1`, `Ke8,Qd8,h7`).start(Black).EvaluateWithTrace()
+	NewGame(`Ke1,Qd1`, `M,Ke8,Qd8,h7`).start().EvaluateWithTrace()
 	black = eval.metrics[`-Cover`].(Total).black
 	expect.Eq(t, black.endgame, -kingByPawn.endgame * 2)
 
-	NewGame(`Ke1,Qd1`, `Ka8,Qd8,h2`).start(Black).EvaluateWithTrace()
+	NewGame(`Ke1,Qd1`, `M,Ka8,Qd8,h2`).start().EvaluateWithTrace()
 	black = eval.metrics[`-Cover`].(Total).black
 	expect.Eq(t, black.endgame, -kingByPawn.endgame * 6)
 }

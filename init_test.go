@@ -74,7 +74,7 @@ func TestMaterial000(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(materialDraw))
 	expect.Eq(t, materialBase[balance].endgame, nil)
 
-	p := NewGame(`Ke1`, `Ke8`).start(White)
+	p := NewGame(`Ke1`, `Ke8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -84,7 +84,7 @@ func TestMaterial010(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(materialDraw))
 	expect.Eq(t, materialBase[balance].endgame, nil)
 
-	p := NewGame(`Ke1,Bc1`, `Ke8`).start(White)
+	p := NewGame(`Ke1,Bc1`, `Ke8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -93,7 +93,7 @@ func TestMaterial015(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(materialDraw))
 	expect.Eq(t, materialBase[balance].endgame, nil)
 
-	p := NewGame(`Ke1,Bc1`, `Ke8,Nb8`).start(White)
+	p := NewGame(`Ke1,Bc1`, `Ke8,Nb8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -103,7 +103,7 @@ func TestMaterial020(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(materialDraw))
 	expect.Eq(t, materialBase[balance].endgame, nil)
 
-	p := NewGame(`Ke1,Ne2,Ne3`, `Ke8`).start(White)
+	p := NewGame(`Ke1,Ne2,Ne3`, `Ke8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -113,7 +113,7 @@ func TestMaterial030(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(knownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnVsBareKing)
 
-	p := NewGame(`Ke1,e2`, `Ke8`).start(White)
+	p := NewGame(`Ke1,e2`, `Ke8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -122,7 +122,7 @@ func TestMaterial040(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(knownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnVsBareKing)
 
-	p := NewGame(`Ke1`, `Ke8,e7`).start(Black)
+	p := NewGame(`Ke1`, `M,Ke8,e7`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -132,7 +132,7 @@ func TestMaterial050(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(knownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).knightAndBishopVsBareKing)
 
-	p := NewGame(`Ke1,Nb1,Bc1`, `Ke8`).start(White)
+	p := NewGame(`Ke1,Nb1,Bc1`, `Ke8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -141,7 +141,7 @@ func TestMaterial060(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(knownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).knightAndBishopVsBareKing)
 
-	p := NewGame(`Ke1`, `Ke8,Nb8,Bc8`).start(Black)
+	p := NewGame(`Ke1`, `M,Ke8,Nb8,Bc8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -151,7 +151,7 @@ func TestMaterial070(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(knownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).twoBishopsVsBareKing)
 
-	p := NewGame(`Ke1`, `Ka8,Bg8,Bh8`).start(Black)
+	p := NewGame(`Ke1`, `M,Ka8,Bg8,Bh8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -161,7 +161,7 @@ func TestMaterial080(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(knownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).winAgainstBareKing)
 
-	p := NewGame(`Ke1`, `Ka8,Rh8`).start(Black)
+	p := NewGame(`Ke1`, `M,Ka8,Rh8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -171,7 +171,7 @@ func TestMaterial090(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnsVsBareKing)
 
-	p := NewGame(`Ke1,a4,a5`, `Ka8`).start(Black)
+	p := NewGame(`Ke1,a4,a5`, `M,Ka8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -181,7 +181,7 @@ func TestMaterial100(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).queenVsRookAndPawns)
 
-	p := NewGame(`Ke1,Re4,e5`, `Ka8,Qh8`).start(Black)
+	p := NewGame(`Ke1,Re4,e5`, `M,Ka8,Qh8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -191,7 +191,7 @@ func TestMaterial110(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).kingAndPawnVsKingAndPawn)
 
-	p := NewGame(`Ke1,a4`, `Ka8,h5`).start(Black)
+	p := NewGame(`Ke1,a4`, `M,Ka8,h5`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -201,7 +201,7 @@ func TestMaterial120(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).bishopAndPawnVsBareKing)
 
-	p := NewGame(`Ke1,Be2,a4`, `Ka8`).start(White)
+	p := NewGame(`Ke1,Be2,a4`, `Ka8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -211,7 +211,7 @@ func TestMaterial130(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).rookAndPawnVsRook)
 
-	p := NewGame(`Ke1,Re2,a4`, `Ka8,Rh8`).start(White)
+	p := NewGame(`Ke1,Re2,a4`, `Ka8,Rh8`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -221,7 +221,7 @@ func TestMaterial140(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(singleBishops | lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).drawishBishops)
 
-	p := NewGame(`Ke1,Ra1,Bc1,Nb1,d2,e2`, `Ke8,Rh8,Bf8,Ng8,d7,e7`).start(White)
+	p := NewGame(`Ke1,Ra1,Bc1,Nb1,d2,e2`, `Ke8,Rh8,Bf8,Ng8,d7,e7`).start()
 	expect.Eq(t, p.balance, balance)
 }
 
@@ -231,6 +231,6 @@ func TestMaterial150(t *testing.T) {
 	expect.Eq(t, materialBase[balance].flags, uint8(singleBishops | lesserKnownEndgame))
 	expect.Eq(t, materialBase[balance].endgame, (*Evaluation).bishopsAndPawns)
 
-	p := NewGame(`Ke1,Bc1,a2,b2,c2,d4`, `Ke8,Bf8,f7,g7,h7`).start(White)
+	p := NewGame(`Ke1,Bc1,a2,b2,c2,d4`, `Ke8,Bf8,f7,g7,h7`).start()
 	expect.Eq(t, p.balance, balance)
 }
