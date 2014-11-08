@@ -98,7 +98,7 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 
 // Decodes a string in long algebraic notation and returns a move.
 func NewMoveFromString(p *Position, e2e4 string) (move Move) {
-	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])[-x]?([a-h])([1-8])([QqRrBbNn]?)`)
+	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])[-x]?([a-h])([1-8])([QqRrBbNn]?)\+?[!\?]{0,2}`)
 	matches := re.FindStringSubmatch(e2e4)
 
 	if len(matches) == 7 { // Full regex match.
