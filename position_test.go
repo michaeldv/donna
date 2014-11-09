@@ -95,19 +95,19 @@ func TestPosition120(t *testing.T) {
 // Initial position: castles, no en-passant.
 func TestPosition130(t *testing.T) {
 	p := NewGame(`rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`).start()
-	expect.Eq(t, p.dcf(), `M,Ke1,Qd1,Ra1,Rh1,Bc1,Bf1,Nb1,Ng1,a2,b2,c2,d2,e2,f2,g2,h2 : Ke8,Qd8,Ra8,Rh8,Bc8,Bf8,Nb8,Ng8,a7,b7,c7,d7,e7,f7,g7,h7`)
+	expect.Eq(t, p.dcf(), `Ke1,Qd1,Ra1,Rh1,Bc1,Bf1,Nb1,Ng1,a2,b2,c2,d2,e2,f2,g2,h2 : Ke8,Qd8,Ra8,Rh8,Bc8,Bf8,Nb8,Ng8,a7,b7,c7,d7,e7,f7,g7,h7`)
 }
 
 // Castles, no en-passant.
 func TestPosition140(t *testing.T) {
 	p := NewGame(`2r1kb1r/pp3ppp/2n1b3/1q1N2B1/1P2Q3/8/P4PPP/3RK1NR w Kk - 42 42`).start()
-	expect.Eq(t, p.dcf(), `M,Ke1,Qe4,Rd1,Rh1,Bg5,Ng1,Nd5,Cg1,a2,f2,g2,h2,b4 : Ke8,Qb5,Rc8,Rh8,Be6,Bf8,Nc6,Cg8,a7,b7,f7,g7,h7`)
+	expect.Eq(t, p.dcf(), `Ke1,Qe4,Rd1,Rh1,Bg5,Ng1,Nd5,Cg1,a2,f2,g2,h2,b4 : Ke8,Qb5,Rc8,Rh8,Be6,Bf8,Nc6,Cg8,a7,b7,f7,g7,h7`)
 }
 
 // No castles, en-passant.
 func TestPosition150(t *testing.T) {
 	p := NewGame(`1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 42 42`).start()
-	expect.Eq(t, p.dcf(), `M,Kb2,Qg6,Rd2,Ne2,Ee6,c2,b3,f3,d5 : Kf8,Qc7,Rb8,Rc8,e5,h5,d6,a7`)
+	expect.Eq(t, p.dcf(), `Kb2,Qg6,Rd2,Ne2,Ee6,c2,b3,f3,d5 : Kf8,Qc7,Rb8,Rc8,e5,h5,d6,a7`)
 
 	pp := NewGame(`M,Kb2,Qg6,Rd2,Ne2,Ee6,c2,b3,f3,d5`, `Kf8,Qc7,Rb8,Rc8,e5,h5,d6,a7`).start()
 	expect.Eq(t, pp.fen(), `1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 0 1`)

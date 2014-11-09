@@ -405,7 +405,7 @@ func (p *Position) dcf() string {
 
 	for color := White; color <= Black; color++ {
 		// Right to move and (TODO) move number.
-		if color == p.color {
+		if color == p.color && color == Black {
 			pieces[color] = append(pieces[color], `M`)
 		}
 
