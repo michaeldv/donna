@@ -71,7 +71,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 		}
 
 		// Check if the move is an useless capture.
-		useless := !inCheck && !isPrincipal && !move.isPromo() && staticScore + pieceValue[move.capture()] + 64 < alpha
+		useless := !inCheck && !isPrincipal && !move.isPromo() && staticScore + pieceValue[move.capture()] + 72 < alpha
 
 		position := p.makeMove(move)
 		moveCount++
