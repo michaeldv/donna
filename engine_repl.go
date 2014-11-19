@@ -10,11 +10,11 @@ import(
 )
 
 func (e *Engine) replBestMove(move Move) *Engine {
-	fmt.Printf("Donna's move: %s", move)
+	fmt.Printf("\033[0;36mDonna's move: %s", move)
 	if game.nodes == 0 {
 		fmt.Printf(" (book)")
 	}
-	fmt.Println("\n")
+	fmt.Println("\033[0m\n")
 
 	return e
 }
