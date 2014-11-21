@@ -8,6 +8,7 @@ import(
 	`fmt`
 	`io/ioutil`
 	`regexp`
+	`strconv`
 	`strings`
 	`time`
 )
@@ -114,18 +115,24 @@ func (e *Engine) Repl() *Engine {
 				}
 			}
 		} else {
-			fmt.Printf("Could not open [%s]\n", fileName)
+			fmt.Printf("Could not open benchmark file '%s'\n", fileName)
 		}
 	}
 
-	perft := func(depth int) {
-		position := NewGame().start()
-		start := time.Now()
-		total := position.Perft(depth)
-		finish := time.Since(start).Seconds()
-		fmt.Printf("\n  Nodes: %d\n", total)
-		fmt.Printf("Elapsed: %.2fs\n", finish)
-		fmt.Printf("Nodes/s: %.2f\n", float64(total)/finish)
+	perft := func(parameter string) {
+		if parameter == `` {
+			parameter = `5`
+		}
+		if depth, err := strconv.Atoi(parameter); err == nil {
+			position := NewGame().start()
+			start := time.Now()
+			total := position.Perft(depth)
+			finish := time.Since(start).Nanoseconds() / 1000000
+			fmt.Printf("  Depth: %d\n", depth)
+			fmt.Printf("  Nodes: %d\n", total)
+			fmt.Printf("Elapsed: %s\n", ms(finish))
+			fmt.Printf("Nodes/s: %dK\n", total / finish)
+		}
 	}
 
 	fmt.Printf("Donna v%s Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.\nType ? for help.\n\n", Version)
@@ -156,7 +163,7 @@ func (e *Engine) Repl() *Engine {
 			game, position = nil, nil
 			setup()
 		case `perft`:
-			perft(5)
+			perft(parameter)
 		case `score`:
 			setup()
 			_, metrics := position.EvaluateWithTrace()
