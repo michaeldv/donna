@@ -58,7 +58,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// For example: Ke4, c5, e5 vs. Ke8, d7. Black's d7-d5+ could be
 	// evaded by c5xd6 or e5xd6 en-passant captures.
 	if p.enpassant != 0 {
-		if enpassant := attackSquare + eight[color]; p.enpassant == enpassant {
+		if enpassant := attackSquare + eight[color]; enpassant == int(p.enpassant) {
 			pawns := maskPawn[color][enpassant] & p.outposts[pawn(color)]
 			for pawns != 0 {
 				gen.add(NewMove(p, pawns.pop(), enpassant))

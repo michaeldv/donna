@@ -38,7 +38,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					// captures) and en-passant captures.
 					prohibit := maskRank[0] | maskRank[7]
 					if p.enpassant != 0 {
-						prohibit.set(p.enpassant)
+						prohibit |= bit[p.enpassant]
 					}
 					gen.movePawn(to, p.targets(to) & ^p.board & ^prohibit)
 				case King:
@@ -85,7 +85,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 						// and en-passant captures.
 						prohibit := maskRank[0] | maskRank[7]
 						if p.enpassant != 0 {
-							prohibit.set(p.enpassant)
+							prohibit |= bit[p.enpassant]
 						}
 						gen.movePawn(to, p.targets(to) & ^p.board & ^prohibit)
 					case King:

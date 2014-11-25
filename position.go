@@ -14,9 +14,7 @@ var tree [1024]Position
 var node, rootNode int
 
 type Position struct {
-	enpassant    int         // En-passant square caused by previous move.
 	color        int         // Side to make next move.
-	balance      int 	 // Material balance index.
 	hash         uint64      // Polyglot hash value for the position.
 	pawnHash     uint64      // Polyglot hash value for position's pawn structure.
 	board        Bitmask     // Bitmask of all pieces on the board.
@@ -24,7 +22,9 @@ type Position struct {
 	pieces       [64]Piece   // Array of 64 squares with pieces on them.
 	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	tally        Score       // Positional valuation score based on PST.
+	balance      int 	 // Material balance index.
 	reversible   bool        // Is this position reversible?
+	enpassant    uint8       // En-passant square caused by previous move.
 	castles      uint8       // Castle rights mask.
 }
 
@@ -112,7 +112,7 @@ func (p *Position) setupSide(str string, color int) *Position {
 			case 'N':
 				p.pieces[square] = knight(color)
 			case 'E':
-				p.enpassant = square
+				p.enpassant = uint8(square)
 			case 'C':
 				if (square == C1 + color) || (square == B8 + color) {
 					p.castles |= castleQueenside[color]
@@ -220,7 +220,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 	// [3] - En-passant square.
 	if matches[3] != `-` {
-		p.enpassant = square(int(matches[3][1] - '1'), int(matches[3][0] - 'a'))
+		p.enpassant = uint8(square(int(matches[3][1] - '1'), int(matches[3][0] - 'a')))
 
 	}
 
@@ -248,7 +248,7 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 
 	hash ^= hashCastle[p.castles]
 	if p.enpassant != 0 {
-		hash ^= hashEnpassant[col(p.enpassant)]
+		hash ^= hashEnpassant[col(int(p.enpassant))]
 	}
 	if p.color == White {
 		hash ^= polyglotRandomWhite
@@ -375,7 +375,7 @@ func (p *Position) fen() (fen string) {
 
 	// En-passant square, if any.
 	if p.enpassant != 0 {
-		row, col := coordinate(p.enpassant)
+		row, col := coordinate(int(p.enpassant))
 		fen += fmt.Sprintf(` %c%d`, col + 'a', row + 1)
 	} else {
 		fen += ` -`
@@ -443,7 +443,7 @@ func (p *Position) dcf() string {
 		// En-passant square if any. Note that this gets assigned to the
 		// current side to move.
 		if p.enpassant != 0 && color == p.color {
-			pieces[color] = append(pieces[color], `E` + encode(p.enpassant))
+			pieces[color] = append(pieces[color], `E` + encode(int(p.enpassant)))
 		}
 
 		// Pawns.

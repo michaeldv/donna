@@ -90,9 +90,9 @@ func (p *Position) makeMove(move Move) *Position {
 
 	if capture != 0 {
 		pp.reversible = false
-		if to != 0 && to == p.enpassant {
+		if to != 0 && to == int(p.enpassant) {
 			pp.captureEnpassant(pawn(color^1), from, to)
-			pp.hash ^= hashEnpassant[col(p.enpassant)]
+			pp.hash ^= hashEnpassant[col(int(p.enpassant))]
 		} else {
 			pp.capturePiece(capture, from, to)
 		}
@@ -119,8 +119,8 @@ func (p *Position) makeMove(move Move) *Position {
 		} else if piece.isPawn() {
 			pp.reversible = false
 			if move.isEnpassant() {
-				pp.enpassant = from + eight[color] // Save the en-passant square.
-				pp.hash ^= hashEnpassant[col(pp.enpassant)]
+				pp.enpassant = uint8(from + eight[color]) // Save the en-passant square.
+				pp.hash ^= hashEnpassant[col(int(pp.enpassant))]
 			}
 		}
 	} else {
@@ -148,7 +148,7 @@ func (p *Position) makeNullMove() *Position {
 
 	// Flipping side to move obviously invalidates the enpassant square.
 	if pp.enpassant != 0 {
-		pp.hash ^= hashEnpassant[col(pp.enpassant)]
+		pp.hash ^= hashEnpassant[col(int(pp.enpassant))]
 		pp.enpassant = 0
 	}
 	pp.hash ^= polyglotRandomWhite
@@ -240,7 +240,7 @@ func (p *Position) isValid(move Move, pins Bitmask) bool {
 	// For rare en-passant pawn captures we validate the move by actually
 	// making it, and then taking it back.
 
-	if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
+	if p.enpassant != 0 && to == int(p.enpassant) && capture.isPawn() {
 		position := p.makeMove(move)
 		defer position.undoLastMove()
 		return !position.isInCheck(color)
