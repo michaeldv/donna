@@ -102,7 +102,7 @@ func (p *Position) makeMove(move Move) *Position {
 		pp.movePiece(piece, from, to)
 
 		if piece.isKing() {
-			pp.king[color] = to
+			pp.king[color] = uint8(to)
 			if move.isCastle() {
 				pp.reversible = false
 				switch to {
@@ -173,7 +173,7 @@ func (p *Position) undoNullMove() *Position {
 }
 
 func (p *Position) isInCheck(color int) bool {
-	return p.isAttacked(p.king[color], color^1)
+	return p.isAttacked(int(p.king[color]), color^1)
 }
 
 func (p *Position) isNull() bool {
@@ -255,12 +255,12 @@ func (p *Position) isValid(move Move, pins Bitmask) bool {
 	// For all other peices the move is valid when it doesn't cause a
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
-	return pins == 0 || pins.off(from) || between(from, to, p.king[color])
+	return pins == 0 || pins.off(from) || between(from, to, int(p.king[color]))
 }
 
 // Returns a bitmask of all pinned pieces preventing a check for the king on
 // given square. The color of the pieces match the color of the king.
-func (p *Position) pinnedMask(square int) (mask Bitmask) {
+func (p *Position) pinnedMask(square uint8) (mask Bitmask) {
 	color := p.pieces[square].color()
 	enemy := color ^ 1
 	attackers := (p.outposts[bishop(enemy)] | p.outposts[queen(enemy)]) & bishopMagicMoves[square][0]

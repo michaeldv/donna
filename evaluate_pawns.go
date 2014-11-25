@@ -7,7 +7,7 @@ package donna
 type PawnEntry struct {
 	hash       uint64 	// Pawn hash key.
 	score      Score 	// Static score for the given pawn structure.
-	king       [2]int 	// King square for both sides.
+	king       [2]uint8 	// King square for both sides.
 	cover      [2]Score 	// King cover penalties for both sides.
 	passers    [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
@@ -30,7 +30,7 @@ func (e *Evaluation) analyzePawns() {
 
 		// Force full king shelter evaluation since any legit king square
 		// will be viewed as if the king has moved.
-		e.pawns.king[White], e.pawns.king[Black] = -1, -1
+		e.pawns.king[White], e.pawns.king[Black] = 0xFF, 0xFF
 
 		if engine.trace {
 			e.checkpoint(`Pawns`, Total{white, black})

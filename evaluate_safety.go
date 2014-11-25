@@ -66,7 +66,7 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 	p := e.position
 
 	if e.safety[color].threats > 0 {
-		square := p.king[color]
+		square := int(p.king[color])
 		safetyIndex := 0
 
 		// Find squares around the king that are being attacked by the
@@ -145,7 +145,7 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 }
 
 func (e *Evaluation) kingCover(color int) (bonus Score) {
-	p, square := e.position, e.position.king[color]
+	p, square := e.position, int(e.position.king[color])
 
 	// Calculate relative square for the king so we could treat black king
 	// as white. Don't bother with the cover if the king is too far.

@@ -245,7 +245,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 		// Middle game penalty if a rook is boxed. Extra penalty if castle
 		// rights have been lost.
 		if safeSquares <= 3 || !isFileAjar {
-			kingSquare := p.king[color]
+			kingSquare := int(p.king[color])
 			kingColumn := col(kingSquare)
 
 			// Queenside box: king on D/C/B vs. rook on A/B/C files. Increase the

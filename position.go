@@ -18,7 +18,7 @@ type Position struct {
 	hash         uint64      // Polyglot hash value for the position.
 	pawnHash     uint64      // Polyglot hash value for position's pawn structure.
 	board        Bitmask     // Bitmask of all pieces on the board.
-	king         [2]int      // King's square for both colors.
+	king         [2]uint8    // King's square for both colors.
 	pieces       [64]Piece   // Array of 64 squares with pieces on them.
 	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	tally        Score       // Positional valuation score based on PST.
@@ -53,7 +53,7 @@ func NewPosition(game *Game, white, black string) *Position {
 			p.outposts[piece].set(square)
 			p.outposts[piece.color()].set(square)
 			if piece.isKing() {
-				p.king[piece.color()] = square
+				p.king[piece.color()] = uint8(square)
 			}
 			p.balance += materialBalance[piece]
 		}
@@ -177,10 +177,10 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 			piece = BlackQueen
 		case 'K':
 			piece = King
-			p.king[White] = sq
+			p.king[White] = uint8(sq)
 		case 'k':
 			piece = BlackKing
-			p.king[Black] = sq
+			p.king[Black] = uint8(sq)
 		case '/':
 			sq -= 16
 		case '1', '2', '3', '4', '5', '6', '7', '8':
@@ -410,7 +410,7 @@ func (p *Position) dcf() string {
 		}
 
 		// King.
-		pieces[color] = append(pieces[color], `K` + encode(p.king[color]))
+		pieces[color] = append(pieces[color], `K` + encode(int(p.king[color])))
 
 		// Queens, Rooks, Bishops, and Knights.
 		outposts := p.outposts[queen(color)]
