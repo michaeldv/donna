@@ -243,6 +243,31 @@ func TestPositionMoves120(t *testing.T) {
 	expect.True(t, p.thirdRepetition()) // <-- 3 time repetioion with lost 0-0 right.
 }
 
+// 50 moves draw (no captures, no pawn moves).
+func TestPositionMoves130(t *testing.T) {
+	p := NewGame(`Kh8,Ra1`, `Ka8,a7,b7`).start()
+	squares := []int{
+		A1, B1, C1, D1, E1, F1, G1, H1,
+		H2, G2, F2, E2, D2, C2, B2, A2,
+		A3, B3, C3, D3, E3, F3, G3, H3,
+		H4, G4, F4, E4, D4, C4, B4, A4,
+		A5, B5, C5, D5, E5, F5, G5, H5,
+		H6, G6, F6, E6, D6, C6, B6, A6,
+	}
+
+	// White rook is zigzaging while black king bounces back and forth.
+	for move := 1; move < len(squares); move++ {
+		p = p.makeMove(NewMove(p, squares[move-1], squares[move]))
+		if p.king[Black] == A8 {
+			p = p.makeMove(NewMove(p, A8, B8))
+		} else {
+			p = p.makeMove(NewMove(p, B8, A8))
+		}
+
+		expect.Eq(t, p.fifty(), move > 50)
+	}
+}
+
 // Incremental hash recalculation tests (see book_test.go).
 func TestPositionMoves200(t *testing.T) { // 1. e4
 	p := NewGame().start()
