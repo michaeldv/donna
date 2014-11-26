@@ -107,7 +107,7 @@ func TestGenerate385(t *testing.T) {
 	for move := white.NextMove(); move != 0; move = white.NextMove() {
 		if move.piece() == Pawn {
 			expect.Eq(t, move.to(), D6)
-			expect.Eq(t, move.color(), White)
+			expect.Eq(t, move.color(), uint8(White))
 			expect.Eq(t, Piece(move.capture()), Piece(BlackPawn))
 			expect.Eq(t, Piece(move.promo()), Piece(0))
 		}
@@ -142,7 +142,7 @@ func TestGenerate405(t *testing.T) {
 	e7e5 := black.list[black.head + 4].move
 	expect.Eq(t, black.allMoves(), `[Kg7-h6 Kg7-f7 Kg7-f8 Kg7-g8 e7-e5]`)
 	p = p.makeMove(e7e5)
-	expect.Eq(t, p.enpassant, E6)
+	expect.Eq(t, p.enpassant, uint8(E6))
 }
 
 // Check evasions (piece x piece captures).

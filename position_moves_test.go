@@ -8,19 +8,19 @@ import(`github.com/michaeldv/donna/expect`; `testing`)
 
 func TestPositionMoves010(t *testing.T) {
 	p := NewGame(`Ke1,e2`, `Kg8,d7,f7`).start()
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 
 	p = p.makeMove(NewMove(p, E2, E4))
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 
 	p = p.makeMove(NewMove(p, D7, D5))
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 
 	p = p.makeMove(NewMove(p, E4, E5))
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 
 	p = p.makeMove(NewEnpassant(p, F7, F5))
-	expect.Eq(t, p.enpassant, F6)
+	expect.Eq(t, p.enpassant, uint8(F6))
 }
 
 // Castle tests.
@@ -255,7 +255,7 @@ func TestPositionMoves200(t *testing.T) { // 1. e4
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -271,7 +271,7 @@ func TestPositionMoves210(t *testing.T) { // 1. e4 d5
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -289,7 +289,7 @@ func TestPositionMoves220(t *testing.T) {
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -308,7 +308,7 @@ func TestPositionMoves230(t *testing.T) {
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
-	expect.Eq(t, p.enpassant, F6)
+	expect.Eq(t, p.enpassant, uint8(F6))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -328,7 +328,7 @@ func TestPositionMoves240(t *testing.T) {
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 	expect.Eq(t, p.castles, castleKingside[Black]|castleQueenside[Black])
 }
 
@@ -349,7 +349,7 @@ func TestPositionMoves250(t *testing.T) {
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 	expect.Eq(t, p.castles, uint8(0))
 }
 
@@ -369,7 +369,7 @@ func TestPositionMoves260(t *testing.T) {
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
-	expect.Eq(t, p.enpassant, C3)
+	expect.Eq(t, p.enpassant, uint8(C3))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -391,7 +391,7 @@ func TestPositionMoves270(t *testing.T) {
 	expect.Eq(t, pawnHash, p.pawnHash)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1 - materialBalance[Pawn])
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, uint8(0))
 	expect.Eq(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
 }
 
