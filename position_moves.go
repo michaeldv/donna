@@ -180,6 +180,20 @@ func (p *Position) isNull() bool {
 	return node > 0 && tree[node].board == tree[node-1].board
 }
 
+func (p *Position) fifty() bool {
+	if node < 100 {
+		return false
+	}
+	count := 0
+	for previous := node - 1; previous >= 0 && count < 100; previous-- {
+		if !tree[previous].reversible {
+			break
+		}
+		count++
+	}
+	return count >= 100
+}
+
 func (p *Position) repetition() bool {
 	if !p.reversible || node < 1 {
 		return false
