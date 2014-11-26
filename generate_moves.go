@@ -54,7 +54,7 @@ func (gen *MoveGen) generateMoves() *MoveGen {
 	return gen.pawnMoves(color).pieceMoves(color).kingMoves(color)
 }
 
-func (gen *MoveGen) pawnMoves(color int) *MoveGen {
+func (gen *MoveGen) pawnMoves(color uint8) *MoveGen {
 	for pawns := gen.p.outposts[pawn(color)]; pawns != 0; {
 		square := pawns.pop()
 		gen.movePawn(square, gen.p.targets(square))
@@ -63,7 +63,7 @@ func (gen *MoveGen) pawnMoves(color int) *MoveGen {
 }
 
 // Go over all pieces except pawns and the king.
-func (gen *MoveGen) pieceMoves(color int) *MoveGen {
+func (gen *MoveGen) pieceMoves(color uint8) *MoveGen {
 	outposts := gen.p.outposts[color] & ^gen.p.outposts[pawn(color)] & ^gen.p.outposts[king(color)]
 	for outposts != 0 {
 		square := outposts.pop()
@@ -72,7 +72,7 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
 	return gen
 }
 
-func (gen *MoveGen) kingMoves(color int) *MoveGen {
+func (gen *MoveGen) kingMoves(color uint8) *MoveGen {
 	if gen.p.outposts[king(color)] != 0 {
 		square := int(gen.p.king[color])
 		gen.moveKing(square, gen.p.targets(square))

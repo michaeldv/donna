@@ -21,27 +21,27 @@ const (
 	BlackKing   = King | 1
 )
 
-func king(color int) Piece {
+func king(color uint8) Piece {
 	return Piece(color | King)
 }
 
-func queen(color int) Piece {
+func queen(color uint8) Piece {
 	return Piece(color | Queen)
 }
 
-func rook(color int) Piece {
+func rook(color uint8) Piece {
 	return Piece(color | Rook)
 }
 
-func bishop(color int) Piece {
+func bishop(color uint8) Piece {
 	return Piece(color | Bishop)
 }
 
-func knight(color int) Piece {
+func knight(color uint8) Piece {
 	return Piece(color | Knight)
 }
 
-func pawn(color int) Piece {
+func pawn(color uint8) Piece {
 	return Piece(color | Pawn)
 }
 
@@ -54,8 +54,8 @@ func (p Piece) polyglot(square int) uint64 {
 	return polyglotRandom[polyglotBase[p] + square]
 }
 
-func (p Piece) color() int {
-	return int(p) & 1
+func (p Piece) color() uint8 {
+	return uint8(p) & 1
 }
 
 func (p Piece) kind() int {

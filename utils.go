@@ -27,8 +27,8 @@ func coordinate(square int) (int, int) {
 
 // Returns relative rank for the square in 0..7 range. For example E2 is rank 1
 // for white and rank 6 for black.
-func rank(square, color int) int {
-	return row(square) ^ (color * 7)
+func rank(color uint8, square int) int {
+	return row(square) ^ (int(color) * 7)
 }
 
 // Returns 0..63 square number for the given row/column coordinate.
@@ -37,7 +37,7 @@ func square(row, column int) int {
 }
 
 // Flips the square verically for white (ex. E2 becomes E7).
-func flip(color, square int) int {
+func flip(color uint8, square int) int {
 	if color == White {
 		return square ^ 56
 	}
@@ -101,12 +101,12 @@ func max64(x, y int64) int64 {
 	return y
 }
 
-// Formats time duration in milliseconds in human readable form: MM:SS.XXX
+// Formats time duration in milliseconds in human readable form (MM:SS.XXX).
 func ms(duration int64) string {
 	mm := duration / 1000 / 60
 	ss := duration / 1000 % 60
 	xx := duration - mm * 1000 * 60 - ss * 1000
-	return fmt.Sprintf(`%02d:%02d.%03ds`, mm, ss, xx)
+	return fmt.Sprintf(`%02d:%02d.%03d`, mm, ss, xx)
 }
 
 // Returns, as an integer, a non-negative pseudo-random number
@@ -116,7 +116,7 @@ func Random(limit int) int {
 	return rand.Intn(limit)
 }
 
-func C(color int) string {
+func C(color uint8) string {
 	return [2]string{`white`, `black`}[color]
 }
 

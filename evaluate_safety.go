@@ -62,7 +62,7 @@ func (e *Evaluation) analyzeSafety() {
 	e.score.add(cover.white).add(safety.white).subtract(cover.black).subtract(safety.black)
 }
 
-func (e *Evaluation) kingSafety(color int) (score Score) {
+func (e *Evaluation) kingSafety(color uint8) (score Score) {
 	p := e.position
 
 	if e.safety[color].threats > 0 {
@@ -144,7 +144,7 @@ func (e *Evaluation) kingSafety(color int) (score Score) {
 	return
 }
 
-func (e *Evaluation) kingCover(color int) (bonus Score) {
+func (e *Evaluation) kingCover(color uint8) (bonus Score) {
 	p, square := e.position, int(e.position.king[color])
 
 	// Calculate relative square for the king so we could treat black king
@@ -167,7 +167,7 @@ func (e *Evaluation) kingCover(color int) (bonus Score) {
 	return
 }
 
-func (e *Evaluation) kingCoverBonus(color, square, flipped int) (bonus int) {
+func (e *Evaluation) kingCoverBonus(color uint8, square, flipped int) (bonus int) {
 	r, c := coordinate(flipped)
 	from, to := max(0, c - 1), min(7, c + 1)
 	bonus = onePawn + onePawn / 3
@@ -181,7 +181,7 @@ func (e *Evaluation) kingCoverBonus(color, square, flipped int) (bonus int) {
 	// one rank apart).
 	for column := from; column <= to; column++ {
 		if cover := (pawns & maskFile[column]); cover != 0 {
-			closest := rank(cover.closest(color), color)
+			closest := rank(color, cover.closest(color))
 			bonus -= penaltyCover[closest - r]
 		} else {
 			bonus -= coverMissing.midgame
@@ -193,7 +193,7 @@ func (e *Evaluation) kingCoverBonus(color, square, flipped int) (bonus int) {
 }
 
 // Calculates endgame penalty to encourage a king stay closer to friendly pawns.
-func (e *Evaluation) kingPawnProximity(color int) (penalty int) {
+func (e *Evaluation) kingPawnProximity(color uint8) (penalty int) {
 	if pawns := e.position.outposts[pawn(color)]; pawns != 0 && pawns & e.attacks[king(color)] == 0 {
 		proximity, king := 8, e.position.king[color]
 

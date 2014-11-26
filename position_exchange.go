@@ -27,12 +27,12 @@ func (p *Position) exchange(move Move) int {
 	}
 
 	board := p.board ^ bit[from]
-	return -p.exchangeScore(to, piece.color()^1, -score, exchangeScores[piece], board)
+	return -p.exchangeScore(piece.color()^1, to, -score, exchangeScores[piece], board)
 }
 
 // Recursive helper method for the static exchange evaluation.
-func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int {
-	attackers := p.attackers(to, color, board) & board
+func (p *Position) exchangeScore(color uint8, to, score, extra int, board Bitmask) int {
+	attackers := p.attackers(color, to, board) & board
 	if attackers == 0 {
 		return score
 	}
@@ -50,5 +50,5 @@ func (p *Position) exchangeScore(to, color, score, extra int, board Bitmask) int
 		board ^= bit[from]
 	}
 
-	return max(score, -p.exchangeScore(to, color^1, -(score+extra), best, board))
+	return max(score, -p.exchangeScore(color^1, to, -(score + extra), best, board))
 }

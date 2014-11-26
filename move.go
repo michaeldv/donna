@@ -131,11 +131,11 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move) {
 	if e2e4 == `0-0` || e2e4 == `0-0-0` {
 		kingside, queenside := p.canCastle(p.color)
 		if e2e4 == `0-0` && kingside {
-			from, to := int(p.king[p.color]), G1 + p.color * A8
+			from, to := int(p.king[p.color]), G1 + int(p.color) * A8
 			return NewCastle(p, from, to)
 		}
 		if e2e4 == `0-0-0` && queenside {
-			from, to := int(p.king[p.color]), C1 + p.color * A8
+			from, to := int(p.king[p.color]), C1 + int(p.color) * A8
 			return NewCastle(p, from, to)
 		}
 	}
@@ -154,8 +154,8 @@ func (m Move) piece() Piece {
 	return Piece((m >> 16) & 0x0F)
 }
 
-func (m Move) color() int {
-	return int((m >> 16) & 1)
+func (m Move) color() uint8 {
+	return uint8((m >> 16) & 1)
 }
 
 func (m Move) capture() Piece {
@@ -171,7 +171,7 @@ func (m Move) promo() Piece {
 }
 
 func (m Move) promote(kind int) Move {
-	piece := Piece(kind | m.color())
+	piece := Piece(kind | int(m.color()))
 	return m | Move(int(piece) << 24)
 }
 

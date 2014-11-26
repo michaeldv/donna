@@ -92,7 +92,7 @@ func (e *Evaluation) analyzePieces() {
 	e.score.subtract(knight.black).subtract(bishop.black).subtract(rook.black).subtract(queen.black).subtract(mobility.black)
 }
 
-func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
+func (e *Evaluation) knights(color uint8, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	outposts := p.outposts[knight(color)]
 
@@ -109,7 +109,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if knight is behind friendly pawn.
-		if rank(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
+		if rank(color, square) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -136,7 +136,7 @@ func (e *Evaluation) knights(color int, maskSafe Bitmask, isEnemyKingThreatened 
 	return
 }
 
-func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
+func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	outposts := p.outposts[bishop(color)]
 
@@ -158,7 +158,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 		}
 
 		// Bonus if bishop is behind friendly pawn.
-		if rank(square, color) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
+		if rank(color, square) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
 			score.add(behindPawn)
 		}
 
@@ -201,7 +201,7 @@ func (e *Evaluation) bishops(color int, maskSafe Bitmask, isEnemyKingThreatened 
 }
 
 
-func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
+func (e *Evaluation) rooks(color uint8, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	hisPawns := p.outposts[pawn(color)]
 	herPawns := p.outposts[pawn(color^1)]
@@ -225,7 +225,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 		}
 
 		// Bonus if rook is attacking enemy's pawns.
-		if rank(square, color) >= 4 {
+		if rank(color, square) >= 4 {
 			if count := (attacks & herPawns).count(); count > 0 {
 				score.add(rookOnPawn.times(count))
 			}
@@ -274,7 +274,7 @@ func (e *Evaluation) rooks(color int, maskSafe Bitmask, isEnemyKingThreatened bo
 	return
 }
 
-func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
+func (e *Evaluation) queens(color uint8, maskSafe Bitmask, isEnemyKingThreatened bool) (score, mobility Score) {
 	p := e.position
 	outposts := p.outposts[queen(color)]
 
@@ -295,7 +295,7 @@ func (e *Evaluation) queens(color int, maskSafe Bitmask, isEnemyKingThreatened b
 		}
 
 		// Bonus if queen is out and attacking enemy's pawns.
-		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && rank(square, color) > 3 {
+		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && rank(color, square) > 3 {
 			score.add(queenOnPawn.times(count))
 		}
 
@@ -326,7 +326,7 @@ func (e *Evaluation) enemyKingThreat(piece Piece, attacks Bitmask) {
 // Initializes the fort bitmask around king's square. For example, for a king on
 // G1 the bitmask covers F1,F2,F3, G2,G3, and H1,H2,H3. For a king on a corner
 // square, say H1, the bitmask covers F1,F2, G1,G2,G3, and H2,H3.
-func (e *Evaluation) setupFort(color int) (bitmask Bitmask) {
+func (e *Evaluation) setupFort(color uint8) (bitmask Bitmask) {
 	bitmask = e.attacks[king(color)] | e.attacks[king(color)].pushed(color)
 	switch e.position.king[color] {
 	case A1, A8:

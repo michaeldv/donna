@@ -13,8 +13,7 @@ import (
 var tree [1024]Position
 var node, rootNode int
 
-type Position struct {
-	color        int         // Side to make next move.
+type Position struct {		 // 224 bytes long.
 	hash         uint64      // Polyglot hash value for the position.
 	pawnHash     uint64      // Polyglot hash value for position's pawn structure.
 	board        Bitmask     // Bitmask of all pieces on the board.
@@ -24,6 +23,7 @@ type Position struct {
 	tally        Score       // Positional valuation score based on PST.
 	balance      int 	 // Material balance index.
 	reversible   bool        // Is this position reversible?
+	color        uint8       // Side to make next move.
 	enpassant    uint8       // En-passant square caused by previous move.
 	castles      uint8       // Castle rights mask.
 }
@@ -85,8 +85,8 @@ func NewPosition(game *Game, white, black string) *Position {
 // [E]npassant: specifies en-passant square if any. For example, "Ed3" marks D3
 //              square as en-passant. Default value is no en-passant.
 //
-func (p *Position) setupSide(str string, color int) *Position {
-	invalid := func (move string, color int) {
+func (p *Position) setupSide(str string, color uint8) *Position {
+	invalid := func (move string, color uint8) {
 		panic(fmt.Sprintf("Invalid notation '%s' for %s\n", move, C(color)))
 	}
 
@@ -114,9 +114,9 @@ func (p *Position) setupSide(str string, color int) *Position {
 			case 'E':
 				p.enpassant = uint8(square)
 			case 'C':
-				if (square == C1 + color) || (square == B8 + color) {
+				if (square == C1 + int(color)) || (square == B8 + int(color)) {
 					p.castles |= castleQueenside[color]
-				} else if (square == G1 + color) || (square == F8 + color) {
+				} else if (square == G1 + int(color)) || (square == F8 + int(color)) {
 					p.castles |= castleKingside[color]
 				}
 			default:
@@ -248,7 +248,7 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 
 	hash ^= hashCastle[p.castles]
 	if p.enpassant != 0 {
-		hash ^= hashEnpassant[col(int(p.enpassant))]
+		hash ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
 	}
 	if p.color == White {
 		hash ^= polyglotRandomWhite
@@ -275,7 +275,7 @@ func (p *Position) insufficient() bool {
 }
 
 // Reports game status for current position or after the given move. The status
-// help to determine whether to continue with search or if the game is over.
+// helps to determine whether to continue with search or if the game is over.
 func (p *Position) status(move Move, blendedScore int) int {
 	if move != Move(0) {
 		p = p.makeMove(move)
@@ -403,7 +403,7 @@ func (p *Position) dcf() string {
 
 	var pieces [2][]string
 
-	for color := White; color <= Black; color++ {
+	for color := uint8(White); color <= uint8(Black); color++ {
 		// Right to move and (TODO) move number.
 		if color == p.color && color == Black {
 			pieces[color] = append(pieces[color], `M`)
@@ -433,10 +433,10 @@ func (p *Position) dcf() string {
 		// Castle rights.
 		if p.castles & castleQueenside[color] == 0 || p.castles & castleKingside[color] == 0 {
 			if p.castles & castleQueenside[color] != 0 {
-				pieces[color] = append(pieces[color], `C` + encode(C1 + 56 * color))
+				pieces[color] = append(pieces[color], `C` + encode(C1 + 56 * int(color)))
 			}
 			if p.castles & castleKingside[color] != 0 {
-				pieces[color] = append(pieces[color], `C` + encode(G1 + 56 * color))
+				pieces[color] = append(pieces[color], `C` + encode(G1 + 56 * int(color)))
 			}
 		}
 

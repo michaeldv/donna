@@ -24,7 +24,7 @@ func (e *Evaluation) inspectEndgame() {
 	}
 }
 
-func (e *Evaluation) strongerSide() int {
+func (e *Evaluation) strongerSide() uint8 {
 	if e.score.endgame > 0 {
 		return White
 	}
@@ -48,12 +48,12 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 	var color, wKing, bKing, wPawn int
 
 	if e.strongerSide() == White {
-		color = e.position.color
+		color = int(e.position.color)
 		wKing = int(e.position.king[White])
 		bKing = int(e.position.king[Black])
 		wPawn = e.position.outposts[Pawn].last()
 	} else {
-		color = e.position.color^1
+		color = int(e.position.color) ^ 1
 		wKing = 64 + ^int(e.position.king[Black])
 		bKing = 64 + ^int(e.position.king[White])
 		wPawn = 64 + ^e.position.outposts[BlackPawn].last()

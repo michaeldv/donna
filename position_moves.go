@@ -92,7 +92,7 @@ func (p *Position) makeMove(move Move) *Position {
 		pp.reversible = false
 		if to != 0 && to == int(p.enpassant) {
 			pp.captureEnpassant(pawn(color^1), from, to)
-			pp.hash ^= hashEnpassant[col(int(p.enpassant))]
+			pp.hash ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
 		} else {
 			pp.capturePiece(capture, from, to)
 		}
@@ -120,7 +120,7 @@ func (p *Position) makeMove(move Move) *Position {
 			pp.reversible = false
 			if move.isEnpassant() {
 				pp.enpassant = uint8(from + eight[color]) // Save the en-passant square.
-				pp.hash ^= hashEnpassant[col(int(pp.enpassant))]
+				pp.hash ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
 	} else {
@@ -148,7 +148,7 @@ func (p *Position) makeNullMove() *Position {
 
 	// Flipping side to move obviously invalidates the enpassant square.
 	if pp.enpassant != 0 {
-		pp.hash ^= hashEnpassant[col(int(pp.enpassant))]
+		pp.hash ^= hashEnpassant[pp.enpassant & 7]
 		pp.enpassant = 0
 	}
 	pp.hash ^= polyglotRandomWhite
@@ -172,8 +172,8 @@ func (p *Position) undoNullMove() *Position {
 	return p.undoLastMove()
 }
 
-func (p *Position) isInCheck(color int) bool {
-	return p.isAttacked(int(p.king[color]), color^1)
+func (p *Position) isInCheck(color uint8) bool {
+	return p.isAttacked(color^1, int(p.king[color]))
 }
 
 func (p *Position) isNull() bool {
@@ -181,10 +181,10 @@ func (p *Position) isNull() bool {
 }
 
 func (p *Position) repetition() bool {
-	if !p.reversible {
+	if !p.reversible || node < 1 {
 		return false
 	}
-	for previous := node-1; previous >= 0; previous-- {
+	for previous := node - 1; previous >= 0; previous-- {
 		if !tree[previous].reversible {
 			return false
 		}
@@ -196,11 +196,12 @@ func (p *Position) repetition() bool {
 }
 
 func (p *Position) thirdRepetition() bool {
-	if !p.reversible {
+	if !p.reversible || node < 4 {
 		return false
 	}
-	for previous, repetitions := node-1, 1; previous >= 0; previous-- {
-		if !tree[previous].reversible {
+
+	for previous, repetitions := node - 2, 1; previous >= 0; previous -= 2 {
+		if !tree[previous].reversible || !tree[previous + 1].reversible {
 			return false
 		}
 		if tree[previous].hash == p.hash {
@@ -213,7 +214,7 @@ func (p *Position) thirdRepetition() bool {
 	return false
 }
 
-func (p *Position) canCastle(color int) (kingside, queenside bool) {
+func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
 
 	// Start off with simple checks.
 	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board == 0)
@@ -249,7 +250,7 @@ func (p *Position) isValid(move Move, pins Bitmask) bool {
 	// King's move is valid when a) the move is a castle or b) the destination
 	// square is not being attacked by the opponent.
 	if piece.isKing() {
-		return (move & isCastle != 0) || !p.isAttacked(to, color^1)
+		return (move & isCastle != 0) || !p.isAttacked(color^1, to)
 	}
 
 	// For all other peices the move is valid when it doesn't cause a

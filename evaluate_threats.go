@@ -27,7 +27,7 @@ func (e *Evaluation) analyzeThreats() {
 	}
 }
 
-func (e *Evaluation) threats(color int, hisAttacks, herAttacks Bitmask) (score Score) {
+func (e *Evaluation) threats(color uint8, hisAttacks, herAttacks Bitmask) (score Score) {
 	p := e.position
 
 	// Find weak enemy pieces: the ones under attack and not defended by
@@ -66,7 +66,7 @@ func (e *Evaluation) threats(color int, hisAttacks, herAttacks Bitmask) (score S
 	return
 }
 
-func (e *Evaluation) center(color int, hisAttacks, herAttacks, herPawnAttacks Bitmask) (score Score) {
+func (e *Evaluation) center(color uint8, hisAttacks, herAttacks, herPawnAttacks Bitmask) (score Score) {
 	pawns := e.position.outposts[pawn(color)]
 	safe := homeTurf[color] & ^pawns & ^herPawnAttacks & (hisAttacks | ^herAttacks)
 	turf := safe & pawns

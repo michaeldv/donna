@@ -57,7 +57,7 @@ func (e *Evaluation) analyzePassers() {
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
-func (e *Evaluation) pawnStructure(color int) (score Score) {
+func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 	hisPawns := e.position.outposts[pawn(color)]
 	herPawns := e.position.outposts[pawn(color^1)]
 	e.pawns.passers[color] = 0
@@ -136,7 +136,7 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 			his := maskPassed[color^1][square + eight[color]] & maskIsolated[col] & hisPawns
 			her := maskPassed[color][square] & maskIsolated[col] & herPawns
 			if his.count() >= her.count() {
-				score.add(bonusSemiPassedPawn[rank(square, color)])
+				score.add(bonusSemiPassedPawn[rank(color, square)])
 			}
 		}
 
@@ -153,13 +153,13 @@ func (e *Evaluation) pawnStructure(color int) (score Score) {
 	return
 }
 
-func (e *Evaluation) pawnPassers(color int) (score Score) {
+func (e *Evaluation) pawnPassers(color uint8) (score Score) {
 	p := e.position
 
 	pawns := e.pawns.passers[color]
 	for pawns != 0 {
 		square := pawns.pop()
-		rank := rank(square, color)
+		rank := rank(color, square)
 		bonus := bonusPassedPawn[rank]
 
 		if rank > A2H2 {
