@@ -65,9 +65,9 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 	}
 
 	if color == Black {
-		return -DecisiveAdvantage
+		return BlackWinning
 	}
-	return DecisiveAdvantage
+	return WhiteWinning
 }
 
 // Lesser known endgames where we calculate endgame score markdown.

@@ -13,7 +13,6 @@ const (
 	MaxPly = 64
 	MaxDepth = 32
 	Checkmate = 0x7FFF // = math.MaxInt16 = 32,767
-	DecisiveAdvantage = Checkmate / 3
 )
 
 // Colors.
@@ -25,13 +24,14 @@ const (
 // Game status.
 const (
 	InProgress = iota
-	WhiteWinning    // White mates in X moves.
-	BlackWinning    // Black mates in X moves.
-	WhiteWon        // White checkmated.
-	BlackWon        // Black checkmated.
-	Stalemate       // Draw by stalemate, forced or self-imposed.
-	Repetition      // Draw by repetition.
-	Insufficient    // Draw by insufficient material.
+	WhiteWon    	// White checkmated.
+	BlackWon    	// Black checkmated.
+	Stalemate   	// Draw by stalemate, forced or self-imposed.
+	Insufficient	// Draw by insufficient material.
+	Repetition  	// Draw by repetition.
+	FiftyMoves  	// Draw by 50 moves rule.
+	WhiteWinning =  Checkmate / 3 // Decisive advantage for White.
+	BlackWinning = -Checkmate / 3 // Decisive advantage for Black.
 )
 
 // Square indices.
