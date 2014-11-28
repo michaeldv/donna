@@ -289,6 +289,8 @@ func (p *Position) status(move Move, blendedScore int) int {
 				return Insufficient
 			} else if p.thirdRepetition() {
 				return Repetition
+			} else if p.fifty() {
+				return FiftyMoves
 			}
 		}
 		if !NewGen(p, MaxPly).generateMoves().anyValid(p) {
