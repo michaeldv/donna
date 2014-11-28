@@ -21,7 +21,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 	}
 
 	// Insufficient material and repetition/perpetual check pruning.
-	if p.insufficient() || p.repetition() {
+	if p.insufficient() || p.repetition() || p.fifty() {
 		return 0
 	}
 

@@ -18,7 +18,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	// Insufficient material and repetition/perpetual check pruning.
-	if p.insufficient() || p.repetition() {
+	if p.insufficient() || p.repetition() || p.fifty() {
 		return 0
 	}
 
