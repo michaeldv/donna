@@ -101,6 +101,20 @@ func max64(x, y int64) int64 {
 	return y
 }
 
+// Returns time in milliseconds elapsed since the given start time.
+func since(start time.Time) int64 {
+	return time.Since(start).Nanoseconds() / 1000000
+}
+
+// Returns nodes per second search speed for the given time duration.
+func nps(duration int64) int64 {
+	nodes := int64(game.nodes + game.qnodes) * 1000
+	if duration != 0 {
+		return nodes / duration
+	}
+	return nodes
+}
+
 // Formats time duration in milliseconds in human readable form (MM:SS.XXX).
 func ms(duration int64) string {
 	mm := duration / 1000 / 60
