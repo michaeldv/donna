@@ -106,7 +106,7 @@ func (game *Game) Think() Move {
 	if len(engine.bookFile) != 0 {
 		if book, err := NewBook(engine.bookFile); err == nil {
 			if move := book.pickMove(position); move != 0 {
-				game.printBestMove(move, time.Since(start).Seconds())
+				game.printBestMove(move, since(start))
 				return move
 			}
 		}
@@ -118,7 +118,7 @@ func (game *Game) Think() Move {
 	if engine.uci {
 		engine.debug(position.String())
 	} else {
-		fmt.Println(`Depth/Time     Nodes      QNodes     Nodes/s   Score   Best`)
+		fmt.Println(`Depth   Time      Nodes     QNodes   Nodes/s   Score   Best`)
 	}
 
 	if !engine.fixedDepth() {
@@ -180,10 +180,10 @@ func (game *Game) Think() Move {
 
 		move = game.rootpv[0]
 		status = position.status(move, score)
-		game.printPrincipal(depth, score, status, time.Since(start).Seconds())
+		game.printPrincipal(depth, score, status, since(start))
 	}
 
-	game.printBestMove(move, time.Since(start).Seconds())
+	game.printBestMove(move, since(start))
 
 	return move
 }
@@ -233,7 +233,7 @@ func (game *Game) keepThinking(depth int, move Move) bool {
 	return true
 }
 
-func (game *Game) printBestMove(move Move, duration float64) {
+func (game *Game) printBestMove(move Move, duration int64) {
 	if engine.uci {
 		engine.uciBestMove(move, duration)
 	} else {
@@ -244,7 +244,7 @@ func (game *Game) printBestMove(move Move, duration float64) {
 // Prints principal variation. Note that in REPL advantage white is always +score
 // and advantage black is -score whereas in UCI +score is advantage current side
 // and -score is advantage opponent.
-func (game *Game) printPrincipal(depth, score, status int, duration float64) {
+func (game *Game) printPrincipal(depth, score, status int, duration int64) {
 	if engine.uci {
 		engine.uciPrincipal(depth, score, duration)
 	} else {

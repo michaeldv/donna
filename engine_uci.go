@@ -38,24 +38,23 @@ func (e *Engine) uciMove(move Move, moveno, depth int) *Engine {
 	return engine.reply("info depth %d currmove %s currmovenumber %d\n", depth, move.notation(), moveno)
 }
 
-func (e *Engine) uciBestMove(move Move, duration float64) *Engine {
-	return engine.reply("info nodes %d time %d\nbestmove %s\n", game.nodes+game.qnodes, int64(duration*1000), move.notation())
+func (e *Engine) uciBestMove(move Move, duration int64) *Engine {
+	return engine.reply("info nodes %d time %d\nbestmove %s\n", game.nodes + game.qnodes, duration, move.notation())
 }
 
-func (e *Engine) uciPrincipal(depth, score int, duration float64) *Engine {
+func (e *Engine) uciPrincipal(depth, score int, duration int64) *Engine {
 	str := fmt.Sprintf("info depth %d score", depth)
 
-	if abs(score) < Checkmate-MaxPly {
-		str += fmt.Sprintf(" cp %d", score*100/onePawn)
+	if abs(score) < Checkmate - MaxPly {
+		str += fmt.Sprintf(" cp %d", score * 100 / onePawn)
 	} else {
 		mate := -Checkmate - score
 		if score > 0 {
 			mate = Checkmate - score + 1
 		}
-		str += fmt.Sprintf(" mate %d", mate/2)
+		str += fmt.Sprintf(" mate %d", mate / 2)
 	}
-	nodes := game.nodes + game.qnodes
-	str += fmt.Sprintf(" nodes %d nps %d time %d pv", nodes, int(float64(nodes)/duration), int64(duration*1000))
+	str += fmt.Sprintf(" nodes %d nps %d time %d pv", game.nodes + game.qnodes, nps(duration), duration)
 
 	for i := 0; i < len(game.rootpv); i++ {
 		str += " " + game.rootpv[i].notation()
@@ -101,7 +100,6 @@ func (e *Engine) Uci() *Engine {
 		// Make sure we've started the game since "ucinewgame" is optional.
 		if game == nil || position == nil {
 			game = NewGame()
-			position = game.start()
 		}
 
 		switch args[0] {
@@ -117,7 +115,8 @@ func (e *Engine) Uci() *Engine {
 				}
 				fen = append(fen, token)
 			}
-			position = NewPositionFromFEN(game, strings.Join(fen, ` `))
+			game.initial = strings.Join(fen, ` `)
+			position = game.start()
 		default:
 			return
 		}
