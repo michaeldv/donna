@@ -18,4 +18,5 @@ donna
 cmd/donna
 logs/*
 tools/*
+games/*
 
