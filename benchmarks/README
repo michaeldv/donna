@@ -1,0 +1,5 @@
+Donna 0.9 benchmark results (MacBook Air 1.3GHz Intel Core i5, 10s per position)
+
+brilliant.dcf   +918 -83 (91.7%)
+silent.dcf      +112 -12 (91.0%)
+win300.dcf      +273 -27 (91.0%)
