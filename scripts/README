@@ -1,0 +1,9 @@
+play.sh
+  Shell script to start a match between two chess engines using Cute Chess CLI.
+
+rate.sh
+  Shell script to compute ELO rating based on PGN games.
+
+mfl.epd
+  Most frequest lines opening book for fast engine testing as described at
+  https://sites.google.com/site/chessbazaar/2007-01-2008-fast-engine-testing-the-mlmfl-test
