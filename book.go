@@ -24,15 +24,15 @@ type Entry struct {
 }
 
 func NewBook(bookFile string) (*Book, error) {
-	book := &Book{}
+	book := &Book{fileName: bookFile}
 
-	book.fileName = bookFile
-	if fi, err := os.Stat(book.fileName); err == nil {
-		book.entries = fi.Size() / 16
-		return book, nil
-	} else {
+	if fi, err := os.Stat(book.fileName); err != nil {
 		return nil, err
+	} else {
+		book.entries = fi.Size() / 16
 	}
+
+	return book, nil
 }
 
 func (b *Book) pickMove(position *Position) Move {

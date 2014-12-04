@@ -212,10 +212,10 @@ func (game *Game) keepThinking(depth int, move Move) bool {
 		if move == gen.obvious {
 			engine.debug("# Depth %02d Kinda obvious %s\n", depth, move)
 			return depth < 9
-		} else { // The move is no longer obvious.
-			engine.debug("# Depth %02d No longer obvious %s\n", depth, move)
-			gen.obvious = Move(0)
 		}
+		// The move is no longer obvious.
+		engine.debug("# Depth %02d No longer obvious %s\n", depth, move)
+		gen.obvious = Move(0)
 	}
 
 	// Stop if the time left is not enough to gets through the next iteration.
