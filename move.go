@@ -218,9 +218,20 @@ func (m Move) notation() string {
 	return buffer.String()
 }
 
-// By default the move is represented in long algebraic notation, ex. `Ng1-f3`,
-// `e4xd5` or `h7-h8Q`. This is used in tests, REPL, and when displaying
-// principal variation.
+// Returns string representation of the move in long algebraic notation using
+// ASCII characters only.
+func (m Move) str() (str string) {
+	if engine.fancy {
+		defer func() { engine.fancy = true }()
+		engine.fancy = false
+	}
+
+	return m.String()
+}
+
+// By default the move is represented in long algebraic notation utilizing fancy
+// UTF-8 engine setting. For example: `♘g1-f3` (fancy), `e4xd5` or `h7-h8Q`.
+// This notation is used in tests, REPL, and when showing principal variation.
 func (m Move) String() (str string) {
 	var buffer bytes.Buffer
 
