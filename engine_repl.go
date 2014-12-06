@@ -13,12 +13,19 @@ import(
 	`time`
 )
 
+const (
+	escRed   = "\033[0;31m"
+	escGreen = "\033[0;32m"
+	escTeal  = "\033[0;36m"
+	escNone  = "\033[0m"
+)
+
 func (e *Engine) replBestMove(move Move) *Engine {
-	fmt.Printf("\033[0;36mDonna's move: %s", move)
+	fmt.Printf(escTeal + "Donna's move: %s", move)
 	if game.nodes == 0 {
 		fmt.Printf(" (book)")
 	}
-	fmt.Println("\033[0m\n")
+	fmt.Println(escNone + "\n")
 
 	return e
 }
@@ -72,29 +79,27 @@ func (e *Engine) Repl() *Engine {
 		content, err := ioutil.ReadFile(fileName)
 		if err == nil {
 			total, solved := 0, 0
-			lines := strings.Split(string(content), "\n")
 			re := regexp.MustCompile(`[\+\?!]`)
 
 			NextLine:
-			for i, line := range lines {
+			for _, line := range strings.Split(string(content), "\n") {
 				if len(line) > 0 && line[0] != '#' {
 					total++
 					game := NewGame(line)
 					position := game.start()
 
-					best := strings.Split(line, ` # `)[1]
-					fmt.Printf("\033[0;36m%d) %s for %s\033[0m\n%s\n", i, best, C(position.color), position)
+					best := strings.Split(line, ` # `)[1] // TODO: add support for "am" (avoid move).
+					fmt.Printf(escTeal + "%d) %s for %s" + escNone + "\n%s\n", total, best, C(position.color), position)
 					move := game.Think()
 
-					for _, theBest := range strings.Split(best, ` `) {
-						theBest = re.ReplaceAllLiteralString(theBest, ``)
-						if move == NewMoveFromString(position, theBest) {
+					for _, nextBest := range strings.Split(best, ` `) {
+						if move.str() == re.ReplaceAllLiteralString(nextBest, ``) {
 							solved++
-							fmt.Printf("\033[0;32m%d: solved (%d/%d %2.1f%%)\033[0m\n\n\n", total, solved, total - solved, float32(solved) * 100.0 / float32(total))
+							fmt.Printf(escGreen + "%d) Solved (%d/%d %2.1f%%)\n\n\n" + escNone, total, solved, total - solved, float32(solved) * 100.0 / float32(total))
 							continue NextLine
 						}
 					}
-					fmt.Printf("\033[0;31m%d: not solved (%d/%d %2.1f%%)\033[0m\n\n\n", total, solved, total - solved, float32(solved) * 100.0 / float32(total))
+					fmt.Printf(escRed + "%d) Not solved (%d/%d %2.1f%%)\n\n\n" + escNone, total, solved, total - solved, float32(solved) * 100.0 / float32(total))
 				}
 			}
 		} else {
@@ -110,7 +115,7 @@ func (e *Engine) Repl() *Engine {
 			position := NewGame().start()
 			start := time.Now()
 			total := position.Perft(depth)
-			finish := time.Since(start).Nanoseconds() / 1000000
+			finish := since(start)
 			fmt.Printf("  Depth: %d\n", depth)
 			fmt.Printf("  Nodes: %d\n", total)
 			fmt.Printf("Elapsed: %s\n", ms(finish))
@@ -134,14 +139,15 @@ func (e *Engine) Repl() *Engine {
 			think()
 		case `help`, `?`:
 			fmt.Println("The commands are:\n\n" +
-				"   bench   Run benchmark tests\n" +
-				"   exit    Exit the program\n" +
-				"   go      Take side and make a move\n" +
-				"   help    Display this help\n" +
-				"   new     Start new game\n" +
-				"   perft   Run perft test\n" +
-				"   score   Show evaluation summary\n" +
-				"   undo    Undo last move\n")
+				"  bench <file>   Run benchmarks\n" +
+				"  exit           Exit the program\n" +
+				"  go             Take side and make a move\n" +
+				"  help           Display this help\n" +
+				"  new            Start new game\n" +
+				"  perft [depth]  Run perft test\n" +
+				"  score          Show evaluation summary\n" +
+				"  undo           Undo last move\n\n" +
+				"To make a move use algebraic notation, for example e2e4, Ng1f3, or e7e8Q\n")
 		case `new`:
 			game, position = nil, nil
 			setup()
