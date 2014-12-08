@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 usage() {
   echo "Usage: ./rate.sh \$1 \$2 \$3"
   echo "Where \$1 - engine name"

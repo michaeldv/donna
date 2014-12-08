@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 usage() {
   echo "Usage: ./play.sh \$1 \$2 \$3 \$4 \$5 [\$6]"
   echo "Where \$1 - number of games to play"
