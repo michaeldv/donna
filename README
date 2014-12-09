@@ -5,77 +5,77 @@ DONNA
    about chess programming.
 
    Donna engine comes with interactive command line shell and supports standard
-   UCI protocol. Its technical features include:
+   UCI (universal chess interface) protocol. Its technical features include:
 
    Data Structures
-      - Magic bitboards
-      - Transposition table
-      - Material imbalance table
-      - Pawn cache
+     - Magic bitboards
+     - Transposition table
+     - Material imbalance table
+     - Pawn cache
 
    Move Generation
-      - All possible and all valid moves
-      - Captures and pawn promotions
-      - Checks and check evasions
+     - All possible and all valid moves
+     - Captures and pawn promotions
+     - Checks and check evasions
 
    Search
-      - Root, tree, and quiescence searches
-      - Aspiration windows
-      - Iterative deepening
-      - Search depth extensions
-      - Alpha/beta pruning
-      - Mate distance pruning
-      - Razoring
-      - Futility margin pruning
-      - Null move pruning
-      - Late move reduction
-      - Delta pruning for captures
-      - Good and killer move heuristics
-      - Insufficient material and repetition detection
+     - Root, tree, and quiescence searches
+     - Aspiration windows
+     - Iterative deepening
+     - Search depth extensions
+     - Alpha/beta pruning
+     - Mate distance pruning
+     - Razoring
+     - Futility margin pruning
+     - Null move pruning
+     - Late move reduction
+     - Delta pruning for captures
+     - Good and killer move heuristics
+     - Insufficient material and repetition detection
 
    Position Evaluation
-      - Piece/square bonuses
-      - Material with imbalance adjustment
-      - King safety and pawn shield quality
-      - Castling rights
-      - Piece mobility
-      - Control of the center
-      - Threats and hanging pieces
-      - Passed, isolated, doubled, and backwards pawns
-      - Trapped rooks and bishops
-      - Known and lesser known endgames
-      - Bitbase for King + Pawn vs. King endgames
+     - Piece/square bonuses
+     - Material with imbalance adjustment
+     - King safety and pawn shield quality
+     - Castling rights
+     - Piece mobility
+     - Control of the center
+     - Threats and hanging pieces
+     - Passed, isolated, doubled, and backwards pawns
+     - Trapped rooks and bishops
+     - Known and lesser known endgames
+     - Bitbase for King + Pawn vs. King endgames
 
    Game Controls
-      - Maximum search depth
-      - Time to make a move
-      - Time control for certain number of moves
-      - Time increment
+     - Maximum search depth
+     - Time to make a move
+     - Time control for certain number of moves
+     - Time increment
 
    Other
-      - UCI protocol support
-      - Interactive read–eval–print loop (REPL)
-      - Polyglot opening books
-      - Test suite with 300+ tests
-      - Donna Chess Format to define a position in human-readable way
+     - UCI protocol support
+     - Interactive read–eval–print loop (REPL)
+     - Polyglot opening books
+     - Test suite with 300+ tests
+     - Donna Chess Format to define a position in human-readable way
 
-THANK YOU!
+USING DONNA
 
-   Chess programming in Go turned out to be a fascinating journey. I have never
-   developed chess software before, and to learn more about it I studied all
-   open source chess programs I could find. Donna stands on the shoulders of
-   chess programming giants and it would never have been possible without them.
-   My sincere admiration and gratitude goes to:
+   Donna chess engine can be used with any chess GUI software that supports UCI
+   protocol. You can also launch Donna as standalone command-line program and
+   play against it in interactive mode:
 
-   - Aaron Becker, Daydreamer
-   - Fabien Letouzey, Senpai
-   - Igor Korshunov, Murka
-   - Jon Dart, Arasan
-   - Steve Maughan, Maverick
-   - Tom Kerrigan, TSCP
-   - Tord Romstad, Marco Costalba, and Joona Kiiski, Stockfish
-   - Vadim Demichev, Gull
-   - Vladimir Medvedev, GreKo
+   $ ./donna -i
+   Donna v1.0 Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.
+   Type ? for help.
+
+   donna>
+
+   Donna supports Polyglot chess opening books. Free opening books are available
+   for download at https://github.com/michaeldv/donna_opening_books. To connect
+   the opening book set DONNA_BOOK environment variable:
+
+   $ export DONNA_BOOK=~/chess/books/gm2001.bin
 
 PERFORMANCE
 
@@ -111,6 +111,24 @@ STRENGTH
    "1001 Brilliant Ways to Checkmate" by Fred Reinfeld:   +918  -83  (91.7%)
    "Win at Chess" by Fred Reinfeld:                       +273  -27  (91.0%)
    "Silent but Deadly" by Dann Corbit:                    +112  -12  (91.0%)
+
+THANK YOU!
+
+   Chess programming in Go turned out to be a fascinating journey. I have never
+   developed chess software before, and to learn more about it I studied all
+   open source chess programs I could find. Donna stands on the shoulders of
+   the giants and it would never have been possible without them. My sincere
+   admiration and gratitude goes to:
+
+   - Aaron Becker, Daydreamer
+   - Fabien Letouzey, Senpai
+   - Igor Korshunov, Murka
+   - Jon Dart, Arasan
+   - Steve Maughan, Maverick
+   - Tom Kerrigan, TSCP
+   - Tord Romstad, Marco Costalba, and Joona Kiiski, Stockfish
+   - Vadim Demichev, Gull
+   - Vladimir Medvedev, GreKo
 
 DEDICATION
 
