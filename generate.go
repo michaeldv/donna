@@ -97,7 +97,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 
 // Probes a list of generated moves and returns true if it contains at least
 // one valid move.
-func (gen *MoveGen) anyValid(p *Position) bool {
+func (gen *MoveGen) anyValid() bool {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if gen.isValid(move) {
 			return true
