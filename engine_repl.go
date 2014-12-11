@@ -164,15 +164,12 @@ func (e *Engine) Repl() *Engine {
 			}
 		default:
 			setup()
-			if move := NewMoveFromString(position, command); move != 0 {
-				if advance := position.makeMove(move); advance != nil {
-					position = advance
-					think()
-					continue
-				}
+			if move, validMoves := NewMoveFromString(position, command); move != 0 {
+				position = position.makeMove(move)
+				think()
+			} else { // Invalid move or non-evasion on check.
+				fmt.Printf("%s appears to be an invalid move. Valid moves are %v\n", command, validMoves)
 			}
-			// Invalid move (typo) or non-evasion on check.
-			fmt.Printf("%s appears to be an invalid move.\n", command)
 		}
 	}
 	return e

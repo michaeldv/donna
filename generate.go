@@ -78,8 +78,8 @@ func (gen *MoveGen) NextMove() (move Move) {
 	return
 }
 
-// Returns true if the move is valid i.e. can be played without violating chess
-// rules.
+// Returns true if the move is valid in current position i.e. it can be played
+// without violating chess rules.
 func (gen *MoveGen) isValid(move Move) bool {
 	return gen.p.isValid(move, gen.pins)
 }
@@ -100,6 +100,17 @@ func (gen *MoveGen) validOnly() *MoveGen {
 func (gen *MoveGen) anyValid(p *Position) bool {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if gen.isValid(move) {
+			return true
+		}
+	}
+	return false
+}
+
+// Probes valid-only list of generated moves and returns true if the given move
+// is one of them.
+func (gen *MoveGen) amongValid(someMove Move) bool {
+	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+		if someMove == move {
 			return true
 		}
 	}

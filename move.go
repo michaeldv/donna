@@ -96,10 +96,20 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 	return NewMove(p, from, to)
 }
 
-// Decodes a string in long algebraic notation and returns a move.
-func NewMoveFromString(p *Position, e2e4 string) (move Move) {
+// Decodes a string in long algebraic notation and returns a move. All invalid
+// moves are discarded and returned as Move(0).
+func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) {
 	re := regexp.MustCompile(`([KkQqRrBbNn]?)([a-h])([1-8])[-x]?([a-h])([1-8])([QqRrBbNn]?)\+?[!\?]{0,2}`)
 	matches := re.FindStringSubmatch(e2e4)
+
+	// Before returning the move make sure it is valid in current position.
+	defer func() {
+		gen := NewMoveGen(p).generateAllMoves().validOnly()
+		validMoves = gen.allMoves()
+		if move != Move(0) && !gen.amongValid(move) {
+			move = Move(0)
+		}
+	}()
 
 	if len(matches) == 7 { // Full regex match.
 		if letter := matches[1]; letter != `` {
@@ -121,10 +131,12 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move) {
 			}
 			square := square(int(matches[3][0] - '1'), int(matches[2][0] - 'a'))
 			if p.pieces[square] != piece {
-				return Move(0)
+				move = Move(0)
+				return
 			}
 		}
-		return NewMoveFromNotation(p, matches[2] + matches[3] + matches[4] + matches[5] + matches[6])
+		move = NewMoveFromNotation(p, matches[2] + matches[3] + matches[4] + matches[5] + matches[6])
+		return
 	}
 
 	// Special castle move notation.
@@ -132,11 +144,13 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move) {
 		kingside, queenside := p.canCastle(p.color)
 		if e2e4 == `0-0` && kingside {
 			from, to := int(p.king[p.color]), G1 + int(p.color) * A8
-			return NewCastle(p, from, to)
+			move = NewCastle(p, from, to)
+			return
 		}
 		if e2e4 == `0-0-0` && queenside {
 			from, to := int(p.king[p.color]), C1 + int(p.color) * A8
-			return NewCastle(p, from, to)
+			move = NewCastle(p, from, to)
+			return
 		}
 	}
 	return
