@@ -72,11 +72,18 @@ func TestMove100(t *testing.T) {
 	m1 := NewMove(p, E2, E4)
 	m2 := NewMove(p, G1, F3)
 
-	expect.Eq(t, NewMoveFromString(p, `e2e4`), m1)
-	expect.Eq(t, NewMoveFromString(p, `e2-e4`), m1)
-	expect.Eq(t, NewMoveFromString(p, `Ng1f3`), m2)
-	expect.Eq(t, NewMoveFromString(p, `Ng1-f3`), m2)
-	expect.Eq(t, NewMoveFromString(p, `Rg1-f3`), Move(0))
+	move := [5]Move{}
+	move[0], _ = NewMoveFromString(p, `e2e4`)
+	move[1], _ = NewMoveFromString(p, `e2-e4`)
+	move[2], _ = NewMoveFromString(p, `Ng1f3`)
+	move[3], _ = NewMoveFromString(p, `Ng1-f3`)
+	move[4], _ = NewMoveFromString(p, `Rg1-f3`)
+
+	expect.Eq(t, move[0], m1)
+	expect.Eq(t, move[1], m1)
+	expect.Eq(t, move[2], m2)
+	expect.Eq(t, move[3], m2)
+	expect.Eq(t, move[4], Move(0))
 }
 
 func TestMove110(t *testing.T) {
@@ -85,22 +92,34 @@ func TestMove110(t *testing.T) {
 	m2 := NewMove(p, A7, A8).promote(Rook)  // Promo without capture.
 	m3 := NewMove(p, G7, H8).promote(Queen) // Promo with capture.
 
-	expect.Eq(t, NewMoveFromString(p, `Ke1e2`), m1)
-	expect.Eq(t, NewMoveFromString(p, `Ke1xe2`), m1)
-	expect.Eq(t, NewMoveFromString(p, `a7a8R`), m2)
-	expect.Eq(t, NewMoveFromString(p, `a7-a8R`), m2)
-	expect.Eq(t, NewMoveFromString(p, `g7h8Q`), m3)
-	expect.Eq(t, NewMoveFromString(p, `g7xh8Q`), m3)
+	move := [7]Move{}
+	move[0], _ = NewMoveFromString(p, `Ke1e2`)
+	move[1], _ = NewMoveFromString(p, `Ke1xe2`)
+	move[2], _ = NewMoveFromString(p, `a7a8R`)
+	move[3], _ = NewMoveFromString(p, `a7-a8R`)
+	move[4], _ = NewMoveFromString(p, `g7h8Q`)
+	move[5], _ = NewMoveFromString(p, `g7xh8Q`)
+	move[6], _ = NewMoveFromString(p, `Bh1h8`)
+
+	expect.Eq(t, move[0], m1)
+	expect.Eq(t, move[1], m1)
+	expect.Eq(t, move[2], m2)
+	expect.Eq(t, move[3], m2)
+	expect.Eq(t, move[4], m3)
+	expect.Eq(t, move[5], m3)
+	expect.Eq(t, move[6], Move(0))
 }
 
 func TestMove120(t *testing.T) {
 	p1 := NewGame(`Ke1`, `M,Ke8,Ra8`).start()
 	m1 := NewCastle(p1, E8, C8)
-	expect.Eq(t, NewMoveFromString(p1, `0-0-0`), m1)
+	move, _ := NewMoveFromString(p1, `0-0-0`)
+	expect.Eq(t, move, m1)
 
 	p2 := NewGame(`Ke1`, `M,Ke8,Rh8`).start()
 	m2 := NewCastle(p2, E8, G8)
-	expect.Eq(t, NewMoveFromString(p2, `0-0`), m2)
+	move, _ = NewMoveFromString(p2, `0-0`)
+	expect.Eq(t, move, m2)
 }
 
 func TestMove130(t *testing.T) {
@@ -110,8 +129,10 @@ func TestMove130(t *testing.T) {
 	p = p.makeMove(NewPawnMove(p, E4, E5))
 	move := NewPawnMove(p, D7, D5) // Causes en-passant on D6.
 
-	expect.Eq(t, NewMoveFromString(p, `d7d5`), move)
-	expect.True(t, NewMoveFromString(p, `d7-d5`).isEnpassant())
+	m1, _ := NewMoveFromString(p, `d7d5`)
+	m2, _ := NewMoveFromString(p, `d7-d5`)
+	expect.Eq(t, m1, move)
+	expect.True(t, m2.isEnpassant())
 }
 
 // Move to UCI coordinate notation.
