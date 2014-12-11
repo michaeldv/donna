@@ -2,7 +2,8 @@ DONNA
 
    Donna is experimental modern day chess engine implemented in Go. My primary
    goals were twofold: to gain more hands-on experience with Go and to learn
-   about chess programming.
+   about chess programming. Needless to say, this proved to be intriguing and
+   captivating experience.
 
    Donna engine comes with interactive command line shell and supports standard
    UCI (universal chess interface) protocol. Its technical features include:
@@ -52,12 +53,19 @@ DONNA
      - Time control for certain number of moves
      - Time increment
 
-   Other
+   Miscellaneous
      - UCI protocol support
      - Interactive read–eval–print loop (REPL)
      - Polyglot opening books
-     - Test suite with 300+ tests
-     - Donna Chess Format to define a position in human-readable way
+     - Go test suite with 300+ tests
+     - Donna Chess Format to define chess positions in human-readable way
+
+BUILDING DONNA
+
+   To build Donna you will need Go v1.3 or later installed on your system (see
+   http://golang.org/dl/). From Donna's source directory run the build command:
+
+   $ go build -gcflags -B ./cmd/donna.go
 
 USING DONNA
 
@@ -76,17 +84,6 @@ USING DONNA
    the opening book set DONNA_BOOK environment variable:
 
    $ export DONNA_BOOK=~/chess/books/gm2001.bin
-
-PERFORMANCE
-
-   I have made every attempt to maximize the performance and minimize penalties
-   imposed by Go garbage collector. On 1.3 GHz Intel Core i5 MacBook Air Donna
-   evaluates around 550K positions per second in the middle game, and the number
-   goes up to ~800K towards the endgame.
-
-   Go is relatively new programming language and each point release typically
-   boosts Donna's performance by 15-20%. Minor updates usually improve
-   performance by another 5%.
 
 STRENGTH
 
@@ -112,13 +109,24 @@ STRENGTH
    "Win at Chess" by Fred Reinfeld:                       +273  -27  (91.0%)
    "Silent but Deadly" by Dann Corbit:                    +112  -12  (91.0%)
 
+PERFORMANCE
+
+   I have made every attempt to maximize the performance and minimize penalties
+   imposed by Go garbage collector. On 1.3 GHz Intel Core i5 MacBook Air Donna
+   evaluates around 550K positions per second in the middle game, and the number
+   goes up to ~800K towards the endgame.
+
+   Go is relatively new programming language and each point release typically
+   boosts Donna's performance by 15-20%. Minor updates usually improve
+   performance by another 5%.
+
 THANK YOU!
 
    Chess programming in Go turned out to be a fascinating journey. I have never
    developed chess software before, and to learn more about it I studied all
    open source chess programs I could find. Donna stands on the shoulders of
-   the giants and it would never have been possible without them. My sincere
-   admiration and gratitude goes to:
+   the giants and it would never have been possible without them. My gratitude
+   goes to:
 
    - Aaron Becker, Daydreamer
    - Fabien Letouzey, Senpai
