@@ -168,7 +168,9 @@ func (e *Engine) Repl() *Engine {
 				position = position.makeMove(move)
 				think()
 			} else { // Invalid move or non-evasion on check.
-				fmt.Printf("%s appears to be an invalid move. Valid moves are %v\n", command, validMoves)
+				fancy := e.fancy; e.fancy = false
+				fmt.Printf("%s appears to be an invalid move; valid moves are %v\n", command, validMoves)
+				e.fancy = fancy
 			}
 		}
 	}
