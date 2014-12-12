@@ -7,12 +7,13 @@ package main
 import (
 	`github.com/michaeldv/donna`
 	`os`
+	`runtime`
 )
 
 func main() {
 	// Default engine settings are: 128MB transposition table, 5s per move.
 	engine := donna.NewEngine(
-		`fancy`, true,
+		`fancy`, runtime.GOOS == `darwin`,
 		`cache`, 128,
 		`movetime`, 5000,
 		`logfile`, os.Getenv(`DONNA_LOG`),
