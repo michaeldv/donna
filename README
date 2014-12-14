@@ -120,6 +120,18 @@ PERFORMANCE
    boosts Donna's performance by 15-20%. Minor updates usually improve
    performance by another 5%.
 
+IMPROVEMENTS
+
+   Many things could be improved to make Donna even stronger. Among them:
+
+   - Incremental move generator
+   - Parallel search
+   - Better move ordering
+   - Smarter search tree pruning
+   - Evaluation tuning
+   - Search cut off tuning
+   - Time control tuning
+
 THANK YOU!
 
    Chess programming in Go turned out to be a fascinating journey. I have never
@@ -138,15 +150,15 @@ THANK YOU!
    - Vadim Demichev, Gull
    - Vladimir Medvedev, GreKo
 
+   Special thanks goes to my old time buddy grandmaster Eduardas Rozentalis who
+   inspired me to develop a chess engine.
+
 DEDICATION
 
    Donna chess engine is dedicated to Lithuanian grandmaster Donatas Lapienis,
    the man who taught me how to play chess, among other things. In the mid
    1970's (pre-computer era), Donatas was the highest ranking correspondence
    chess player in the world with ELO rating of 2715.
-
-   Special thanks goes to my old time buddy grandmaster Eduardas Rozentalis who
-   inspired me to develop a chess engine.
 
 LICENSE
 

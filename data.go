@@ -6,7 +6,7 @@ package donna
 
 import `regexp`
 
-const Version = `0.9`
+const Version = `1.0` // Dec 14, 2014
 
 // Limits and conventions.
 const (
