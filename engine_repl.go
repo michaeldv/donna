@@ -74,6 +74,9 @@ func (e *Engine) Repl() *Engine {
 		e.options.maxDepth, e.options.moveTime = 0, 10000
 		defer func() {
 			e.options.maxDepth, e.options.moveTime = maxDepth, moveTime
+			if err := recover(); err != nil {
+				fmt.Printf("Error loading %s\n", fileName)
+			}
 		}()
 
 		content, err := ioutil.ReadFile(fileName)
