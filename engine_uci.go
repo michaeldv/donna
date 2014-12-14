@@ -76,12 +76,12 @@ func (e *Engine) Uci() *Engine {
 		e.reply("Donna v%s Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.\n", Version)
 		e.reply("id name Donna %s\n", Version)
 		e.reply("id author Michael Dvorkin\n")
-		e.reply("option name Hash type spin default %d min 1 max 1024\n", 64)
-		e.reply("option name Mobility type spin default %d min 0 max 100\n", weights[0].midgame)
-		e.reply("option name PawnStructure type spin default %d min 0 max 100\n", weights[1].midgame)
-		e.reply("option name PassedPawns type spin default %d min 0 max 100\n", weights[2].midgame)
-		e.reply("option name KingSafety type spin default %d min 0 max 100\n", weights[3].midgame)
-		e.reply("option name EnemyKingSafety type spin default %d min 0 max 100\n", weights[4].midgame)
+		// e.reply("option name Hash type spin default %d min 1 max 1024\n", 64)
+		// e.reply("option name Mobility type spin default %d min 0 max 100\n", weights[0].midgame)
+		// e.reply("option name PawnStructure type spin default %d min 0 max 100\n", weights[1].midgame)
+		// e.reply("option name PassedPawns type spin default %d min 0 max 100\n", weights[2].midgame)
+		// e.reply("option name KingSafety type spin default %d min 0 max 100\n", weights[3].midgame)
+		// e.reply("option name EnemyKingSafety type spin default %d min 0 max 100\n", weights[4].midgame)
 		e.reply("uciok\n")
 	}
 
