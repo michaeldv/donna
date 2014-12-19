@@ -88,8 +88,8 @@ USING DONNA
 STRENGTH
 
    On short time controls Donna exhibits strength around ELO 2500. Based on 200
-   game matches  played by Donna vs. GreKo and Donna vs. Daydreamer 1.75 Ordo
-   (https://sites.google.com/site/gaviotachessengine/ordo) rates Donna's
+   game matches  played by Donna vs. GreKo 12.0 and Donna vs. Daydreamer 1.75
+   Ordo (https://sites.google.com/site/gaviotachessengine/ordo) rates Donna's
    performance as follows:
 
    PLAYER             : RATING    POINTS  PLAYED    (%)
@@ -157,7 +157,7 @@ DEDICATION
 
    Donna chess engine is dedicated to Lithuanian grandmaster Donatas Lapienis,
    the man who taught me how to play chess, among other things. In the mid
-   1970's (pre-computer era), Donatas was the highest ranking correspondence
+   1980's (pre-computer era), Donatas was the highest ranking correspondence
    chess player in the world with ELO rating of 2715.
 
 LICENSE
