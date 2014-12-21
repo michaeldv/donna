@@ -224,7 +224,7 @@ func (game *Game) keepThinking(depth int, move Move) bool {
 		remaining := engine.factor(depth, game.volatility).remaining()
 
 		engine.debug("# Depth %02d Volatility %.2f Elapsed %s Remaining %s\n", depth, game.volatility, ms(elapsed), ms(remaining))
-		if elapsed > engine.factor(depth, game.volatility).remaining() {
+		if elapsed > remaining {
 			engine.debug("# Depth %02d Bailing out with %s\n", depth, move)
 			return false
 		}
