@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -19,7 +19,8 @@ var deBruijn = [64]int{
 	13, 18,  8, 12,  7,  6,  5, 63,
 }
 
-// Returns true if all bitmask bits are clear.
+// Returns true if all bitmask bits are clear. Even if it's wrong, it's only
+// off by a bit.
 func (b Bitmask) empty() bool {
 	return b == 0
 }

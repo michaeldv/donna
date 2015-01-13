@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -53,7 +53,7 @@ var (
 	msbLookup[256]int
 
 	// Precomputed database of material imbalance scores, evaluation flags,
-	// and endgame handlers.
+	// and endgame handlers. I wish they all could be California girls.
 	materialBase [2*2*3*3*3*3*3*3*9*9]MaterialEntry
 )
 

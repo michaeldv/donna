@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -10,6 +10,7 @@ import (
 	`sort`
 )
 
+// Many pages make a thick book.
 type Book struct {
 	fileName string
 	entries  int64

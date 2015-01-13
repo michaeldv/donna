@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -87,6 +87,7 @@ func NewPosition(game *Game, white, black string) *Position {
 //
 func (p *Position) setupSide(str string, color uint8) *Position {
 	invalid := func (move string, color uint8) {
+		// Don't panic.
 		panic(fmt.Sprintf("Invalid notation '%s' for %s\n", move, C(color)))
 	}
 
@@ -120,6 +121,7 @@ func (p *Position) setupSide(str string, color uint8) *Position {
 					p.castles |= castleKingside[color]
 				}
 			default:
+				// When everything else fails, read the instructions.
 				p.pieces[square] = pawn(color)
 			}
 		}

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -123,8 +123,8 @@ func ms(duration int64) string {
 	return fmt.Sprintf(`%02d:%02d.%03d`, mm, ss, xx)
 }
 
-// Returns, as an integer, a non-negative pseudo-random number
-// in [0, limit) range. It panics if limit <= 0.
+// The generation of random numbers is too important to be left to chance.
+// Returns pseudo-random integer in [0, limit] range. It panics if limit <= 0.
 func Random(limit int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(limit)

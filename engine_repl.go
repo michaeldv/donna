@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -50,6 +50,8 @@ func (e *Engine) replPrincipal(depth, score, status int, duration int64) {
 	}
 }
 
+// There are two types of command interfaces in the world of computing: good
+// interfaces and user interfaces. -- Daniel J. Bernstein
 func (e *Engine) Repl() *Engine {
 	var game *Game
 	var position *Position
@@ -126,7 +128,7 @@ func (e *Engine) Repl() *Engine {
 		}
 	}
 
-	fmt.Printf("Donna v%s Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.\nType ? for help.\n\n", Version)
+	fmt.Printf("Donna v%s Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.\nType ? for help.\n\n", Version)
 	for command, parameter := ``, ``; ; command, parameter = ``, `` {
 		fmt.Print(`donna> `)
 		fmt.Scanln(&command, &parameter)

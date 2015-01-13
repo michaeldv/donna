@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -73,7 +73,7 @@ func (e *Engine) Uci() *Engine {
 
 	// "uci" command handler.
 	doUci := func(args []string) {
-		e.reply("Donna v%s Copyright (c) 2014 by Michael Dvorkin. All Rights Reserved.\n", Version)
+		e.reply("Donna v%s Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.\n", Version)
 		e.reply("id name Donna %s\n", Version)
 		e.reply("id author Michael Dvorkin\n")
 		// e.reply("option name Hash type spin default %d min 1 max 1024\n", 64)
@@ -214,6 +214,11 @@ func (e *Engine) Uci() *Engine {
 		`stop`:       doStop,
 	}
 
+	// I/O, I/O,
+	// It's off to disk I go,
+	// a bit or byte to read or write,
+	// I/O, I/O, I/O, I/O
+	//                -- Dave Peacock
 	bio := bufio.NewReader(os.Stdin)
 	for {
 		command, err := bio.ReadString('\n')

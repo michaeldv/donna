@@ -1,7 +1,8 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
+// This space is available for rent.
 package main
 
 import (
@@ -10,6 +11,7 @@ import (
 	`runtime`
 )
 
+// Ignore previous comment.
 func main() {
 	// Default engine settings are: 128MB transposition table, 5s per move.
 	engine := donna.NewEngine(

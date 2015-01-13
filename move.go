@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -24,6 +24,7 @@ const (
 // Bits F0:00:00:00 => Castle and en-passant flags.
 type Move uint32
 
+// Moving pianos is dangerous. Moving pianos are dangerous.
 func NewMove(p *Position, from, to int) Move {
 	piece, capture := p.pieces[from], p.pieces[to]
 

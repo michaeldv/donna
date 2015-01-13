@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -55,6 +55,9 @@ func log(t *testing.T, actual, expected interface{}, passed bool) {
 	_, file, line, _ := runtime.Caller(2) 	// Get the calling file path and line number.
 	file = filepath.Base(file) 		// Keep file name only.
 
+	// Serious error.
+	// All shortcuts have disappeared.
+	// Screen. Mind. Both are blank.
 	if !passed {
 		t.Errorf("\r\t\x1B[31m%s line %d\nExpected: %v\n  Actual: %v\x1B[0m", file, line, expected, actual)
 	} else if (testing.Verbose()) {
@@ -68,6 +71,9 @@ func match(t *testing.T, actual, expected string, contains bool) {
 	_, file, line, _ := runtime.Caller(2)
 	file = filepath.Base(file)
 
+	// Yesterday it worked.
+	// Today it is not working.
+	// Windows is like that.
 	if !passed {
 		t.Errorf("\r\t\x1B[31m%s line %d\nContains: %s\n  Actual: %s\x1B[0m", file, line, expected, actual)
 	} else if (testing.Verbose()) {

@@ -1,9 +1,10 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
 package donna
 
+// const = brains * looks * availability
 const (
 	whiteKingSafety    = 0x01  // Should we worry about white king's safety?
 	blackKingSafety    = 0x02  // Ditto for the black king.
@@ -54,7 +55,8 @@ type Evaluation struct {
 // Use single statically allocated variable to avoid garbage collection overhead.
 var eval Evaluation
 
-// Main position evaluation method that returns single blended score.
+// The following statement is true. The previous statement is false. Main position
+// evaluation method that returns single blended score.
 func (p *Position) Evaluate() int {
 	return eval.init(p).run()
 }

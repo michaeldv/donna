@@ -1,10 +1,11 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
 package donna
 
-// Root node search.
+// Root node search. Basic principle is expressed by Boob's Law: you always find
+// something in the last place you look.
 func (p *Position) search(alpha, beta, depth int) (score int) {
 	inCheck := p.isInCheck(p.color)
 	cacheFlags := uint8(cacheAlpha)

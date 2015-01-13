@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
@@ -98,6 +98,8 @@ func (game *Game) getReady() *Game {
 	return game
 }
 
+// "The question of whether machines can think is about as relevant as the
+// question of whether submarines can swim." -- Edsger W. Dijkstra
 func (game *Game) Think() Move {
 	start := time.Now()
 	position := game.position()
@@ -188,6 +190,7 @@ func (game *Game) Think() Move {
 	return move
 }
 
+// When in doubt, do what the President does ―- guess.
 func (game *Game) keepThinking(depth int, move Move) bool {
 	if depth == 1 {
 		return true

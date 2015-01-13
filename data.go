@@ -1,24 +1,30 @@
-// Copyright (c) 2013-2014 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+
+// +gofmt f*ck off
 
 package donna
 
 import `regexp`
 
+// The primary purpose of the DATA statement is to give names to constants;
+// instead of referring to pi as 3.141592653589793 at every appearance, the
+// variable PI can be given that value with a DATA statement and used instead
+// of the longer form of the constant.
+//
+// This also simplifies modifying the program, should the value of pi change.
+//
+//                                      -― FORTRAN manual for Xerox Computers
 const Version = `1.0` // Dec 14, 2014
 
 // Limits and conventions.
 const (
+	White = iota
+	Black
 	MaxPly = 64
 	MaxDepth = 32
 	Checkmate = 0x7FFF // = math.MaxInt16 = 32,767
-)
-
-// Colors.
-const (
-	White = iota
-	Black
 )
 
 // Game status.
@@ -61,6 +67,7 @@ const (
 	maskCenter = Bitmask(0x0000001818000000)
 )
 
+// One man's constant is another man's variable.
 var bit = [64]Bitmask{
 	1<<A1, 1<<B1, 1<<C1, 1<<D1, 1<<E1, 1<<F1, 1<<G1, 1<<H1,
 	1<<A2, 1<<B2, 1<<C2, 1<<D2, 1<<E2, 1<<F2, 1<<G2, 1<<H2,
