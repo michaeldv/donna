@@ -16,7 +16,8 @@ import `regexp`
 // This also simplifies modifying the program, should the value of pi change.
 //
 //                                      -― FORTRAN manual for Xerox Computers
-const Version = `1.0` // Dec 14, 2014
+
+const Version = `1.0a` // 1.0 released on Dec 14, 2014
 
 // Limits and conventions.
 const (
