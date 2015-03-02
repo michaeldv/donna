@@ -12,7 +12,7 @@ type PawnEntry struct {
 	passers    [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
 
-type PawnCache [8192]PawnEntry
+type PawnCache [8192*2]PawnEntry
 
 func (e *Evaluation) analyzePawns() {
 	key := e.position.pawnHash
