@@ -29,13 +29,13 @@ func (e *Evaluation) analyzeSafety() {
 	// If the king has moved then recalculate king/pawn proximity and update
 	// cover score and king square in the pawn cache.
 	if whiteKingMoved {
-		cover.white.endgame = e.kingPawnProximity(White)
 		e.pawns.cover[White] = e.kingCover(White)
+		e.pawns.cover[White].endgame += e.kingPawnProximity(White)
 		e.pawns.king[White] = e.position.king[White]
 	}
 	if blackKingMoved {
-		cover.black.endgame = e.kingPawnProximity(Black)
 		e.pawns.cover[Black] = e.kingCover(Black)
+		e.pawns.cover[Black].endgame += e.kingPawnProximity(Black)
 		e.pawns.king[Black] = e.position.king[Black]
 	}
 
