@@ -49,3 +49,23 @@ func TestGenCaptures030(t *testing.T) {
 	black := NewMoveGen(p).generateCaptures()
 	expect.Eq(t, black.allMoves(), `[h2-h1Q h2-h1R h2-h1B h2-h1N]`)
 }
+
+
+// Captures/promotions sort order.
+func TestGenCaptures100(t *testing.T) {
+	game := NewGame(`Kg1,Qh4,Rg2,Rf1,Nd6,f7`, `Kh8,Qc3,Rd8,Rd7,Ne6,a3,h7`)
+	gen := NewMoveGen(game.start()).generateCaptures()
+	expect.Eq(t, gen.allMoves(), `[f7-f8Q f7-f8R f7-f8B f7-f8N Qh4xh7 Qh4xd8]`)
+}
+
+func TestGenCaptures110(t *testing.T) {
+	game := NewGame(`Kg1,Qh4,Rg2,Rf1,Nd6,f7`, `Kh8,Qc3,Rd8,Rd7,Ne6,a3,h7`)
+	gen := NewMoveGen(game.start()).generateCaptures().rank(Move(0))
+	expect.Eq(t, gen.allMoves(), `[f7-f8Q Qh4xd8 f7-f8R f7-f8B f7-f8N Qh4xh7]`)
+}
+
+func TestGenCaptures120(t *testing.T) {
+	game := NewGame(`Kg1,Qh4,Rg2,Rf1,Nd6,f7`, `Kh8,Qc3,Rd8,Rd7,Ne6,a3,h7`)
+	gen := NewMoveGen(game.start()).generateCaptures().quickRank()
+	expect.Eq(t, gen.allMoves(), `[f7-f8Q Qh4xd8 f7-f8R f7-f8B f7-f8N Qh4xh7]`)
+}
