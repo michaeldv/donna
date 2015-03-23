@@ -16,7 +16,7 @@ func main() {
 	// Default engine settings are: 128MB transposition table, 5s per move.
 	engine := donna.NewEngine(
 		`fancy`, runtime.GOOS == `darwin`,
-		`cache`, 128,
+		`cache`, 256,
 		`movetime`, 5000,
 		`logfile`, os.Getenv(`DONNA_LOG`),
 		`bookfile`, os.Getenv(`DONNA_BOOK`),
