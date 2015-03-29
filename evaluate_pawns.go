@@ -146,10 +146,6 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 		}
 	}
 
-	// Penalty for blocked pawns.
-	blocked := (hisPawns.pushed(color) & e.position.board).count()
-	score.subtract(pawnBlocked.times(blocked))
-
 	return
 }
 

@@ -13,7 +13,6 @@ var (
 	valueQueen     = Score{ onePawn * 12 + 60, onePawn * 12 + 79 }  // 1260, 1279
 
 	rightToMove    = Score{ 12,  5 }  // Tempo bonus.
-	pawnBlocked    = Score{  2,  6 }  // Penalty for each pawn that is blocked.
 	bishopPawn     = Score{  4,  6 }  // Penalty for each pawn on the same colored square as a bishop.
 	bishopBoxed    = Score{ 73,  0 }  // Penalty for patterns like Bc1,d2,Nd3.
 	bishopDanger   = Score{ 35,  0 }  // Bonus when king is under attack and sides have opposite-colored bishops.
