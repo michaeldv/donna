@@ -66,7 +66,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if !gen.isValid(move) || (!inCheck && p.exchange(move) < 0) {
+		if (!inCheck && p.exchange(move) < 0) || !gen.isValid(move) {
 			continue
 		}
 
@@ -90,43 +90,43 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth int, capturesOnly
 			alpha = score
 			bestMove = move
 			cacheFlags = cacheExact
-
 			if alpha >= beta {
 				cacheFlags = cacheBeta
 				break
 			}
 			game.saveBest(ply, move)
 		}
+		if engine.clock.halt {
+			game.qnodes += moveCount
+			return alpha
+		}
 	}
 
 	if !inCheck && !capturesOnly {
 		gen = NewMoveGen(p).generateChecks().quickRank()
 		for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-			if !gen.isValid(move) || p.exchange(move) < 0 {
+			if p.exchange(move) < 0 || !gen.isValid(move) {
 				continue
 			}
 
 			position := p.makeMove(move)
 			moveCount++
-			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, false)
+			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, true)
 			position.undoLastMove()
-
-			if engine.clock.halt {
-				game.qnodes += moveCount
-				//Log("searchQui at %d (%s): move %s (%d) score %d alpha %d\n", depth, C(p.color), move, moveCount, score, alpha)
-				return alpha
-			}
 
 			if score > alpha {
 				alpha = score
 				bestMove = move
 				cacheFlags = cacheExact
-
 				if alpha >= beta {
 					cacheFlags = cacheBeta
 					break
 				}
 				game.saveBest(ply, move)
+			}
+			if engine.clock.halt {
+				game.qnodes += moveCount
+				return alpha
 			}
 		}
 	}
