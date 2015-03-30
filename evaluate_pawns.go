@@ -140,10 +140,10 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 			}
 		}
 
-		// Encourage center pawn moves.
-		if maskCenter.on(square) {
-			score.midgame += bonusPawn[0][flip(color, square)] / 2
-		}
+		//\\ Encourage center pawn moves.
+		//\\ if maskCenter.on(square) {
+		//\\ 	score.midgame += bonusPawn[0][flip(color, square)] / 2
+		//\\ }
 	}
 
 	return
