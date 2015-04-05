@@ -10,12 +10,12 @@ func TestCache000(t *testing.T) {
 	engine.cacheSize = 0.5
 	p := NewGame().start()
 	move := NewMove(p, E2, E4)
-	p = p.makeMove(move).cache(move, 42, 1, cacheExact)
+	p = p.makeMove(move).cache(move, 42, 1, 0, cacheExact)
 
 	cached := p.probeCache()
 	expect.Eq(t, cached.move, move)
-	expect.Eq(t, cached.score, 42)
-	expect.Eq(t, cached.depth, 1)
+	expect.Eq(t, cached.score, uint16(42))
+	expect.Eq(t, cached.depth, uint16(1))
 	expect.Eq(t, cached.flags, uint8(cacheExact))
-	expect.Eq(t, cached.hash, p.hash)
+	expect.Eq(t, cached.id, uint32(p.hash >> 32))
 }
