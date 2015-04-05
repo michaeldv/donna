@@ -17,7 +17,7 @@ import `regexp`
 //
 //                                      -― FORTRAN manual for Xerox Computers
 
-const Version = `1.0a` // 1.0 released on Dec 14, 2014
+const Version = `1.0b` // 1.0 released on Dec 14, 2014
 
 // Limits and conventions.
 const (
@@ -25,7 +25,8 @@ const (
 	Black
 	MaxPly = 64
 	MaxDepth = 32
-	Checkmate = 0x7FFF // = math.MaxInt16 = 32,767
+	Checkmate = 0x7FFF - 1	// = 32,766
+	UnknownScore = 0x7FFF	// = math.MaxInt16 = 32,767
 )
 
 // Game status.

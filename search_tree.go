@@ -37,7 +37,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 	// Probe cache.
 	cachedMove := Move(0)
-	cacheFlags := cacheAlpha
 	staticScore := UnknownScore
 	if cached := p.probeCache(); cached != nil {
 		cachedMove = cached.move
@@ -114,13 +113,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	// Internal iterative deepening.
-	// if cachedMove == 0 && depth > 4 {
-	// 	p.searchTree(alpha, beta, depth - 4)
-	// 	if len(game.pv[ply]) > 0 {
-	// 		cachedMove = game.pv[ply][0]
-	// 	}
-	// }
-
 	if !inCheck && cachedMove == Move(0) && depth > 4 {
 		newDepth := depth / 2
 		if isPrincipal {
@@ -139,6 +131,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		gen.generateMoves().rank(cachedMove)
 	}
 
+	cacheFlags := cacheAlpha
 	bestMove := Move(0)
 	moveCount, quietMoveCount := 0, 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
