@@ -65,6 +65,15 @@ func ply() int {
 	return node - rootNode
 }
 
+func uncache(score, ply int) int {
+	if score > Checkmate - MaxPly && score <= Checkmate {
+		return score - ply
+	} else if score >= -Checkmate && score < -Checkmate + MaxPly {
+		return score + ply
+	}
+	return score
+}
+
 // Integer version of math/abs.
 func abs(n int) int {
 	if n < 0 {
