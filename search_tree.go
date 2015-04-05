@@ -37,23 +37,19 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 	// Probe cache.
 	cachedMove := Move(0)
-	cacheFlags := uint8(cacheAlpha)
+	cacheFlags := cacheAlpha
+	staticScore := UnknownScore
 	if cached := p.probeCache(); cached != nil {
 		cachedMove = cached.move
-		if cached.depth >= depth {
-			score := cached.score
-			if score > Checkmate - MaxPly && score <= Checkmate {
-				score -= ply
-			} else if score >= -Checkmate && score < -Checkmate + MaxPly {
-				score += ply
-			}
+		if int(cached.depth) >= depth {
+			staticScore = uncache(int(cached.score), ply)
 			if (cached.flags == cacheExact && isPrincipal) ||
-			   (cached.flags == cacheBeta  && score >= beta) ||
-			   (cached.flags == cacheAlpha && score <= alpha) {
-				if score >= beta && !inCheck && cachedMove != 0 && cachedMove.isQuiet() {
+			   (cached.flags == cacheBeta  && staticScore >= beta) ||
+			   (cached.flags == cacheAlpha && staticScore <= alpha) {
+				if staticScore >= beta && !inCheck && cachedMove != 0 && cachedMove.isQuiet() {
 					game.saveGood(depth, cachedMove)
 				}
-				return score
+				return staticScore
 			}
 		}
 	}
@@ -63,9 +59,12 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		return p.searchQuiescence(alpha, beta, depth)
 	}
 
+	if staticScore == UnknownScore {
+		staticScore = p.Evaluate()
+	}
+
 	// Razoring and futility margin pruning.
 	if !inCheck && !isPrincipal {
-		staticScore := p.Evaluate()
 
 		// No razoring if pawns are on 7th rank.
 		if cachedMove == Move(0) && depth < 8 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
@@ -97,28 +96,39 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 				return gain
 			}
 		}
-	}
 
-	// Null move pruning.
-	if !inCheck && !isNull && depth > 1 && p.outposts[p.color].count() > 5 {
-		position := p.makeNullMove()
-		game.nodes++
-		nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)
-		position.undoNullMove()
+		// Null move pruning.
+		if !isNull && depth > 1 && p.outposts[p.color].count() > 5 {
+			position := p.makeNullMove()
+			game.nodes++
+			nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)
+			position.undoNullMove()
 
-		if nullScore >= beta {
-			if abs(nullScore) >= Checkmate - MaxPly {
-				return beta
+			if nullScore >= beta {
+				if abs(nullScore) >= Checkmate - MaxPly {
+					return beta
+				}
+				return nullScore
 			}
-			return nullScore
 		}
 	}
 
 	// Internal iterative deepening.
-	if cachedMove == 0 && depth > 4 {
-		p.searchTree(alpha, beta, depth - 4)
-		if len(game.pv[ply]) > 0 {
-			cachedMove = game.pv[ply][0]
+	// if cachedMove == 0 && depth > 4 {
+	// 	p.searchTree(alpha, beta, depth - 4)
+	// 	if len(game.pv[ply]) > 0 {
+	// 		cachedMove = game.pv[ply][0]
+	// 	}
+	// }
+
+	if !inCheck && cachedMove == Move(0) && depth > 4 {
+		newDepth := depth / 2
+		if isPrincipal {
+			newDepth = depth - 2
+		}
+		p.searchTree(alpha, beta, newDepth)
+		if cached := p.probeCache(); cached != nil {
+			cachedMove = cached.move
 		}
 	}
 
@@ -173,7 +183,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 				score = -position.searchTree(-alpha - 1, -alpha, newDepth + 1)
 			}
 		} else {
-			if newDepth < 2 {
+			if newDepth < 1 {
 				score = -position.searchQuiescence(-alpha - 1, -alpha, 0)
 			} else {
 				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
@@ -218,7 +228,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	score = alpha
-	p.cache(bestMove, score, depth, cacheFlags)
+	p.cache(bestMove, score, depth, ply, cacheFlags)
 
 	return
 }

@@ -97,7 +97,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	}
 
 	score = alpha
-	p.cache(bestMove, score, depth, cacheFlags)
+	p.cache(bestMove, score, depth, ply(), cacheFlags)
 	if engine.uci {
 		engine.uciScore(depth, score, alpha, beta)
 	}
