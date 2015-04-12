@@ -33,8 +33,8 @@ func (p *Position) targets(square int) Bitmask {
 }
 
 func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
-	switch kind, color := piece.kind(), piece.color(); kind {
-	case Pawn:
+	color := piece.color()
+	if piece.isPawn() {
 		// Start with one square push, then try the second square.
 		empty := ^p.board
 		if color == White {
@@ -51,16 +51,8 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
 		if p.enpassant != 0 && maskPawn[color][p.enpassant].on(square) {
 			bitmask |= bit[p.enpassant]
 		}
-	case Knight:
-		bitmask = knightMoves[square] & ^p.outposts[color]
-	case Bishop:
-		bitmask = p.bishopMoves(square) & ^p.outposts[color]
-	case Rook:
-		bitmask = p.rookMoves(square) & ^p.outposts[color]
-	case Queen:
-		bitmask = (p.bishopMoves(square) | p.rookMoves(square)) & ^p.outposts[color]
-	case King:
-		bitmask = kingMoves[square] & ^p.outposts[color]
+	} else {
+		bitmask = p.attacksFor(square, piece) & ^p.outposts[color]
 	}
 	return
 }
@@ -124,14 +116,13 @@ func (p *Position) allAttacks(color uint8) (bitmask Bitmask) {
 // This method is used in static exchange evaluation so instead of using current
 // board bitmask (p.board) we pass the one that gets continuously updated during
 // the evaluation.
-func (p *Position) attackers(color uint8, square int, board Bitmask) Bitmask {
-	attackers := knightMoves[square] & p.outposts[knight(color)]
+func (p *Position) attackers(color uint8, square int, board Bitmask) (attackers Bitmask) {
+	attackers  = knightMoves[square] & p.outposts[knight(color)]
 	attackers |= maskPawn[color][square] & p.outposts[pawn(color)]
 	attackers |= kingMoves[square] & p.outposts[king(color)]
 	attackers |= p.rookMovesAt(square, board) & (p.outposts[rook(color)] | p.outposts[queen(color)])
 	attackers |= p.bishopMovesAt(square, board) & (p.outposts[bishop(color)] | p.outposts[queen(color)])
-
-	return attackers
+	return
 }
 
 func (p *Position) isAttacked(color uint8, square int) bool {
