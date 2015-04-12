@@ -120,7 +120,7 @@ func (game *Game) Think() Move {
 	if engine.uci {
 		engine.debug(position.String())
 	} else {
-		fmt.Println(`Depth   Time      Nodes     QNodes   Nodes/s   Score   Best`)
+		fmt.Println(`Depth   Time     Nodes    QNodes   Nodes/s     Score   Best`)
 	}
 
 	if !engine.fixedDepth() {

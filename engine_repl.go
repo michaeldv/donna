@@ -31,7 +31,7 @@ func (e *Engine) replBestMove(move Move) *Engine {
 }
 
 func (e *Engine) replPrincipal(depth, score, status int, duration int64) {
-	fmt.Printf(`%2d %s %10d %10d %9d   `, depth, ms(duration), game.nodes, game.qnodes, nps(duration))
+	fmt.Printf(`%2d %s %9d %9d %9d   `, depth, ms(duration), game.nodes, game.qnodes, nps(duration))
 	switch status {
 	case WhiteWon:
 		fmt.Println(`1-0 White Checkmates`)
@@ -44,9 +44,9 @@ func (e *Engine) replPrincipal(depth, score, status int, duration int64) {
 	case FiftyMoves:
 		fmt.Println(`1/2 Fifty Moves`)
 	case WhiteWinning, BlackWinning: // Show moves till checkmate.
-		fmt.Printf("%4dX   %v Checkmate\n", (Checkmate - abs(score)) / 2, game.rootpv)
+		fmt.Printf("%6dX   %v Checkmate\n", (Checkmate - abs(score)) / 2, game.rootpv)
 	default:
-		fmt.Printf("%5.2f   %v\n", float32(score) / float32(onePawn), game.rootpv)
+		fmt.Printf("%7.2f   %v\n", float32(score) / float32(onePawn), game.rootpv)
 	}
 }
 
