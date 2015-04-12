@@ -199,7 +199,9 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			alpha = score
 			bestMove = move
 			cacheFlags = cacheExact
-			game.saveBest(ply, move)
+			if isPrincipal {
+				game.saveBest(ply, move)
+			}
 
 			if alpha >= beta {
 				cacheFlags = cacheBeta
