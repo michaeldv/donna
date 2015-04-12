@@ -5,11 +5,7 @@
 package donna
 
 // Quiescence search.
-func (p *Position) searchQuiescence(alpha, beta, depth int) int {
-	return p.searchQuiescenceWithFlag(alpha, beta, depth, 0)
-}
-
-func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth, iteration int) (score int) {
+func (p *Position) searchQuiescence(alpha, beta, depth, iteration int) (score int) {
 	ply := ply()
 
 	// Reset principal variation.
@@ -78,7 +74,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth, iteration int) (
 
 		position := p.makeMove(move)
 		moveCount++
-		score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, iteration+1)
+		score = -position.searchQuiescence(-beta, -alpha, depth, iteration+1)
 		position.undoLastMove()
 
 		if score > alpha {
@@ -109,7 +105,7 @@ func (p *Position) searchQuiescenceWithFlag(alpha, beta, depth, iteration int) (
 
 			position := p.makeMove(move)
 			moveCount++
-			score = -position.searchQuiescenceWithFlag(-beta, -alpha, depth, iteration+1)
+			score = -position.searchQuiescence(-beta, -alpha, depth, iteration+1)
 			position.undoLastMove()
 
 			if score > alpha {
