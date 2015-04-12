@@ -47,7 +47,8 @@ func (e *Evaluation) twoBishopsVsBareKing() int { // STUB.
 func (e *Evaluation) kingAndPawnVsBareKing() int {
 	var color, wKing, bKing, wPawn int
 
-	if e.strongerSide() == White {
+	stronger := e.strongerSide()
+	if stronger == White {
 		color = int(e.position.color)
 		wKing = int(e.position.king[White])
 		bKing = int(e.position.king[Black])
@@ -64,7 +65,7 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 		return 0
 	}
 
-	if color == Black {
+	if stronger == Black {
 		return BlackWinning
 	}
 	return WhiteWinning

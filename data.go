@@ -17,7 +17,7 @@ import `regexp`
 //
 //                                      -― FORTRAN manual for Xerox Computers
 
-const Version = `1.0b` // 1.0 released on Dec 14, 2014
+const Version = `1.0d` // 1.0 released on Dec 14, 2014
 
 // Limits and conventions.
 const (
@@ -38,8 +38,8 @@ const (
 	Insufficient	// Draw by insufficient material.
 	Repetition  	// Draw by repetition.
 	FiftyMoves  	// Draw by 50 moves rule.
-	WhiteWinning =  Checkmate / 3 // Decisive advantage for White.
-	BlackWinning = -Checkmate / 3 // Decisive advantage for Black.
+	WhiteWinning =  Checkmate / 10 	   // Decisive advantage for White.
+	BlackWinning = -Checkmate / 10 + 1 // Decisive advantage for Black.
 )
 
 // Square indices.

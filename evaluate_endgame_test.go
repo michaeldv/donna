@@ -108,7 +108,7 @@ func TestEndgame220(t *testing.T) {
 func TestEndgame221(t *testing.T) {
 	game := NewGame(`Kf6,e6`, `M,Kf8`)
 	black := game.start()
-	expect.Eq(t, black.Evaluate(), WhiteWinning)
+	expect.Eq(t, black.Evaluate(), -WhiteWinning)
 }
 
 func TestEndgame222(t *testing.T) {
@@ -144,7 +144,7 @@ func TestEndgame232(t *testing.T) {
 func TestEndgame233(t *testing.T) {
 	game := NewGame(`Ke1`, `M,Kd3,e3`)
 	black := game.start()
-	expect.Eq(t, black.Evaluate(), BlackWinning)
+	expect.Eq(t, black.Evaluate(), -BlackWinning)
 }
 
 func TestEndgame240(t *testing.T) {
@@ -156,7 +156,7 @@ func TestEndgame240(t *testing.T) {
 func TestEndgame241(t *testing.T) {
 	game := NewGame(`Ke6,e4`, `M,Ke8`)
 	black := game.start()
-	expect.Eq(t, black.Evaluate(), WhiteWinning)
+	expect.Eq(t, black.Evaluate(), -WhiteWinning)
 }
 
 func TestEndgame242(t *testing.T) {
@@ -168,7 +168,7 @@ func TestEndgame242(t *testing.T) {
 func TestEndgame243(t *testing.T) {
 	game := NewGame(`Kd1`, `M,Kd3,d5`)
 	black := game.start()
-	expect.Eq(t, black.Evaluate(), BlackWinning)
+	expect.Eq(t, black.Evaluate(), -BlackWinning)
 }
 
 func TestEndgame250(t *testing.T) {
@@ -204,7 +204,7 @@ func TestEndgame260(t *testing.T) {
 func TestEndgame261(t *testing.T) {
 	game := NewGame(`Ka1,g4`, `M,Ka4`)
 	black := game.start()
-	expect.Eq(t, black.Evaluate(), WhiteWinning)
+	expect.Eq(t, black.Evaluate(), -WhiteWinning)
 }
 
 func TestEndgame262(t *testing.T) {
@@ -216,5 +216,5 @@ func TestEndgame262(t *testing.T) {
 func TestEndgame263(t *testing.T) {
 	game := NewGame(`Kh5`, `M,Kh8,b5`)
 	black := game.start()
-	expect.Eq(t, black.Evaluate(), BlackWinning)
+	expect.Eq(t, black.Evaluate(), -BlackWinning)
 }
