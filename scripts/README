@@ -7,3 +7,6 @@ rate.sh
 mfl.epd
   Most frequest lines opening book for fast engine testing as described at
   https://sites.google.com/site/chessbazaar/2007-01-2008-fast-engine-testing-the-mlmfl-test
+
+nebula.epd
+  Nebula 100 long opening book from https://sites.google.com/site/nebulachess/testsets
