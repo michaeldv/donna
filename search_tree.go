@@ -55,7 +55,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 	// Quiescence search.
 	if !inCheck && depth < 1 {
-		return p.searchQuiescence(alpha, beta, depth, 0)
+		return p.searchQuiescence(alpha, beta, 0, inCheck)
 	}
 
 	if staticScore == UnknownScore {
@@ -73,11 +73,11 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 		   	// Special case for razoring at low depths.
 			if depth <= 2 && staticScore <= alpha - razoringMargin(5) {
-				return p.searchQuiescence(alpha, beta, 0, 0)
+				return p.searchQuiescence(alpha, beta, 0, inCheck)
 			}
 			
 			margin := alpha - razoringMargin(depth)
-			if score := p.searchQuiescence(alpha, beta + 1, 0, 0); score <= margin {
+			if score := p.searchQuiescence(alpha, beta + 1, 0, inCheck); score <= margin {
 				return score
 			}
 		}
@@ -177,7 +177,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			}
 		} else {
 			if newDepth < 1 {
-				score = -position.searchQuiescence(-alpha - 1, -alpha, 0, 0)
+				score = -position.searchQuiescence(-alpha - 1, -alpha, 0, giveCheck)
 			} else {
 				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 			}
@@ -199,9 +199,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			alpha = score
 			bestMove = move
 			cacheFlags = cacheExact
-			if isPrincipal {
-				game.saveBest(ply, move)
-			}
+			game.saveBest(ply, move)
 
 			if alpha >= beta {
 				cacheFlags = cacheBeta

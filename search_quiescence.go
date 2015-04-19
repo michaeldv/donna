@@ -5,7 +5,7 @@
 package donna
 
 // Quiescence search.
-func (p *Position) searchQuiescence(alpha, beta, depth, iteration int) (score int) {
+func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (score int) {
 	ply := ply()
 
 	// Reset principal variation.
@@ -21,7 +21,16 @@ func (p *Position) searchQuiescence(alpha, beta, depth, iteration int) (score in
 		return 0
 	}
 
+	// If you pick up a starving dog and make him prosperous, he will not
+	// bite you. This is the principal difference between a dog and a man.
+        // ―- Mark Twain
 	isPrincipal := (beta - alpha > 1)
+
+	// Use fixed depth for caching.
+	depth := 0
+	if !inCheck && iteration > 0 {
+		depth--
+	}
 
 	// Probe cache.
 	staticScore := alpha
@@ -36,11 +45,10 @@ func (p *Position) searchQuiescence(alpha, beta, depth, iteration int) (score in
 		}
 	}
 
-	inCheck := p.isInCheck(p.color)
 	if !inCheck {
 		staticScore = p.Evaluate()
 		if staticScore >= beta {
-			p.cache(Move(0), staticScore, 0, ply, cacheBeta)
+			p.cache(Move(0), staticScore, depth, ply, cacheBeta)
 			return staticScore
 		}
 		if isPrincipal {
@@ -58,31 +66,27 @@ func (p *Position) searchQuiescence(alpha, beta, depth, iteration int) (score in
 	gen.quickRank()
 
 	cacheFlags := cacheAlpha
-	moveCount, bestMove, king := 0, Move(0), int(p.king[p.color^1])
+	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if !inCheck && !move.piece().isKing() {
-			// Prune useless captures that are not checks.
-			useless := !isPrincipal && !move.isPromo() && staticScore + pieceValue[move.capture()] + 72 < alpha
-			if p.targetsFor(move.to(), move.piece()).off(king) && (useless || p.exchange(move) < 0) {
-				continue
-			}
-		}
-
-		if !gen.isValid(move) {
+		if (!inCheck && p.exchange(move) < 0) || !gen.isValid(move) {
 			continue
 		}
 
 		position := p.makeMove(move)
 		moveCount++
-		score = -position.searchQuiescence(-beta, -alpha, depth, iteration+1)
+		giveCheck := position.isInCheck(position.color)
+
+		// Prune useless captures -- but make sure it's not a capture move that checks.
+		if !inCheck && !giveCheck && !isPrincipal && !move.isPromo() && staticScore + pieceValue[move.capture()] + 72 < alpha {
+			position.undoLastMove()
+			continue
+		}
+		score = -position.searchQuiescence(-beta, -alpha, iteration + 1, giveCheck)
 		position.undoLastMove()
 
 		if score > alpha {
 			alpha = score
 			bestMove = move
-			// if isPrincipal {
-			// 	game.saveBest(ply, bestMove)
-			// }
 			if alpha >= beta {
 				p.cache(bestMove, score, depth, ply, cacheBeta)
 				game.qnodes += moveCount
@@ -105,15 +109,12 @@ func (p *Position) searchQuiescence(alpha, beta, depth, iteration int) (score in
 
 			position := p.makeMove(move)
 			moveCount++
-			score = -position.searchQuiescence(-beta, -alpha, depth, iteration+1)
+			score = -position.searchQuiescence(-beta, -alpha, iteration + 1, position.isInCheck(position.color))
 			position.undoLastMove()
 
 			if score > alpha {
 				alpha = score
 				bestMove = move
-				// if isPrincipal {
-				// 	game.saveBest(ply, bestMove)
-				// }
 				if alpha >= beta {
 					p.cache(bestMove, score, depth, ply, cacheBeta)
 					game.qnodes += moveCount
