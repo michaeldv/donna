@@ -234,7 +234,7 @@ func (e *Engine) fixedLimit(options Options) *Engine {
 func (e *Engine) varyingLimits(options Options) *Engine {
 
 	// Note if it's a new time control before saving the options.
-	timeControl := options.movesToGo > e.options.movesToGo
+	timeControl := (options.movesToGo > e.options.movesToGo) || (options.movesToGo == 0)
 	e.options = options
 	e.options.ponder = false
 	e.options.infinite = false
