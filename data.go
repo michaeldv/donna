@@ -17,7 +17,7 @@ import `regexp`
 //
 //                                      -― FORTRAN manual for Xerox Computers
 
-const Version = `1.0d` // 1.0 released on Dec 14, 2014
+const Version = `1.0c` // 1.0 released on Dec 14, 2014
 
 // Limits and conventions.
 const (
