@@ -117,9 +117,7 @@ func (game *Game) Think() Move {
 	game.getReady()
 	score, move, status, alpha, beta := 0, Move(0), InProgress, -Checkmate, Checkmate
 
-	if engine.uci {
-		engine.debug(position.String())
-	} else {
+	if !engine.uci {
 		fmt.Println(`Depth   Time     Nodes    QNodes   Nodes/s     Score   Best`)
 	}
 
@@ -199,25 +197,25 @@ func (game *Game) keepThinking(depth int, move Move) bool {
 	if engine.fixedDepth() {
 		return depth <= engine.options.maxDepth
 	} else if engine.clock.halt {
-		engine.debug("# Depth %02d Early out with %s\n", depth, move)
+		//\\ engine.debug("# Depth %02d Early out with %s\n", depth, move)
 		return false
 	}
 
 	// Stop deepening if it's the only move.
 	gen := NewRootGen(nil, depth)
 	if gen.onlyMove() {
-		engine.debug("# Depth %02d Only move %s\n", depth, move)
+		//\\ engine.debug("# Depth %02d Only move %s\n", depth, move)
 		return false
 	}
 
 	// Stop if the move seems to be obvious and we've searched deep enough.
 	if gen.obvious != Move(0) {
 		if move == gen.obvious {
-			engine.debug("# Depth %02d Kinda obvious %s\n", depth, move)
+			//\\ engine.debug("# Depth %02d Kinda obvious %s\n", depth, move)
 			return depth < 9
 		}
 		// The move is no longer obvious.
-		engine.debug("# Depth %02d No longer obvious %s\n", depth, move)
+		//\\ engine.debug("# Depth %02d No longer obvious %s\n", depth, move)
 		gen.obvious = Move(0)
 	}
 
@@ -226,9 +224,9 @@ func (game *Game) keepThinking(depth int, move Move) bool {
 		elapsed := engine.elapsed(time.Now())
 		remaining := engine.factor(depth, game.volatility).remaining()
 
-		engine.debug("# Depth %02d Volatility %.2f Elapsed %s Remaining %s\n", depth, game.volatility, ms(elapsed), ms(remaining))
+		//\\ engine.debug("# Depth %02d Volatility %.2f Elapsed %s Remaining %s\n", depth, game.volatility, ms(elapsed), ms(remaining))
 		if elapsed > remaining {
-			engine.debug("# Depth %02d Bailing out with %s\n", depth, move)
+			//\\ engine.debug("# Depth %02d Bailing out with %s\n", depth, move)
 			return false
 		}
 	}

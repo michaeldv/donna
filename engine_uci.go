@@ -223,7 +223,7 @@ func (e *Engine) Uci() *Engine {
 	for {
 		command, err := bio.ReadString('\n')
 		if err != io.EOF && len(command) > 0 {
-			e.debug("> " + command)
+			//\\ e.debug("> " + command)
 			args := strings.Split(strings.Trim(command, " \t\r\n"), ` `)
 			if args[0] == `quit` {
 				break

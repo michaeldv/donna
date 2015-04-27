@@ -105,10 +105,10 @@ func (e *Engine) reply(args ...interface{}) *Engine {
 	if len := len(args); len > 1 {
 		data := fmt.Sprintf(args[0].(string), args[1:]...)
 		e.print(data)
-		e.debug(data)
+		//\\ e.debug(data)
 	} else if len == 1 {
 		e.print(args[0].(string))
-		e.debug(args[0].(string))
+		//\\ e.debug(args[0].(string))
 	}
 	return e
 }
@@ -211,8 +211,8 @@ func (e *Engine) varyingTimeTicker() *Engine {
 			}
 			elapsed := e.elapsed(now)
 			if (game.deepening && game.improving && elapsed > e.remaining() * 4 / 5) || elapsed > e.clock.hardStop {
-				// e.debug("# Halt: Flags %v Elapsed %s Remaining %s Hard stop %s\n",
-				//	game.deepening && game.improving, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop))
+				//\\ e.debug("# Halt: Flags %v Elapsed %s Remaining %s Hard stop %s\n",
+				//\\	game.deepening && game.improving, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop))
 				e.clock.halt = true
 				return
 			}
@@ -250,25 +250,20 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 	hard := options.timeLeft + options.timeInc * moves
 	soft := hard / e.options.movesToGo
 
-	e.debug("#\n# Make %d moves in %s soft stop %s hard stop %s\n", e.options.movesToGo, ms(e.options.timeLeft), ms(soft), ms(hard))
+	//\\ e.debug("#\n# Make %d moves in %s soft stop %s hard stop %s\n", e.options.movesToGo, ms(e.options.timeLeft), ms(soft), ms(hard))
 
-	// Adjust hard stop to leave enough time reserve for the remaining moves.
-	// The time reserve is calculated as follows:
-	//
-	//    1 move left: 100% of soft stop
-	//	...
-	//    20+ moves left: 80% of soft stop * 20
-	//
+	// Adjust hard stop to leave enough time reserve for the remaining moves. The time
+	// reserve starts at 100% of soft stop for one remaining move, and goes down to 80%
+	// in 1% decrement for 20+ remaining moves.
 	if moves > 0 { // The last move gets all remaining time and doesn't need the reserve.
 		percent := max64(80, 100 - moves)
 		reserve := soft * moves * percent / 100
-		e.debug("# Reserve %d%% = %s\n", percent, ms(reserve))
-		if (hard - reserve > soft) {
-			hard -= reserve
+		//\\ e.debug("# Reserve %d%% = %s\n", percent, ms(reserve))
+		if adjusted := hard - reserve; adjusted > soft {
+			// Hard stop can't exceed optimal time for 3 moves.
+			hard = min64(soft * 3, adjusted)
+			//\\ e.debug("# Adjusted hard stop %s\n", ms(hard))
 		}
-		// Hard stop can't exceed optimal time for 3 moves.
-		hard = min64(soft * 3, hard)
-		e.debug("# Hard stop %s\n", ms(hard))
 	}
 
 	// Set the final values for soft and hard stops making sure the soft stop
@@ -285,7 +280,7 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 		e.clock.hardStop = options.timeLeft // Oh well...
 	}
 
-	e.debug("# Final soft stop %s Hard stop %s\n#\n", ms(e.clock.softStop), ms(e.clock.hardStop))
+	//\\ e.debug("# Final soft stop %s hard stop %s\n#\n", ms(e.clock.softStop), ms(e.clock.hardStop))
 
 	return e
 }

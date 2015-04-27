@@ -65,7 +65,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 			if moveCount > 1 {
 				game.volatility++
-				engine.debug("# New move %s Depth %d Volatility %.2f\n", move, depth, game.volatility)
+				//\\ engine.debug("# New move %s depth %d volatility %.2f\n", move, depth, game.volatility)
 			}
 
 			alpha = max(score, alpha)
