@@ -62,13 +62,14 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 			} else {
 				entry.score = int16(score)
 			}
-			if move != Move(0) || uint32(p.hash >> 32) != entry.id {
+			id := uint32(p.hash >> 32)
+			if move != Move(0) || id != entry.id {
 				entry.move = move
 			}
 			entry.depth = int16(depth)
 			entry.flags = flags
 			entry.token = game.token
-			entry.id = uint32(p.hash >> 32)
+			entry.id = id
 		}
 	}
 
