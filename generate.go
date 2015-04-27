@@ -20,7 +20,6 @@ type MoveGen struct {
 	head     int
 	tail     int
 	pins     Bitmask
-	obvious  Move
 }
 
 // Pre-allocate move generator array (one entry per ply) to avoid garbage
@@ -38,7 +37,6 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen.ply = ply
 	gen.head, gen.tail = 0, 0
 	gen.pins = p.pinnedMask(p.king[p.color])
-	gen.obvious = Move(0)
 
 	return gen
 }
