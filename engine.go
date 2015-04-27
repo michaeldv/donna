@@ -10,7 +10,6 @@ const Ping = 125 // Check time 8 times a second.
 
 type Clock struct {
 	halt        bool     // Stop search immediately when set to true.
-	optimal     int64    // Minimum time slot for the move.
 	softStop    int64    // Target soft time limit to make a move.
 	hardStop    int64    // Immediate stop time limit.
 	extra       float32  // Extra time factor based on search volatility.
@@ -141,10 +140,9 @@ func (e *Engine) remaining() int64 {
 // Sets extra time factor. For depths 5+ we take into account search volatility,
 // i.e. extra time is given for uncertain positions where the best move is not clear.
 func (e *Engine) factor(depth int, volatility float32) *Engine {
-	if depth < 5 {
-		e.clock.extra = 0.75
-	} else {
-		e.clock.extra = 0.75 * (volatility + 1.0)
+	e.clock.extra = 0.75
+	if depth >= 5 {
+		e.clock.extra *= (volatility + 1.0)
 	}
 
 	return e
@@ -213,8 +211,8 @@ func (e *Engine) varyingTimeTicker() *Engine {
 			}
 			elapsed := e.elapsed(now)
 			if (game.deepening && game.improving && elapsed > e.remaining() * 4 / 5) || elapsed > e.clock.hardStop {
-				e.debug("# Halt: Flags %v Elapsed %s Remaining %s Hard stop %s\n",
-					game.deepening && game.improving, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop))
+				// e.debug("# Halt: Flags %v Elapsed %s Remaining %s Hard stop %s\n",
+				//	game.deepening && game.improving, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop))
 				e.clock.halt = true
 				return
 			}
@@ -234,7 +232,6 @@ func (e *Engine) fixedLimit(options Options) *Engine {
 func (e *Engine) varyingLimits(options Options) *Engine {
 
 	// Note if it's a new time control before saving the options.
-	timeControl := (options.movesToGo > e.options.movesToGo) || (options.movesToGo == 0)
 	e.options = options
 	e.options.ponder = false
 	e.options.infinite = false
@@ -253,31 +250,25 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 	hard := options.timeLeft + options.timeInc * moves
 	soft := hard / e.options.movesToGo
 
-	// Save initial value of soft stop if it's new time control.
-	if timeControl {
-		e.clock.optimal = soft
-	}
-	e.debug("#\n# Make %d moves in %s Optimal %s\n", e.options.movesToGo, ms(e.options.timeLeft), ms(e.clock.optimal))
-	e.debug("# First soft stop %s Hard stop %s\n", ms(soft), ms(hard))
+	e.debug("#\n# Make %d moves in %s soft stop %s hard stop %s\n", e.options.movesToGo, ms(e.options.timeLeft), ms(soft), ms(hard))
 
 	// Adjust hard stop to leave enough time reserve for the remaining moves.
 	// The time reserve is calculated as follows:
 	//
-	//    1 move left: 100% of optimal
-	//    2 moves left: 96% of optimal * 2
-	//    3 moves left: 92% of optimal * 3
-	//    4 moves left: 88% of optimal * 4
-	//    ...
-	//    10+ moves left: 64% of optimal * number of moves.
+	//    1 move left: 100% of soft stop
+	//	...
+	//    20+ moves left: 80% of soft stop * 20
 	//
 	if moves > 0 { // The last move gets all remaining time and doesn't need the reserve.
-		percent := max64(64, 100 - 4 * moves)
-		hard = hard - e.clock.optimal * moves * percent / 100
-		e.debug("# Reserve %d%% Hard stop %s\n", percent, ms(hard))
-		if hard < e.clock.optimal {
-			hard = min64(e.clock.optimal, options.timeLeft / e.options.movesToGo)
-			e.debug("# Optimal adjusted hard stop %s\n", ms(hard))
+		percent := max64(80, 100 - moves)
+		reserve := soft * moves * percent / 100
+		e.debug("# Reserve %d%% = %s\n", percent, ms(reserve))
+		if (hard - reserve > soft) {
+			hard -= reserve
 		}
+		// Hard stop can't exceed optimal time for 3 moves.
+		hard = min64(soft * 3, hard)
+		e.debug("# Hard stop %s\n", ms(hard))
 	}
 
 	// Set the final values for soft and hard stops making sure the soft stop
