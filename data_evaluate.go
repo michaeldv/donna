@@ -16,15 +16,15 @@ var (
 	bishopPawn     = Score{  4,  6 }  // Penalty for each pawn on the same colored square as a bishop.
 	bishopBoxed    = Score{ 73,  0 }  // Penalty for patterns like Bc1,d2,Nd3.
 	bishopDanger   = Score{ 35,  0 }  // Bonus when king is under attack and sides have opposite-colored bishops.
-	rookOnPawn     = Score{  5, 14 }  // Bonus for rook attacking a pawn.
+	rookOnPawn     = Score{  6, 14 }  // Bonus for rook attacking a pawn.
 	rookOnOpen     = Score{ 22, 10 }  // Bonus for rook on open file.
-	rookOnSemiOpen = Score{  9,  5 }  // Bonus for rook on semi-open file.
+	rookOnSemiOpen = Score{ 10,  5 }  // Bonus for rook on semi-open file.
 	rookOn7th      = Score{  5, 10 }  // Bonus for rook on 7th file.
 	rookBoxed      = Score{ 45,  0 }  // Penalty for rook boxed by king.
 	queenOnPawn    = Score{  2, 10 }  // Bonus for queen attacking a pawn.
 	queenOn7th     = Score{  1,  4 }  // Bonus for queen on 7th rank.
 	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
-	hangingAttack  = Score{ 10, 12 }  // Bonus for attacking enemy pieces that are hanging.
+	hangingAttack  = Score{  8, 12 }  // Bonus for attacking enemy pieces that are hanging.
 	kingByPawn     = Score{  0,  8 }  // Penalty king being too far from friendly pawns.
 	coverMissing   = Score{ 50,  0 }  // Penalty for missing cover pawn.
 )

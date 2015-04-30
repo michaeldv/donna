@@ -97,7 +97,7 @@ func TestEvaluatePawns410(t *testing.T) {
 	game := NewGame(`Ke1,Rb1,Ng2,a2`, `Ke8,Rh8,Nb7,h7`) // White on open file.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 69)
+	expect.Eq(t, score, 68)
 }
 
 func TestEvaluatePawns420(t *testing.T) {
