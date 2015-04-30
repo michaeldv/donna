@@ -7,6 +7,7 @@ package donna
 func (e *Evaluation) analyzeSafety() {
 	var cover, safety Total
 	color := e.position.color
+	oppositeBishops := e.oppositeBishops()
 
 	// Any pawn move invalidates king's square in the pawns hash so that we
 	// could detect it here.
@@ -20,10 +21,6 @@ func (e *Evaluation) analyzeSafety() {
 			e.checkpoint(`-Cover`, cover)
 			e.checkpoint(`-Safety`, safety)
 		}()
-	}
-
-	oppositeBishops := func(margin int) bool {
-		return e.material.flags & singleBishops != 0 && margin < -onePawn / 2 && e.oppositeBishops()
 	}
 
 	// If the king has moved then recalculate king/pawn proximity and update
@@ -45,11 +42,11 @@ func (e *Evaluation) analyzeSafety() {
 
 	// Compute king's safety for both sides.
 	safety.white = e.kingSafety(White)
-	if e.material.flags & whiteKingSafety != 0 && oppositeBishops(cover.white.midgame + safety.white.midgame) {
+	if oppositeBishops && e.material.flags & whiteKingSafety != 0 && safety.white.midgame < -onePawn / 10 * 8 {
 		safety.white.midgame -= bishopDanger.midgame
 	}
 	safety.black = e.kingSafety(Black)
-	if e.material.flags & blackKingSafety != 0 && oppositeBishops(cover.black.midgame + safety.black.midgame) {
+	if oppositeBishops && e.material.flags & blackKingSafety != 0 && safety.black.midgame < -onePawn / 10 * 8 {
 		safety.black.midgame -= bishopDanger.midgame
 	}
 
@@ -138,7 +135,6 @@ func (e *Evaluation) kingSafety(color uint8) (score Score) {
 		safetyIndex = min(63, safetyIndex + threatIndex)
 
 		score.midgame -= kingSafety[safetyIndex]
-		score.endgame -= bonusKing[1][flip(color, square)]
 	}
 
 	return
