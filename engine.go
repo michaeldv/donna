@@ -259,11 +259,12 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 		percent := max64(80, 100 - moves)
 		reserve := soft * moves * percent / 100
 		//\\ e.debug("# Reserve %d%% = %s\n", percent, ms(reserve))
-		if adjusted := hard - reserve; adjusted > soft {
-			// Hard stop can't exceed optimal time for 3 moves.
-			hard = min64(soft * 3, adjusted)
-			//\\ e.debug("# Adjusted hard stop %s\n", ms(hard))
+		if hard - reserve > soft {
+			hard -= reserve
 		}
+		// Hard stop can't exceed optimal time to make 3 moves.
+		hard = min64(hard, soft * 3)
+		//\\ e.debug("# Hard stop %s\n", ms(hard))
 	}
 
 	// Set the final values for soft and hard stops making sure the soft stop
