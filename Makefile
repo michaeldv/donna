@@ -1,4 +1,4 @@
-version = 2.0rc1
+version = 2.0
 goflags = -gcflags -B
 
 build:

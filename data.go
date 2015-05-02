@@ -4,7 +4,7 @@
 
 // +gofmt f*ck off
 
-package donna
+package donna // Donna v1.0 was released on Sunday, Dec 14, 2014.
 
 import `regexp`
 
@@ -17,9 +17,8 @@ import `regexp`
 //
 //                                      -― FORTRAN manual for Xerox Computers
 
-// Donna v1.0 was released on Sunday, Dec 14, 2014.
 // Your chess engine hates you when you are working on a new version.
-const Version = `2.0rc1`
+const Version = `2.0` // May 2, 2015
 
 // Limits and conventions.
 const (
