@@ -8,24 +8,25 @@ import(
 	`fmt`
 	`io/ioutil`
 	`regexp`
+	`runtime`
 	`strconv`
 	`strings`
 	`time`
 )
 
-const (
-	escRed   = "\033[0;31m"
-	escGreen = "\033[0;32m"
-	escTeal  = "\033[0;36m"
-	escNone  = "\033[0m"
+var (
+	ansiRed   = "\033[0;31m"
+	ansiGreen = "\033[0;32m"
+	ansiTeal  = "\033[0;36m"
+	ansiNone  = "\033[0m"
 )
 
 func (e *Engine) replBestMove(move Move) *Engine {
-	fmt.Printf(escTeal + "Donna's move: %s", move)
+	fmt.Printf(ansiTeal + "Donna's move: %s", move)
 	if game.nodes == 0 {
 		fmt.Printf(" (book)")
 	}
-	fmt.Println(escNone + "\n")
+	fmt.Println(ansiNone + "\n")
 
 	return e
 }
@@ -55,6 +56,11 @@ func (e *Engine) replPrincipal(depth, score, status int, duration int64) {
 func (e *Engine) Repl() *Engine {
 	var game *Game
 	var position *Position
+
+	// Suppress ANSI colors when running Windows.
+	if runtime.GOOS == `windows` {
+		ansiRed, ansiGreen, ansiTeal, ansiNone = ``, ``, ``, ``
+	}
 
 	setup := func() {
 		if game == nil || position == nil {
@@ -94,17 +100,17 @@ func (e *Engine) Repl() *Engine {
 					position := game.start()
 
 					best := strings.Split(line, ` # `)[1] // TODO: add support for "am" (avoid move).
-					fmt.Printf(escTeal + "%d) %s for %s" + escNone + "\n%s\n", total, best, C(position.color), position)
+					fmt.Printf(ansiTeal + "%d) %s for %s" + ansiNone + "\n%s\n", total, best, C(position.color), position)
 					move := game.Think()
 
 					for _, nextBest := range strings.Split(best, ` `) {
 						if move.str() == re.ReplaceAllLiteralString(nextBest, ``) {
 							solved++
-							fmt.Printf(escGreen + "%d) Solved (%d/%d %2.1f%%)\n\n\n" + escNone, total, solved, total - solved, float32(solved) * 100.0 / float32(total))
+							fmt.Printf(ansiGreen + "%d) Solved (%d/%d %2.1f%%)\n\n\n" + ansiNone, total, solved, total - solved, float32(solved) * 100.0 / float32(total))
 							continue NextLine
 						}
 					}
-					fmt.Printf(escRed + "%d) Not solved (%d/%d %2.1f%%)\n\n\n" + escNone, total, solved, total - solved, float32(solved) * 100.0 / float32(total))
+					fmt.Printf(ansiRed + "%d) Not solved (%d/%d %2.1f%%)\n\n\n" + ansiNone, total, solved, total - solved, float32(solved) * 100.0 / float32(total))
 				}
 			}
 		} else {
