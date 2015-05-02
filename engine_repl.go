@@ -77,6 +77,14 @@ func (e *Engine) Repl() *Engine {
 		}
 	}
 
+	book := func(fileName string) {
+		if e.bookFile = fileName; e.bookFile == `` {
+			fmt.Println(`Using no opening book`)
+		} else {
+			fmt.Printf("Using opening book %s\n", fileName)
+		}
+	}
+
 	benchmark := func(fileName string) {
 		maxDepth, moveTime := e.options.maxDepth, e.options.moveTime
 		e.options.maxDepth, e.options.moveTime = 0, 10000
@@ -143,6 +151,8 @@ func (e *Engine) Repl() *Engine {
 		case ``:
 		case `bench`:
 			benchmark(parameter)
+		case `book`:
+			book(parameter)
 		case `exit`, `quit`:
 			return e
 		case `go`:
@@ -151,6 +161,7 @@ func (e *Engine) Repl() *Engine {
 		case `help`, `?`:
 			fmt.Println("The commands are:\n\n" +
 				"  bench <file>   Run benchmarks\n" +
+				"  book <file>    Use opening book\n" +
 				"  exit           Exit the program\n" +
 				"  go             Take side and make a move\n" +
 				"  help           Display this help\n" +

@@ -111,6 +111,8 @@ func (game *Game) Think() Move {
 				game.printBestMove(move, since(start))
 				return move
 			}
+		} else if !engine.uci {
+			fmt.Printf("Book error: %v\n", err)
 		}
 	}
 
