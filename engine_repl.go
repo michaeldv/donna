@@ -84,7 +84,7 @@ func (e *Engine) Repl() *Engine {
 		content, err := ioutil.ReadFile(fileName)
 		if err == nil {
 			total, solved := 0, 0
-			re := regexp.MustCompile(`[\+\?!]`)
+			re := regexp.MustCompile(`[\s\+\?!]`)
 
 			NextLine:
 			for _, line := range strings.Split(string(content), "\n") {
