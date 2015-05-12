@@ -115,9 +115,9 @@ func (p *Position) setupSide(str string, color uint8) *Position {
 			case 'E':
 				p.enpassant = uint8(square)
 			case 'C':
-				if (square == C1 + int(color)) || (square == B8 + int(color)) {
+				if (square == C1 + int(color)) || (square == C8 + int(color)) {
 					p.castles |= castleQueenside[color]
-				} else if (square == G1 + int(color)) || (square == F8 + int(color)) {
+				} else if (square == G1 + int(color)) || (square == G8 + int(color)) {
 					p.castles |= castleKingside[color]
 				}
 			default:
