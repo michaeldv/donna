@@ -1,0 +1,14 @@
+May 11, 2015: Version v2.1
+  - Fixed cache allocation to reuse existing cache (if any) when starting new game.
+  - Added UCI Hash option to be able to specify hash size (32Mb to 1Gb, default 256Mb).
+  
+May 2, 2015: Version v2.0
+  - Refactored quiescence search.
+  - Revamped positions cache (aka transposition table) code.
+  - Doubled default cache size to 256Mb.
+  - Implemented more conservative time allocation for floating time control.
+  - Adjusted king safety evaluation for positions with opposite color bishops.
+  - Fine-tuned some evaluation parameters.
+  - Added "book" command to REPL.
+
+Dec 14, 2014: Initial v1.0 release.
