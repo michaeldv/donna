@@ -76,7 +76,7 @@ func (e *Engine) Uci() *Engine {
 		e.reply("Donna v%s Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.\n", Version)
 		e.reply("id name Donna %s\n", Version)
 		e.reply("id author Michael Dvorkin\n")
-		// e.reply("option name Hash type spin default %d min 1 max 1024\n", 64)
+		e.reply("option name Hash type spin default 256 min 32 max 1024\n")
 		// e.reply("option name Mobility type spin default %d min 0 max 100\n", weights[0].midgame)
 		// e.reply("option name PawnStructure type spin default %d min 0 max 100\n", weights[1].midgame)
 		// e.reply("option name PassedPawns type spin default %d min 0 max 100\n", weights[2].midgame)
@@ -205,6 +205,16 @@ func (e *Engine) Uci() *Engine {
 		e.clock.halt = true
 	}
 
+	// Set UCI option. So far we only support "setoption name Hash value 32..1024".
+	doSetOption := func(args []string) {
+		if len(args) == 4 && args[0] == `name` && args[1] == `Hash` && args[2] == `value` {
+			if n, err := strconv.Atoi(args[3]); err == nil && n >= 32 && n <= 1024 {
+				e.cacheSize = float64(n)
+				game, position = nil, nil // Make sure the game gets restarted.
+			}
+		}
+	}
+
 	var commands = map[string]func([]string){
 		`isready`:    doIsReady,
 		`uci`:        doUci,
@@ -212,6 +222,7 @@ func (e *Engine) Uci() *Engine {
 		`position`:   doPosition,
 		`go`:         doGo,
 		`stop`:       doStop,
+		`setoption`:  doSetOption,
 	}
 
 	// I/O, I/O,
