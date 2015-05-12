@@ -18,7 +18,7 @@ import `regexp`
 //                                      -― FORTRAN manual for Xerox Computers
 
 // Your chess engine hates you when you are working on a new version.
-const Version = `2.0` // May 2, 2015
+const Version = `2.1` // May 11, 2015
 
 // Limits and conventions.
 const (

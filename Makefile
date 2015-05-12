@@ -1,20 +1,20 @@
-version = 2.0
-goflags = -gcflags -B
+VERSION = 2.1
+GOFLAGS = -gcflags -B
 
 build:
-	go build $(goflags) ./cmd/donna.go
+	go build $(GOFLAGS) ./cmd/donna.go
 
 install:
-	go install $(goflags) ./cmd/donna.go
+	go install $(GOFLAGS) ./cmd/donna.go
 
 run:
-	go run $(goflags) ./cmd/donna.go -i
+	go run $(GOFLAGS) ./cmd/donna.go -i
 
 test:
 	go test
 
 buildall:
-	GOOS=darwin  GOARCH=amd64 go build $(goflags) -o donna-$(version)-osx-64     ./cmd/donna.go
-	GOOS=freebsd GOARCH=amd64 go build $(goflags) -o donna-$(version)-freebsd-64 ./cmd/donna.go
-	GOOS=linux   GOARCH=amd64 go build $(goflags) -o donna-$(version)-linux-64   ./cmd/donna.go
-	GOOS=windows GOARCH=amd64 go build $(goflags) -o donna-$(version)-windows-64 ./cmd/donna.go
+	GOOS=darwin  GOARCH=amd64 go build $(GOFLAGS) -o donna-$(VERSION)-osx-64     ./cmd/donna.go
+	GOOS=freebsd GOARCH=amd64 go build $(GOFLAGS) -o donna-$(VERSION)-freebsd-64 ./cmd/donna.go
+	GOOS=linux   GOARCH=amd64 go build $(GOFLAGS) -o donna-$(VERSION)-linux-64   ./cmd/donna.go
+	GOOS=windows GOARCH=amd64 go build $(GOFLAGS) -o donna-$(VERSION)-windows-64 ./cmd/donna.go
