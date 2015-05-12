@@ -41,9 +41,7 @@ var game Game
 // The second option is a bit less pricise (ex. no en-passant square) but it is
 // much more useful when writing tests from memory.
 func NewGame(args ...string) *Game {
-	game = Game{}
-	game.cache = NewCache(engine.cacheSize)
-	game.pawnCache = PawnCache{}
+	game = Game{ cache: NewCache(engine.cacheSize), pawnCache: PawnCache{} }
 
 	game.rootpv = make([]Move, 0, MaxPly)
 	for ply := 0;  ply < MaxPly; ply++ {

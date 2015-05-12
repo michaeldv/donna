@@ -34,15 +34,24 @@ func cacheUsage() (hits int) {
 	return
 }
 
+// Creates new or resets existing game cache (aka transposition table).
 func NewCache(megaBytes float64) Cache {
 	if megaBytes > 0.0 {
-		cacheSize := int(1024*1024*megaBytes) / cacheEntrySize
-		// If cache size has changed then create a new cache; otherwise
-		// simply clear the existing one.
-		if cacheSize != len(game.cache) {
-			return make(Cache, cacheSize)
+		cacheSize := int(1024 * 1024 * megaBytes) / cacheEntrySize
+		// Cache size has changed.
+		if existing := len(game.cache); cacheSize != existing {
+			if existing == 0 {
+				// Create brand new zero-initialized cache.
+				return make(Cache, cacheSize)
+			} else {
+				// Reallocate existing cache (shrink or expand).
+				game.cache = append([]CacheEntry{}, game.cache[:cacheSize]...)
+			}
 		}
-		game.cache = Cache{}
+		// Cache size hasn't changed: clear out existing cache.
+		for i := 0; i < len(game.cache); i++ {
+			game.cache[i] = CacheEntry{}
+		}
 		return game.cache
 	}
 	return nil
