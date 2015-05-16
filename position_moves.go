@@ -264,7 +264,7 @@ func (p *Position) isValid(move Move, pins Bitmask) bool {
 	// King's move is valid when a) the move is a castle or b) the destination
 	// square is not being attacked by the opponent.
 	if piece.isKing() {
-		return (move & isCastle != 0) || !p.isAttacked(color^1, to)
+		return move.isCastle() || !p.isAttacked(color^1, to)
 	}
 
 	// For all other peices the move is valid when it doesn't cause a

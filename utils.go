@@ -54,10 +54,9 @@ func same(square int) Bitmask {
 }
 
 // Returns true if the square resides between two other squares on the same line
-// or diagonal, including the edge squares. For example, between(A1, H8, C3) is
-// true.
-func between(from, to, between int) bool {
-	return (maskStraight[from][to] | maskDiagonal[from][to]).on(between)
+// or diagonal, including edge squares. For example, between(A1, H8, C3) is true.
+func between(from, to, square int) bool {
+	return (maskStraight[from][to] | maskDiagonal[from][to]).on(square)
 }
 
 // Returns distance between current and root node.
