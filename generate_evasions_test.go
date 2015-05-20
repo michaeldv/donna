@@ -116,7 +116,7 @@ func TestGenEvasions385(t *testing.T) {
 
 // Check evasions (en-passant pawn capture).
 func TestGenEvasions386(t *testing.T) {
-	game := NewGame(`Kf7,Qa2`, `M,Kf7,b2`)
+	game := NewGame(`Kf1,Qa2`, `M,Kf7,b2`)
 	black := NewMoveGen(game.start()).generateEvasions()
 	expect.NotContain(t, black.allMoves(), `b2-a1`)
 }
