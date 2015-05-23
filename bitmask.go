@@ -58,22 +58,18 @@ func (b Bitmask) first() int {
 // MSB: Eugene Nalimov's bitScanReverse.
 func (b Bitmask) last() int {
 	offset := 0
+
 	if b > 0xFFFFFFFF {
-		b >>= 32
-		offset = 32
+		b >>= 32; offset = 32
 	}
-
 	if b > 0xFFFF {
-		b >>= 16
-		offset += 16
+		b >>= 16; offset += 16
 	}
-
 	if b > 0xFF {
-		b >>= 8
-		offset += 8
+		b >>= 8; offset += 8
 	}
 
-       return offset + msbLookup[b]
+	return offset + msbLookup[b]
 }
 
 func (b Bitmask) closest(color uint8) int {

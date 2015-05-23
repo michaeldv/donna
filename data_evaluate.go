@@ -207,7 +207,7 @@ var bonusPassedPawn = [8]Score{
 	{0, 0}, {0, 3}, {0, 7}, {17, 17}, {51, 35}, {102, 59}, {170, 91}, {0, 0},
 }
 
-var bonusSemiPassedPawn = []Score{
+var bonusSemiPassedPawn = [8]Score{
 	{0, 0}, {3, 6}, {3, 6}, {7, 14}, {17, 34}, {41, 83}, {0, 0}, {0, 0},
 }
 
