@@ -134,7 +134,7 @@ func initMasks() {
 			}
 		}
 
-		// Vertical sqs in front of a pawn.
+		// Vertical squares in front of a pawn.
 		maskInFront[White][sq] = (maskBlock[sq][A8+col] | bit[A8+col]) & ^bit[sq]
 		maskInFront[Black][sq] = (maskBlock[A1+col][sq] | bit[A1+col]) & ^bit[sq]
 
@@ -415,32 +415,32 @@ func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	row, col := coordinate(sq)
 
 	// North.
-	for c, r := col, row + 1; r <= 7; r++ {
-		b := bit[square(r, c)]
+	for r := row + 1; r <= 7; r++ {
+		b := bit[square(r, col)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
 		}
 	}
 	// East.
-	for c, r := col + 1, row; c <= 7; c++ {
-		b := bit[square(r, c)]
+	for c := col + 1; c <= 7; c++ {
+		b := bit[square(row, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
 		}
 	}
 	// South.
-	for c, r := col, row - 1; r >= 0; r-- {
-		b := bit[square(r, c)]
+	for r := row - 1; r >= 0; r-- {
+		b := bit[square(r, col)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
 		}
 	}
 	// West
-	for c, r := col - 1, row; c >= 0; c-- {
-		b := bit[square(r, c)]
+	for c := col - 1; c >= 0; c-- {
+		b := bit[square(row, c)]
 		bitmask |= b
 		if mask & b != 0 {
 			break
