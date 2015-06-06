@@ -45,11 +45,6 @@ func pawn(color uint8) Piece {
 	return Piece(color | Pawn)
 }
 
-// Returns score points for a piece at given square.
-func (p Piece) score(square int) Score {
-	return pst[p][square]
-}
-
 func (p Piece) polyglot(square int) uint64 {
 	return polyglotRandom[polyglotBase[p] + square]
 }
