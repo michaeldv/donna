@@ -4,8 +4,6 @@
 
 package donna
 
-import ()
-
 var exchangeScores = []int{
 	0, 0, 						// Zero score for non-capture moves.
 	valuePawn.midgame, valuePawn.midgame, 		// Pawn/BlackPawn captures.

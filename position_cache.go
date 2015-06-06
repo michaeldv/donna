@@ -48,7 +48,7 @@ func NewCache(megaBytes float64) Cache {
 				game.cache = append([]CacheEntry{}, game.cache[:cacheSize]...)
 			}
 		}
-		// Cache size hasn't changed: clear out existing cache.
+		// Make sure the cache is all clear.
 		for i := 0; i < len(game.cache); i++ {
 			game.cache[i] = CacheEntry{}
 		}

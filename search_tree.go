@@ -4,8 +4,6 @@
 
 package donna
 
-import ()
-
 func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	ply := ply()
 

@@ -234,8 +234,8 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	return p
 }
 
-// Computes initial values of position's polyglot hash, pawn hash, and material
-// hash. When making a move these values get updated incrementally.
+// Computes initial values of position's polyglot hash and pawn hash. When
+// making a move these values get updated incrementally.
 func (p *Position) polyglot() (hash, pawnHash uint64) {
 	board := p.board
 	for board != 0 {
