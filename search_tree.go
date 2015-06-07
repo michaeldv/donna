@@ -22,10 +22,10 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 	// Checkmate distance pruning.
 	if score := abs(ply - Checkmate); score < beta {
-		beta = score
 		if score <= alpha {
 			return alpha
 		}
+		beta = score
 	}
 
 	// Initialize node search conditions.
