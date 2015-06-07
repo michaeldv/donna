@@ -265,11 +265,7 @@ func (m Move) String() (str string) {
 	}
 
 	if !piece.isPawn() {
-		if engine.fancy { // Figurine notation is more readable with extra space.
-			buffer.WriteString(piece.String() + ` `)
-		} else {
-			buffer.WriteByte(piece.char())
-		}
+		buffer.WriteByte(piece.char())
 	}
 	buffer.WriteByte(byte(col(from)) + 'a')
 	buffer.WriteByte(byte(row(from)) + '1')
