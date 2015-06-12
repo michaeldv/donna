@@ -4,10 +4,6 @@
 
 package donna
 
-import (
-	`sort`
-)
-
 type MoveWithScore struct {
 	move  Move
 	score int
@@ -130,6 +126,30 @@ func (gen *MoveGen) scoreMove(depth, score int) *MoveGen {
 	return gen
 }
 
+//------------------------------------------------------------------------------
+func (gen *MoveGen) sort()  *MoveGen {
+	total := gen.tail - gen.head
+	count := total
+	pocket := MoveWithScore{}
+	ever := true
+
+	for (ever) {
+		count = (count + 1) / 2
+		ever = count > 1
+		for i := 0; i < total - count; i++ {
+			if this := gen.list[i + count]; this.score > gen.list[i].score {
+				pocket = this
+				gen.list[i + count] = gen.list[i]
+				gen.list[i] = pocket
+				ever = true
+			}
+		}
+	}
+
+	return gen
+}
+
+//------------------------------------------------------------------------------
 func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 	if gen.size() < 2 {
 		return gen
@@ -150,8 +170,7 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 		}
 	}
 
-	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
-	return gen
+	return gen.sort()
 }
 
 func (gen *MoveGen) quickRank() *MoveGen {
@@ -167,8 +186,7 @@ func (gen *MoveGen) quickRank() *MoveGen {
 		}
 	}
 
-	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
-	return gen
+	return gen.sort()
 }
 
 func (gen *MoveGen) rootRank(bestMove Move) *MoveGen {
@@ -202,8 +220,7 @@ func (gen *MoveGen) rootRank(bestMove Move) *MoveGen {
 		gen.list[semikiller].score = highest + 1
 	}
 
-	sort.Sort(byScore{gen.list[gen.head:gen.tail]})
-	return gen
+	return gen.sort()
 }
 
 func (gen *MoveGen) add(move Move) *MoveGen {
@@ -231,13 +248,3 @@ func (gen *MoveGen) allMoves() (moves []Move) {
 
 	return
 }
-
-// Sorting moves by their relative score based on piece/square for regular moves
-// or least valuaeable attacker/most valueable victim for captures.
-type byScore struct {
-	list []MoveWithScore
-}
-
-func (her byScore) Len() int           { return len(her.list) }
-func (her byScore) Swap(i, j int)      { her.list[i], her.list[j] = her.list[j], her.list[i] }
-func (her byScore) Less(i, j int) bool { return her.list[i].score > her.list[j].score }
