@@ -4,11 +4,11 @@
 
 package donna
 
-func (gen *MoveGen) generateRootMoves(best Move) *MoveGen {
+func (gen *MoveGen) generateRootMoves() *MoveGen {
 	gen.generateAllMoves()
 
 	if !gen.onlyMove() {
-		gen.validOnly().rank(best)
+		gen.validOnly().rank(Move(0))
 	}
 
 	return gen

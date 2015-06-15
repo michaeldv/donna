@@ -15,11 +15,10 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	gen := NewRootGen(p, depth)
 	if depth == 1 {
 		gen.generateRootMoves()
+	} else if depth == 10 { // Skip moves that failed all iterations so far.
+		gen.cleanupRootMoves(depth)
 	} else {
-		gen.rearrangeRootMoves()
-		if depth == 10 { // Skip moves that failed all iterations so far.
-			gen.cleanupRootMoves(depth)
-		}
+		gen.reset()
 	}
 
 	moveCount, bestMove := 0, Move(0)
@@ -62,6 +61,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			cacheFlags = cacheExact
 			game.saveBest(0, move)
 			gen.scoreMove(depth, score)
+			gen.rearrangeRootMoves()
 
 			if moveCount > 1 {
 				game.volatility++
