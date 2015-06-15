@@ -126,7 +126,6 @@ func (gen *MoveGen) scoreMove(depth, score int) *MoveGen {
 	return gen
 }
 
-//------------------------------------------------------------------------------
 func (gen *MoveGen) sort()  *MoveGen {
 	total := gen.tail - gen.head
 	count := total
@@ -149,7 +148,6 @@ func (gen *MoveGen) sort()  *MoveGen {
 	return gen
 }
 
-//------------------------------------------------------------------------------
 func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 	if gen.size() < 2 {
 		return gen
@@ -184,40 +182,6 @@ func (gen *MoveGen) quickRank() *MoveGen {
 		} else {
 			gen.list[i].score = game.good(move)
 		}
-	}
-
-	return gen.sort()
-}
-
-func (gen *MoveGen) rootRank(bestMove Move) *MoveGen {
-	if gen.size() < 2 {
-		return gen
-	}
-
-	// Find the best move and assign it the highest score.
-	best, killer, semikiller, highest := -1, -1, -1, -Checkmate
-	for i := gen.head; i < gen.tail; i++ {
-		current := &gen.list[i]
-		if current.move == bestMove {
-			best = i
-		} else if current.move == game.killers[gen.ply][0] {
-			killer = i
-		} else if current.move == game.killers[gen.ply][1] {
-			semikiller = i
-		}
-		current.score += game.good(current.move) >> 3
-		if current.score > highest {
-			highest = current.score
-		}
-	}
-	if best != -1 {
-		gen.list[best].score = highest + 10
-	}
-	if killer != -1 {
-		gen.list[killer].score = highest + 2
-	}
-	if semikiller != -1 {
-		gen.list[semikiller].score = highest + 1
 	}
 
 	return gen.sort()

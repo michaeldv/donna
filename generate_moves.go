@@ -4,21 +4,26 @@
 
 package donna
 
-func (gen *MoveGen) generateRootMoves() *MoveGen {
+func (gen *MoveGen) generateRootMoves(best Move) *MoveGen {
 	gen.generateAllMoves()
-	if gen.onlyMove() {
-		return gen
+
+	if !gen.onlyMove() {
+		gen.validOnly().rank(best)
 	}
-	gen.validOnly().quickRank()
 
 	return gen
 }
 
+// Copies last move returned by NextMove() to the top of the list shifting
+// remaining moves down. Head/tail pointers remain unchanged.
 func (gen *MoveGen) rearrangeRootMoves() *MoveGen {
-	if len(game.rootpv) > 0 {
-		return gen.reset().rootRank(game.rootpv[0])
+	if gen.head > 0 {
+		best := gen.list[gen.head - 1]
+		copy(gen.list[1:], gen.list[0:gen.head - 1])
+		gen.list[0] = best
 	}
-	return gen.reset().rootRank(Move(0))
+
+	return gen
 }
 
 func (gen *MoveGen) cleanupRootMoves(depth int) *MoveGen {
