@@ -131,3 +131,24 @@ func TestGenerateMoves230(t *testing.T) {
 	black := NewMoveGen(p).pawnCaptures(Black)
 	expect.Eq(t, black.allMoves(), `[g2xf1Q g2xf1R g2xf1B g2xf1N g2-g1Q g2-g1R g2-g1B g2-g1N g2xh1Q g2xh1R g2xh1B g2xh1N]`)
 }
+
+// Rearrange root moves.
+func TestGenerateMoves300(t *testing.T) {
+	p := NewGame().start()
+	gen := NewMoveGen(p).generateMoves().validOnly()
+
+	// Pick from the middle.
+	gen.head = 10 // e2-e4
+	gen.rearrangeRootMoves().reset()
+	expect.Eq(t, gen.allMoves(), `[e2-e4 a2-a3 a2-a4 b2-b3 b2-b4 c2-c3 c2-c4 d2-d3 d2-d4 e2-e3 f2-f3 f2-f4 g2-g3 g2-g4 h2-h3 h2-h4 Nb1-a3 Nb1-c3 Ng1-f3 Ng1-h3]`)
+
+	// Pick first one.
+	gen.head = 1
+	gen.rearrangeRootMoves().reset()
+	expect.Eq(t, gen.allMoves(), `[e2-e4 a2-a3 a2-a4 b2-b3 b2-b4 c2-c3 c2-c4 d2-d3 d2-d4 e2-e3 f2-f3 f2-f4 g2-g3 g2-g4 h2-h3 h2-h4 Nb1-a3 Nb1-c3 Ng1-f3 Ng1-h3]`)
+
+	// Pick last one.
+	gen.head = gen.tail
+	gen.rearrangeRootMoves().reset()
+	expect.Eq(t, gen.allMoves(), `[Ng1-h3 e2-e4 a2-a3 a2-a4 b2-b3 b2-b4 c2-c3 c2-c4 d2-d3 d2-d4 e2-e3 f2-f3 f2-f4 g2-g3 g2-g4 h2-h3 h2-h4 Nb1-a3 Nb1-c3 Ng1-f3]`)
+}
