@@ -7,10 +7,10 @@ package donna
 import `unsafe`
 
 const (
-	cachedNone = uint8(0)
-	cacheExact = uint8(1)
-	cacheAlpha = uint8(2) // Upper bound.
-	cacheBeta  = uint8(4) // Lower bound.
+	cacheNone  = uint8(0)
+	cacheAlpha = uint8(1) // Upper bound.
+	cacheBeta  = uint8(2) // Lower bound.
+	cacheExact = uint8(cacheAlpha | cacheBeta)
 	cacheEntrySize = int(unsafe.Sizeof(CacheEntry{}))
 )
 
@@ -83,6 +83,19 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 	}
 
 	return p
+}
+
+func (p *Position) cacheDelta(move Move, score, depth, ply, alpha, beta int) *Position {
+	cacheFlags := cacheNone
+
+	if score > alpha {
+		cacheFlags |= cacheBeta
+	}
+	if score < beta {
+		cacheFlags |= cacheAlpha
+	}
+
+	return p.cache(move, score, depth, ply, cacheFlags)
 }
 
 func (p *Position) probeCache() *CacheEntry {
