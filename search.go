@@ -8,7 +8,6 @@ package donna
 // something in the last place you look.
 func (p *Position) search(alpha, beta, depth int) (score int) {
 	inCheck := p.isInCheck(p.color)
-	cacheFlags := uint8(cacheAlpha)
 
 	// Root move generator makes sure all generated moves are valid. The
 	// best move found so far is always the first one we search.
@@ -21,7 +20,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		gen.reset()
 	}
 
-	moveCount, bestMove := 0, Move(0)
+	moveCount, bestMove, rootAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.makeMove(move)
 		moveCount++
@@ -58,21 +57,19 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 		if moveCount == 1 || score > alpha {
 			bestMove = move
-			cacheFlags = cacheExact
 			game.saveBest(0, move)
 			gen.scoreMove(depth, score)
 			gen.rearrangeRootMoves()
 
 			if moveCount > 1 {
 				game.volatility++
-				//\\ engine.debug("# New move %s depth %d volatility %.2f\n", move, depth, game.volatility)
 			}
 
 			alpha = max(score, alpha)
 			if alpha >= beta {
-				cacheFlags = cacheBeta
-				break
+				break // Tap out.
 			}
+			p.cache(bestMove, score, depth, ply(), cacheBeta)
 		} else {
 			gen.scoreMove(depth, -depth)
 		}
@@ -80,10 +77,9 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 
 	if moveCount == 0 {
+		score = 0 // <-- Stalemate.
 		if inCheck {
 			score = -Checkmate
-		} else {
-			score = 0
 		}
 		if engine.uci {
 			engine.uciScore(depth, score, alpha, beta)
@@ -95,9 +91,10 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	if score >= beta && !inCheck {
 		game.saveGood(depth, bestMove)
 	}
-
 	score = alpha
-	p.cache(bestMove, score, depth, ply(), cacheFlags)
+
+	p.cacheDelta(bestMove, score, depth, ply(), rootAlpha, beta)
+
 	if engine.uci {
 		engine.uciScore(depth, score, alpha, beta)
 	}
