@@ -62,13 +62,17 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 		gen.generateEvasions()
 	} else {
 		gen.generateCaptures()
+		if iteration < 1 {
+			gen.generateChecks()
+		}
 	}
 	gen.quickRank()
 
 	cacheFlags := cacheAlpha
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if (!inCheck && p.exchange(move) < 0) || !gen.isValid(move) {
+		capture := move.capture()
+		if (!inCheck && capture != 0 && p.exchange(move) < 0) || !gen.isValid(move) {
 			continue
 		}
 
@@ -77,7 +81,7 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 		giveCheck := position.isInCheck(position.color)
 
 		// Prune useless captures -- but make sure it's not a capture move that checks.
-		if !inCheck && !giveCheck && !isPrincipal && !move.isPromo() && staticScore + pieceValue[move.capture()] + 72 < alpha {
+		if !inCheck && !giveCheck && !isPrincipal && !move.isPromo() && capture != 0 && staticScore + pieceValue[capture] + 72 < alpha {
 			position.undoLastMove()
 			continue
 		}
@@ -97,35 +101,6 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 		if engine.clock.halt {
 			game.qnodes += moveCount
 			return alpha
-		}
-	}
-
-	if !inCheck && iteration < 1 {
-		gen = NewGen(p, ply).generateChecks().quickRank()
-		for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-			if p.exchange(move) < 0 || !gen.isValid(move) {
-				continue
-			}
-
-			position := p.makeMove(move)
-			moveCount++
-			score = -position.searchQuiescence(-beta, -alpha, iteration + 1, position.isInCheck(position.color))
-			position.undoLastMove()
-
-			if score > alpha {
-				alpha = score
-				bestMove = move
-				if alpha >= beta {
-					p.cache(bestMove, score, depth, ply, cacheBeta)
-					game.qnodes += moveCount
-					return
-				}
-				cacheFlags = cacheExact
-			}
-			if engine.clock.halt {
-				game.qnodes += moveCount
-				return alpha
-			}
 		}
 	}
 
