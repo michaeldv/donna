@@ -48,6 +48,7 @@ func NewRootGen(p *Position, depth int) *MoveGen {
 	if depth == 1 {
 		return NewGen(p, 0) // Zero ply.
 	}
+
 	return &moveList[0]
 }
 
@@ -69,6 +70,7 @@ func (gen *MoveGen) NextMove() (move Move) {
 		move = gen.list[gen.head].move
 		gen.head++
 	}
+
 	return
 }
 
@@ -86,6 +88,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 			gen.remove()
 		}
 	}
+
 	return gen.reset()
 }
 
@@ -97,6 +100,7 @@ func (gen *MoveGen) anyValid() bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -108,6 +112,7 @@ func (gen *MoveGen) amongValid(someMove Move) bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -115,18 +120,24 @@ func (gen *MoveGen) amongValid(someMove Move) bool {
 func (gen *MoveGen) scoreMove(depth, score int) *MoveGen {
 	current := &gen.list[gen.head - 1]
 
-	//Log("-> Depth %d score %d current.score %d\n", depth, score, current.score)
 	if depth == 1 || current.score == score + 1 {
 		current.score = score
 	} else if score != -depth || (score == -depth && current.score != score) {
 		current.score += score // Fix up aspiration search drop.
 	}
-	//Log("=> Depth %d score %d current.score %d\n", depth, score, current.score)
 
 	return gen
 }
 
-func (gen *MoveGen) sort()  *MoveGen {
+// Shell sort that is somewhat faster that standard Go sort. It also seems
+// to outperform:
+// 	loop {
+// 		gen.shuffleRandomly()
+// 		if gen.isSorted() {
+// 			break
+// 		}
+// 	}
+func (gen *MoveGen) sort() *MoveGen {
 	total := gen.tail - gen.head
 	count := total
 	pocket := MoveWithScore{}
@@ -190,6 +201,7 @@ func (gen *MoveGen) quickRank() *MoveGen {
 func (gen *MoveGen) add(move Move) *MoveGen {
 	gen.list[gen.tail].move = move
 	gen.tail++
+
 	return gen
 }
 
@@ -199,6 +211,7 @@ func (gen *MoveGen) remove() *MoveGen {
 	copy(gen.list[gen.head-1:], gen.list[gen.head:])
 	gen.head--
 	gen.tail--
+
 	return gen
 }
 
