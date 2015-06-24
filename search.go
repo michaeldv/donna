@@ -108,7 +108,7 @@ func (p *Position) solve(depth int) Move {
 		NewRootGen(p, 1).generateRootMoves()
 	}
 	p.search(-Checkmate, Checkmate, depth)
-	return game.pv[0][0]
+	return game.pv[0].moves[0]
 }
 
 func (p *Position) Perft(depth int) (total int64) {

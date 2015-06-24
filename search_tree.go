@@ -8,7 +8,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	ply := ply()
 
 	// Reset principal variation.
-	game.pv[ply] = game.pv[ply][:0]
+	game.pv[ply].size = 0
 
 	// Return if it's time to stop search.
 	if ply >= MaxPly || engine.clock.halt {

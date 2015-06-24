@@ -185,7 +185,7 @@ func (e *Engine) fixedTimeTicker() *Engine {
 			return // Nothing to do if the clock has been stopped.
 		}
 		for now := range e.clock.ticker.C {
-			if len(game.rootpv) == 0 {
+			if game.rootpv.size == 0 {
 				continue // Haven't found the move yet.
 			}
 			if e.elapsed(now) >= e.options.moveTime - Ping {
@@ -206,7 +206,7 @@ func (e *Engine) varyingTimeTicker() *Engine {
 			return // Nothing to do if the clock has been stopped.
 		}
 		for now := range e.clock.ticker.C {
-			if len(game.rootpv) == 0 {
+			if game.rootpv.size == 0 {
 				continue // Haven't found the move yet.
 			}
 			elapsed := e.elapsed(now)

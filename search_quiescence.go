@@ -9,7 +9,7 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	ply := ply()
 
 	// Reset principal variation.
-	game.pv[ply] = game.pv[ply][:0]
+	game.pv[ply].size = 0
 
 	// Return if it's time to stop search.
 	if ply >= MaxPly || engine.clock.halt {

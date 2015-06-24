@@ -10,10 +10,13 @@ import (
 	`time`
 )
 
+type RootPv struct {
+	size  int
+	moves [MaxPly]Move
+}
+type Pv [MaxPly]RootPv
 type History [14][64]int
 type Killers [MaxPly][2]Move
-type RootPv  []Move
-type Pv      [MaxPly]RootPv
 
 type Game struct {
 	nodes       int 	// Number of regular nodes searched.
@@ -26,7 +29,7 @@ type Game struct {
 	history     History  	// Good moves history.
 	killers     Killers  	// Killer moves.
 	rootpv      RootPv 	// Principal variation for root moves.
-	pv          Pv 		// Principal variations for each ply.
+	pv          Pv  	// Principal variations for each ply.
 	cache       Cache 	// Transposition table.
 	pawnCache   PawnCache 	// Cache of pawn structures.
 }
@@ -42,11 +45,6 @@ var game Game
 // much more useful when writing tests from memory.
 func NewGame(args ...string) *Game {
 	game = Game{ cache: NewCache(engine.cacheSize), pawnCache: PawnCache{} }
-
-	game.rootpv = make([]Move, 0, MaxPly)
-	for ply := 0;  ply < MaxPly; ply++ {
-		game.pv[ply] = make([]Move, 0, MaxPly)
-	}
 
 	switch len(args) {
 	case 0: // Initial position.
@@ -80,11 +78,8 @@ func (game *Game) position() *Position {
 // entries get expired by incrementing cache token. Root node gets set to the
 // current tree node to match the position.
 func (game *Game) getReady() *Game {
-	game.rootpv = game.rootpv[:0]
-	for ply := 0;  ply < MaxPly; ply++ {
-		game.pv[ply] = game.pv[ply][:0]
-	}
-
+	game.rootpv = RootPv{}
+	game.pv = Pv{}
 	game.killers = Killers{}
 	game.history = History{}
 	game.deepening = false
@@ -94,6 +89,14 @@ func (game *Game) getReady() *Game {
 
 	rootNode = node
 	return game
+}
+
+// Copies the very latest top principal variation line.
+func updateRootPv() {
+	// Is copy() faster than plain assigment?!
+	// game.rootpv.moves = game.pv[0].moves
+	copy(game.rootpv.moves[0:], game.pv[0].moves[0:])
+	game.rootpv.size = game.pv[0].size
 }
 
 // "The question of whether machines can think is about as relevant as the
@@ -138,7 +141,7 @@ func (game *Game) Think() Move {
 			score = position.search(alpha, beta, depth)
 			if score > alpha {
 				bestScore = score
-				game.rootpv = append(game.rootpv[:0], game.pv[0]...)
+				updateRootPv()
 			}
 		} else {
 			aspiration := onePawn / 3
@@ -149,11 +152,10 @@ func (game *Game) Think() Move {
 			// previous iteration score, and re-search with the bigger
 			// window as necessary.
 			for {
-				//Log("\tscore -> %d, searchRoot(%d, %d, %d)\n", score, alpha, beta, depth)
 				score = position.search(alpha, beta, depth)
 				if score > alpha {
 					bestScore = score
-					game.rootpv = append(game.rootpv[:0], game.pv[0]...)
+					updateRootPv()
 				}
 
 				if !engine.fixedDepth() && engine.clock.halt {
@@ -174,11 +176,10 @@ func (game *Game) Think() Move {
 			// TBD: position.cache(game.rootpv[0], score, 0, 0)
 		}
 		if engine.clock.halt {
-			//Log("\ttimed out pv => %v\n\ttimed out rv => %v\n", game.pv[0], game.rootpv)
 			score = bestScore
 		}
 
-		move = game.rootpv[0]
+		move = game.rootpv.moves[0]
 		status = position.status(move, score)
 		game.printPrincipal(depth, score, status, since(start))
 	}
@@ -246,11 +247,13 @@ func (game *Game) printPrincipal(depth, score, status int, duration int64) {
 }
 
 func (game *Game) saveBest(ply int, move Move) *Game {
-	game.pv[ply] = append(game.pv[ply][0:ply], move)
+	game.pv[ply].moves[ply] = move
+	game.pv[ply].size = ply + 1
 
-	next := ply + 1
-	if length := len(game.pv[next]); length > 0 {
-		game.pv[ply] = append(game.pv[ply], game.pv[next][next : length]...)
+	next := game.pv[ply].size
+	if size := game.pv[next].size; next < MaxPly && size > next {
+		copy(game.pv[ply].moves[next:], game.pv[next].moves[next:size])
+		game.pv[ply].size += size - next
 	}
 
 	return game
