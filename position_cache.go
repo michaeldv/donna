@@ -59,7 +59,7 @@ func NewCache(megaBytes float64) Cache {
 
 func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Position {
 	if cacheSize := len(game.cache); cacheSize > 0 {
-		index := p.hash & uint64(cacheSize - 1)
+		index := p.id & uint64(cacheSize - 1)
 		// fmt.Printf("cache size %d entries, index %d\n", len(game.cache), index)
 		entry := &game.cache[index]
 
@@ -71,7 +71,7 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 			} else {
 				entry.score = int16(score)
 			}
-			id := uint32(p.hash >> 32)
+			id := uint32(p.id >> 32)
 			if move != Move(0) || id != entry.id {
 				entry.move = move
 			}
@@ -100,8 +100,8 @@ func (p *Position) cacheDelta(move Move, score, depth, ply, alpha, beta int) *Po
 
 func (p *Position) probeCache() *CacheEntry {
 	if cacheSize := len(game.cache); cacheSize > 0 {
-		index := p.hash & uint64(cacheSize - 1)
-		if entry := &game.cache[index]; entry.id == uint32(p.hash >>32) {
+		index := p.id & uint64(cacheSize - 1)
+		if entry := &game.cache[index]; entry.id == uint32(p.id >>32) {
 			return entry
 		}
 	}

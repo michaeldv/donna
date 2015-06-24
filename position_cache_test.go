@@ -17,5 +17,5 @@ func TestCache000(t *testing.T) {
 	expect.Eq(t, cached.score, int16(42))
 	expect.Eq(t, cached.depth, int16(1))
 	expect.Eq(t, cached.flags, uint8(cacheExact))
-	expect.Eq(t, cached.id, uint32(p.hash >> 32))
+	expect.Eq(t, cached.id, uint32(p.id >> 32))
 }

@@ -5,28 +5,28 @@
 package donna
 
 type PawnEntry struct {
-	hash       uint64 	// Pawn hash key.
-	score      Score 	// Static score for the given pawn structure.
-	king       [2]uint8 	// King square for both sides.
-	cover      [2]Score 	// King cover penalties for both sides.
-	passers    [2]Bitmask 	// Passed pawn bitmasks for both sides.
+	id       uint64 	// Pawn hash key.
+	score    Score 		// Static score for the given pawn structure.
+	king     [2]uint8 	// King square for both sides.
+	cover    [2]Score 	// King cover penalties for both sides.
+	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
 
 type PawnCache [8192*2]PawnEntry
 
 func (e *Evaluation) analyzePawns() {
-	key := e.position.pawnHash
+	key := e.position.pawnId
 
 	// Since pawn hash is fairly small we can use much faster 32-bit index.
 	index := uint32(key) % uint32(len(game.pawnCache))
 	e.pawns = &game.pawnCache[index]
 
 	// Bypass pawns cache if evaluation tracing is enabled.
-	if e.pawns.hash != key || engine.trace {
+	if e.pawns.id != key || engine.trace {
 		white, black := e.pawnStructure(White), e.pawnStructure(Black)
 		white.apply(weights[1]); black.apply(weights[1]) // <-- Pawn structure weight.
 		e.pawns.score.clear().add(white).subtract(black)
-		e.pawns.hash = key
+		e.pawns.id = key
 
 		// Force full king shelter evaluation since any legit king square
 		// will be viewed as if the king has moved.

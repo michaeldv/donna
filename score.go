@@ -69,5 +69,5 @@ func (s Score) times(n int) Score {
 
 // Calculates normalized score based on the game phase.
 func (s Score) blended(phase int) int {
-	return (s.midgame * phase + s.endgame * (256-phase)) / 256
+	return (s.midgame * phase + s.endgame * (256 - phase)) / 256
 }

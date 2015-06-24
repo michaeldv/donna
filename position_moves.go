@@ -11,9 +11,9 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 
 	// Update position's hash values.
 	random := piece.polyglot(from) ^ piece.polyglot(to)
-	p.hash ^= random
+	p.id ^= random
 	if piece.isPawn() {
-		p.pawnHash ^= random
+		p.pawnId ^= random
 	}
 
 	// Update positional score.
@@ -30,8 +30,8 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 
 	// Update position's hash values and material balance.
 	random := pawn.polyglot(from)
-	p.hash ^= random ^ promo.polyglot(to)
-	p.pawnHash ^= random
+	p.id ^= random ^ promo.polyglot(to)
+	p.pawnId ^= random
 	p.balance += materialBalance[promo] - materialBalance[pawn]
 
 	// Update positional score.
@@ -46,9 +46,9 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(to)
-	p.hash ^= random
+	p.id ^= random
 	if capture.isPawn() {
-		p.pawnHash ^= random
+		p.pawnId ^= random
 	}
 	p.balance -= materialBalance[capture]
 
@@ -67,8 +67,8 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(enpassant)
-	p.hash ^= random
-	p.pawnHash ^= random
+	p.id ^= random
+	p.pawnId ^= random
 	p.balance -= materialBalance[capture]
 
 	// Update positional score.
@@ -92,7 +92,7 @@ func (p *Position) makeMove(move Move) *Position {
 		pp.reversible = false
 		if to != 0 && to == int(p.enpassant) {
 			pp.captureEnpassant(pawn(color^1), from, to)
-			pp.hash ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
+			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
 		} else {
 			pp.capturePiece(capture, from, to)
 		}
@@ -120,7 +120,7 @@ func (p *Position) makeMove(move Move) *Position {
 			pp.reversible = false
 			if move.isEnpassant() {
 				pp.enpassant = uint8(from + eight[color]) // Save the en-passant square.
-				pp.hash ^= hashEnpassant[pp.enpassant & 7]
+				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
 	} else {
@@ -132,8 +132,8 @@ func (p *Position) makeMove(move Move) *Position {
 	// hash value, and flip the color.
 	pp.board = pp.outposts[White] | pp.outposts[Black]
 	pp.castles &= castleRights[from] & castleRights[to]
-	pp.hash ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
-	pp.hash ^= polyglotRandomWhite
+	pp.id ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
+	pp.id ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
 
 	return &tree[node] // pp
@@ -148,10 +148,10 @@ func (p *Position) makeNullMove() *Position {
 
 	// Flipping side to move obviously invalidates the enpassant square.
 	if pp.enpassant != 0 {
-		pp.hash ^= hashEnpassant[pp.enpassant & 7]
+		pp.id ^= hashEnpassant[pp.enpassant & 7]
 		pp.enpassant = 0
 	}
-	pp.hash ^= polyglotRandomWhite
+	pp.id ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
 
 	return &tree[node] // pp
@@ -166,7 +166,7 @@ func (p *Position) undoLastMove() *Position {
 }
 
 func (p *Position) undoNullMove() *Position {
-	p.hash ^= polyglotRandomWhite
+	p.id ^= polyglotRandomWhite
 	p.color ^= 1
 
 	return p.undoLastMove()
@@ -202,7 +202,7 @@ func (p *Position) repetition() bool {
 		if !tree[previous].reversible {
 			return false
 		}
-		if tree[previous].hash == p.hash {
+		if tree[previous].id == p.id {
 			return true
 		}
 	}
@@ -218,7 +218,7 @@ func (p *Position) thirdRepetition() bool {
 		if !tree[previous].reversible || !tree[previous + 1].reversible {
 			return false
 		}
-		if tree[previous].hash == p.hash {
+		if tree[previous].id == p.id {
 			repetitions++
 			if repetitions == 3 {
 				return true

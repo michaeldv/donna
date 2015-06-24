@@ -62,7 +62,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 	}
 	defer file.Close()
 
-	key := position.hash
+	key := position.id
 
 	// Since book entries are ordered by polyglot key we can use binary
 	// search to find *first* book entry that matches the position.
