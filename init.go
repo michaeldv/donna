@@ -350,12 +350,12 @@ func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame 
 		endgame = (*Evaluation).kingAndPawnVsKingAndPawn
 
 	// Lesser known endgame: bishop and pawn vs. bare king.
-	} else if bareKing && allMajor == 0 && allMinor == 1 && ((wB + wP == 2) || (bB + bP == 2)) {
+	} else if bareKing && allMajor == 0 && wN + bN == 0 && (wB * wP == 1 || bB * bP == 1) {
 		flags |= lesserKnownEndgame
 		endgame = (*Evaluation).bishopAndPawnVsBareKing
 
 	// Lesser known endgame: rook and pawn vs. rook.
-	} else if allMinor == 0 && wQ + bQ == 0 && ((wR + wP == 2) || (bR + bP == 2)) {
+	} else if allMinor == 0 && wQ + bQ == 0 && wR + bR == 2 && wP + bP == 1 {
 		flags |= lesserKnownEndgame
 		endgame = (*Evaluation).rookAndPawnVsRook
 
