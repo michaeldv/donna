@@ -169,3 +169,32 @@ func TestEvaluatePawns570(t *testing.T) {
 
 	expect.Eq(t, score, 5)
 }
+
+// Unstoppable passers.
+func TestEvaluatePawns600(t *testing.T) {
+	game := NewGame(`Kd4,f2,g2,h2`, `Kg8,g7,h7,a3`) // Kd4-c3 stops A3 pawn.
+	score := game.start().Evaluate()
+
+	expect.Eq(t, score, -69)
+}
+
+func TestEvaluatePawns610(t *testing.T) {
+	game := NewGame(`Kd4,f2,g2,h2`, `M99,Kg8,g7,h7,a3`) // a3-a2 makes the pawn unstoppable.
+	score := game.start().Evaluate()
+
+	expect.Eq(t, score, 1079)
+}
+
+func TestEvaluatePawns620(t *testing.T) {
+	game := NewGame(`Ka1,b4,g2`, `Kg8,g7,h7`) // b4-b5 is unstoppable.
+	score := game.start().Evaluate()
+
+	expect.Eq(t, score, 961)
+}
+
+func TestEvaluatePawns630(t *testing.T) {
+	game := NewGame(`Ka1,b4,h2`, `M99,Kg8,g7,h7`) // Kg8-f8 stops B4 pawn.
+	score := game.start().Evaluate()
+
+	expect.Eq(t, score, 47)
+}
