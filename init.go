@@ -42,6 +42,10 @@ var (
 	// attacked by white pawns on B2 and D2, and black pawns on B4 and D4.
 	maskPawn [2][64]Bitmask
 
+	// Bitmasks to detect unstoppable passers (pawn square rule).
+	maskSquare[2][64]Bitmask   // King doesn't have the right to move.
+	maskSquareEx[2][64]Bitmask // King has the right to move (border bits added).
+
 	// Two arrays to simplify incremental polyglot hash computation.
 	hashCastle [16]uint64
 	hashEnpassant [8]uint64
@@ -542,5 +546,43 @@ func setupMasks(square, target, row, col, r, c int) {
 	// and all 1 for maskEvade[square][target].
 	if maskEvade[square][target] == 0 {
 		maskEvade[square][target] = maskFull
+	}
+
+	// Pawn square rule masks.
+	if square != target {
+
+		// White king chasing black pawn.
+		if row > 1 {
+			if row <= r && abs(col - c) <= 7 - row {
+				maskSquare[White][square] |= bit[target]
+			}
+			if row <= r + 1 && abs(col - c) <= 8 - row {
+				maskSquareEx[White][square] |= bit[target]
+			}
+		} else if row == 1 {
+			if row < r && abs(col - c) < 7 - row {
+				maskSquare[White][square] |= bit[target]
+			}
+			if row <= r && abs(col - c) < 8 - row {
+				maskSquareEx[White][square] |= bit[target]
+			}
+		}
+
+		// Black king chasing white pawn.
+		if row < 6 {
+			if row >= r && abs(col - c) <= row {
+				maskSquare[Black][square] |= bit[target]
+			}
+			if row + 1 >= r && abs(col - c) <= row + 1 {
+				maskSquareEx[Black][square] |= bit[target]
+			}
+		} else if row == 6 {
+			if row > r && abs(col - c) < row {
+				maskSquare[Black][square] |= bit[target]
+			}
+			if row >= r && abs(col - c) <= row {
+				maskSquareEx[Black][square] |= bit[target]
+			}
+		}
 	}
 }
