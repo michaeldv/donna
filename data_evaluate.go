@@ -5,6 +5,7 @@
 package donna
 
 const onePawn = 100
+const unstoppablePawn = onePawn * 10
 var (
 	valuePawn      = Score{ onePawn *  1 +  0, onePawn *  1 + 29 }  //  100,  129
 	valueKnight    = Score{ onePawn *  4 +  8, onePawn *  4 + 23 }  //  408,  423

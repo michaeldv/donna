@@ -58,8 +58,9 @@ func (e *Evaluation) analyzePassers() {
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
 func (e *Evaluation) pawnStructure(color uint8) (score Score) {
+	rival := color ^ 1
 	hisPawns := e.position.outposts[pawn(color)]
-	herPawns := e.position.outposts[pawn(color^1)]
+	herPawns := e.position.outposts[pawn(rival)]
 	e.pawns.passers[color] = 0
 
 	// Encourage center pawn moves in the opening.
@@ -92,7 +93,7 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 
 		// Bonus if the pawn is supported by friendly pawn(s) on the same
 		// or previous ranks.
-		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].pushed(color^1)) & hisPawns != 0)
+		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].pushed(rival)) & hisPawns != 0)
 		if supported {
 			flipped := flip(color, square)
 			score.add(Score{bonusSupportedPawn[flipped], bonusSupportedPawn[flipped]})
@@ -114,7 +115,7 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 			if pawnMoves[color][square] & herPawns == 0 {
 
 				// Backward pawn should not have friendly pawns behind.
-				if maskPassed[color^1][square] & maskIsolated[col] & hisPawns == 0 {
+				if maskPassed[rival][square] & maskIsolated[col] & hisPawns == 0 {
 
 					// Backward pawn should face enemy pawns on the next two ranks
 					// preventing its advance.
@@ -133,7 +134,7 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 
 		// Bonus if the pawn has good chance to become a passed pawn.
 		if exposed && supported && !passed && !backward {
-			his := maskPassed[color^1][square + eight[color]] & maskIsolated[col] & hisPawns
+			his := maskPassed[rival][square + eight[color]] & maskIsolated[col] & hisPawns
 			her := maskPassed[color][square] & maskIsolated[col] & herPawns
 			if his.count() >= her.count() {
 				score.add(bonusSemiPassedPawn[rank(color, square)])
@@ -151,9 +152,13 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 
 func (e *Evaluation) pawnPassers(color uint8) (score Score) {
 	p := e.position
+	rival := color ^ 1
+
+	// If opposing side has no pieces other than pawns then need to check if passers are unstoppable.
+	chase := (p.outposts[rival] ^ p.outposts[pawn(rival)] ^ p.outposts[king(rival)]).empty()
 
 	pawns := e.pawns.passers[color]
-	for pawns != 0 {
+	for pawns.any() {
 		square := pawns.pop()
 		rank := rank(color, square)
 		bonus := bonusPassedPawn[rank]
@@ -164,7 +169,7 @@ func (e *Evaluation) pawnPassers(color uint8) (score Score) {
 
 			// Adjust endgame bonus based on how close the kings are from the
 			// step forward square.
-			bonus.endgame += (distance[p.king[color^1]][nextSquare] * 5 - distance[p.king[color]][nextSquare] * 2) * extra
+			bonus.endgame += (distance[p.king[rival]][nextSquare] * 5 - distance[p.king[color]][nextSquare] * 2) * extra
 
 			// Check if the pawn can step forward.
 			if p.board.off(nextSquare) {
@@ -183,12 +188,12 @@ func (e *Evaluation) pawnPassers(color uint8) (score Score) {
 
 				// Check who is attacking the squares in front of the pawn including
 				// queen and rook x-ray attacks from behind.
-				enemy := maskInFront[color^1][square] & (p.outposts[queen(color^1)] | p.outposts[rook(color^1)])
+				enemy := maskInFront[rival][square] & (p.outposts[queen(rival)] | p.outposts[rook(rival)])
 				if enemy == 0 || enemy & p.rookMoves(square) == 0 {
 
 					// Since nobody attacks the pawn from behind adjust the attacked
 					// bitmask to only include squares attacked or occupied by the enemy.
-					attacked &= (e.attacks[color^1] | p.outposts[color^1])
+					attacked &= (e.attacks[rival] | p.outposts[rival])
 				}
 
 				// Boost the bonus if passed pawn is free to advance to the 8th rank
@@ -204,6 +209,22 @@ func (e *Evaluation) pawnPassers(color uint8) (score Score) {
 				}
 			}
 		}
+
+		// Before chasing the unstoppable make sure own pieces are not blocking the passer.
+		if chase && (p.outposts[color] & maskInFront[color][square]).empty() {
+			// Pick square rule bitmask for the pawn. If defending king has the right
+			// to move then pick extended square mask.
+			mask := Bitmask(0)
+			if p.color == color {
+				mask = maskSquare[color][square]
+			} else {
+				mask = maskSquareEx[color][square]
+			}
+			if (mask & p.outposts[king(rival)]).empty() {
+				bonus.endgame += unstoppablePawn
+			}
+		}
+
 		score.add(bonus)
 	}
 
