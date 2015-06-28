@@ -84,12 +84,8 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		// yet and there are pieces other than pawns.
 		if !isNull && depth < 14 && abs(beta) < Checkmate - MaxPly &&
 		   p.outposts[p.color] & ^(p.outposts[king(p.color)] | p.outposts[pawn(p.color)]) != 0 {
-			futilityMargin := func (depth int) int {
-				return 256 * depth
-			}
-
 			// Largest conceivable positional gain.
-			if gain := staticScore - futilityMargin(depth); gain >= beta {
+			if gain := staticScore - 256 * depth; gain >= beta {
 				return gain
 			}
 		}
@@ -129,7 +125,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		gen.generateMoves().rank(cachedMove)
 	}
 
-	cacheFlags := cacheAlpha
 	bestMove := Move(0)
 	moveCount, quietMoveCount := 0, 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
@@ -196,11 +191,11 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		if score > alpha {
 			alpha = score
 			bestMove = move
-			cacheFlags = cacheExact
-			game.saveBest(ply, move)
+			if isPrincipal {
+				game.saveBest(ply, move)
+			}
 
 			if alpha >= beta {
-				cacheFlags = cacheBeta
 				break // Stop searching. Happiness is right next to you.
 			}
 		}
@@ -219,6 +214,13 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	score = alpha
+
+	cacheFlags := cacheAlpha
+	if score >= beta {
+		cacheFlags = cacheBeta
+	} else if (isPrincipal && moveCount > 0) {
+		cacheFlags = cacheExact
+	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)
 
 	return

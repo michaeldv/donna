@@ -68,8 +68,7 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	}
 	gen.quickRank()
 
-	cacheFlags := cacheAlpha
-	moveCount, bestMove := 0, Move(0)
+	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		capture := move.capture()
 		if (!inCheck && capture != 0 && p.exchange(move) < 0) || !gen.isValid(move) {
@@ -91,12 +90,15 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 		if score > alpha {
 			alpha = score
 			bestMove = move
+			if isPrincipal {
+				game.saveBest(ply, move)
+			}
+
 			if alpha >= beta {
 				p.cache(bestMove, score, depth, ply, cacheBeta)
 				game.qnodes += moveCount
 				return
 			}
-			cacheFlags = cacheExact
 		}
 		if engine.clock.halt {
 			game.qnodes += moveCount
@@ -109,6 +111,11 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	score = alpha
 	if inCheck && moveCount == 0 {
 		score = -Checkmate + ply
+	}
+
+	cacheFlags := cacheAlpha
+	if isPrincipal && score > bestAlpha {
+		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)
 
