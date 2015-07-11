@@ -57,6 +57,10 @@ func (p Piece) kind() int {
 	return int(p) & 0xFE
 }
 
+func (p Piece) value() int {
+	return pieceValue[p.kind()]
+}
+
 func (p Piece) isWhite() bool {
 	return p & 1 == 0
 }

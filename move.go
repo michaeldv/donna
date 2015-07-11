@@ -222,6 +222,26 @@ func (m Move) isQuiet() bool {
 	return m & (isCapture | isPromo) == 0
 }
 
+// Returns true for pawn pushes beyond home half of the board.
+func (m Move) isPawnAdvance() bool {
+	return m.piece().isPawn() && rank(m.color(), m.to()) > A4H4
+}
+
+// Returns true if passed pawn gets pushed beyond 5th rank.
+func (m Move) isPasser(p *Position) bool {
+	if m.isQuiet() {
+		_, to, piece, _ := m.split()
+		if piece.isPawn() {
+			color := m.color()
+			doubled := (maskInFront[color][to] & p.outposts[pawn(color)]).any()
+			passed := !doubled && (maskPassed[color][to] & p.outposts[pawn(color^1)]).empty()
+			return passed && rank(color, to) > A5H5
+		}
+	}
+
+	return false
+}
+
 // Returns string representation of the move in long coordinate notation as
 // expected by UCI, ex. `g1f3`, `e4d5` or `h7h8q`.
 func (m Move) notation() string {
