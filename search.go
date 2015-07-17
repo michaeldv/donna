@@ -7,7 +7,7 @@ package donna
 // Root node search. Basic principle is expressed by Boob's Law: you always find
 // something in the last place you look.
 func (p *Position) search(alpha, beta, depth int) (score int) {
-	inCheck := p.isInCheck(p.color)
+	ply, inCheck := ply(), p.isInCheck(p.color)
 
 	// Root move generator makes sure all generated moves are valid. The
 	// best move found so far is always the first one we search.
@@ -20,7 +20,8 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		gen.reset()
 	}
 
-	moveCount, bestMove, rootAlpha := 0, Move(0), alpha
+	bestMove, bestAlpha := Move(0), alpha
+	moveCount, quietMoveCount := 0, 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.makeMove(move)
 		moveCount++
@@ -28,19 +29,39 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			engine.uciMove(move, moveCount, depth)
 		}
 
-		// Search depth extension.
-		newDepth := depth - 1
-		if position.isInCheck(p.color^1) { // Give check.
+		// Search depth extension/reduction.
+		newDepth, reduction := depth - 1, 0
+		if position.isInCheck(position.color) { // Extend search depth if we're checking.
 			newDepth++
+		} else if !inCheck && depth > 2 && moveCount > 1 && move.isQuiet() && !move.isPawnAdvance() {
+			quietMoveCount++
+			if quietMoveCount >= 20 {
+				reduction++
+				if quietMoveCount >= 26 {
+					reduction++
+					if quietMoveCount >= 32 {
+						reduction++
+					}
+				}
+			}
 		}
 
+		// Start search with full window.
+		game.deepening = (moveCount == 1)
 		if moveCount == 1 {
-			game.deepening = true
 			score = -position.searchTree(-beta, -alpha, newDepth)
+		} else if reduction > 0 {
+			score = -position.searchTree(-alpha - 1, -alpha, max(0, newDepth - reduction))
+
+			// Verify late move reduction and re-run the search if necessary.
+			if score > alpha {
+				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
+			}
 		} else {
-			game.deepening = false
 			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
-			if score > alpha { // && score < beta {
+
+			// If zero window failed try full window.
+			if score > alpha {
 				score = -position.searchTree(-beta, -alpha, newDepth)
 			}
 		}
@@ -58,8 +79,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		if moveCount == 1 || score > alpha {
 			bestMove = move
 			game.saveBest(0, move)
-			gen.scoreMove(depth, score)
-			gen.rearrangeRootMoves()
+			gen.scoreMove(depth, score).rearrangeRootMoves()
 
 			if moveCount > 1 {
 				game.volatility++
@@ -69,7 +89,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			if alpha >= beta {
 				break // Tap out.
 			}
-			p.cache(bestMove, score, depth, ply(), cacheBeta)
+			p.cache(bestMove, score, depth, ply, cacheBeta)
 		} else {
 			gen.scoreMove(depth, -depth)
 		}
@@ -93,7 +113,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	}
 	score = alpha
 
-	p.cacheDelta(bestMove, score, depth, ply(), rootAlpha, beta)
+	p.cacheDelta(bestMove, score, depth, ply, bestAlpha, beta)
 
 	if engine.uci {
 		engine.uciScore(depth, score, alpha, beta)
