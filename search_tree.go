@@ -134,46 +134,36 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 		position := p.makeMove(move)
 		moveCount++
-		newDepth := depth - 1
 
-		// Search depth extension.
-		giveCheck := position.isInCheck(position.color)
-		if giveCheck {
+		// Search depth extension/reduction.
+		newDepth, reduction := depth - 1, 0
+		if position.isInCheck(position.color) { // Extend search depth if we're checking.
 			newDepth++
-		}
-
-		// Late move reduction.
-		lateMoveReduction := false
-		if depth >= 3 && !isPrincipal && !inCheck && !giveCheck && move.isQuiet() {
+		} else if !isPrincipal && !inCheck && depth > 2 && moveCount > 1 && move.isQuiet() && !move.isPawnAdvance() {
 			quietMoveCount++
-			if newDepth > 0 && quietMoveCount >= 8 {
-				newDepth--
-				lateMoveReduction = true
+			if quietMoveCount >= 8 {
+				reduction++
 				if quietMoveCount >= 16 {
-					newDepth--
+					reduction++
 					if quietMoveCount >= 24 {
-						newDepth--
+						reduction++
 					}
 				}
 			}
 		}
 
 		// Start search with full window.
-		if moveCount == 1 {
+		if isPrincipal && moveCount == 1 {
 			score = -position.searchTree(-beta, -alpha, newDepth)
-		} else if lateMoveReduction {
-			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
+		} else if reduction > 0 {
+			score = -position.searchTree(-alpha - 1, -alpha, max(0, newDepth - reduction))
 
 			// Verify late move reduction and re-run the search if necessary.
 			if score > alpha {
-				score = -position.searchTree(-alpha - 1, -alpha, newDepth + 1)
-			}
-		} else {
-			if newDepth < 1 {
-				score = -position.searchQuiescence(-alpha - 1, -alpha, 0, giveCheck)
-			} else {
 				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 			}
+		} else {
+			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 
 			// If zero window failed try full window.
 			if score > alpha && score < beta {
