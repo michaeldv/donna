@@ -18,7 +18,7 @@ import `regexp`
 //                                      -― FORTRAN manual for Xerox Computers
 
 // Your chess engine hates you when you are working on a new version.
-const Version = `2.2b3`
+const Version = `2.2b5`
 
 // Limits and conventions.
 const (
@@ -27,6 +27,8 @@ const (
 	MaxPly = 64
 	MaxDepth = 32
 	Checkmate = 0x7FFF - 1	// = 32,766
+	DrawScore = 0
+	ExistingScore = -1
 	UnknownScore = 0x7FFF	// = math.MaxInt16 = 32,767
 )
 

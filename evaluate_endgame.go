@@ -24,6 +24,14 @@ func (e *Evaluation) inspectEndgame() {
 	}
 }
 
+// Packs fractional markdown value as expected by inspectEndgame().
+func (e *Evaluation) fraction(mul, div int) int {
+	if mul == 1 {
+		return div
+	}
+	return (mul << 16) | div
+}
+
 func (e *Evaluation) strongerSide() uint8 {
 	if e.score.endgame > 0 {
 		return White
@@ -32,15 +40,15 @@ func (e *Evaluation) strongerSide() uint8 {
 }
 
 // Known endgames where we calculate the exact score.
-func (e *Evaluation) winAgainstBareKing() int { // STUB.
+func (e *Evaluation) winAgainstBareKing() int { 	// STUB.
 	return e.score.blended(e.material.phase)
 }
 
-func (e *Evaluation) knightAndBishopVsBareKing() int { // STUB.
+func (e *Evaluation) knightAndBishopVsBareKing() int {	// STUB.
 	return e.score.blended(e.material.phase)
 }
 
-func (e *Evaluation) twoBishopsVsBareKing() int { // STUB.
+func (e *Evaluation) twoBishopsVsBareKing() int { 	// STUB.
 	return e.score.blended(e.material.phase)
 }
 
@@ -62,7 +70,7 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 
 	index := color + (wKing << 1) + (bKing << 7) + ((wPawn - 8) << 13)
 	if bitbase[index / 64] & (1 << uint(index & 0x3F)) == 0 {
-		return 0
+		return DrawScore
 	}
 
 	if stronger == Black {
@@ -80,15 +88,15 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 
 	// Pawns on A file with bare king opposing them.
 	if (pawns & ^maskFile[A1] == 0) && (pawns & ^maskInFront[color^1][row*8] == 0) && col <= B1 {
-		return 0
+		return DrawScore
 	}
 
 	// Pawns on H file with bare king opposing them.
 	if (pawns & ^maskFile[H1] == 0) && (pawns & ^maskInFront[color^1][row*8+7] == 0) && col >= G1 {
-		return 0
+		return DrawScore
 	}
 
-	return -1
+	return ExistingScore
 }
 
 // Bishop-only endgame: drop the score if we have opposite-colored bishops.
@@ -96,36 +104,37 @@ func (e *Evaluation) bishopsAndPawns() int {
 	if e.oppositeBishops() {
 		outposts := &e.position.outposts
 		if (outposts[Pawn] | outposts[BlackPawn]).count() == 2 {
-			return 8 // --> 1/8 of original score.
+			return e.fraction(1, 8) // 1/8
 		}
-		return 2 // --> 1/2 of original score.
+		return e.fraction(1, 2) // 1/2
 	}
 
-	return -1
+	return ExistingScore
 }
 
 // Single bishops plus some minors: drop the score if we have opposite-colored bishops.
 func (e *Evaluation) drawishBishops() int {
 	if e.oppositeBishops() {
-		return 4 // --> 1/4 of original score.
+		return e.fraction(1, 4) // 1/4
 	}
-	return -1
+
+	return ExistingScore
 }
 
-func (e *Evaluation) kingAndPawnVsKingAndPawn() int { // STUB.
-	return -1 // 96
+func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
+	return ExistingScore
 }
 
-func (e *Evaluation) bishopAndPawnVsBareKing() int { // STUB.
-	return -1 // 96
+func (e *Evaluation) bishopAndPawnVsBareKing() int {	// STUB.
+	return ExistingScore
 }
 
-func (e *Evaluation) rookAndPawnVsRook() int { // STUB.
-	return -1 // 96
+func (e *Evaluation) rookAndPawnVsRook() int {		// STUB.
+	return ExistingScore
 }
 
-func (e *Evaluation) queenVsRookAndPawns() int { // STUB.
-	return -1 // 96
+func (e *Evaluation) queenVsRookAndPawns() int { 	// STUB.
+	return ExistingScore
 }
 
 func (e *Evaluation) lastPawnLeft() int {
@@ -133,10 +142,10 @@ func (e *Evaluation) lastPawnLeft() int {
 	outposts := &e.position.outposts
 
 	if (color == White && outposts[Pawn].count() == 1) || (color == Black && outposts[BlackPawn].count() == 1) {
-		return (3 << 16) | 4 // --> 3/4 of original score.
+		return e.fraction(3, 4) // 3/4
 	}
 
-	return -1
+	return ExistingScore
 }
 
 func (e *Evaluation) noPawnsLeft() int {
@@ -150,26 +159,26 @@ func (e *Evaluation) noPawnsLeft() int {
 			// There is a theoretical chance of winning if opponent's pawns are on
 			// edge files (ex. some puzzles).
 			if outposts[BlackPawn] & (maskFile[0] | maskFile[7]) != 0 {
-				return 64 // --> 1/64 of original score.
+				return e.fraction(1, 64) // 1/64
 			}
-			return 0
+			return DrawScore
 		} else if blackMinorOnly {
-			return 16 // --> 1/16 of original score.
+			return e.fraction(1, 16) // 1/16
 		}
-		return (3 << 16) | 16 // --> 3/16 of original score.
+		return e.fraction(3, 16) // 3/16
 	}
 
 	if color == Black && outposts[BlackPawn] == 0 {
 		if blackMinorOnly {
 			if outposts[Pawn] & (maskFile[0] | maskFile[7]) != 0 {
-				return 64 // --> 1/64 of original score.
+				return e.fraction(1, 64) // 1/64
 			}
-			return 0
+			return DrawScore
 		} else if whiteMinorOnly {
-			return 16 // --> 1/16 of original score.
+			return e.fraction(1, 16) // 1/16
 		}
-		return (3 << 16) | 16 // --> 3/16 of original score.
+		return e.fraction(3, 16) // 3/16
 	}
 
-	return -1
+	return ExistingScore
 }
