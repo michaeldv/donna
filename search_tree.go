@@ -82,8 +82,8 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 		// Futility pruning is only applicable if we don't have winning score
 		// yet and there are pieces other than pawns.
-		if !isNull && depth < 14 && abs(beta) < Checkmate - MaxPly &&
-		   p.outposts[p.color] & ^(p.outposts[king(p.color)] | p.outposts[pawn(p.color)]) != 0 {
+		if !isNull && depth < 14 && !isMate(beta) &&
+		   (p.outposts[p.color] & ^(p.outposts[king(p.color)] | p.outposts[pawn(p.color)])).any() {
 			// Largest conceivable positional gain.
 			if gain := staticScore - 256 * depth; gain >= beta {
 				return gain
@@ -98,7 +98,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			position.undoNullMove()
 
 			if nullScore >= beta {
-				if abs(nullScore) >= Checkmate - MaxPly {
+				if isMate(nullScore) {
 					return beta
 				}
 				return nullScore

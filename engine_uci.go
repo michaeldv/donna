@@ -16,8 +16,8 @@ import (
 func (e *Engine) uciScore(depth, score, alpha, beta int) *Engine {
 	str := fmt.Sprintf("info depth %d score", depth)
 
-	if abs(score) < Checkmate-MaxPly {
-		str += fmt.Sprintf(" cp %d", score*100/onePawn)
+	if !isMate(score) {
+		str += fmt.Sprintf(" cp %d", score * 100 / onePawn)
 	} else {
 		mate := -Checkmate - score
 		if score > 0 {
@@ -45,7 +45,7 @@ func (e *Engine) uciBestMove(move Move, duration int64) *Engine {
 func (e *Engine) uciPrincipal(depth, score int, duration int64) *Engine {
 	str := fmt.Sprintf("info depth %d score", depth)
 
-	if abs(score) < Checkmate - MaxPly {
+	if !isMate(score) {
 		str += fmt.Sprintf(" cp %d", score * 100 / onePawn)
 	} else {
 		mate := -Checkmate - score
