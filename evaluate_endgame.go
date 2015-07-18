@@ -6,21 +6,28 @@ package donna
 
 func (e *Evaluation) evaluateEndgame() int {
 	score := e.material.endgame(e)
+
 	if e.position.color == Black {
 		return -score
 	}
+
 	return score
 }
 
 func (e *Evaluation) inspectEndgame() {
 	markdown := e.material.endgame(e)
-	if markdown == 0 {
+	if markdown == ExistingScore {
+		return
+	} else if markdown == DrawScore {
 		e.score = Score{0, 0}
-	} else if markdown > 0xFFFF {
+	} else {
 		mul, div := markdown >> 16, markdown & 0xFFFF
-		e.score.endgame = e.score.endgame * mul / div
-	} else if markdown > 0 {
-		e.score.endgame /= markdown
+		if div != 0 {
+			if mul != 0 {
+				e.score.endgame = e.score.endgame * mul
+			}
+			e.score.endgame /= div
+		}
 	}
 }
 
@@ -122,6 +129,26 @@ func (e *Evaluation) drawishBishops() int {
 }
 
 func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
+	if e.score.endgame != 0 {
+		color := e.strongerSide()
+		rival := color ^ 1
+		pawns := e.position.outposts[pawn(color)]
+		if rank(color, pawns.first()) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).any() {
+			pawns = e.position.outposts[pawn(rival)]	// Save rival's pawn mask.
+			e.position.outposts[pawn(rival)] = maskNone	// Remove rival's pawn.
+			kpkScore := e.kingAndPawnVsBareKing()		// Evaluate using KPK bitbase.
+			e.position.outposts[pawn(rival)] = pawns	// Restore rival's pawn mask.
+			switch kpkScore {				// Return KPK bitbase evaluation.
+			case WhiteWinning:
+				return e.fraction(kpkScore, e.score.endgame)
+			case BlackWinning:
+				return e.fraction(kpkScore, -e.score.endgame)
+			default:
+				return DrawScore
+			}
+		}
+	}
+
 	return ExistingScore
 }
 
