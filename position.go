@@ -307,7 +307,7 @@ func (p *Position) status(move Move, blendedScore int) int {
 		}
 		return Stalemate
 	default:
-		if score > Checkmate-MaxDepth && (score+ply)/2 > 0 {
+		if score > Checkmate - MaxDepth && (score + ply) / 2 > 0 {
 			if p.color == White {
 				return BlackWinning
 			}

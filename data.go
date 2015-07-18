@@ -25,7 +25,7 @@ const (
 	White = iota
 	Black
 	MaxPly = 64
-	MaxDepth = 32
+	MaxDepth = 64
 	Checkmate = 0x7FFF - 1	// = 32,766
 	DrawScore = 0
 	ExistingScore = -1

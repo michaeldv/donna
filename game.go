@@ -128,7 +128,7 @@ func (game *Game) Think() Move {
 		engine.startClock(); defer engine.stopClock();
 	}
 
-	for depth := 1; status == InProgress && game.keepThinking(depth, move); depth++ {
+	for depth := 1; game.keepThinking(depth, status, move); depth++ {
 		// Save previous best score in case search gets interrupted.
 		bestScore := score
 
@@ -190,15 +190,14 @@ func (game *Game) Think() Move {
 }
 
 // When in doubt, do what the President does ―- guess.
-func (game *Game) keepThinking(depth int, move Move) bool {
-	if depth == 1 {
-		return true
+func (game *Game) keepThinking(depth, status int, move Move) bool {
+	if depth == 1 || depth > MaxDepth || status != InProgress {
+		return depth == 1
 	}
 
 	if engine.fixedDepth() {
 		return depth <= engine.options.maxDepth
 	} else if engine.clock.halt {
-		//\\ engine.debug("# Depth %02d Early out with %s\n", depth, move)
 		return false
 	}
 
