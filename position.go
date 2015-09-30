@@ -461,11 +461,11 @@ func (p *Position) dcf() string {
 }
 
 func (p *Position) String() string {
-	buffer := bytes.NewBufferString("  a b c d e f g h")
+	buffer := bytes.NewBufferString("  a b c d e f g h  " + C(p.color) + " to move")
 	if !p.isInCheck(p.color) {
 		buffer.WriteString("\n")
 	} else {
-		buffer.WriteString("  Check to " + C(p.color) + "\n")
+		buffer.WriteString(", check\n")
 	}
 	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))
