@@ -7,13 +7,13 @@ package donna
 func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	ply := ply()
 
-	// Reset principal variation.
-	game.pv[ply].size = 0
-
 	// Return if it's time to stop search.
 	if ply >= MaxPly || engine.clock.halt {
 		return p.Evaluate()
 	}
+
+	// Reset principal variation.
+	game.pv[ply].size = 0
 
 	// Insufficient material and repetition/perpetual check pruning.
 	if p.insufficient() || p.repetition() || p.fifty() {
