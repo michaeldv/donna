@@ -209,3 +209,23 @@ func TestEndgame340(t *testing.T) {
 	score := NewGame(`Kd1,h3`, `M,Kb8,a4`).start().Evaluate()
 	expect.Eq(t, score, 0)
 }
+
+func TestEndgame350(t *testing.T) {
+	score := NewGame(`Kf5,h3`, `Kd5,h4`).start().Evaluate()
+	expect.Eq(t, score, 17)
+}
+
+func TestEndgame360(t *testing.T) {
+	score := NewGame(`Kf5,h3`, `M,Kd5,h4`).start().Evaluate()
+	expect.Eq(t, score, -7)
+}
+
+func TestEndgame370(t *testing.T) {
+	score := NewGame(`Kh6,h3`, `Kf6,h4`).start().Evaluate()
+	expect.Eq(t, score, 0)
+}
+
+func TestEndgame380(t *testing.T) {
+	score := NewGame(`Kf1,h3`, `M,Kh1,h4`).start().Evaluate()
+	expect.Eq(t, score, 0)
+}
