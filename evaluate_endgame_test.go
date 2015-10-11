@@ -197,7 +197,7 @@ func TestEndgame310(t *testing.T) {
 
 func TestEndgame320(t *testing.T) {
 	score := NewGame(`Kc1,a2`, `M,Ke6,h5`).start().Evaluate()
-	expect.Eq(t, score, BlackWinning)
+	expect.Eq(t, score, -BlackWinning)
 }
 
 func TestEndgame330(t *testing.T) {

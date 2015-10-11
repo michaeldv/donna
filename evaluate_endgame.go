@@ -138,47 +138,51 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 	}
 
 	p := e.position
-
-	// Check if the side making a move has unstoppable pawn.
-	color := p.color
-	rival := color ^ 1
-	piece := pawn(color)
-	pawns := p.outposts[piece]
-	square := pawns.first()
-
-	if (p.outposts[rival] & maskInFront[color][square]).empty() {
-		// Pick square rule bitmask for the pawn. If defending king has the right
-		// to move then pick extended square mask.
-		mask := Bitmask(0)
-		if p.color == color {
-			mask = maskSquare[color][square]
-		} else {
-			mask = maskSquareEx[color][square]
-		}
-		if (mask & p.outposts[king(rival)]).empty() {
-			if color == White {
-				return WhiteWinning
+	unstoppable := func(color uint8, square int) bool {
+		if (p.outposts[color ^ 1] & maskInFront[color][square]).empty() {
+			mask := Bitmask(0)
+			if p.color == color {
+				mask = maskSquare[color][square]
+			} else {
+				mask = maskSquareEx[color][square]
 			}
-			return BlackWinning
+			return (mask & p.outposts[king(color ^ 1)]).empty()
 		}
+		return false
 	}
 
+	// Check if either side has unstoppable pawn.
+	white := unstoppable(White, p.outposts[pawn(White)].first())
+	black := unstoppable(Black, p.outposts[pawn(Black)].first())
+	if white {
+		e.score.endgame = WhiteWinning
+	}
+	if black {
+		e.score.endgame = BlackWinning
+	}
+	if white || black {
+		return ExistingScore
+	}
 
 	// Try to evaluate the endgame using KPK bitbase. If the opposite side is not loosing
 	// without the pawn it's unlikely the game is lost with the pawn present.
+	color := p.color
+	piece := pawn(color)
+	pawns := p.outposts[piece]
+	square := pawns.first()
 	if rank(color, pawns.first()) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).any() {
 
 		// Temporarily remove rival's pawn.
-		piece = pawn(rival)
-		pawns = p.outposts[piece]		// <- Save: rival's pawn bitmask.
-		square = pawns.first()			// <- Save: rival's pawn square.
+		piece = pawn(color ^ 1)
+		pawns = p.outposts[piece]		// -> Save: rival's pawn bitmask.
+		square = pawns.first()			// -> Save: rival's pawn square.
 
 		p.outposts[piece] = maskNone
 		p.pieces[square] = Piece(0)
 
 		// Temporarily adjust score so that when e.strongerSide() gets called
 		// by kingAndPawnVsBareKing() it returns side to move.
-		score := e.score.endgame		// <- Save: endgame score.
+		score := e.score.endgame		// -> Save: endgame score.
 		if color == White {
 			e.score.endgame = 1
 		} else {
@@ -187,9 +191,9 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 
 		// When we're done restore original endgame score and rival's pawn.
 		defer func() {
-			e.score.endgame = score		// -> Restore: endgame score.
-			p.pieces[square] = piece	// -> Restore: rival's pawn square.
-			p.outposts[piece] = pawns	// -> Restore: rival's pawn bitmask.
+			e.score.endgame = score		// <- Restore: endgame score.
+			p.pieces[square] = piece	// <- Restore: rival's pawn square.
+			p.outposts[piece] = pawns	// <- Restore: rival's pawn bitmask.
 		}()
 
 		if e.kingAndPawnVsBareKing() == DrawScore {
