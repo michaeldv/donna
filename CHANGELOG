@@ -1,3 +1,16 @@
+Oct 11, 2015: Version v3.0
+  - Improved root move ordering.
+  - Improved late move reduction in search.
+  - Simplified quiescence search.
+  - Implemented King with pawn vs King with pawn endgame evaluation.
+  - Added pawn square rule and unstoppable pawn detection.
+  - Replaced standard Go sort with faster shell sort to speed up move ordering.
+  - Optimized principal variation to avoid memory garbage collection.
+  - Doubled maximum depth from 32 to 64 plies.
+  - Imporved unit test coverage.
+  - Fixed nasty bug in King with pawn vs King endgame.
+  - Fixed rare condition resulting in infinite loop.
+
 May 11, 2015: Version v2.1
   - Fixed cache allocation to reuse existing cache (if any) when starting new game.
   - Added UCI Hash option to be able to specify hash size (32Mb to 1Gb, default 256Mb).
@@ -11,4 +24,5 @@ May 2, 2015: Version v2.0
   - Fine-tuned some evaluation parameters.
   - Added "book" command to REPL.
 
-Dec 14, 2014: Initial v1.0 release.
+Dec 14, 2014: Version v1.0
+  - Initial release.
