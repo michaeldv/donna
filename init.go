@@ -280,12 +280,12 @@ func imbalance(w2, wP, wN, wB, wR, wQ, b2, bP, bN, bB, bR, bQ int) int {
 		return a * (x * x) + (b + c) * x
 	}
 
-	return polynom(w2,    0, (   0                                                                                    ),  1852) +
-	       polynom(wP,    2, (  39*w2 +                                      37*b2                                    ),  -162) +
-	       polynom(wN,   -4, (  35*w2 + 271*wP +                             10*b2 +  62*bP                           ), -1122) +
-	       polynom(wB,    0, (   0*w2 + 105*wP +   4*wN +                    57*b2 +  64*bP +  39*bN                  ),  -183) +
-	       polynom(wR, -141, ( -27*w2 +  -2*wP +  46*wN + 100*wB +           50*b2 +  40*bP +  23*bN + -22*bB         ),   249) +
-	       polynom(wQ,    0, (-177*w2 +  25*wP + 129*wN + 142*wB + -137*wR + 98*b2 + 105*bP + -39*bN + 141*bB + 274*bR),  -154)
+	return polynom(w2,    0, (   0                                                                                    ),  1756) +
+	       polynom(wP,    2, (  39*w2 +                                      37*b2                                    ),  -164) +
+	       polynom(wN,   -4, (  35*w2 + 271*wP +                             10*b2 +  62*bP                           ), -1067) +
+	       polynom(wB,    0, (   0*w2 + 105*wP +   4*wN +                    57*b2 +  64*bP +  39*bN                  ),  -160) +
+	       polynom(wR, -141, ( -27*w2 +  -2*wP +  46*wN + 100*wB +           50*b2 +  40*bP +  23*bN + -22*bB         ),   234) +
+	       polynom(wQ,    0, (-177*w2 +  25*wP + 129*wN + 142*wB + -137*wR + 98*b2 + 105*bP + -39*bN + 141*bB + 274*bR),  -137)
 }
 
 func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame Function) {
