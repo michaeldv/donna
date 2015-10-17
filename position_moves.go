@@ -17,7 +17,7 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	}
 
 	// Update positional score.
-	p.tally.subtract(pst[piece][from]).add(pst[piece][to])
+	p.tally.sub(pst[piece][from]).add(pst[piece][to])
 
 	return p
 }
@@ -35,7 +35,7 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 	p.balance += materialBalance[promo] - materialBalance[pawn]
 
 	// Update positional score.
-	p.tally.subtract(pst[pawn][from]).add(pst[promo][to])
+	p.tally.sub(pst[pawn][from]).add(pst[promo][to])
 
 	return p
 }
@@ -53,7 +53,7 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	p.balance -= materialBalance[capture]
 
 	// Update positional score.
-	p.tally.subtract(pst[capture][to])
+	p.tally.sub(pst[capture][to])
 
 	return p
 }
@@ -72,7 +72,7 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	p.balance -= materialBalance[capture]
 
 	// Update positional score.
-	p.tally.subtract(pst[capture][enpassant])
+	p.tally.sub(pst[capture][enpassant])
 
 	return p
 }

@@ -66,17 +66,17 @@ func (e *Evaluation) analyzePieces() {
 	// Evaluate black pieces except the queen.
 	if p.outposts[BlackKnight].any() {
 		knight.black, bonus = e.knights(Black, maskSafe[Black], isKingUnsafe[White])
-		e.score.subtract(knight.black)
+		e.score.sub(knight.black)
 		mobility.black.add(bonus)
 	}
 	if p.outposts[BlackBishop].any() {
 		bishop.black, bonus = e.bishops(Black, maskSafe[Black], isKingUnsafe[White])
-		e.score.subtract(bishop.black)
+		e.score.sub(bishop.black)
 		mobility.black.add(bonus)
 	}
 	if p.outposts[BlackRook].any() {
 		rook.black, bonus = e.rooks(Black, maskSafe[Black], isKingUnsafe[White])
-		e.score.subtract(rook.black)
+		e.score.sub(rook.black)
 		mobility.black.add(bonus)
 	}
 
@@ -91,7 +91,7 @@ func (e *Evaluation) analyzePieces() {
 	if p.outposts[BlackQueen].any() {
 		maskSafe[Black] &= ^(e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook])
 		queen.black, bonus = e.queens(Black, maskSafe[Black], isKingUnsafe[White])
-		e.score.subtract(queen.black)
+		e.score.sub(queen.black)
 		mobility.black.add(bonus)
 	}
 
@@ -104,7 +104,7 @@ func (e *Evaluation) analyzePieces() {
 	mobility.black.apply(weights[0])
 
 	// Update cumulative score based on white vs. black bonuses and mobility.
-	e.score.add(mobility.white).subtract(mobility.black)
+	e.score.add(mobility.white).sub(mobility.black)
 }
 
 func (e *Evaluation) knights(color uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
@@ -123,7 +123,7 @@ func (e *Evaluation) knights(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 
 		// Penalty if knight is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
-			score.subtract(penaltyPawnThreat[Knight/2])
+			score.sub(penaltyPawnThreat[Knight/2])
 		}
 
 		// Bonus if knight is behind friendly pawn.
@@ -171,12 +171,12 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 
 		// Penalty for light/dark-colored pawns restricting a bishop.
 		if count := (same(square) & p.outposts[pawn(color)]).count(); count > 0 {
-			score.subtract(bishopPawn.times(count))
+			score.sub(bishopPawn.times(count))
 		}
 
 		// Penalty if bishop is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
-			score.subtract(penaltyPawnThreat[Bishop/2])
+			score.sub(penaltyPawnThreat[Bishop/2])
 		}
 
 		// Bonus if bishop is behind friendly pawn.
@@ -246,7 +246,7 @@ func (e *Evaluation) rooks(color uint8, maskSafe Bitmask, unsafeKing bool) (scor
 
 		// Penalty if rook is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & herPawns != 0 {
-			score.subtract(penaltyPawnThreat[Rook/2])
+			score.sub(penaltyPawnThreat[Rook/2])
 		}
 
 		// Bonus if rook is attacking enemy's pawns.
@@ -320,7 +320,7 @@ func (e *Evaluation) queens(color uint8, maskSafe Bitmask, unsafeKing bool) (sco
 
 		// Penalty if queen is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
-			score.subtract(penaltyPawnThreat[Queen/2])
+			score.sub(penaltyPawnThreat[Queen/2])
 		}
 
 		// Bonus if queen is out and attacking enemy's pawns.

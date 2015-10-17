@@ -56,7 +56,7 @@ func (e *Evaluation) analyzeSafety() {
 	cover.black.apply(weights[4-color])
 	safety.white.apply(weights[3+color])
 	safety.black.apply(weights[4-color])
-	e.score.add(cover.white).add(safety.white).subtract(cover.black).subtract(safety.black)
+	e.score.add(cover.white).add(safety.white).sub(cover.black).sub(safety.black)
 }
 
 func (e *Evaluation) kingSafety(color uint8) (score Score) {

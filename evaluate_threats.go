@@ -18,12 +18,12 @@ func (e *Evaluation) analyzeThreats() {
 
 	threats.white = e.threats(White, e.attacks[White], e.attacks[Black])
 	threats.black = e.threats(Black, e.attacks[Black], e.attacks[White])
-	e.score.add(threats.white).subtract(threats.black)
+	e.score.add(threats.white).sub(threats.black)
 
 	if e.material.turf != 0 && e.material.flags & (whiteKingSafety | blackKingSafety) != 0 {
 		center.white = e.center(White, e.attacks[White], e.attacks[Black], e.attacks[pawn(Black)])
 		center.black = e.center(Black, e.attacks[Black], e.attacks[White], e.attacks[pawn(White)])
-		e.score.add(center.white).subtract(center.black)
+		e.score.add(center.white).sub(center.black)
 	}
 }
 

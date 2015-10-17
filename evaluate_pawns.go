@@ -25,7 +25,7 @@ func (e *Evaluation) analyzePawns() {
 	if e.pawns.id != key || engine.trace {
 		white, black := e.pawnStructure(White), e.pawnStructure(Black)
 		white.apply(weights[1]); black.apply(weights[1]) // <-- Pawn structure weight.
-		e.pawns.score.clear().add(white).subtract(black)
+		e.pawns.score.clear().add(white).sub(black)
 		e.pawns.id = key
 
 		// Force full king shelter evaluation since any legit king square
@@ -51,7 +51,7 @@ func (e *Evaluation) analyzePassers() {
 
 	white, black = e.pawnPassers(White), e.pawnPassers(Black)
 	white.apply(weights[2]); black.apply(weights[2]) // <-- Passed pawns weight.
-	e.score.add(white).subtract(black)
+	e.score.add(white).sub(black)
 }
 
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
@@ -77,9 +77,9 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 		exposed := (maskInFront[color][square] & herPawns == 0)
 		if isolated {
 			if !exposed {
-				score.subtract(penaltyIsolatedPawn[col])
+				score.sub(penaltyIsolatedPawn[col])
 			} else {
-				score.subtract(penaltyWeakIsolatedPawn[col])
+				score.sub(penaltyWeakIsolatedPawn[col])
 			}
 		}
 
@@ -88,7 +88,7 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 		// isolated.
 		doubled := (maskInFront[color][square] & hisPawns != 0)
 		if doubled {
-			score.subtract(penaltyDoubledPawn[col])
+			score.sub(penaltyDoubledPawn[col])
 		}
 
 		// Bonus if the pawn is supported by friendly pawn(s) on the same
@@ -123,9 +123,9 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 					if (enemy | enemy.pushed(color)) & herPawns != 0 {
 						backward = true
 						if !exposed {
-							score.subtract(penaltyBackwardPawn[col])
+							score.sub(penaltyBackwardPawn[col])
 						} else {
-							score.subtract(penaltyWeakBackwardPawn[col])
+							score.sub(penaltyWeakBackwardPawn[col])
 						}
 					}
 				}

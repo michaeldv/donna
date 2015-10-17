@@ -24,7 +24,7 @@ func (s *Score) add(score Score) *Score {
 	return s
 }
 
-func (s *Score) subtract(score Score) *Score {
+func (s *Score) sub(score Score) *Score {
 	s.midgame -= score.midgame
 	s.endgame -= score.endgame
 

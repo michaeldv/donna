@@ -78,7 +78,7 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 			final.add(eval.score)
 		} else {
 			tempo.black.add(rightToMove)
-			final.subtract(eval.score)
+			final.sub(eval.score)
 		}
 
 		eval.checkpoint(`Phase`, eval.material.phase)
@@ -101,7 +101,7 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	if p.color == White {
 		e.score.add(rightToMove)
 	} else {
-		e.score.subtract(rightToMove)
+		e.score.sub(rightToMove)
 	}
 
 	// Set up king and pawn attacks for both sides.

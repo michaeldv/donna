@@ -212,12 +212,12 @@ func initPST() {
 
 		// Black pieces: use square index as is, and assign negative
 		// values so we could use white + black without extra condition.
-		pst[BlackPawn]  [square].subtract(Score{bonusPawn  [0][square], bonusPawn  [1][square]}).subtract(valuePawn)
-		pst[BlackKnight][square].subtract(Score{bonusKnight[0][square], bonusKnight[1][square]}).subtract(valueKnight)
-		pst[BlackBishop][square].subtract(Score{bonusBishop[0][square], bonusBishop[1][square]}).subtract(valueBishop)
-		pst[BlackRook]  [square].subtract(Score{bonusRook  [0][square], bonusRook  [1][square]}).subtract(valueRook)
-		pst[BlackQueen] [square].subtract(Score{bonusQueen [0][square], bonusQueen [1][square]}).subtract(valueQueen)
-		pst[BlackKing]  [square].subtract(Score{bonusKing  [0][square], bonusKing  [1][square]})
+		pst[BlackPawn]  [square].sub(Score{bonusPawn  [0][square], bonusPawn  [1][square]}).sub(valuePawn)
+		pst[BlackKnight][square].sub(Score{bonusKnight[0][square], bonusKnight[1][square]}).sub(valueKnight)
+		pst[BlackBishop][square].sub(Score{bonusBishop[0][square], bonusBishop[1][square]}).sub(valueBishop)
+		pst[BlackRook]  [square].sub(Score{bonusRook  [0][square], bonusRook  [1][square]}).sub(valueRook)
+		pst[BlackQueen] [square].sub(Score{bonusQueen [0][square], bonusQueen [1][square]}).sub(valueQueen)
+		pst[BlackKing]  [square].sub(Score{bonusKing  [0][square], bonusKing  [1][square]})
 	}
 }
 

@@ -167,7 +167,7 @@ func Summary(metrics map[string]interface{}) {
 		black := metrics[tag].(Total).black
 
 		var score Score
-		score.add(white).subtract(black)
+		score.add(white).sub(black)
 
 		if tag[0:1] == `+` {
 			tag = tag[1:]
