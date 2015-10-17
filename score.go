@@ -38,9 +38,17 @@ func (s *Score) apply(weight Score) *Score {
 	return s
 }
 
+
 func (s *Score) adjust(n int) *Score {
 	s.midgame += n
 	s.endgame += n
+
+	return s
+}
+
+func (s *Score) scale(n int) *Score {
+	s.midgame = s.midgame * n / 100
+	s.endgame = s.endgame * n / 100
 
 	return s
 }

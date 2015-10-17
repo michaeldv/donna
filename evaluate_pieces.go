@@ -120,16 +120,13 @@ func (e *Evaluation) knights(color uint8, maskSafe Bitmask, isEnemyKingThreatene
 			score.add(behindPawn)
 		}
 
-		// Extra bonus if knight is in the center. Increase the extra bonus
-		// if the knight is supported by a pawn and can't be exchanged.
+		// Extra bonus if knight is on central ranks. Increase the extra bonus
+		// if the knight is supported by a pawn.
 		extra := Score{0, 0}
 		if extra.midgame = extraKnight[flip(color, square)]; extra.midgame > 0 {
 			extra.endgame = extra.midgame / 4
-			if p.pawnAttacks(color).on(square) {	// Supported by a pawn.
-				extra.apply(Score{35, 35}) 	// Bump by 35%.
-				// if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
-				// 	extra += extra * 2 / 3 // No knights or bishops to exchange.
-				// }
+			if p.pawnAttacks(color).on(square) {
+				extra.scale(35) // Bump by 35% if supported by a pawn.
 			}
 			score.add(extra)
 		}
@@ -191,16 +188,13 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, isEnemyKingThreatene
 			}
 		}
 
-		// Extra bonus if bishop is in the center. Increase the extra bonus
-		// if the bishop is supported by a pawn and can't be exchanged.
+		// Extra bonus if bishop is in central ranks. Increase the extra bonus
+		// if the bishop is supported by a pawn.
 		extra := Score{0, 0}
 		if extra.midgame = extraBishop[flip(color, square)]; extra.midgame > 0 {
 			extra.endgame = extra.midgame / 2
-			if p.pawnAttacks(color).on(square) {	// Supported by a pawn.
-				extra.apply(Score{35, 35}) 	// Bump by 35%.
-				// if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
-				// 	extra += extra * 2 / 3 // No knights or bishops to exchange.
-				// }
+			if p.pawnAttacks(color).on(square) {
+				extra.scale(35) // Bump by 35% if supported by a pawn.
 			}
 			score.add(extra)
 		}
