@@ -6,7 +6,7 @@ package donna
 
 func (e *Evaluation) analyzePieces() {
 	p := e.position
-	var mobile Score
+	var bonus Score
 	var knight, bishop, rook, queen, mobility Total
 
 	if engine.trace {
@@ -47,45 +47,52 @@ func (e *Evaluation) analyzePieces() {
 	}
 
 	// Evaluate white pieces except the queen.
-	if p.outposts[Knight] != 0 {
-		knight.white, mobile = e.knights(White, maskSafe[White], isKingUnsafe[Black])
-		mobility.white.add(mobile)
+	if p.outposts[Knight].any() {
+		knight.white, bonus = e.knights(White, maskSafe[White], isKingUnsafe[Black])
+		e.score.add(knight.white)
+		mobility.white.add(bonus)
 	}
-	if p.outposts[Bishop] != 0 {
-		bishop.white, mobile = e.bishops(White, maskSafe[White], isKingUnsafe[Black])
-		mobility.white.add(mobile)
+	if p.outposts[Bishop].any() {
+		bishop.white, bonus = e.bishops(White, maskSafe[White], isKingUnsafe[Black])
+		e.score.add(bishop.white)
+		mobility.white.add(bonus)
 	}
-	if p.outposts[Rook] != 0 {
-		rook.white, mobile = e.rooks(White, maskSafe[White], isKingUnsafe[Black])
-		mobility.white.add(mobile)
+	if p.outposts[Rook].any() {
+		rook.white, bonus  = e.rooks(White, maskSafe[White], isKingUnsafe[Black])
+		e.score.add(rook.white)
+		mobility.white.add(bonus)
 	}
 
 	// Evaluate black pieces except the queen.
-	if p.outposts[BlackKnight] != 0 {
-		knight.black, mobile = e.knights(Black, maskSafe[Black], isKingUnsafe[White])
-		mobility.black.add(mobile)
+	if p.outposts[BlackKnight].any() {
+		knight.black, bonus = e.knights(Black, maskSafe[Black], isKingUnsafe[White])
+		e.score.subtract(knight.black)
+		mobility.black.add(bonus)
 	}
-	if p.outposts[BlackBishop] != 0 {
-		bishop.black, mobile = e.bishops(Black, maskSafe[Black], isKingUnsafe[White])
-		mobility.black.add(mobile)
+	if p.outposts[BlackBishop].any() {
+		bishop.black, bonus = e.bishops(Black, maskSafe[Black], isKingUnsafe[White])
+		e.score.subtract(bishop.black)
+		mobility.black.add(bonus)
 	}
-	if p.outposts[BlackRook] != 0 {
-		rook.black, mobile = e.rooks(Black, maskSafe[Black], isKingUnsafe[White])
-		mobility.black.add(mobile)
+	if p.outposts[BlackRook].any() {
+		rook.black, bonus = e.rooks(Black, maskSafe[Black], isKingUnsafe[White])
+		e.score.subtract(rook.black)
+		mobility.black.add(bonus)
 	}
 
-	// Now that we've built all attack bitmasks we can adjust mobility to
-	// exclude attacks by enemy's knights, bishops, and rooks and evaluate
-	// the queens.
-	if p.outposts[Queen] != 0 {
+	// Now that we've built all attack bitmasks we can adjust mobility to exclude
+	// attacks by enemy's knights, bishops, and rooks and evaluate the queens.
+	if p.outposts[Queen].any() {
 		maskSafe[White] &= ^(e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook])
-		queen.white, mobile = e.queens(White, maskSafe[White], isKingUnsafe[Black])
-		mobility.white.add(mobile)
+		queen.white, bonus = e.queens(White, maskSafe[White], isKingUnsafe[Black])
+		e.score.add(queen.white)
+		mobility.white.add(bonus)
 	}
-	if p.outposts[BlackQueen] != 0 {
+	if p.outposts[BlackQueen].any() {
 		maskSafe[Black] &= ^(e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook])
-		queen.black, mobile = e.queens(Black, maskSafe[Black], isKingUnsafe[White])
-		mobility.black.add(mobile)
+		queen.black, bonus = e.queens(Black, maskSafe[Black], isKingUnsafe[White])
+		e.score.subtract(queen.black)
+		mobility.black.add(bonus)
 	}
 
 	// Update attack bitmasks for both sides.
@@ -97,15 +104,14 @@ func (e *Evaluation) analyzePieces() {
 	mobility.black.apply(weights[0])
 
 	// Update cumulative score based on white vs. black bonuses and mobility.
-	e.score.add(knight.white).add(bishop.white).add(rook.white).add(queen.white).add(mobility.white)
-	e.score.subtract(knight.black).subtract(bishop.black).subtract(rook.black).subtract(queen.black).subtract(mobility.black)
+	e.score.add(mobility.white).subtract(mobility.black)
 }
 
 func (e *Evaluation) knights(color uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p := e.position
 	outposts := p.outposts[knight(color)]
 
-	for outposts != 0 {
+	for outposts.any() {
 		square := outposts.pop()
 		attacks := Bitmask(0)
 
@@ -151,7 +157,7 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 	p := e.position
 	outposts := p.outposts[bishop(color)]
 
-	for outposts != 0 {
+	for outposts.any() {
 		square := outposts.pop()
 		attacks := p.xrayAttacks(square)
 
@@ -226,7 +232,7 @@ func (e *Evaluation) rooks(color uint8, maskSafe Bitmask, unsafeKing bool) (scor
 	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
 		score.add(rookOn7th.times(count))
 	}
-	for outposts != 0 {
+	for outposts.any() {
 		square := outposts.pop()
 		attacks := p.xrayAttacks(square)
 
@@ -301,7 +307,7 @@ func (e *Evaluation) queens(color uint8, maskSafe Bitmask, unsafeKing bool) (sco
 	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
 		score.add(queenOn7th.times(count))
 	}
-	for outposts != 0 {
+	for outposts.any() {
 		square := outposts.pop()
 		attacks := p.attacks(square)
 
