@@ -163,3 +163,12 @@ func (e *Evaluation) oppositeBishops() bool {
 
 	return bishops & maskDark != 0 && bishops & ^maskDark != 0
 }
+
+// Returns true if material tables indicate that the king can't defend himself.
+func (e *Evaluation) isKingUnsafe(color int) bool {
+	if color == White {
+		return e.material.flags & whiteKingSafety != 0
+	}
+
+	return e.material.flags & blackKingSafety != 0
+}
