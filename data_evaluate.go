@@ -32,6 +32,13 @@ var (
 
 // Weight percentages applied to evaluation scores before computing the overall
 // blended score.
+var (
+	weightMobility        = Score{ 112, 134 }
+	weightPawnStructure   = Score{  91,  79 }
+	weightPassedPawns     = Score{  86, 107 }
+	weightOurKingSafety   = Score{ 126, 100 }
+	weightTheirKingSafety = Score{ 126, 100 }
+)
 var weights = []Score{
 	{ 112, 134 }, 	// [0] Mobility.
 	{  91,  79 }, 	// [1] Pawn structure.

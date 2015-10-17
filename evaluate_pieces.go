@@ -100,8 +100,8 @@ func (e *Evaluation) analyzePieces() {
 	e.attacks[Black] |= e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook] | e.attacks[BlackQueen]
 
 	// Apply weights to the mobility scores.
-	mobility.white.apply(weights[0])
-	mobility.black.apply(weights[0])
+	mobility.white.apply(weightMobility)
+	mobility.black.apply(weightMobility)
 
 	// Update cumulative score based on white vs. black bonuses and mobility.
 	e.score.add(mobility.white).sub(mobility.black)

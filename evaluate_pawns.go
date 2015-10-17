@@ -24,7 +24,8 @@ func (e *Evaluation) analyzePawns() {
 	// Bypass pawns cache if evaluation tracing is enabled.
 	if e.pawns.id != key || engine.trace {
 		white, black := e.pawnStructure(White), e.pawnStructure(Black)
-		white.apply(weights[1]); black.apply(weights[1]) // <-- Pawn structure weight.
+		white.apply(weightPawnStructure)
+		black.apply(weightPawnStructure)
 		e.pawns.score.clear().add(white).sub(black)
 		e.pawns.id = key
 
@@ -50,7 +51,8 @@ func (e *Evaluation) analyzePassers() {
 	}
 
 	white, black = e.pawnPassers(White), e.pawnPassers(Black)
-	white.apply(weights[2]); black.apply(weights[2]) // <-- Passed pawns weight.
+	white.apply(weightPassedPawns)
+	black.apply(weightPassedPawns)
 	e.score.add(white).sub(black)
 }
 

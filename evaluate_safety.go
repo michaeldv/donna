@@ -42,20 +42,27 @@ func (e *Evaluation) analyzeSafety() {
 
 	// Compute king's safety for both sides.
 	safety.white = e.kingSafety(White)
-	if oppositeBishops && e.material.flags & whiteKingSafety != 0 && safety.white.midgame < -onePawn / 10 * 8 {
+	if oppositeBishops && e.isKingUnsafe(White) && safety.white.midgame < -onePawn / 10 * 8 {
 		safety.white.midgame -= bishopDanger.midgame
 	}
 	safety.black = e.kingSafety(Black)
-	if oppositeBishops && e.material.flags & blackKingSafety != 0 && safety.black.midgame < -onePawn / 10 * 8 {
+	if oppositeBishops && e.isKingUnsafe(Black) && safety.black.midgame < -onePawn / 10 * 8 {
 		safety.black.midgame -= bishopDanger.midgame
 	}
 
-	// Apply weights by mapping Black to our king safety index [3], and White
-	// to enemy's king safety index [4].
-	cover.white.apply(weights[3+color])
-	cover.black.apply(weights[4-color])
-	safety.white.apply(weights[3+color])
-	safety.black.apply(weights[4-color])
+	// Apply king safety weights, then adjust the final score.
+	if color == White {
+		cover.white.apply(weightOurKingSafety)
+		safety.white.apply(weightOurKingSafety)
+		cover.black.apply(weightTheirKingSafety)
+		safety.black.apply(weightTheirKingSafety)
+	} else {
+		cover.white.apply(weightTheirKingSafety)
+		safety.white.apply(weightTheirKingSafety)
+		cover.black.apply(weightOurKingSafety)
+		safety.black.apply(weightOurKingSafety)
+	}
+
 	e.score.add(cover.white).add(safety.white).sub(cover.black).sub(safety.black)
 }
 
