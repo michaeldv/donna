@@ -46,6 +46,7 @@ type Evaluation struct {
 	score     Score 	 // Current score.
 	safety    [2]Safety 	 // King safety data for both sides.
 	attacks   [14]Bitmask 	 // Attack bitmasks for all the pieces on the board.
+	pinned    [2]Bitmask     // Bitmask of pinned pieces for both sides.
 	pawns     *PawnEntry 	 // Pointer to the pawn cache entry.
 	material  *MaterialEntry // Pointer to the matrial base entry.
 	position  *Position 	 // Pointer to the position we're evaluating.
@@ -112,6 +113,10 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	// Overall attacks for both sides include kings and pawns so far.
 	e.attacks[White] = e.attacks[King] | e.attacks[Pawn]
 	e.attacks[Black] = e.attacks[BlackKing] | e.attacks[BlackPawn]
+
+	// Pinned pieces for both sides that have restricted mobility.
+	e.pinned[White] = p.pinnedMask(p.king[White])
+	e.pinned[Black] = p.pinnedMask(p.king[Black])
 
 	return e
 }
