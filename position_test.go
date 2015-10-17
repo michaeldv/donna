@@ -162,3 +162,24 @@ func TestPosition250(t *testing.T) {
 	p := NewGame(`Ka1,Bb2`, `Kh5`).start()
 	expect.True(t, p.insufficient())
 }
+
+// Restricted mobility for pinned pieces.
+func TestPosition300(t *testing.T) {
+	p := NewGame(`Ka1,a2,Nc3`, `Kh8,h7,Bg8`).start() // Nc3 vs Bishop, no pin.
+	expect.Eq(t, p.Evaluate(), -18)
+	p = NewGame(`Ka1,a2,Nc3`, `Kh8,h7,Bg7`).start() // Nc3 vs Bishop, pin on C3-G7 diagonal.
+	expect.Eq(t, p.Evaluate(), -67)
+
+}
+
+func TestPosition310(t *testing.T) {
+	p := NewGame(`Ka1,a2,Bc3`, `Kg8,h7,Bg6`).start() // Bc3 vs Bishop, no pin.
+	expect.Eq(t, p.Evaluate(), 0)
+	p = NewGame(`Ka1,a2,Bc3`, `Kg8,h7,Bg7`).start() // Bc3 vs Bishop, pin on C3-G7 diagonal.
+	expect.Eq(t, p.Evaluate(), -24)
+	p = NewGame(`Ka3,a2,Bc3`, `Kh8,h7,Rh1`).start() // Bc3 vs Rook, no pin.
+	expect.Eq(t, p.Evaluate(), -211)
+	p = NewGame(`Ka3,a2,Bc3`, `Kh8,h7,Rh3`).start() // Bc3 vs Rook, pin on C3-H3 file.
+	expect.Eq(t, p.Evaluate(), -317)
+
+}
