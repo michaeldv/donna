@@ -22,10 +22,14 @@ func (e *Evaluation) analyzePieces() {
 		}()
 	}
 
-	// Mobility masks for both sides exclude a) squares attacked by enemy's
-	// pawns and b) squares occupied by friendly pawns and the king.
-	maskSafeForWhite := ^(e.attacks[BlackPawn] | p.outposts[Pawn] | p.outposts[King])
-	maskSafeForBlack := ^(e.attacks[Pawn] | p.outposts[BlackPawn] | p.outposts[BlackKing])
+	// Mobility masks for both sides exclude a) squares attacked by rival's pawns,
+	// b) king, c) pawns on first two ranks, d) blocked pawns.
+	var pawnExclusions = [2]Bitmask {
+		p.outposts[Pawn] & (maskRank[A2H2] | maskRank[A3H3] | p.board.pushed(Black)),
+		p.outposts[BlackPawn] & (maskRank[A7H7] | maskRank[A6H6] | p.board.pushed(White)),
+	}
+	maskSafeForWhite := ^(e.attacks[BlackPawn] | p.outposts[King] | pawnExclusions[White])
+	maskSafeForBlack := ^(e.attacks[Pawn] | p.outposts[BlackKing] | pawnExclusions[Black])
 
 	// Initialize king fort bitmasks only when we need them.
 	isWhiteKingThreatened := (e.material.flags & whiteKingSafety != 0)
@@ -98,10 +102,13 @@ func (e *Evaluation) knights(color uint8, maskSafe Bitmask, isEnemyKingThreatene
 
 	for outposts != 0 {
 		square := outposts.pop()
-		attacks := p.attacks(square)
+		attacks := Bitmask(0)
 
-		// Bonus for knight's mobility.
-		mobility.add(mobilityKnight[(attacks & maskSafe).count()])
+		// Bonus for knight's mobility -- unless the knight is pinned.
+		if e.pinned[color].off(square) {
+			attacks = p.attacks(square)
+			mobility.add(mobilityKnight[(attacks & maskSafe).count()])
+		}
 
 		// Penalty if knight is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
@@ -115,14 +122,16 @@ func (e *Evaluation) knights(color uint8, maskSafe Bitmask, isEnemyKingThreatene
 
 		// Extra bonus if knight is in the center. Increase the extra bonus
 		// if the knight is supported by a pawn and can't be exchanged.
-		if extra := extraKnight[flip(color, square)]; extra > 0 {
-			if p.pawnAttacks(color).on(square) {
-				extra += extra / 2 // Supported by a pawn.
-				if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
-					extra += extra * 2 / 3 // No knights or bishops to exchange.
-				}
+		extra := Score{0, 0}
+		if extra.midgame = extraKnight[flip(color, square)]; extra.midgame > 0 {
+			extra.endgame = extra.midgame / 4
+			if p.pawnAttacks(color).on(square) {	// Supported by a pawn.
+				extra.apply(Score{35, 35}) 	// Bump by 35%.
+				// if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
+				// 	extra += extra * 2 / 3 // No knights or bishops to exchange.
+				// }
 			}
-			score.adjust(extra)
+			score.add(extra)
 		}
 
 		// Track if knight attacks squares around enemy's king.
@@ -144,8 +153,13 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, isEnemyKingThreatene
 		square := outposts.pop()
 		attacks := p.xrayAttacks(square)
 
-		// Bonus for bishop's mobility
+		// Bonus for bishop's mobility: if the bishop is pinned then restrict the attacks.
+		if e.pinned[color].on(square) {
+			king := p.king[color]
+			attacks &= (maskBlock[king][square] | maskDiagonal[king][square])
+		}
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
+
 
 		// Penalty for light/dark-colored pawns restricting a bishop.
 		if count := (same(square) & p.outposts[pawn(color)]).count(); count > 0 {
@@ -179,14 +193,16 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, isEnemyKingThreatene
 
 		// Extra bonus if bishop is in the center. Increase the extra bonus
 		// if the bishop is supported by a pawn and can't be exchanged.
-		if extra := extraBishop[flip(color, square)]; extra > 0 {
-			if p.pawnAttacks(color).on(square) {
-				extra += extra / 2 // Supported by a pawn.
-				if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
-					extra += extra * 2 / 3 // No knights or bishops to exchange.
-				}
+		extra := Score{0, 0}
+		if extra.midgame = extraBishop[flip(color, square)]; extra.midgame > 0 {
+			extra.endgame = extra.midgame / 2
+			if p.pawnAttacks(color).on(square) {	// Supported by a pawn.
+				extra.apply(Score{35, 35}) 	// Bump by 35%.
+				// if p.outposts[knight(color^1)] == 0 && (same(square) & p.outposts[bishop(color^1)]).empty() {
+				// 	extra += extra * 2 / 3 // No knights or bishops to exchange.
+				// }
 			}
-			score.adjust(extra)
+			score.add(extra)
 		}
 
 		// Track if bishop attacks squares around enemy's king.
@@ -215,7 +231,11 @@ func (e *Evaluation) rooks(color uint8, maskSafe Bitmask, isEnemyKingThreatened 
 		square := outposts.pop()
 		attacks := p.xrayAttacks(square)
 
-		// Bonus for rook's mobility
+		// Bonus for rook's mobility: if the rook is pinned then restrict the attacks.
+		if e.pinned[color].on(square) {
+			king := p.king[color]
+			attacks &= (maskBlock[king][square] | maskStraight[king][square])
+		}
 		safeSquares := (attacks & maskSafe).count()
 		mobility.add(mobilityRook[safeSquares])
 
@@ -286,7 +306,11 @@ func (e *Evaluation) queens(color uint8, maskSafe Bitmask, isEnemyKingThreatened
 		square := outposts.pop()
 		attacks := p.attacks(square)
 
-		// Bonus for queen's mobility.
+		// Bonus for queen's mobility: if the queen is pinned then restrict the attacks.
+		if e.pinned[color].on(square) {
+			king := p.king[color]
+			attacks &= (maskBlock[king][square] | maskDiagonal[king][square] | maskStraight[king][square])
+		}
 		mobility.add(mobilityQueen[min(15, (attacks & maskSafe).count())])
 
 		// Penalty if queen is attacked by enemy's pawn.
