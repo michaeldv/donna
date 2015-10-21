@@ -36,8 +36,8 @@ var (
 	weightMobility        = Score{ 112, 134 }
 	weightPawnStructure   = Score{  91,  79 }
 	weightPassedPawns     = Score{  86, 107 }
-	weightOurKingSafety   = Score{ 126, 100 }
-	weightTheirKingSafety = Score{ 126, 100 }
+	weightOurKingSafety   = Score{ 126,   0 }
+	weightTheirKingSafety = Score{ 126,   0 }
 )
 var weights = []Score{
 	{ 112, 134 }, 	// [0] Mobility.
