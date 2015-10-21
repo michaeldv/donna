@@ -14,8 +14,8 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	gen := NewRootGen(p, depth)
 	if depth == 1 {
 		gen.generateRootMoves()
-	} else if depth == 11 { // Skip moves that failed all iterations so far.
-		gen.cleanupRootMoves(depth)
+	// } else if depth == 11 { // Skip moves that failed all iterations so far.
+	// 	gen.cleanupRootMoves(depth)
 	} else {
 		gen.reset()
 	}
