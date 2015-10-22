@@ -39,13 +39,6 @@ var (
 	weightOurKingSafety   = Score{ 126,   0 }
 	weightTheirKingSafety = Score{ 126,   0 }
 )
-var weights = []Score{
-	{ 112, 134 }, 	// [0] Mobility.
-	{  91,  79 }, 	// [1] Pawn structure.
-	{  86, 107 }, 	// [2] Passed pawns.
-	{ 126, 100 }, 	// [3] King safety.
-	{ 126, 100 }, 	// [4] Enemy's king safety.
-}
 
 // Piece values for calculating most valueable victim/least valueable attacker,
 // indexed by piece.
