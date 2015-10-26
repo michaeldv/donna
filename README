@@ -79,7 +79,7 @@ USING DONNA
    play against it in interactive mode:
 
    $ ./donna -i
-   Donna v2.0 Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
+   Donna v3.1 Copyright (c) 2014-2015 by Michael Dvorkin. All Rights Reserved.
    Type ? for help.
 
    donna>
