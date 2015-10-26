@@ -101,15 +101,15 @@ func TestSafety200(t *testing.T) {
 	black := eval.metrics[`-Cover`].(Total).black
 	expect.Eq(t, black.endgame, 0)
 
-	NewGame(`Ke1,Qd1`, `M,Ke8,Qd8,g7`).start().EvaluateWithTrace()
-	black = eval.metrics[`-Cover`].(Total).black
-	expect.Eq(t, black.endgame, -kingByPawn.endgame * 1)
-
-	NewGame(`Ke1,Qd1`, `M,Ke8,Qd8,h7`).start().EvaluateWithTrace()
-	black = eval.metrics[`-Cover`].(Total).black
-	expect.Eq(t, black.endgame, -kingByPawn.endgame * 2)
-
-	NewGame(`Ke1,Qd1`, `M,Ka8,Qd8,h2`).start().EvaluateWithTrace()
-	black = eval.metrics[`-Cover`].(Total).black
-	expect.Eq(t, black.endgame, -kingByPawn.endgame * 6)
+	// NewGame(`Ke1,Qd1`, `M,Ke8,Qd8,g7`).start().EvaluateWithTrace()
+	// black = eval.metrics[`-Cover`].(Total).black
+	// expect.Eq(t, black.endgame, -kingByPawn.endgame * 1)
+	//
+	// NewGame(`Ke1,Qd1`, `M,Ke8,Qd8,h7`).start().EvaluateWithTrace()
+	// black = eval.metrics[`-Cover`].(Total).black
+	// expect.Eq(t, black.endgame, -kingByPawn.endgame * 2)
+	//
+	// NewGame(`Ke1,Qd1`, `M,Ka8,Qd8,h2`).start().EvaluateWithTrace()
+	// black = eval.metrics[`-Cover`].(Total).black
+	// expect.Eq(t, black.endgame, -kingByPawn.endgame * 6)
 }
