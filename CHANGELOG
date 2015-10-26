@@ -1,3 +1,7 @@
+Oct 26, 2015: Version v3.1
+  - Fine-tuned internal evaluation parameters and weights.
+  - Updated mobility evaluation to take into account pinned pieces.
+
 Oct 11, 2015: Version v3.0
   - Improved root move ordering.
   - Improved late move reduction in search.
