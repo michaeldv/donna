@@ -26,22 +26,6 @@ func (gen *MoveGen) rearrangeRootMoves() *MoveGen {
 	return gen
 }
 
-func (gen *MoveGen) cleanupRootMoves(depth int) *MoveGen {
-	if gen.size() < 2 {
-		return gen
-	}
-
-	// Always preserve first higest ranking move.
-	for i := 1; i < gen.tail; i++ {
-		if gen.list[i].score == -depth + 1 {
-			gen.tail = i
-			break
-		}
-	}
-
-	return gen.reset()
-}
-
 func (gen *MoveGen) generateAllMoves() *MoveGen {
 	if gen.p.isInCheck(gen.p.color) {
 		return gen.generateEvasions()

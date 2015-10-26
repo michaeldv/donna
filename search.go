@@ -14,8 +14,6 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	gen := NewRootGen(p, depth)
 	if depth == 1 {
 		gen.generateRootMoves()
-	// } else if depth == 11 { // Skip moves that failed all iterations so far.
-	// 	gen.cleanupRootMoves(depth)
 	} else {
 		gen.reset()
 	}
@@ -68,7 +66,6 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		position.undoLastMove()
 
 		if engine.clock.halt {
-			//Log("searchRoot: bestMove %s pv[0][0] %s alpha %d\n", bestMove, game.pv[0][0], alpha)
 			game.nodes += moveCount
 			if engine.uci { // Report alpha as score since we're returning alpha.
 				engine.uciScore(depth, alpha, alpha, beta)

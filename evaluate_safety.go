@@ -191,7 +191,6 @@ func (e *Evaluation) kingCoverBonus(color uint8, square, flipped int) (bonus int
 		}
 	}
 
-	// Log("penalty[%s] => %+v\n", C(color), penalty)
 	return
 }
 
