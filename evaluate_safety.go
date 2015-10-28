@@ -6,13 +6,7 @@ package donna
 
 func (e *Evaluation) analyzeSafety() {
 	var cover, safety Total
-	color := e.position.color
 	oppositeBishops := e.oppositeBishops()
-
-	// Any pawn move invalidates king's square in the pawns hash so that we
-	// could detect it here.
-	whiteKingMoved := e.position.king[White] != e.pawns.king[White]
-	blackKingMoved := e.position.king[Black] != e.pawns.king[Black]
 
 	if engine.trace {
 		defer func() {
@@ -25,12 +19,12 @@ func (e *Evaluation) analyzeSafety() {
 
 	// If the king has moved then recalculate king/pawn proximity and update
 	// cover score and king square in the pawn cache.
-	if whiteKingMoved {
+	if e.position.king[White] != e.pawns.king[White] {
 		e.pawns.cover[White] = e.kingCover(White)
 		e.pawns.cover[White].endgame += e.kingPawnProximity(White)
 		e.pawns.king[White] = e.position.king[White]
 	}
-	if blackKingMoved {
+	if e.position.king[Black] != e.pawns.king[Black] {
 		e.pawns.cover[Black] = e.kingCover(Black)
 		e.pawns.cover[Black].endgame += e.kingPawnProximity(Black)
 		e.pawns.king[Black] = e.position.king[Black]
@@ -48,19 +42,6 @@ func (e *Evaluation) analyzeSafety() {
 	safety.black = e.kingSafety(Black)
 	if oppositeBishops && e.isKingUnsafe(Black) && safety.black.midgame < -onePawn / 10 * 8 {
 		safety.black.midgame -= bishopDanger.midgame
-	}
-
-	// Apply king safety weights, then adjust the final score.
-	if color == White {
-		cover.white.apply(weightOurKingSafety)
-		safety.white.apply(weightOurKingSafety)
-		cover.black.apply(weightTheirKingSafety)
-		safety.black.apply(weightTheirKingSafety)
-	} else {
-		cover.white.apply(weightTheirKingSafety)
-		safety.white.apply(weightTheirKingSafety)
-		cover.black.apply(weightOurKingSafety)
-		safety.black.apply(weightOurKingSafety)
 	}
 
 	e.score.add(cover.white).add(safety.white).sub(cover.black).sub(safety.black)
