@@ -7,6 +7,7 @@ package donna
 import (
 	`bytes`
 	`fmt`
+	`strconv`
 	`strings`
 )
 
@@ -26,6 +27,7 @@ type Position struct {		 // 224 bytes long.
 	color        uint8       // Side to make next move.
 	enpassant    uint8       // En-passant square caused by previous move.
 	castles      uint8       // Castle rights mask.
+	count50      uint8	 // 50 moves rule counter.
 }
 
 func NewPosition(game *Game, white, black string) *Position {
@@ -226,6 +228,11 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 	}
 
+	// [4] - Number of half-moves.
+	if n, err := strconv.Atoi(matches[4]); err == nil {
+		p.count50 = uint8(n)
+	}
+
 	p.reversible = true
 	p.board = p.outposts[White] | p.outposts[Black]
 	p.id, p.pawnId = p.polyglot()
@@ -385,8 +392,11 @@ func (p *Position) fen() (fen string) {
 		fen += ` -`
 	}
 
-	// TODO: Number of half-moves and number of full moves.
-	fen += ` 0 1`
+	// Number of half-moves (50 moves counter).
+	fen += fmt.Sprintf(` %d`, p.count50)
+
+	// TODO: Number of full moves.
+	fen += ` 1`
 
 	return
 }

@@ -87,9 +87,10 @@ func (p *Position) makeMove(move Move) *Position {
 	pp := &tree[node]
 
 	pp.enpassant, pp.reversible = 0, true
+	pp.count50++
 
 	if capture != 0 {
-		pp.reversible = false
+		pp.count50, pp.reversible = 0, false
 		if to != 0 && to == int(p.enpassant) {
 			pp.captureEnpassant(pawn(color^1), from, to)
 			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
@@ -117,14 +118,14 @@ func (p *Position) makeMove(move Move) *Position {
 				}
 			}
 		} else if piece.isPawn() {
-			pp.reversible = false
+			pp.count50, pp.reversible = 0, false
 			if move.isEnpassant() {
 				pp.enpassant = uint8(from + eight[color]) // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
 	} else {
-		pp.reversible = false
+		pp.count50, pp.reversible = 0, false
 		pp.promotePawn(piece, from, to, promo)
 	}
 
@@ -153,6 +154,7 @@ func (p *Position) makeNullMove() *Position {
 	}
 	pp.id ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
+	pp.count50++
 
 	return &tree[node] // pp
 }
@@ -168,6 +170,7 @@ func (p *Position) undoLastMove() *Position {
 func (p *Position) undoNullMove() *Position {
 	p.id ^= polyglotRandomWhite
 	p.color ^= 1
+	p.count50--
 
 	return p.undoLastMove()
 }
@@ -181,17 +184,7 @@ func (p *Position) isNull() bool {
 }
 
 func (p *Position) fifty() bool {
-	if node < 100 {
-		return false
-	}
-	count := 0
-	for previous := node - 1; previous >= 0 && count < 100; previous-- {
-		if !tree[previous].reversible {
-			break
-		}
-		count++
-	}
-	return count >= 100
+	return p.count50 >= 100
 }
 
 func (p *Position) repetition() bool {

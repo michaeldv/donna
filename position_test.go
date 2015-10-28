@@ -82,13 +82,13 @@ func TestPosition100(t *testing.T) {
 // Castles, no en-passant.
 func TestPosition110(t *testing.T) {
 	p := NewGame(`2r1kb1r/pp3ppp/2n1b3/1q1N2B1/1P2Q3/8/P4PPP/3RK1NR w Kk - 42 42`).start()
-	expect.Eq(t, p.fen(), `2r1kb1r/pp3ppp/2n1b3/1q1N2B1/1P2Q3/8/P4PPP/3RK1NR w Kk - 0 1`)
+	expect.Eq(t, p.fen(), `2r1kb1r/pp3ppp/2n1b3/1q1N2B1/1P2Q3/8/P4PPP/3RK1NR w Kk - 42 1`)
 }
 
 // No castles, en-passant.
 func TestPosition120(t *testing.T) {
 	p := NewGame(`1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 42 42`).start()
-	expect.Eq(t, p.fen(), `1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 0 1`)
+	expect.Eq(t, p.fen(), `1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 42 1`)
 }
 
 //\\ Donna Chess Format (DCF) tests.
