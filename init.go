@@ -4,6 +4,8 @@
 
 package donna
 
+import `math`
+
 type Magic struct {
 	mask  Bitmask
 	magic Bitmask
@@ -19,12 +21,10 @@ var (
 	maskPassed [2][64]Bitmask
 	maskInFront [2][64]Bitmask
 
-	// Complete file or rank mask if both squares reside on on the same file
-	// or rank.
-	maskStraight [64][64]Bitmask
-
-	// Complete diagonal mask if both squares reside on on the same diagonal.
-	maskDiagonal [64][64]Bitmask
+	// Complete file, rank or diagonal mask if both squares reside on on the
+	// same file, rank, or diagonal. For example, maskLine[C3][F6] has bits
+	// set for the entire A1-H8 diagonal.
+	maskLine [64][64]Bitmask
 
 	// If a king on square [x] gets checked from square [y] it can evade the
 	// check from all squares except maskEvade[x][y]. For example, if white
@@ -53,8 +53,8 @@ var (
 	// Distance between two squares.
 	distance [64][64]int
 
-	// Most-significant bit (MSB) lookup table.
-	msbLookup[256]int
+	// Late move reductions indexed by depth and move number.
+	lateMoveReductions [64][64]int
 
 	// Precomputed database of material imbalance scores, evaluation flags,
 	// and endgame handlers. I wish they all could be California girls.
@@ -72,7 +72,7 @@ func initMasks() {
 	for sq := A1; sq <= H8; sq++ {
 		row, col := coordinate(sq)
 
-		// Distance, Blocks, Evasions, Straight, Diagonals, Knights, and Kings.
+		// Distance, Blocks, Evasions, Lines, Knights, and Kings.
 		for i := A1; i <= H8; i++ {
 			r, c := coordinate(i)
 
@@ -156,25 +156,6 @@ func initMasks() {
 
 func initArrays() {
 
-	// MSB lookup table.
-	for i := 0; i < len(msbLookup); i++ {
-		if i > 127 {
-			msbLookup[i] = 7
-		} else if i > 63 {
-			msbLookup[i] = 6
-		} else if i > 31 {
-			msbLookup[i] = 5
-		} else if i > 15 {
-			msbLookup[i] = 4
-		} else if i > 7 {
-			msbLookup[i] = 3
-		} else if i > 3 {
-			msbLookup[i] = 2
-		} else if i > 1 {
-			msbLookup[i] = 1
-		}
-	}
-
 	// Castle hash values.
 	for mask := uint8(0); mask < 16; mask++ {
 		if mask & castleKingside[White] != 0 {
@@ -194,6 +175,17 @@ func initArrays() {
 	// Enpassant hash values.
 	for col := A1; col <= H1; col++ {
 		hashEnpassant[col] = polyglotRandomEnpassant[col]
+	}
+
+	// Late move reductions.
+	for i := 0; i < 64; i++ {
+		for j := 0; j < 64; j++ {
+			value := math.Log1p(float64(i)) * math.Log1p(float64(j)) / 1.25 - 3.25  //\\1.6 - 2.3
+			if value < 0.0 {
+				value = 0.0
+			}
+			lateMoveReductions[i][j] = int(math.Floor(value))
+		}
 	}
 }
 
@@ -388,27 +380,26 @@ func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame 
 	return
 }
 
-func createRookMask(square int) Bitmask {
+func createRookMask(square int) (bitmask Bitmask) {
 	r, c := coordinate(square)
-	bitmask := (maskRank[r] | maskFile[c]) ^ bit[square]
+	bitmask = (maskRank[r] | maskFile[c]) ^ bit[square]
 
 	return *bitmask.trim(r, c)
 }
 
-func createBishopMask(square int) Bitmask {
+func createBishopMask(square int) (bitmask Bitmask) {
 	r, c := coordinate(square)
-	bitmask := Bitmask(0)
 
 	if sq := square + 7; sq <= H8 && col(sq) == c - 1 {
-		bitmask = maskDiagonal[square][sq]
+		bitmask = maskLine[square][sq]
 	} else if sq := square - 7; sq >= A1 && col(sq) == c + 1 {
-		bitmask = maskDiagonal[square][sq]
+		bitmask = maskLine[square][sq]
 	}
 
 	if sq := square + 9; sq <= H8 && col(sq) == c + 1 {
-		bitmask |= maskDiagonal[square][sq]
+		bitmask |= maskLine[square][sq]
 	} else if sq := square - 9; sq >= A1 && col(sq) == c - 1 {
-		bitmask |= maskDiagonal[square][sq]
+		bitmask |= maskLine[square][sq]
 	}
 	bitmask ^= bit[square]
 
@@ -420,33 +411,33 @@ func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 
 	// North.
 	for r := row + 1; r <= 7; r++ {
-		b := bit[square(r, col)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(r, col)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
 	// East.
 	for c := col + 1; c <= 7; c++ {
-		b := bit[square(row, c)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(row, c)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
 	// South.
 	for r := row - 1; r >= 0; r-- {
-		b := bit[square(r, col)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(r, col)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
 	// West
 	for c := col - 1; c >= 0; c-- {
-		b := bit[square(row, c)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(row, c)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
@@ -458,33 +449,33 @@ func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 
 	// North East.
 	for c, r := col + 1, row + 1; c <= 7 && r <= 7; c, r = c+1, r+1 {
-		b := bit[square(r, c)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(r, c)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
 	// South East.
 	for c, r := col + 1, row - 1; c <= 7 && r >= 0; c, r = c+1, r-1 {
-		b := bit[square(r, c)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(r, c)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
 	// South West.
 	for c, r := col - 1, row - 1; c >= 0 && r >= 0; c, r = c-1, r-1 {
-		b := bit[square(r, c)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(r, c)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
 	// North West.
 	for c, r := col - 1, row + 1; c >= 0 && r <= 7; c, r = c-1, r+1 {
-		b := bit[square(r, c)]
-		bitmask |= b
-		if mask & b != 0 {
+		sq := square(r, c)
+		bitmask.set(sq)
+		if mask.on(sq) {
 			break
 		}
 	}
@@ -501,7 +492,7 @@ func setupMasks(square, target, row, col, r, c int) {
 			maskEvade[square][target].spot(square, 1, ^maskFile[7])
 		}
 		if col != c {
-			maskStraight[square][target] = maskRank[r]
+			maskLine[square][target] = maskRank[r]
 		}
 	} else if col == c {
 		if row < r {
@@ -512,7 +503,7 @@ func setupMasks(square, target, row, col, r, c int) {
 			maskEvade[square][target].spot(square, 8, ^maskRank[7])
 		}
 		if row != r {
-			maskStraight[square][target] = maskFile[c]
+			maskLine[square][target] = maskFile[c]
 		}
 	} else if r+col == row+c { // Diagonals (A1->H8).
 		if col < c {
@@ -523,9 +514,9 @@ func setupMasks(square, target, row, col, r, c int) {
 			maskEvade[square][target].spot(square, 9, ^maskRank[7] & ^maskFile[7])
 		}
 		if shift := (r - c) & 15; shift < 8 { // A1-A8-H8
-			maskDiagonal[square][target] = maskA1H8 << uint(8*shift)
+			maskLine[square][target] = maskA1H8 << uint(8*shift)
 		} else { // B1-H1-H7
-			maskDiagonal[square][target] = maskA1H8 >> uint(8*(16-shift))
+			maskLine[square][target] = maskA1H8 >> uint(8*(16-shift))
 		}
 	} else if row+col == r+c { // AntiDiagonals (H1->A8).
 		if col < c {
@@ -536,9 +527,9 @@ func setupMasks(square, target, row, col, r, c int) {
 			maskEvade[square][target].spot(square, -7, ^maskRank[0] & ^maskFile[7])
 		}
 		if shift := 7 ^ (r + c); shift < 8 { // A8-A1-H1
-			maskDiagonal[square][target] = maskH1A8 >> uint(8*shift)
+			maskLine[square][target] = maskH1A8 >> uint(8*shift)
 		} else { // B8-H8-H2
-			maskDiagonal[square][target] = maskH1A8 << uint(8*(16-shift))
+			maskLine[square][target] = maskH1A8 << uint(8*(16-shift))
 		}
 	}
 
@@ -554,34 +545,34 @@ func setupMasks(square, target, row, col, r, c int) {
 		// White king chasing black pawn.
 		if row > 1 {
 			if row <= r && abs(col - c) <= 7 - row {
-				maskSquare[White][square] |= bit[target]
+				maskSquare[White][square].set(target)
 			}
 			if row <= r + 1 && abs(col - c) <= 8 - row {
-				maskSquareEx[White][square] |= bit[target]
+				maskSquareEx[White][square].set(target)
 			}
 		} else if row == 1 {
 			if row < r && abs(col - c) < 7 - row {
-				maskSquare[White][square] |= bit[target]
+				maskSquare[White][square].set(target)
 			}
 			if row <= r && abs(col - c) < 8 - row {
-				maskSquareEx[White][square] |= bit[target]
+				maskSquareEx[White][square].set(target)
 			}
 		}
 
 		// Black king chasing white pawn.
 		if row < 6 {
 			if row >= r && abs(col - c) <= row {
-				maskSquare[Black][square] |= bit[target]
+				maskSquare[Black][square].set(target)
 			}
 			if row + 1 >= r && abs(col - c) <= row + 1 {
-				maskSquareEx[Black][square] |= bit[target]
+				maskSquareEx[Black][square].set(target)
 			}
 		} else if row == 6 {
 			if row > r && abs(col - c) < row {
-				maskSquare[Black][square] |= bit[target]
+				maskSquare[Black][square].set(target)
 			}
 			if row >= r && abs(col - c) <= row {
-				maskSquareEx[Black][square] |= bit[target]
+				maskSquareEx[Black][square].set(target)
 			}
 		}
 	}

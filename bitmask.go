@@ -19,6 +19,30 @@ var deBruijn = [64]int{
 	13, 18,  8, 12,  7,  6,  5, 63,
 }
 
+// Most-significant bit (MSB) lookup table.
+var msbLookup[256]int
+
+func init() {
+	// MSB lookup table.
+	for i := 0; i < len(msbLookup); i++ {
+		if i > 127 {
+			msbLookup[i] = 7
+		} else if i > 63 {
+			msbLookup[i] = 6
+		} else if i > 31 {
+			msbLookup[i] = 5
+		} else if i > 15 {
+			msbLookup[i] = 4
+		} else if i > 7 {
+			msbLookup[i] = 3
+		} else if i > 3 {
+			msbLookup[i] = 2
+		} else if i > 1 {
+			msbLookup[i] = 1
+		}
+	}
+}
+
 // Returns true if all bitmask bits are clear. Even if it's wrong, it's only
 // off by a bit.
 func (b Bitmask) empty() bool {

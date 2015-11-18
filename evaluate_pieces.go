@@ -163,8 +163,7 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 
 		// Bonus for bishop's mobility: if the bishop is pinned then restrict the attacks.
 		if e.pinned[color].on(square) {
-			king := p.king[color]
-			attacks &= (maskBlock[king][square] | maskDiagonal[king][square])
+			attacks &= maskLine[p.king[color]][square]
 		}
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
 
@@ -238,8 +237,7 @@ func (e *Evaluation) rooks(color uint8, maskSafe Bitmask, unsafeKing bool) (scor
 
 		// Bonus for rook's mobility: if the rook is pinned then restrict the attacks.
 		if e.pinned[color].on(square) {
-			king := p.king[color]
-			attacks &= (maskBlock[king][square] | maskStraight[king][square])
+			attacks &= maskLine[p.king[color]][square]
 		}
 		safeSquares := (attacks & maskSafe).count()
 		mobility.add(mobilityRook[safeSquares])
@@ -313,8 +311,7 @@ func (e *Evaluation) queens(color uint8, maskSafe Bitmask, unsafeKing bool) (sco
 
 		// Bonus for queen's mobility: if the queen is pinned then restrict the attacks.
 		if e.pinned[color].on(square) {
-			king := p.king[color]
-			attacks &= (maskBlock[king][square] | maskDiagonal[king][square] | maskStraight[king][square])
+			attacks &= maskLine[p.king[color]][square]
 		}
 		mobility.add(mobilityQueen[min(15, (attacks & maskSafe).count())])
 

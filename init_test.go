@@ -41,28 +41,28 @@ func TestMagic020(t *testing.T) {
 
 func TestMagic030(t *testing.T) {
 	// Same file.
-	expect.Eq(t, maskStraight[A2][A5], maskFile[0])
-	expect.Eq(t, maskStraight[H6][H1], maskFile[7])
+	expect.Eq(t, maskLine[A2][A5], maskFile[0])
+	expect.Eq(t, maskLine[H6][H1], maskFile[7])
 	// Same rank.
-	expect.Eq(t, maskStraight[A2][F2], maskRank[1])
-	expect.Eq(t, maskStraight[H6][B6], maskRank[5])
+	expect.Eq(t, maskLine[A2][F2], maskRank[1])
+	expect.Eq(t, maskLine[H6][B6], maskRank[5])
 	// Edge cases.
-	expect.Eq(t, maskStraight[A1][C5], maskNone) // Random squares.
-	expect.Eq(t, maskStraight[E4][E4], maskNone) // Same square.
+	expect.Eq(t, maskLine[A1][C5], maskNone) // Random squares.
+	expect.Eq(t, maskLine[E4][E4], maskNone) // Same square.
 }
 
 func TestMagic040(t *testing.T) {
 	// Same diagonal.
-	expect.Eq(t, maskDiagonal[C4][F7], bit[A2] | bit[B3] | bit[C4] | bit[D5] | bit[E6] | bit[F7] | bit[G8])
-	expect.Eq(t, maskDiagonal[F6][H8], maskA1H8)
-	expect.Eq(t, maskDiagonal[F1][H3], bit[F1] | bit[G2] | bit[H3])
+	expect.Eq(t, maskLine[C4][F7], bit[A2] | bit[B3] | bit[C4] | bit[D5] | bit[E6] | bit[F7] | bit[G8])
+	expect.Eq(t, maskLine[F6][H8], maskA1H8)
+	expect.Eq(t, maskLine[F1][H3], bit[F1] | bit[G2] | bit[H3])
 	// Same anti-diagonal.
-	expect.Eq(t, maskDiagonal[C2][B3], bit[D1] | bit[C2] | bit[B3] | bit[A4])
-	expect.Eq(t, maskDiagonal[F3][B7], maskH1A8)
-	expect.Eq(t, maskDiagonal[H3][D7], bit[H3] | bit[G4] | bit[F5] | bit[E6] | bit[D7] | bit[C8])
+	expect.Eq(t, maskLine[C2][B3], bit[D1] | bit[C2] | bit[B3] | bit[A4])
+	expect.Eq(t, maskLine[F3][B7], maskH1A8)
+	expect.Eq(t, maskLine[H3][D7], bit[H3] | bit[G4] | bit[F5] | bit[E6] | bit[D7] | bit[C8])
 	// Edge cases.
-	expect.Eq(t, maskDiagonal[A2][G4], maskNone) // Random squares.
-	expect.Eq(t, maskDiagonal[E4][E4], maskNone) // Same square.
+	expect.Eq(t, maskLine[A2][G4], maskNone) // Random squares.
+	expect.Eq(t, maskLine[E4][E4], maskNone) // Same square.
 }
 
 // Material base tests.
