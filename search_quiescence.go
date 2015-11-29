@@ -33,8 +33,10 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	}
 
 	// Probe cache.
+	cachedMove := Move(0)
 	staticScore := alpha
 	if cached := p.probeCache(); cached != nil {
+		cachedMove = cached.move
 		if int(cached.depth) >= depth {
 			staticScore = uncache(int(cached.score), ply)
 			if (cached.flags == cacheExact && isPrincipal) ||
@@ -59,14 +61,14 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	// Generate check evasions or captures.
 	gen := NewGen(p, ply)
 	if inCheck {
-		gen.generateEvasions()
+		gen.generateEvasions().quickRank()
 	} else {
 		gen.generateCaptures()
 		if iteration < 1 {
 			gen.generateChecks()
 		}
+		gen.rank(cachedMove)
 	}
-	gen.quickRank()
 
 	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
