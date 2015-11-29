@@ -36,6 +36,25 @@ func square(row, column int) int {
 	return (row << 3) + column
 }
 
+// It sucks that Go doesn't have ternary condition operator. Works best with
+// scalar yes and no.
+func let(ok bool, yes, no int) int {
+	if ok {
+		return yes
+	}
+
+	return no
+}
+
+// It sucks even more that we have to write extra code for other data types.
+func bet(ok bool, yes, no Bitmask) Bitmask {
+	if ok {
+		return yes
+	}
+
+	return no
+}
+
 // Flips the square verically for white (ex. E2 becomes E7).
 func flip(color uint8, square int) int {
 	if color == White {
@@ -53,15 +72,25 @@ func same(square int) Bitmask {
 	return ^maskDark
 }
 
-// Returns true if the square resides between two other squares on the same line
-// or diagonal, including edge squares. For example, between(A1, H8, C3) is true.
-func between(from, to, square int) bool {
-	return (maskStraight[from][to] | maskDiagonal[from][to]).on(square)
-}
-
-// Returns distance between current and root node.
+// Returns a distance between current node and the root one.
 func ply() int {
 	return node - rootNode
+}
+
+// Returns a score of getting mated in given number of plies.
+func matedIn(ply int) int {
+	return ply - Checkmate
+}
+
+// Returns a score of mating an opponent in given number of plies.
+func matingIn(ply int) int {
+	return Checkmate - ply
+}
+
+// Adjusts values of alpha and beta based on how close we are
+// to checkmate or be checkmated.
+func mateDistance(alpha, beta, ply int) (int, int) {
+	return max(matedIn(ply), alpha), min(matingIn(ply + 1), beta)
 }
 
 func isMate(score int) bool {
