@@ -219,7 +219,7 @@ func (m Move) isPromo() bool {
 
 // Returns true if the move doesn't change material balance.
 func (m Move) isQuiet() bool {
-	return m & (isCapture | isPromo) == 0
+	return m & (isCapture | isPromo) == 0 // | isEnpassant) == 0
 }
 
 // Returns true for pawn pushes beyond home half of the board.
@@ -227,19 +227,38 @@ func (m Move) isPawnAdvance() bool {
 	return m.piece().isPawn() && rank(m.color(), m.to()) > A4H4
 }
 
-// Returns true if passed pawn gets pushed beyond 5th rank.
-func (m Move) isPasser(p *Position) bool {
-	if m.isQuiet() {
-		_, to, piece, _ := m.split()
-		if piece.isPawn() {
-			color := m.color()
-			doubled := (maskInFront[color][to] & p.outposts[pawn(color)]).any()
-			passed := !doubled && (maskPassed[color][to] & p.outposts[pawn(color^1)]).empty()
-			return passed && rank(color, to) > A5H5
-		}
+// Returns true is the move is one of the killer moves at given ply.
+func (m Move) isKiller(ply int) bool {
+	return m != Move(0) && (m == game.killers[ply][0] || m == game.killers[ply][1])
+}
+
+// Returns true if *non-evasion* move is valid, i.e. it is possible to make
+// the move in current position without violating chess rules.
+//
+// If the king is in check move generator is expected to generate valid evasions
+// where extra validation is not needed.
+func (m Move) isValid(p *Position, pins Bitmask) bool {
+	color := m.color() // TODO: make color part of move split.
+	from, to, piece, capture := m.split()
+
+	// For rare en-passant pawn captures we validate the move by actually
+	// making it, and then taking it back.
+	if p.enpassant != 0 && to == int(p.enpassant) && capture.isPawn() {
+		position := p.makeMove(m)
+		defer position.undoLastMove()
+		return !position.isInCheck(color)
 	}
 
-	return false
+	// King's move is valid when a) the move is a castle or b) the destination
+	// square is not being attacked by the opponent.
+	if piece.isKing() {
+		return m.isCastle() || !p.isAttacked(color^1, to)
+	}
+
+	// For all other pieces the move is valid when it doesn't cause a
+	// check. For pinned sliders this includes moves along the pinning
+	// file, rank, or diagonal.
+	return pins.empty() || pins.off(from) || maskLine[from][to].on(int(p.king[color]))
 }
 
 // Returns string representation of the move in long coordinate notation as

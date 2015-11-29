@@ -77,7 +77,7 @@ func (gen *MoveGen) NextMove() (move Move) {
 // Returns true if the move is valid in current position i.e. it can be played
 // without violating chess rules.
 func (gen *MoveGen) isValid(move Move) bool {
-	return gen.p.isValid(move, gen.pins)
+	return move.isValid(gen.p, gen.pins)
 }
 
 // Removes invalid moves from the generated list. We use in iterative deepening

@@ -221,6 +221,8 @@ func (p *Position) thirdRepetition() bool {
 	return false
 }
 
+// Returns a pair of booleans that indicate whether given side is allowed to
+// castle kingside and queenside.
 func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
 
 	// Start off with simple checks.
@@ -230,7 +232,7 @@ func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
 	// If it still looks like the castles are possible perform more expensive
 	// final check.
 	if kingside || queenside {
-		attacks := p.allAttacks(color ^ 1)
+		attacks := p.allAttacks(color^1)
 		kingside = kingside && (castleKing[color] & attacks == 0)
 		queenside = queenside && (castleQueen[color] & attacks == 0)
 	}
@@ -238,43 +240,15 @@ func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
 	return
 }
 
-// Returns true if *non-evasion* move is valid, i.e. it is possible to make
-// the move in current position without violating chess rules. If the king is
-// in check the generator is expected to generate valid evasions where extra
-// validation is not needed.
-func (p *Position) isValid(move Move, pins Bitmask) bool {
-	color := move.color() // TODO: make color part of move split.
-	from, to, piece, capture := move.split()
-	// For rare en-passant pawn captures we validate the move by actually
-	// making it, and then taking it back.
-
-	if p.enpassant != 0 && to == int(p.enpassant) && capture.isPawn() {
-		position := p.makeMove(move)
-		defer position.undoLastMove()
-		return !position.isInCheck(color)
-	}
-
-	// King's move is valid when a) the move is a castle or b) the destination
-	// square is not being attacked by the opponent.
-	if piece.isKing() {
-		return move.isCastle() || !p.isAttacked(color^1, to)
-	}
-
-	// For all other peices the move is valid when it doesn't cause a
-	// check. For pinned sliders this includes moves along the pinning
-	// file, rank, or diagonal.
-	return pins == 0 || pins.off(from) || between(from, to, int(p.king[color]))
-}
-
 // Returns a bitmask of all pinned pieces preventing a check for the king on
 // given square. The color of the pieces match the color of the king.
 func (p *Position) pinnedMask(square uint8) (mask Bitmask) {
 	color := p.pieces[square].color()
-	enemy := color ^ 1
+	enemy := color^1
 	attackers := (p.outposts[bishop(enemy)] | p.outposts[queen(enemy)]) & bishopMagicMoves[square][0]
 	attackers |= (p.outposts[rook(enemy)] | p.outposts[queen(enemy)]) & rookMagicMoves[square][0]
 
-	for attackers != 0 {
+	for attackers.any() {
 		attackSquare := attackers.pop()
 		blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
 
