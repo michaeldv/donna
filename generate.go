@@ -74,17 +74,11 @@ func (gen *MoveGen) NextMove() (move Move) {
 	return
 }
 
-// Returns true if the move is valid in current position i.e. it can be played
-// without violating chess rules.
-func (gen *MoveGen) isValid(move Move) bool {
-	return move.isValid(gen.p, gen.pins)
-}
-
 // Removes invalid moves from the generated list. We use in iterative deepening
 // to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly() *MoveGen {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if !gen.isValid(move) {
+		if !move.isValid(gen.p, gen.pins) {
 			gen.remove()
 		}
 	}
@@ -96,7 +90,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 // one valid move.
 func (gen *MoveGen) anyValid() bool {
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if gen.isValid(move) {
+		if move.isValid(gen.p, gen.pins) {
 			return true
 		}
 	}

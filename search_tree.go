@@ -128,7 +128,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	bestMove := Move(0)
 	moveCount, quietMoveCount := 0, 0
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if !gen.isValid(move) {
+		if !move.isValid(p, gen.pins) {
 			continue
 		}
 

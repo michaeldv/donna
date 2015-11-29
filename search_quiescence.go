@@ -13,9 +13,6 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 		return p.Evaluate()
 	}
 
-	// Reset principal variation.
-	game.pv[ply].size = 0
-
 	// Insufficient material and repetition/perpetual check pruning.
 	if p.insufficient() || p.repetition() || p.fifty() {
 		return 0
@@ -25,6 +22,9 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	// bite you. This is the principal difference between a dog and a man.
         // ―- Mark Twain
 	isPrincipal := (beta - alpha > 1)
+	if isPrincipal {
+		game.pv[ply].size = 0 // Reset principal variation.
+	}
 
 	// Use fixed depth for caching.
 	depth := 0
@@ -71,7 +71,7 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		capture := move.capture()
-		if (!inCheck && capture != 0 && p.exchange(move) < 0) || !gen.isValid(move) {
+		if (!inCheck && capture != 0 && p.exchange(move) < 0) || !move.isValid(p, gen.pins) {
 			continue
 		}
 
