@@ -212,12 +212,12 @@ func TestEndgame340(t *testing.T) {
 
 func TestEndgame350(t *testing.T) {
 	score := NewGame(`Kf5,h3`, `Kd5,h4`).start().Evaluate()
-	expect.Eq(t, score, 9)
+	expect.Eq(t, score, 25)
 }
 
 func TestEndgame360(t *testing.T) {
 	score := NewGame(`Kf5,h3`, `M,Kd5,h4`).start().Evaluate()
-	expect.Eq(t, score, 1)
+	expect.Eq(t, score, -15)
 }
 
 func TestEndgame370(t *testing.T) {
