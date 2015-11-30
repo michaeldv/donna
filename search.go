@@ -18,8 +18,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		gen.reset()
 	}
 
-	bestMove, bestAlpha := Move(0), alpha
-	moveCount, quietMoveCount := 0, 0
+	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.makeMove(move)
 		moveCount++
@@ -27,38 +26,31 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			engine.uciMove(move, moveCount, depth)
 		}
 
-		// Search depth extension/reduction.
-		newDepth, reduction := depth - 1, 0
-		if position.isInCheck(position.color) { // Extend search depth if we're checking.
-			newDepth++
-		} else if !inCheck && depth > 2 && moveCount > 1 && move.isQuiet() && !move.isPawnAdvance() {
-			quietMoveCount++
-			if quietMoveCount >= 20 {
-				reduction++
-				if quietMoveCount >= 26 {
-					reduction++
-					if quietMoveCount >= 32 {
-						reduction++
-					}
-				}
-			}
-		}
+		// Reduce search depth if we're not checking.
+		giveCheck := position.isInCheck(position.color)
+		newDepth := let(giveCheck && p.exchange(move) >= 0, depth, depth - 1)
 
 		// Start search with full window.
 		game.deepening = (moveCount == 1)
 		if moveCount == 1 {
 			score = -position.searchTree(-beta, -alpha, newDepth)
-		} else if reduction > 0 {
+		} else {
+			reduction := 0
+			if !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
+				reduction = lateMoveReductions[min(63, moveCount-1)][min(63, depth)]
+				if game.history[move.piece()][move.to()] < 0 {
+					reduction++
+				}
+			}
+
 			score = -position.searchTree(-alpha - 1, -alpha, max(0, newDepth - reduction))
 
 			// Verify late move reduction and re-run the search if necessary.
-			if score > alpha {
+			if reduction > 0 && score > alpha {
 				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 			}
-		} else {
-			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 
-			// If zero window failed try full window.
+			// If zero window fails then try full window.
 			if score > alpha {
 				score = -position.searchTree(-beta, -alpha, newDepth)
 			}
@@ -77,46 +69,48 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			bestMove = move
 			game.saveBest(0, move)
 			gen.scoreMove(depth, score).rearrangeRootMoves()
+		} else {
+			gen.scoreMove(depth, -depth)
+		}
 
+		if score > alpha {
 			if moveCount > 1 {
 				game.volatility++
 			}
-
-			alpha = max(score, alpha)
+			alpha = score
 			if alpha >= beta {
 				break // Tap out.
 			}
-			p.cache(bestMove, score, depth, ply, cacheBeta)
-		} else {
-			gen.scoreMove(depth, -depth)
 		}
 	}
 
 
 	if moveCount == 0 {
-		score = 0 // <-- Stalemate.
-		if inCheck {
-			score = -Checkmate
-		}
+		score = let(inCheck, -Checkmate, 0) // Mate if in check, stalemate otherwise.
 		if engine.uci {
 			engine.uciScore(depth, score, alpha, beta)
 		}
-		return
+		return score
 	}
 
 	game.nodes += moveCount
-	if score >= beta && !inCheck {
-		game.saveGood(depth, bestMove)
+	if alpha > bestAlpha && !inCheck {
+		game.saveGood(depth, bestMove).updatePoor(depth, bestMove, gen.reset())
 	}
-	score = alpha
 
-	p.cacheDelta(bestMove, score, depth, ply, bestAlpha, beta)
+	cacheFlags := cacheAlpha
+	if score >= beta {
+		cacheFlags = cacheBeta
+	} else if moveCount > 0 {
+		cacheFlags = cacheExact
+	}
+	p.cache(bestMove, score, depth, ply, cacheFlags)
 
 	if engine.uci {
-		engine.uciScore(depth, score, alpha, beta)
+		engine.uciScore(depth, alpha, alpha, beta)
 	}
 
-	return
+	return alpha
 }
 
 // Testing helper method to test root search.

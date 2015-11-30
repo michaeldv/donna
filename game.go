@@ -259,10 +259,25 @@ func (game *Game) saveBest(ply int, move Move) *Game {
 }
 
 func (game *Game) saveGood(depth int, move Move) *Game {
-	if ply := ply(); move.isQuiet() && move != game.killers[ply][0] {
-		game.killers[ply][1] = game.killers[ply][0]
-		game.killers[ply][0] = move
+	if move.isQuiet() {
+		if ply := ply(); move != game.killers[ply][0] {
+			game.killers[ply][1] = game.killers[ply][0]
+			game.killers[ply][0] = move
+		}
 		game.history[move.piece()][move.to()] += depth * depth
+	}
+
+	return game
+}
+
+
+func (game *Game) updatePoor(depth int, bestMove Move, mgen *MoveGen) *Game {
+	value := depth * depth
+
+	for move := mgen.NextMove(); move != 0; move = mgen.NextMove() {
+		if move.isQuiet() {
+			game.history[move.piece()][move.to()] = let(move == bestMove, value, -value)
+		}
 	}
 
 	return game

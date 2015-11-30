@@ -16,16 +16,14 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	game.pv[ply].size = 0
 
 	// Insufficient material and repetition/perpetual check pruning.
-	if p.insufficient() || p.repetition() || p.fifty() {
+	if p.fifty() || p.insufficient() || p.repetition() {
 		return 0
 	}
 
 	// Checkmate distance pruning.
-	if score := abs(ply - Checkmate); score < beta {
-		if score <= alpha {
-			return alpha
-		}
-		beta = score
+	alpha, beta = mateDistance(alpha, beta, ply)
+	if alpha >= beta {
+		return alpha
 	}
 
 	// Initialize node search conditions.
@@ -40,10 +38,10 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		cachedMove = cached.move
 		if int(cached.depth) >= depth {
 			staticScore = uncache(int(cached.score), ply)
-			if (cached.flags == cacheExact && isPrincipal) ||
-			   (cached.flags == cacheBeta  && staticScore >= beta) ||
-			   (cached.flags == cacheAlpha && staticScore <= alpha) {
-				if staticScore >= beta && !inCheck && cachedMove != 0 && cachedMove.isQuiet() {
+			if !isPrincipal &&
+			   ((cached.flags == cacheBeta && staticScore >= beta) ||
+			   (cached.flags == cacheAlpha && staticScore <= alpha)) {
+				if staticScore >= beta && !inCheck && cachedMove != 0 {
 					game.saveGood(depth, cachedMove)
 				}
 				return staticScore
@@ -125,8 +123,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		gen.generateMoves().rank(cachedMove)
 	}
 
-	bestMove := Move(0)
-	moveCount, quietMoveCount := 0, 0
+	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if !move.isValid(p, gen.pins) {
 			continue
@@ -135,35 +132,28 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		position := p.makeMove(move)
 		moveCount++
 
-		// Search depth extension/reduction.
-		newDepth, reduction := depth - 1, 0
-		if position.isInCheck(position.color) { // Extend search depth if we're checking.
-			newDepth++
-		} else if !isPrincipal && !inCheck && depth > 2 && moveCount > 1 && move.isQuiet() && !move.isPawnAdvance() {
-			quietMoveCount++
-			if quietMoveCount >= 8 {
-				reduction++
-				if quietMoveCount >= 16 {
-					reduction++
-					if quietMoveCount >= 24 {
-						reduction++
-					}
-				}
-			}
-		}
+		// Reduce search depth if we're not checking.
+		giveCheck := position.isInCheck(position.color)
+		newDepth := let(giveCheck && p.exchange(move) >= 0, depth, depth - 1)
 
 		// Start search with full window.
 		if isPrincipal && moveCount == 1 {
 			score = -position.searchTree(-beta, -alpha, newDepth)
-		} else if reduction > 0 {
+		} else {
+			reduction := 0
+			if !isPrincipal && !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
+				reduction = lateMoveReductions[min(63, moveCount-1)][min(63, depth)]
+				if game.history[move.piece()][move.to()] < 0 {
+					reduction++
+				}
+			}
+
 			score = -position.searchTree(-alpha - 1, -alpha, max(0, newDepth - reduction))
 
 			// Verify late move reduction and re-run the search if necessary.
-			if score > alpha {
+			if reduction > 0 && score > alpha {
 				score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 			}
-		} else {
-			score = -position.searchTree(-alpha - 1, -alpha, newDepth)
 
 			// If zero window failed try full window.
 			if score > alpha && score < beta {
@@ -190,19 +180,15 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		}
 	}
 
-	game.nodes += moveCount
-
 	if moveCount == 0 {
-		if inCheck {
-			alpha = -Checkmate + ply
-		} else {
-			alpha = 0
+		score = let(inCheck, matedIn(ply), 0)
+	} else {
+		game.nodes += moveCount
+		if score >= beta && !inCheck {
+			game.saveGood(depth, bestMove)
 		}
-	} else if score >= beta && !inCheck {
-		game.saveGood(depth, bestMove)
+		score = alpha
 	}
-
-	score = alpha
 
 	cacheFlags := cacheAlpha
 	if score >= beta {

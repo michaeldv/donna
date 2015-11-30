@@ -13,18 +13,24 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 		return p.Evaluate()
 	}
 
+	// Reset principal variation.
+	game.pv[ply].size = 0
+
 	// Insufficient material and repetition/perpetual check pruning.
-	if p.insufficient() || p.repetition() || p.fifty() {
+	if p.fifty() || p.insufficient() || p.repetition() {
 		return 0
+	}
+
+	// Checkmate distance pruning.
+	alpha, beta = mateDistance(alpha, beta, ply)
+	if alpha >= beta {
+		return alpha
 	}
 
 	// If you pick up a starving dog and make him prosperous, he will not
 	// bite you. This is the principal difference between a dog and a man.
         // ―- Mark Twain
 	isPrincipal := (beta - alpha > 1)
-	if isPrincipal {
-		game.pv[ply].size = 0 // Reset principal variation.
-	}
 
 	// Use fixed depth for caching.
 	depth := 0
