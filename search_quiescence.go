@@ -5,7 +5,7 @@
 package donna
 
 // Quiescence search.
-func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (score int) {
+func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score int) {
 	ply := ply()
 
 	// Return if it's time to stop search.
@@ -33,21 +33,18 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	isPrincipal := (beta - alpha > 1)
 
 	// Use fixed depth for caching.
-	depth := 0
-	if !inCheck && iteration > 0 {
-		depth--
-	}
+	newDepth := let(inCheck || depth >= 0, 0, -1)
 
 	// Probe cache.
 	cachedMove := Move(0)
-	staticScore := alpha
+	staticScore := matedIn(ply)
 	if cached := p.probeCache(); cached != nil {
 		cachedMove = cached.move
-		if int(cached.depth) >= depth {
+		if int(cached.depth) >= newDepth {
 			staticScore = uncache(int(cached.score), ply)
-			if (cached.flags == cacheExact && isPrincipal) ||
-			   (cached.flags == cacheBeta  && staticScore >= beta) ||
-			   (cached.flags == cacheAlpha && staticScore <= alpha) {
+			if !isPrincipal &&
+			   ((cached.flags == cacheBeta  && staticScore >= beta) ||
+			   (cached.flags == cacheAlpha && staticScore <= alpha)) {
 				return staticScore
 			}
 		}
@@ -56,7 +53,7 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 	if !inCheck {
 		staticScore = p.Evaluate()
 		if staticScore >= beta {
-			p.cache(Move(0), staticScore, depth, ply, cacheBeta)
+			p.cache(Move(0), staticScore, newDepth, ply, cacheBeta)
 			return staticScore
 		}
 		if isPrincipal {
@@ -70,16 +67,17 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 		gen.generateEvasions().quickRank()
 	} else {
 		gen.generateCaptures()
-		if iteration < 1 {
+		if depth >= 0 {
 			gen.generateChecks()
 		}
 		gen.rank(cachedMove)
 	}
 
+	bestScore := staticScore
 	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		capture := move.capture()
-		if (!inCheck && capture != 0 && p.exchange(move) < 0) || !move.isValid(p, gen.pins) {
+		if (!inCheck && capture != 0 /*&& bestScore > Checkmate - 2 * MaxPly*/ && p.exchange(move) < 0) || !move.isValid(p, gen.pins) {
 			continue
 		}
 
@@ -92,40 +90,45 @@ func (p *Position) searchQuiescence(alpha, beta, iteration int, inCheck bool) (s
 			position.undoLastMove()
 			continue
 		}
-		score = -position.searchQuiescence(-beta, -alpha, iteration + 1, giveCheck)
+		score = -position.searchQuiescence(-beta, -alpha, depth - 1, giveCheck)
 		position.undoLastMove()
 
-		if score > alpha {
-			alpha = score
-			bestMove = move
-			if isPrincipal {
-				game.saveBest(ply, move)
-			}
-
-			if alpha >= beta {
-				p.cache(bestMove, score, depth, ply, cacheBeta)
-				game.qnodes += moveCount
-				return
+		if score > bestScore {
+			bestScore = score
+			if score > alpha {
+				if isPrincipal {
+					game.saveBest(ply, move)
+				}
+				if isPrincipal && score < beta {
+					alpha = score
+					bestMove = move
+				} else {
+					p.cache(move, staticScore, depth, ply, cacheBeta)
+					game.qnodes += moveCount
+					return score
+				}
 			}
 		}
+
 		if engine.clock.halt {
 			game.qnodes += moveCount
 			return alpha
 		}
 	}
 
-	game.qnodes += moveCount
 
-	score = alpha
 	if inCheck && moveCount == 0 {
 		score = -Checkmate + ply
+	} else {
+		game.qnodes += moveCount
+		score = bestScore
 	}
 
 	cacheFlags := cacheAlpha
 	if isPrincipal && score > bestAlpha {
 		cacheFlags = cacheExact
 	}
-	p.cache(bestMove, score, depth, ply, cacheFlags)
+	p.cache(bestMove, staticScore, newDepth, ply, cacheFlags)
 
 	return
 }

@@ -19,11 +19,16 @@ func (gen *MoveGen) pawnCaptures(color uint8) *MoveGen {
 
 		// For pawns on files 2-6 the moves include captures only,
 		// while for pawns on the 7th file the moves include captures
-		// as well as promotion on empty square in front of the pawn.
-		if rank(color, square) != 6 {
+		// as well as queen promotion.
+		if rank(color, square) != A7H7 {
 			gen.movePawn(square, gen.p.targets(square) & enemy)
 		} else {
-			gen.movePawn(square, gen.p.targets(square))
+			targets := gen.p.targets(square)
+			for targets != 0 {
+				target := targets.pop()
+				mQ, _, _, _ := NewPromotion(gen.p, square, target)
+				gen.add(mQ)
+			}
 		}
 	}
 	return gen

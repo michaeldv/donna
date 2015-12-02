@@ -62,18 +62,18 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	if !inCheck && !isPrincipal {
 
 		// No razoring if pawns are on 7th rank.
-		if cachedMove == Move(0) && depth < 8 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
+		if cachedMove == Move(0) && depth < 3 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
 			razoringMargin := func(depth int) int {
-				return 512 + 64 * (depth - 1)
+				return 64 + 64 * (depth - 1)
 			}
 
 		   	// Special case for razoring at low depths.
-			if depth <= 2 && staticScore <= alpha - razoringMargin(5) {
+			if staticScore <= alpha - razoringMargin(5) {
 				return p.searchQuiescence(alpha, beta, 0, inCheck)
 			}
-			
+
 			margin := alpha - razoringMargin(depth)
-			if score := p.searchQuiescence(alpha, beta + 1, 0, inCheck); score <= margin {
+			if score := p.searchQuiescence(margin, margin + 1, 0, inCheck); score <= margin {
 				return score
 			}
 		}
@@ -123,6 +123,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		gen.generateMoves().rank(cachedMove)
 	}
 
+	bestScore := matedIn(ply)
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if !move.isValid(p, gen.pins) {
@@ -156,44 +157,48 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			}
 
 			// If zero window failed try full window.
-			if score > alpha && score < beta {
+			if /*isPrincipal &&*/ score > alpha && score < beta {
 				score = -position.searchTree(-beta, -alpha, newDepth)
 			}
 		}
 		position.undoLastMove()
 
+		if score > bestScore {
+			bestScore = score
+			if score > alpha {
+				if isPrincipal {
+					game.saveBest(ply, move)
+				}
+				if isPrincipal && score < beta {
+					alpha = score
+					bestMove = move
+				} else {
+					p.cache(move, staticScore, depth, ply, cacheBeta)
+					return score
+				}
+			}
+		}
+
 		if engine.clock.halt {
 			game.nodes += moveCount
 			return alpha
-		}
-
-		if score > alpha {
-			alpha = score
-			bestMove = move
-			if isPrincipal {
-				game.saveBest(ply, move)
-			}
-
-			if alpha >= beta {
-				break // Stop searching. Happiness is right next to you.
-			}
 		}
 	}
 
 	if moveCount == 0 {
 		score = let(inCheck, matedIn(ply), 0)
 	} else {
+		score = bestScore
 		game.nodes += moveCount
-		if score >= beta && !inCheck {
+		if !inCheck {
 			game.saveGood(depth, bestMove)
 		}
-		score = alpha
 	}
 
 	cacheFlags := cacheAlpha
 	if score >= beta {
 		cacheFlags = cacheBeta
-	} else if (isPrincipal && moveCount > 0) {
+	} else if isPrincipal && bestMove != Move(0) {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)

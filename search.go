@@ -18,6 +18,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		gen.reset()
 	}
 
+	bestScore := matedIn(ply)
 	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.makeMove(move)
@@ -69,17 +70,27 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 			bestMove = move
 			game.saveBest(0, move)
 			gen.scoreMove(depth, score).rearrangeRootMoves()
+			if moveCount > 1 {
+				game.volatility++
+			}
 		} else {
 			gen.scoreMove(depth, -depth)
 		}
 
-		if score > alpha {
-			if moveCount > 1 {
-				game.volatility++
-			}
-			alpha = score
-			if alpha >= beta {
-				break // Tap out.
+		if score > bestScore {
+			bestScore = score
+			if score > alpha {
+				game.saveBest(ply, move)
+				if score < beta {
+					alpha = score
+					bestMove = move
+				} else {
+					p.cache(move, score, depth, ply, cacheBeta)
+					if !inCheck && alpha > bestAlpha {
+						game.saveGood(depth, bestMove).updatePoor(depth, bestMove, gen.reset())
+					}
+					return score
+				}
 			}
 		}
 	}
@@ -92,25 +103,26 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		}
 		return score
 	}
+	score = bestScore
 
-	game.nodes += moveCount
-	if alpha > bestAlpha && !inCheck {
+	if !inCheck && alpha > bestAlpha {
 		game.saveGood(depth, bestMove).updatePoor(depth, bestMove, gen.reset())
 	}
 
 	cacheFlags := cacheAlpha
 	if score >= beta {
 		cacheFlags = cacheBeta
-	} else if moveCount > 0 {
+	} else if bestMove != Move(0) {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)
-
 	if engine.uci {
-		engine.uciScore(depth, alpha, alpha, beta)
+		engine.uciScore(depth, score, alpha, beta)
 	}
 
-	return alpha
+	game.nodes += moveCount
+
+	return
 }
 
 // Testing helper method to test root search.
