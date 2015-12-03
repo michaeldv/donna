@@ -23,7 +23,6 @@ var deBruijn = [64]int{
 var msbLookup[256]int
 
 func init() {
-	// MSB lookup table.
 	for i := 0; i < len(msbLookup); i++ {
 		if i > 127 {
 			msbLookup[i] = 7
@@ -66,23 +65,20 @@ func (b Bitmask) off(offset int) bool {
 
 // Returns number of bits set.
 func (b Bitmask) count() int {
-	mask := b
-	mask -= (mask >> 1) & 0x5555555555555555
-	mask = ((mask >> 2) & 0x3333333333333333) + (mask & 0x3333333333333333)
-	mask = ((mask >> 4) + mask) & 0x0F0F0F0F0F0F0F0F
-	return int((mask * 0x0101010101010101) >> 56)
+	b -= (b >> 1) & 0x5555555555555555
+	b = ((b >> 2) & 0x3333333333333333) + (b & 0x3333333333333333)
+	b = ((b >> 4) + b) & 0x0F0F0F0F0F0F0F0F
+	return int((b * 0x0101010101010101) >> 56)
 }
 
 // Finds least significant bit set (LSB) in non-zero bitmask. Returns
 // an integer in 0..63 range.
 func (b Bitmask) first() int {
-	return deBruijn[((b ^ (b-1)) * 0x03F79D71B4CB0A89) >> 58]
+	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
 // MSB: Eugene Nalimov's bitScanReverse.
-func (b Bitmask) last() int {
-	offset := 0
-
+func (b Bitmask) last() (offset int) {
 	if b > 0xFFFFFFFF {
 		b >>= 32; offset = 32
 	}
@@ -113,10 +109,9 @@ func (b Bitmask) pushed(color uint8) Bitmask {
 // Finds *and clears* least significant bit set (LSB) in non-zero
 // bitmask. Returns an integer in 0..63 range.
 func (b *Bitmask) pop() int {
-	magic := (*b - 1)
-	index := deBruijn[((*b ^ magic) * 0x03F79D71B4CB0A89) >> 58]
-	*b &= magic
-	return index
+	mask := *b ^ (*b - 1)
+	*b &= *b - 1
+	return deBruijn[(mask * 0x03F79D71B4CB0A89) >> 58]
 }
 
 // Sets a bit at given offset.
