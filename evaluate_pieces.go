@@ -198,14 +198,10 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 			}
 		}
 
-		// Extra bonus if bishop is on central ranks. Increase the extra bonus
-		// if the bishop is supported by a pawn.
+		// Extra bonus if bishop is on central ranks.
 		extra := Score{0, 0}
 		if extra.midgame = extraBishop[flip(color, square)]; extra.midgame > 0 {
 			extra.endgame = extra.midgame / 2
-			if p.pawnAttacks(color).on(square) {
-				extra.scale(35) // Bump by 35% if supported by a pawn.
-			}
 			score.add(extra)
 		}
 
