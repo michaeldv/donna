@@ -22,7 +22,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.makeMove(move)
-		moveCount++
+		moveCount++; game.nodes++
 		if engine.uci {
 			engine.uciMove(move, moveCount, depth)
 		}
@@ -58,14 +58,6 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		}
 		position.undoLastMove()
 
-		if engine.clock.halt {
-			game.nodes += moveCount
-			if engine.uci { // Report alpha as score since we're returning alpha.
-				engine.uciScore(depth, alpha, alpha, beta)
-			}
-			return alpha
-		}
-
 		if moveCount == 1 || score > alpha {
 			bestMove = move
 			game.saveBest(0, move)
@@ -93,6 +85,13 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 				}
 			}
 		}
+
+		if engine.clock.halt {
+			if engine.uci { // Report alpha as score since we're returning alpha.
+				engine.uciScore(depth, alpha, alpha, beta)
+			}
+			return alpha
+		}
 	}
 
 
@@ -119,8 +118,6 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	if engine.uci {
 		engine.uciScore(depth, score, alpha, beta)
 	}
-
-	game.nodes += moveCount
 
 	return
 }

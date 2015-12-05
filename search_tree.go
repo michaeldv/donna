@@ -131,7 +131,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		}
 
 		position := p.makeMove(move)
-		moveCount++
+		moveCount++; game.nodes++
 
 		// Reduce search depth if we're not checking.
 		giveCheck := position.isInCheck(position.color)
@@ -157,7 +157,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			}
 
 			// If zero window failed try full window.
-			if /*isPrincipal &&*/ score > alpha && score < beta {
+			if isPrincipal && score > alpha && score < beta {
 				score = -position.searchTree(-beta, -alpha, newDepth)
 			}
 		}
@@ -180,7 +180,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		}
 
 		if engine.clock.halt {
-			game.nodes += moveCount
 			return alpha
 		}
 	}
@@ -189,7 +188,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		score = let(inCheck, matedIn(ply), 0)
 	} else {
 		score = bestScore
-		game.nodes += moveCount
 		if !inCheck {
 			game.saveGood(depth, bestMove)
 		}

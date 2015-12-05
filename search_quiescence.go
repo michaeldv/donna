@@ -13,9 +13,6 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		return p.Evaluate()
 	}
 
-	// Reset principal variation.
-	game.pv[ply].size = 0
-
 	// Insufficient material and repetition/perpetual check pruning.
 	if p.fifty() || p.insufficient() || p.repetition() {
 		return 0
@@ -31,6 +28,9 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	// bite you. This is the principal difference between a dog and a man.
         // ―- Mark Twain
 	isPrincipal := (beta - alpha > 1)
+	if isPrincipal {
+		game.pv[ply].size = 0 // Reset principal variation.
+	}
 
 	// Use fixed depth for caching.
 	newDepth := let(inCheck || depth >= 0, 0, -1)
@@ -82,7 +82,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		}
 
 		position := p.makeMove(move)
-		moveCount++
+		moveCount++; game.qnodes += moveCount
 		giveCheck := position.isInCheck(position.color)
 
 		// Prune useless captures -- but make sure it's not a capture move that checks.
@@ -104,25 +104,17 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 					bestMove = move
 				} else {
 					p.cache(move, staticScore, depth, ply, cacheBeta)
-					game.qnodes += moveCount
 					return score
 				}
 			}
 		}
 
 		if engine.clock.halt {
-			game.qnodes += moveCount
 			return alpha
 		}
 	}
 
-
-	if inCheck && moveCount == 0 {
-		score = -Checkmate + ply
-	} else {
-		game.qnodes += moveCount
-		score = bestScore
-	}
+	score = let(inCheck && moveCount == 0, matedIn(ply), bestScore)
 
 	cacheFlags := cacheAlpha
 	if isPrincipal && score > bestAlpha {
