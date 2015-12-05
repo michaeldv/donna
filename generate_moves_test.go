@@ -121,15 +121,15 @@ func TestGenerateMoves220(t *testing.T) {
 	expect.Eq(t, black.allMoves(), `[h6xg5 b7xa6 g7xf6]`)
 }
 
-// Pawn captures with Queen promotion.
+// Pawn captures with Queen promotion (captures generate queen promotions only).
 func TestGenerateMoves230(t *testing.T) {
 	p := NewGame(`Ka1,Rh1,Bf1,c7`, `Kh8,Nb8,Qd8,g2`).start()
 	white := NewMoveGen(p).pawnCaptures(White)
-	expect.Eq(t, white.allMoves(), `[c7xb8Q c7xb8R c7xb8B c7xb8N c7-c8Q c7-c8R c7-c8B c7-c8N c7xd8Q c7xd8R c7xd8B c7xd8N]`)
+	expect.Eq(t, white.allMoves(), `[c7xb8Q c7-c8Q c7xd8Q]`)
 
 	p.color = Black
 	black := NewMoveGen(p).pawnCaptures(Black)
-	expect.Eq(t, black.allMoves(), `[g2xf1Q g2xf1R g2xf1B g2xf1N g2-g1Q g2-g1R g2-g1B g2-g1N g2xh1Q g2xh1R g2xh1B g2xh1N]`)
+	expect.Eq(t, black.allMoves(), `[g2xf1Q g2-g1Q g2xh1Q]`)
 }
 
 // Rearrange root moves.
