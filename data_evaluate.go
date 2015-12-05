@@ -27,7 +27,6 @@ var (
 	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
 	hangingAttack  = Score{  8, 12 }  // Bonus for attacking enemy pieces that are hanging.
 	kingByPawn     = Score{  0,  8 }  // Penalty king being too far from friendly pawns.
-	coverMissing   = Score{ 50,  0 }  // Penalty for missing cover pawn.
 )
 
 // Weight percentages applied to evaluation scores before computing the overall
@@ -256,15 +255,7 @@ var bonusKingThreat = [6]int {
 	0, 0, 2, 2, 3, 5,
 }
 
-// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
-var bonusCloseCheck = [6]int {
-	0, 0, 0, 0, 8, 12,
-}
-
-// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
-var bonusDistanceCheck = [6]int {
-	0, 0, 1, 1, 4, 6,
-}
+const queenCheck = 4
 
 var kingSafety = [64]int {
 	  0,   0,   1,   2,   3,   5,   7,  10,
@@ -275,6 +266,26 @@ var kingSafety = [64]int {
 	319, 334, 349, 364, 379, 394, 409, 424,
 	439, 454, 469, 484, 499, 514, 529, 544,
 	559, 574, 589, 604, 619, 634, 640, 640,
+}
+
+// Penalty for the weak king cover, indexed by rank.
+var penaltyCover = [7]int {
+	50, 0, 13, 36, 46, 50, 50,
+}
+
+// Storming pawn with no frendly pawn stopping it, indexed by rank.
+var penaltyStorm = [8]int {
+	0, 32, 64, 25, 13, 0, 0, 0,
+}
+
+// Storming pawn blocked by frendly pawn.
+var penaltyStormBlocked = [8]int {
+	0, 0, 32, 12, 6, 0, 0, 0,
+}
+
+// Storming pawn facing frendly pawn.
+var penaltyStormUnblocked = [8]int {
+	13, 16, 48, 19, 10, 0, 0, 0,
 }
 
 // Supported pawn bonus arranged from White point of view. The actual score
@@ -320,11 +331,6 @@ var penaltyBackwardPawn = [8]Score{
 // Penalty for backward pawn that is exposed: A to H, midgame/endgame.
 var penaltyWeakBackwardPawn = [8]Score{
 	{15, 21}, {22, 23}, {25, 23}, {25, 23}, {25, 23}, {25, 23}, {22, 23}, {15, 21},
-}
-
-// Penalty for the weak king cover indexed by rank, midgame only.
-var penaltyCover = [8]int {
-	0, 0, 14, 38, 46, coverMissing.midgame, coverMissing.midgame, coverMissing.midgame,
 }
 
 var mobilityKnight = [9]Score{
