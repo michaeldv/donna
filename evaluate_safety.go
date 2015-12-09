@@ -47,6 +47,9 @@ func (e *Evaluation) analyzeSafety() {
 		safety.black.midgame -= bishopDanger.midgame
 	}
 
+	safety.white.apply(weightSafety)
+	safety.black.apply(weightSafety)
+
 	e.score.add(cover.white).add(safety.white).sub(cover.black).sub(safety.black)
 }
 

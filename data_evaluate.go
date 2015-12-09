@@ -35,6 +35,7 @@ var (
 	weightMobility      = Score{ 112, 134 }
 	weightPawnStructure = Score{  91,  79 }
 	weightPassedPawns   = Score{  86, 107 }
+	weightSafety        = Score{ 100, 100 }
 	weightSpace         = Score{ 100, 100 }
 )
 
