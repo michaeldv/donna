@@ -93,6 +93,11 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		score = -position.searchQuiescence(-beta, -alpha, depth - 1, giveCheck)
 		position.undoLastMove()
 
+		// Don't touch anything if the time has elapsed and we need to abort th search.
+		if engine.clock.halt {
+			return alpha
+		}
+
 		if score > bestScore {
 			bestScore = score
 			if score > alpha {
@@ -107,10 +112,6 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 					return score
 				}
 			}
-		}
-
-		if engine.clock.halt {
-			return alpha
 		}
 	}
 

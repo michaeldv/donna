@@ -18,7 +18,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		gen.reset()
 	}
 
-	bestScore := matedIn(ply)
+	bestScore := alpha//matedIn(ply)
 	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		position := p.makeMove(move)
@@ -58,6 +58,11 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		}
 		position.undoLastMove()
 
+		// Don't touch anything if the time has elapsed and we need to abort th search.
+		if engine.clock.halt {
+			return alpha
+		}
+
 		if moveCount == 1 || score > alpha {
 			bestMove = move
 			game.saveBest(0, move)
@@ -84,13 +89,6 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 					return score
 				}
 			}
-		}
-
-		if engine.clock.halt {
-			if engine.uci { // Report alpha as score since we're returning alpha.
-				engine.uciScore(depth, alpha, alpha, beta)
-			}
-			return alpha
 		}
 	}
 

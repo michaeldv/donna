@@ -64,7 +64,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		// No razoring if pawns are on 7th rank.
 		if cachedMove == Move(0) && depth < 3 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
 			razoringMargin := func(depth int) int {
-				return 64 + 64 * (depth - 1)
+				return 96 + 64 * (depth - 1)
 			}
 
 		   	// Special case for razoring at low depths.
@@ -123,7 +123,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		gen.generateMoves().rank(cachedMove)
 	}
 
-	bestScore := matedIn(ply)
+	bestScore := alpha//matedIn(ply)
 	moveCount, bestMove := 0, Move(0)
 	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
 		if !move.isValid(p, gen.pins) {
@@ -163,6 +163,11 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		}
 		position.undoLastMove()
 
+		// Don't touch anything if the time has elapsed and we need to abort th search.
+		if engine.clock.halt {
+			return alpha
+		}
+
 		if score > bestScore {
 			bestScore = score
 			if score > alpha {
@@ -177,10 +182,6 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 					return score
 				}
 			}
-		}
-
-		if engine.clock.halt {
-			return alpha
 		}
 	}
 
