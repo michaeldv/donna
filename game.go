@@ -93,10 +93,10 @@ func (game *Game) getReady() *Game {
 
 // Copies the very latest top principal variation line.
 func updateRootPv() {
-	// Is copy() faster than plain assigment?!
-	// game.rootpv.moves = game.pv[0].moves
-	copy(game.rootpv.moves[0:], game.pv[0].moves[0:])
-	game.rootpv.size = game.pv[0].size
+	if game.pv[0].size > 0 {
+		copy(game.rootpv.moves[0:], game.pv[0].moves[0:])
+		game.rootpv.size = game.pv[0].size
+	}
 }
 
 // "The question of whether machines can think is about as relevant as the
@@ -139,7 +139,7 @@ func (game *Game) Think() Move {
 		// Aspiration window searches kick in at depth 5 and up.
 		if depth < 5 {
 			score = position.search(alpha, beta, depth)
-			if score > alpha {
+			if score > alpha || depth == 1 {
 				bestScore = score
 				updateRootPv()
 			}
