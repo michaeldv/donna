@@ -5,6 +5,7 @@
 package donna
 
 func (e *Evaluation) analyzeThreats() {
+	var score Score
 	var threats, center Total
 
 	if engine.trace {
@@ -23,53 +24,62 @@ func (e *Evaluation) analyzeThreats() {
 	if e.material.turf != 0 && e.material.flags & (whiteKingSafety | blackKingSafety) != 0 {
 		center.white = e.center(White, e.attacks[White], e.attacks[Black], e.attacks[pawn(Black)])
 		center.black = e.center(Black, e.attacks[Black], e.attacks[White], e.attacks[pawn(White)])
-		e.score.add(center.white).sub(center.black)
+		score.add(center.white).sub(center.black).apply(weightCenter)
+		e.score.add(score)
 	}
 }
 
 func (e *Evaluation) threats(color uint8, hisAttacks, herAttacks Bitmask) (score Score) {
 	p := e.position
+	rival := color^1
 
-	// Find weak enemy pieces: the ones under attack and not defended by
-	// pawns (excluding a king).
-	weak := p.outposts[color^1] & hisAttacks & ^e.attacks[pawn(color^1)]
-	weak &= ^p.outposts[king(color^1)]
+	// Find enemy pieces under attack excluding king and pawns.
+	weak := p.outposts[rival] & ^(p.outposts[king(rival)] | p.outposts[pawn(rival)])
+	weak &= hisAttacks
 
-	if weak != 0 {
+	if weak.any() {
 
-		// Threat bonus for strongest enemy piece attacked by our pawns,
-		// knights, or bishops.
-		targets := weak & (e.attacks[pawn(color)] | e.attacks[knight(color)] | e.attacks[bishop(color)])
-		if targets != 0 {
-			piece := p.strongestPiece(color^1, targets)
+		// Threat bonus for enemy pieces attacked by our pawns.
+		targets := weak & e.attacks[pawn(color)]
+		for targets.any() {
+			piece := p.pieces[targets.pop()]
+			score.add(bonusPawnThreat[piece.kind()/2])
+		}
+
+		// Threat bonus for enemy pieces attacked by knights and bishops.
+		targets = weak & (e.attacks[knight(color)] | e.attacks[bishop(color)])
+		for targets.any() {
+			piece := p.pieces[targets.pop()]
 			score.add(bonusMinorThreat[piece.kind()/2])
 		}
 
-		// Threat bonus for strongest enemy piece attacked by our rooks
-		// or queen.
-		targets = weak & (e.attacks[rook(color)] | e.attacks[queen(color)])
-		if targets != 0 {
-			piece := p.strongestPiece(color^1, targets)
-			score.add(bonusMajorThreat[piece.kind()/2])
+		// Threat bonus for enemy pieces attacked by rooks.
+		targets = weak & e.attacks[rook(color)]
+		for targets.any() {
+			piece := p.pieces[targets.pop()]
+			score.add(bonusRookThreat[piece.kind()/2])
 		}
 
-		// Extra bonus when attacking enemy pieces that are hanging. Side
-		// having the right to move gets bigger bonus.
-		hanging := (weak & ^herAttacks).count()
-		if hanging > 0 {
-			if p.color == color {
-				hanging++
-			}
+		// Threat bonus for enemy pieces attacked by the king.
+		targets = weak & e.attacks[king(color)]
+		if count := targets.count(); count == 1 {
+			score.add(Score{1, 29})
+		} else if count > 1 {
+			score.add(Score{1, 29}.times(2))
+		}
+
+		// Extra bonus when attacking enemy pieces that are hanging.
+		if hanging := (weak & ^herAttacks).count(); hanging > 0 {
 			score.add(hangingAttack.times(hanging))
 		}
 	}
-	return
+
+	return score
 }
 
 func (e *Evaluation) center(color uint8, hisAttacks, herAttacks, herPawnAttacks Bitmask) (score Score) {
-	pawns := e.position.outposts[pawn(color)]
-	safe := homeTurf[color] & ^pawns & ^herPawnAttacks & (hisAttacks | ^herAttacks)
-	turf := safe & pawns
+	turf := e.position.outposts[pawn(color)]
+	safe := homeTurf[color] & ^turf & ^herPawnAttacks & (hisAttacks | ^herAttacks)
 
 	if color == White {
 		turf |= turf >> 8   // A4..H4 -> A3..H3
@@ -83,6 +93,7 @@ func (e *Evaluation) center(color uint8, hisAttacks, herAttacks, herPawnAttacks 
 		safe >>= 32 	    // Move down to white's half of the board.
 	}
 
-	score.midgame = (safe | turf).count() * e.material.turf / 100
-	return
+	score.midgame = (safe | turf).count() * e.material.turf / 3
+
+	return score
 }

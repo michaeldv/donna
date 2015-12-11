@@ -239,7 +239,7 @@ func initMaterial() {
 
 		// Compute game phase and home turf values.
 		materialBase[index].phase = 12 * (wN + bN + wB + bB) + 18 * (wR + bR) + 44 * (wQ + bQ)
-		materialBase[index].turf = (wN + bN + wB + bB) * 36
+		materialBase[index].turf = (wN + bN + wB + bB) * (wN + bN + wB + bB)
 
 		// Set up evaluation flags and endgame handlers.
 		materialBase[index].flags,
