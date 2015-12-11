@@ -18,7 +18,7 @@ import `regexp`
 //                                      -― FORTRAN manual for Xerox Computers
 
 // Your chess engine hates you when you are working on a new version.
-const Version = `X3.1b3`
+const Version = `X3.1b6`
 
 // Limits and conventions.
 const (
@@ -122,7 +122,7 @@ var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
 
 // Home turf in the center.
 var homeTurf = [2]Bitmask{
-	0x000000003C3C3C00, 0x003C3C3C00000000,
+	0x000000003C3C3C00, 0x003C3C3C00000000, // 0x000000003c7e7e00, 0x007e7e3c00000000, ?!
 }
 
 // Castle squares that should be *empty* in order for the castle to be valid.

@@ -2,6 +2,9 @@ Donna benchmark results (MacBook Air 1.3GHz Intel Core i5, 10s per position)
 
 Benchmark          brilliant.dcf      silent.dcf         win300.dcf          sts.dcf
 -------------------------------------------------------------------------------------------
+Donna X3.1b6                                                                                # threats
+Donna X3.1b5    +939 -62 (93.8%)   +126  -8 (94.0%)   +284 -16 (94.7%)                      # apply weights
+Donna X3.1b4    +938 -63 (93.7%)   +127  -7 (94.8%)   +285 -15 (95.0%)   +1007 -493 (67.1%) # center eval
 Donna X3.1b3    +938 -63 (93.7%)   +120 -14 (89.6%)   +289 -11 (96.3%)   +1026 -474 (68.4%) # bestAlpha = alpha fix
 
 Donna X3.1b2    +940 -61 (93.9%)   +124  -8 (94.0%)   +286 -14 (95.3%)    +999 -501 (66.6%) # new safety eval

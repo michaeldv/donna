@@ -37,15 +37,15 @@ func TestEvaluateThreats010(t *testing.T) {
 	// Bishop not defended by pawn.
 	NewGame(`Kh1,Rf1`, `Ke7,Bf6`).start().EvaluateWithTrace()
 	score := eval.metrics[`Threats`].(Total).white
-	expect.Eq(t, score.minus(baseline), bonusMajorThreat[Bishop/2])
+	expect.Eq(t, score.minus(baseline), bonusRookThreat[Bishop/2])
 
 	// Bishop and queen not defended by pawn (queen is stronger).
 	NewGame(`Kh1,Rf1`, `Ke7,Qa1,Bf6`).start().EvaluateWithTrace()
 	score = eval.metrics[`Threats`].(Total).white
-	expect.Eq(t, score.minus(baseline), bonusMajorThreat[Queen/2])
+	expect.Eq(t, score.minus(baseline), bonusRookThreat[Queen/2])
 
 	// Hanging bishop with extra bonus for the right to move.
 	NewGame(`Kh1,Rf1`, `Kh8,Bf6`).start().EvaluateWithTrace()
 	score = eval.metrics[`Threats`].(Total).white
-	expect.Eq(t, score.minus(baseline), bonusMajorThreat[Bishop/2].plus(hangingAttack.times(2)))
+	expect.Eq(t, score.minus(baseline), bonusRookThreat[Bishop/2].plus(hangingAttack.times(2)))
 }

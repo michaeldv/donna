@@ -35,8 +35,8 @@ var (
 	weightMobility      = Score{ 112, 134 }
 	weightPawnStructure = Score{  91,  79 }
 	weightPassedPawns   = Score{  86, 107 }
-	weightSafety        = Score{ 100, 100 }
-	weightSpace         = Score{ 100, 100 }
+	weightSafety        = Score{ 125,   0 }
+	weightCenter        = Score{  18,   0 }
 )
 
 // Piece values for calculating most valueable victim/least valueable attacker,
@@ -241,19 +241,24 @@ var extraBishop = [64]int{
      //^^^^^^^^^^^^ White ^^^^^^^^^^^^
 }
 
-// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
+// Pawn attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
+var bonusPawnThreat = [6]Score{
+	{0, 0}, {0, 0}, {53, 69}, {42, 61}, {57, 101}, {60, 108},
+}
+
+// Knigh or bishop attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
 var bonusMinorThreat = [6]Score{
-	{0, 0}, {3, 18}, {12, 24}, {12, 24}, {20, 50}, {20, 50},
+	{0, 0}, {0, 16}, {12, 19}, {14, 22}, {21, 49}, {17, 52},
 }
 
-// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
-var bonusMajorThreat = [6]Score{
-	{0, 0}, {7, 18}, {7, 22}, {7, 22}, {7, 22}, {12, 24},
+// Rook attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
+var bonusRookThreat = [6]Score{
+	{0, 0}, {0, 13}, {13, 26}, {13, 26}, {0, 15}, {12, 25},
 }
 
-// [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
-var bonusKingThreat = [6]int {
-	0, 0, 2, 2, 3, 5,
+// King being attacked by [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
+var kingThreat = [6]int {
+	0, 0, 5, 3, 3, 1,
 }
 
 const queenCheck = 4
