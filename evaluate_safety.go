@@ -5,6 +5,7 @@
 package donna
 
 func (e *Evaluation) analyzeSafety() {
+	var score Score
 	var cover, safety Total
 	oppositeBishops := e.oppositeBishops()
 
@@ -47,10 +48,10 @@ func (e *Evaluation) analyzeSafety() {
 		safety.black.midgame -= bishopDanger.midgame
 	}
 
-	safety.white.apply(weightSafety)
-	safety.black.apply(weightSafety)
-
-	e.score.add(cover.white).add(safety.white).sub(cover.black).sub(safety.black)
+	// Calculate total king safety and pawn cover score.
+	score.add(safety.white).sub(safety.black).apply(weightSafety)
+	score.add(cover.white).sub(cover.black)
+	e.score.add(score)
 }
 
 func (e *Evaluation) kingSafety(color uint8) (score Score) {

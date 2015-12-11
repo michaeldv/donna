@@ -6,7 +6,7 @@ package donna
 
 func (e *Evaluation) analyzePieces() {
 	p := e.position
-	var bonus Score
+	var bonus, score Score
 	var knight, bishop, rook, queen, mobility Total
 
 	if engine.trace {
@@ -99,12 +99,9 @@ func (e *Evaluation) analyzePieces() {
 	e.attacks[White] |= e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook] | e.attacks[Queen]
 	e.attacks[Black] |= e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook] | e.attacks[BlackQueen]
 
-	// Apply weights to the mobility scores.
-	mobility.white.apply(weightMobility)
-	mobility.black.apply(weightMobility)
-
-	// Update cumulative score based on white vs. black bonuses and mobility.
-	e.score.add(mobility.white).sub(mobility.black)
+	// Calculate total mobility score applying mobility weight.
+	score.add(mobility.white).sub(mobility.black).apply(weightMobility)
+	e.score.add(score)
 }
 
 func (e *Evaluation) knights(color uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
@@ -334,12 +331,12 @@ func (e *Evaluation) queens(color uint8, maskSafe Bitmask, unsafeKing bool) (sco
 
 // Updates safety data used later on when evaluating king safety.
 func (e *Evaluation) kingThreats(piece Piece, attacks Bitmask) {
-	color := piece.color() ^ 1
+	color := piece.color()^1
 
-	if attacks & e.safety[color].fort != 0 {
+	if (attacks & e.safety[color].fort).any() {
 		e.safety[color].attackers++
-		e.safety[color].threats += bonusKingThreat[piece.kind()/2]
-		if bits := attacks & e.attacks[king(color)]; bits != 0 {
+		e.safety[color].threats += kingThreat[piece.kind()/2]
+		if bits := attacks & e.attacks[king(color)]; bits.any() {
 			e.safety[color].attacks += bits.count()
 		}
 	}

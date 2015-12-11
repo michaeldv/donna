@@ -24,9 +24,7 @@ func (e *Evaluation) analyzePawns() {
 	// Bypass pawns cache if evaluation tracing is enabled.
 	if e.pawns.id != key || engine.trace {
 		white, black := e.pawnStructure(White), e.pawnStructure(Black)
-		white.apply(weightPawnStructure)
-		black.apply(weightPawnStructure)
-		e.pawns.score.clear().add(white).sub(black)
+		e.pawns.score.clear().add(white).sub(black).apply(weightPawnStructure)
 		e.pawns.id = key
 
 		// Force full king shelter evaluation since any legit king square
@@ -42,7 +40,7 @@ func (e *Evaluation) analyzePawns() {
 }
 
 func (e *Evaluation) analyzePassers() {
-	var white, black Score
+	var white, black, score Score
 
 	if engine.trace {
 		defer func() {
@@ -51,9 +49,8 @@ func (e *Evaluation) analyzePassers() {
 	}
 
 	white, black = e.pawnPassers(White), e.pawnPassers(Black)
-	white.apply(weightPassedPawns)
-	black.apply(weightPassedPawns)
-	e.score.add(white).sub(black)
+	score.add(white).sub(black).apply(weightPassedPawns)
+	e.score.add(score)
 }
 
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
