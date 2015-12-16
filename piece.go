@@ -45,6 +45,10 @@ func pawn(color uint8) Piece {
 	return Piece(color | Pawn)
 }
 
+func (p Piece) nil() bool {
+	return p == Piece(0)
+}
+
 func (p Piece) polyglot(square int) uint64 {
 	return polyglotRandom[polyglotBase[p] + square]
 }

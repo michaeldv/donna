@@ -157,6 +157,10 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	return
 }
 
+func (m Move) nil() bool {
+	return m == Move(0)
+}
+
 func (m Move) from() int {
 	return int(m & 0xFF)
 }
