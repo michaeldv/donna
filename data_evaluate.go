@@ -13,7 +13,7 @@ var (
 	valueRook      = Score{ onePawn *  6 + 35, onePawn *  6 + 40 }  //  635,  640
 	valueQueen     = Score{ onePawn * 12 + 60, onePawn * 12 + 79 }  // 1260, 1279
 
-	rightToMove    = Score{ 12,  5 }  // Tempo bonus.
+	rightToMove    = Score{ 10, 10 }  // Tempo bonus.
 	bishopPawn     = Score{  4,  6 }  // Penalty for each pawn on the same colored square as a bishop.
 	bishopBoxed    = Score{ 73,  0 }  // Penalty for patterns like Bc1,d2,Nd3.
 	bishopDanger   = Score{ 35,  0 }  // Bonus when king is under attack and sides have opposite-colored bishops.
@@ -37,6 +37,7 @@ var (
 	weightPassedPawns   = Score{  86, 107 }
 	weightSafety        = Score{ 125,   0 }
 	weightCenter        = Score{  18,   0 }
+	weightThreats       = Score{ 100, 100 }
 )
 
 // Piece values for calculating most valueable victim/least valueable attacker,
@@ -256,7 +257,7 @@ var bonusRookThreat = [6]Score{
 	{0, 0}, {0, 13}, {13, 26}, {13, 26}, {0, 15}, {12, 25},
 }
 
-// King being attacked by [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
+// King being attacked by [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
 var kingThreat = [6]int {
 	0, 0, 5, 3, 3, 1,
 }

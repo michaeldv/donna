@@ -19,12 +19,13 @@ func (e *Evaluation) analyzeThreats() {
 
 	threats.white = e.threats(White, e.attacks[White], e.attacks[Black])
 	threats.black = e.threats(Black, e.attacks[Black], e.attacks[White])
-	e.score.add(threats.white).sub(threats.black)
+	score.add(threats.white).sub(threats.black).apply(weightThreats)
+	e.score.add(score)
 
 	if e.material.turf != 0 && e.material.flags & (whiteKingSafety | blackKingSafety) != 0 {
 		center.white = e.center(White, e.attacks[White], e.attacks[Black], e.attacks[pawn(Black)])
 		center.black = e.center(Black, e.attacks[Black], e.attacks[White], e.attacks[pawn(White)])
-		score.add(center.white).sub(center.black).apply(weightCenter)
+		score.clear().add(center.white).sub(center.black).apply(weightCenter)
 		e.score.add(score)
 	}
 }
@@ -35,19 +36,20 @@ func (e *Evaluation) threats(color uint8, hisAttacks, herAttacks Bitmask) (score
 
 	// Find enemy pieces under attack excluding king and pawns.
 	weak := p.outposts[rival] & ^(p.outposts[king(rival)] | p.outposts[pawn(rival)])
+	weak &= ^e.attacks[pawn(rival)] // Not defended by pawns.
 	weak &= hisAttacks
 
 	if weak.any() {
 
 		// Threat bonus for enemy pieces attacked by our pawns.
-		targets := weak & e.attacks[pawn(color)]
-		for targets.any() {
-			piece := p.pieces[targets.pop()]
-			score.add(bonusPawnThreat[piece.kind()/2])
-		}
+		// targets := weak & e.attacks[pawn(color)]
+		// for targets.any() {
+		// 	piece := p.pieces[targets.pop()]
+		// 	score.add(bonusPawnThreat[piece.kind()/2])
+		// }
 
 		// Threat bonus for enemy pieces attacked by knights and bishops.
-		targets = weak & (e.attacks[knight(color)] | e.attacks[bishop(color)])
+		targets := weak & (e.attacks[knight(color)] | e.attacks[bishop(color)])
 		for targets.any() {
 			piece := p.pieces[targets.pop()]
 			score.add(bonusMinorThreat[piece.kind()/2])
@@ -62,15 +64,19 @@ func (e *Evaluation) threats(color uint8, hisAttacks, herAttacks Bitmask) (score
 
 		// Threat bonus for enemy pieces attacked by the king.
 		targets = weak & e.attacks[king(color)]
-		if count := targets.count(); count == 1 {
-			score.add(Score{1, 29})
-		} else if count > 1 {
-			score.add(Score{1, 29}.times(2))
+		if targets.any() {
+			if count := targets.count(); count == 1 {
+				score.add(Score{2, 30})
+			} else if count > 1 {
+				score.add(Score{2, 30}.times(2))
+			}
 		}
 
 		// Extra bonus when attacking enemy pieces that are hanging.
-		if hanging := (weak & ^herAttacks).count(); hanging > 0 {
-			score.add(hangingAttack.times(hanging))
+		if hanging := weak & ^herAttacks; hanging.any() {
+			if count := hanging.count(); count > 0 {
+				score.add(hangingAttack.times(count))
+			}
 		}
 	}
 
