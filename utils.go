@@ -97,15 +97,6 @@ func isMate(score int) bool {
 	return abs(score) >= Checkmate - MaxPly
 }
 
-func uncache(score, ply int) int {
-	if score > Checkmate - MaxPly && score <= Checkmate {
-		return score - ply
-	} else if score < MaxPly - Checkmate && score >= -Checkmate {
-		return score + ply
-	}
-	return score
-}
-
 // Integer version of math/abs.
 func abs(n int) int {
 	if n < 0 {

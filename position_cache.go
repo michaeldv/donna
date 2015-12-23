@@ -34,6 +34,15 @@ func cacheUsage() (hits int) {
 	return
 }
 
+func uncache(score, ply int) int {
+	if score > Checkmate - MaxPly && score <= Checkmate {
+		return score - ply
+	} else if score < MaxPly - Checkmate && score >= -Checkmate {
+		return score + ply
+	}
+	return score
+}
+
 // Creates new or resets existing game cache (aka transposition table).
 func NewCache(megaBytes float64) Cache {
 	if megaBytes > 0.0 {
