@@ -136,6 +136,7 @@ func (p *Position) makeMove(move Move) *Position {
 	pp.id ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
 	pp.id ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
+	pp.score = Unknown
 
 	return &tree[node] // pp
 }

@@ -18,9 +18,9 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		gen.reset()
 	}
 
-	bestScore := alpha//matedIn(ply)
-	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
-	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+	bestAlpha, bestScore := alpha, alpha
+	bestMove, moveCount := Move(0), 0
+	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
 		position := p.makeMove(move)
 		moveCount++; game.nodes++
 		if engine.uci {

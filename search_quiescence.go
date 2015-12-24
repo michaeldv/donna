@@ -27,6 +27,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	// If you pick up a starving dog and make him prosperous, he will not
 	// bite you. This is the principal difference between a dog and a man.
         // ―- Mark Twain
+	isNull := p.isNull()
 	isPrincipal := (beta - alpha > 1)
 	if isPrincipal {
 		game.pv[ply].size = 0 // Reset principal variation.
@@ -37,27 +38,38 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 
 	// Probe cache.
 	cachedMove := Move(0)
-	staticScore := matedIn(ply)
-	if cached := p.probeCache(); cached != nil {
+	cached := p.probeCache()
+	if cached != nil {
 		cachedMove = cached.move
 		if int(cached.depth) >= newDepth {
-			staticScore = uncache(int(cached.score), ply)
+			cachedScore := uncache(int(cached.score), ply)
 			if !isPrincipal &&
-			   ((cached.flags == cacheBeta  && staticScore >= beta) ||
-			   (cached.flags == cacheAlpha && staticScore <= alpha)) {
-				return staticScore
+			   ((cached.flags == cacheBeta  && cachedScore >= beta) ||
+			   (cached.flags == cacheAlpha && cachedScore <= alpha)) {
+				return cachedScore
 			}
 		}
 	}
 
-	if !inCheck {
-		staticScore = p.Evaluate()
-		if staticScore >= beta {
-			p.cache(Move(0), staticScore, newDepth, ply, cacheBeta)
-			return staticScore
+	if inCheck {
+		p.score = Unknown
+	} else {
+		if cached != nil {
+			if p.score == Unknown {
+				p.score = p.Evaluate()
+			}
+		} else {
+			if isNull {
+				p.score = rightToMove.midgame * 2 - tree[node-1].score
+			} else {
+				p.score = p.Evaluate()
+			}
+		}
+		if p.score >= beta {
+			return p.score
 		}
 		if isPrincipal {
-			alpha = max(alpha, staticScore)
+			alpha = max(alpha, p.score)
 		}
 	}
 
@@ -73,9 +85,10 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		gen.rank(cachedMove)
 	}
 
-	bestScore := staticScore
-	moveCount, bestMove, bestAlpha := 0, Move(0), alpha
-	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+	bestAlpha := alpha
+	bestScore := let(p.score != Unknown, p.score, matedIn(ply))
+	bestMove, moveCount := Move(0), 0
+	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
 		capture := move.capture()
 		if (!inCheck && capture != 0 /*&& bestScore > Checkmate - 2 * MaxPly*/ && p.exchange(move) < 0) || !move.isValid(p, gen.pins) {
 			continue
@@ -86,7 +99,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		giveCheck := position.isInCheck(position.color)
 
 		// Prune useless captures -- but make sure it's not a capture move that checks.
-		if !inCheck && !giveCheck && !isPrincipal && capture != 0 && !move.isPromo() && staticScore + pieceValue[capture] + 72 < alpha {
+		if !inCheck && !giveCheck && !isPrincipal && capture != 0 && !move.isPromo() && p.score + pieceValue[capture] + 72 < alpha {
 			position.undoLastMove()
 			continue
 		}
@@ -108,7 +121,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 					alpha = score
 					bestMove = move
 				} else {
-					p.cache(move, staticScore, depth, ply, cacheBeta)
+					p.cache(move, score, newDepth, ply, cacheBeta)
 					return score
 				}
 			}
@@ -121,7 +134,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	if isPrincipal && score > bestAlpha {
 		cacheFlags = cacheExact
 	}
-	p.cache(bestMove, staticScore, newDepth, ply, cacheFlags)
+	p.cache(bestMove, score, newDepth, ply, cacheFlags)
 
-	return
+	return score
 }

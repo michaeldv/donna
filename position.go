@@ -23,6 +23,7 @@ type Position struct {		 // 224 bytes long.
 	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	tally        Score       // Positional valuation score based on PST.
 	balance      int 	 // Material balance index.
+	score        int         // Blended evaluation score.
 	reversible   bool        // Is this position reversible?
 	color        uint8       // Side to make next move.
 	enpassant    uint8       // En-passant square caused by previous move.
@@ -65,6 +66,7 @@ func NewPosition(game *Game, white, black string) *Position {
 	p.board = p.outposts[White] | p.outposts[Black]
 	p.id, p.pawnId = p.polyglot()
 	p.tally = p.valuation()
+	p.score = Unknown
 
 	return p
 }
@@ -190,7 +192,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		case '1', '2', '3', '4', '5', '6', '7', '8':
 			sq += int(char - '0')
 		}
-		if piece != 0 {
+		if !piece.nil() {
 			p.pieces[sq] = piece
 			p.outposts[piece].set(sq)
 			p.outposts[piece.color()].set(sq)
@@ -200,11 +202,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	}
 
 	// [1] - Color of side to move.
-	if matches[1] == `w` {
-		p.color = White
-	} else {
-		p.color = Black
-	}
+	p.color = uint8(let(matches[1] == `w`, White, Black))
 
 	// [2] - Castle rights.
 	for _, char := range(matches[2]) {
@@ -237,6 +235,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	p.board = p.outposts[White] | p.outposts[Black]
 	p.id, p.pawnId = p.polyglot()
 	p.tally = p.valuation()
+	p.score = Unknown
 
 	return p
 }
@@ -245,7 +244,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 // making a move these values get updated incrementally.
 func (p *Position) polyglot() (hash, pawnHash uint64) {
 	board := p.board
-	for board != 0 {
+	for board.any() {
 		square := board.pop()
 		piece := p.pieces[square]
 		random := piece.polyglot(square)
@@ -270,7 +269,7 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 // valuation tally gets updated incrementally.
 func (p *Position) valuation() (score Score) {
 	board := p.board
-	for board != 0 {
+	for board.any() {
 		square := board.pop()
 		piece := p.pieces[square]
 		score.add(pst[piece][square])
@@ -286,7 +285,7 @@ func (p *Position) insufficient() bool {
 // Reports game status for current position or after the given move. The status
 // helps to determine whether to continue with search or if the game is over.
 func (p *Position) status(move Move, blendedScore int) int {
-	if move != Move(0) {
+	if !move.nil() {
 		p = p.makeMove(move)
 		defer func() { p = p.undoLastMove() }()
 	}
@@ -307,18 +306,12 @@ func (p *Position) status(move Move, blendedScore int) int {
 		}
 	case Checkmate - ply:
 		if p.isInCheck(p.color) {
-			if p.color == White {
-				return BlackWon
-			}
-			return WhiteWon
+			return let(p.color == White, BlackWon, WhiteWon)
 		}
 		return Stalemate
 	default:
 		if score > Checkmate - MaxDepth && (score + ply) / 2 > 0 {
-			if p.color == White {
-				return BlackWinning
-			}
-			return WhiteWinning
+			return let(p.color == White, BlackWinning, WhiteWinning)
 		}
 	}
 	return InProgress
@@ -336,7 +329,7 @@ func (p *Position) fen() (fen string) {
 			square := square(row, col)
 			piece := p.pieces[square]
 
-			if piece != 0 {
+			if !piece.nil() {
 				if empty != 0 {
 					fen += fmt.Sprintf(`%d`, empty)
 					empty = 0
@@ -428,19 +421,19 @@ func (p *Position) dcf() string {
 
 		// Queens, Rooks, Bishops, and Knights.
 		outposts := p.outposts[queen(color)]
-		for outposts != 0 {
+		for outposts.any() {
 			pieces[color] = append(pieces[color], `Q` + encode(outposts.pop()))
 		}
 		outposts = p.outposts[rook(color)]
-		for outposts != 0 {
+		for outposts.any() {
 			pieces[color] = append(pieces[color], `R` + encode(outposts.pop()))
 		}
 		outposts = p.outposts[bishop(color)]
-		for outposts != 0 {
+		for outposts.any() {
 			pieces[color] = append(pieces[color], `B` + encode(outposts.pop()))
 		}
 		outposts = p.outposts[knight(color)]
-		for outposts != 0 {
+		for outposts.any() {
 			pieces[color] = append(pieces[color], `N` + encode(outposts.pop()))
 		}
 
@@ -462,7 +455,7 @@ func (p *Position) dcf() string {
 
 		// Pawns.
 		outposts = p.outposts[pawn(color)]
-		for outposts != 0 {
+		for outposts.any() {
 			pieces[color] = append(pieces[color], encode(outposts.pop()))
 		}
 	}
@@ -480,9 +473,8 @@ func (p *Position) String() string {
 	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0; col <= 7; col++ {
-			square := square(row, col)
 			buffer.WriteByte(' ')
-			if piece := p.pieces[square]; piece != 0 {
+			if piece := p.pieces[square(row, col)]; !piece.nil() {
 				buffer.WriteString(piece.String())
 			} else {
 				buffer.WriteString("\u22C5")

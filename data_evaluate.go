@@ -37,7 +37,7 @@ var (
 	weightPassedPawns   = Score{  86, 107 }
 	weightSafety        = Score{ 125,   0 }
 	weightCenter        = Score{  18,   0 }
-	weightThreats       = Score{ 100, 100 }
+	weightThreats       = Score{ 108,  92 }
 )
 
 // Piece values for calculating most valueable victim/least valueable attacker,
@@ -260,6 +260,7 @@ var bonusRookThreat = [6]Score{
 // King being attacked by [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
 var kingThreat = [6]int {
 	0, 0, 5, 3, 3, 1,
+	//0, 0, 2, 2, 3, 5,
 }
 
 const queenCheck = 4
