@@ -294,10 +294,6 @@ func (e *Evaluation) queens(color uint8, maskSafe Bitmask, unsafeKing bool) (sco
 	p := e.position
 	outposts := p.outposts[queen(color)]
 
-	// Bonus if queen is on 7th rank and enemy's king trapped on 8th.
-	if count := (outposts & mask7th[color]).count(); count > 0 && p.outposts[king(color^1)] & mask8th[color] != 0 {
-		score.add(queenOn7th.times(count))
-	}
 	for outposts.any() {
 		square := outposts.pop()
 		attacks := p.attacks(square)
@@ -311,11 +307,6 @@ func (e *Evaluation) queens(color uint8, maskSafe Bitmask, unsafeKing bool) (sco
 		// Penalty if queen is attacked by enemy's pawn.
 		if maskPawn[color^1][square] & p.outposts[pawn(color^1)] != 0 {
 			score.sub(penaltyPawnThreat[Queen/2])
-		}
-
-		// Bonus if queen is out and attacking enemy's pawns.
-		if count := (attacks & p.outposts[pawn(color^1)]).count(); count > 0 && rank(color, square) > 3 {
-			score.add(queenOnPawn.times(count))
 		}
 
 		// Track if queen attacks squares around enemy's king.
