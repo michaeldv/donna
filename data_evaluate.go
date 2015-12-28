@@ -22,8 +22,6 @@ var (
 	rookOnSemiOpen = Score{ 10,  5 }  // Bonus for rook on semi-open file.
 	rookOn7th      = Score{  5, 10 }  // Bonus for rook on 7th file.
 	rookBoxed      = Score{ 45,  0 }  // Penalty for rook boxed by king.
-	queenOnPawn    = Score{  2, 10 }  // Bonus for queen attacking a pawn.
-	queenOn7th     = Score{  1,  4 }  // Bonus for queen on 7th rank.
 	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
 	hangingAttack  = Score{  8, 12 }  // Bonus for attacking enemy pieces that are hanging.
 	kingByPawn     = Score{  0,  8 }  // Penalty king being too far from friendly pawns.
@@ -259,8 +257,7 @@ var bonusRookThreat = [6]Score{
 
 // King being attacked by [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
 var kingThreat = [6]int {
-	0, 0, 5, 3, 3, 1,
-	//0, 0, 2, 2, 3, 5,
+	0, 0, 2, 2, 3, 5,
 }
 
 const queenCheck = 4
@@ -294,21 +291,6 @@ var penaltyStormBlocked = [8]int {
 // Storming pawn facing frendly pawn.
 var penaltyStormUnblocked = [8]int {
 	13, 16, 48, 19, 10, 0, 0, 0,
-}
-
-// Supported pawn bonus arranged from White point of view. The actual score
-// uses the same values for midgame and endgame.
-var bonusSupportedPawn = [64]int{
-      //vvvvvvvvvvvvv Black vvvvvvvvvvvv
-	  0,  0,  0,  0,  0,  0,  0,  0,
-	 62, 66, 66, 68, 68, 66, 66, 62,
-	 31, 34, 34, 36, 36, 34, 34, 31,
-	 13, 16, 16, 18, 18, 16, 16, 13,
-	  4,  6,  6,  7,  7,  6,  6,  4,
-	  1,  3,  3,  4,  4,  3,  3,  1,
-	  0,  1,  1,  2,  2,  1,  1,  0,
-	  0,  0,  0,  0,  0,  0,  0,  0,
-     //^^^^^^^^^^^^^^ White ^^^^^^^^^^^^
 }
 
 // [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen
