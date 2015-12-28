@@ -65,45 +65,41 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 	// Encourage center pawn moves in the opening.
 	pawns := hisPawns
 
-	for pawns != 0 {
+	for pawns.any() {
 		square := pawns.pop()
 		row, col := coordinate(square)
+
+		isolated := (maskIsolated[col] & hisPawns).empty()
+		exposed := (maskInFront[color][square] & herPawns).empty()
+		doubled := (maskInFront[color][square] & hisPawns).any()
+		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].pushed(rival)) & hisPawns).any()
+
+		// The pawn is passed if a) there are no enemy pawns in the same
+		// and adjacent columns; and b) there are no same color pawns in
+		// front of us.
+		passed := !doubled && (maskPassed[color][square] & herPawns).empty()
+		if passed {
+			e.pawns.passers[color] |= bit[square]
+		}
 
 		// Penalty if the pawn is isolated, i.e. has no friendly pawns
 		// on adjacent files. The penalty goes up if isolated pawn is
 		// exposed on semi-open file.
-		isolated := (maskIsolated[col] & hisPawns == 0)
-		exposed := (maskInFront[color][square] & herPawns == 0)
 		if isolated {
 			if !exposed {
 				score.sub(penaltyIsolatedPawn[col])
 			} else {
 				score.sub(penaltyWeakIsolatedPawn[col])
 			}
+		} else if !supported {
+			// Small penalty if the pawn is not supported by a fiendly pawn.
+			score.sub(Score{10, 5})
 		}
 
 		// Penalty if the pawn is doubled, i.e. there is another friendly
-		// pawn in front of us. The penalty goes up if doubled pawns are
-		// isolated.
-		doubled := (maskInFront[color][square] & hisPawns != 0)
+		// pawn in front of us.
 		if doubled {
 			score.sub(penaltyDoubledPawn[col])
-		}
-
-		// Bonus if the pawn is supported by friendly pawn(s) on the same
-		// or previous ranks.
-		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].pushed(rival)) & hisPawns != 0)
-		if supported {
-			flipped := flip(color, square)
-			score.add(Score{bonusSupportedPawn[flipped], bonusSupportedPawn[flipped]})
-		}
-
-		// The pawn is passed if a) there are no enemy pawns in the same
-		// and adjacent columns; and b) there are no same color pawns in
-		// front of us.
-		passed := (maskPassed[color][square] & herPawns == 0 && !doubled)
-		if passed {
-			e.pawns.passers[color] |= bit[square]
 		}
 
 		// Penalty if the pawn is backward.
@@ -111,15 +107,15 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 		if (!passed && !supported && !isolated) {
 
 			// Backward pawn should not be attacking enemy pawns.
-			if pawnMoves[color][square] & herPawns == 0 {
+			if (pawnMoves[color][square] & herPawns).empty() {
 
 				// Backward pawn should not have friendly pawns behind.
-				if maskPassed[rival][square] & maskIsolated[col] & hisPawns == 0 {
+				if (maskPassed[rival][square] & maskIsolated[col] & hisPawns).empty() {
 
 					// Backward pawn should face enemy pawns on the next two ranks
 					// preventing its advance.
 					enemy := pawnMoves[color][square].pushed(color)
-					if (enemy | enemy.pushed(color)) & herPawns != 0 {
+					if ((enemy | enemy.pushed(color)) & herPawns).any() {
 						backward = true
 						if !exposed {
 							score.sub(penaltyBackwardPawn[col])
@@ -132,7 +128,7 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 		}
 
 		// Bonus if the pawn has good chance to become a passed pawn.
-		if exposed && supported && !passed && !backward {
+		if exposed && !isolated && !passed && !backward {
 			his := maskPassed[rival][square + eight[color]] & maskIsolated[col] & hisPawns
 			her := maskPassed[color][square] & maskIsolated[col] & herPawns
 			if his.count() >= her.count() {
