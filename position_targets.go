@@ -44,7 +44,7 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
 			bitmask |= (bit[square] >> 8) & empty
 			bitmask |= (bitmask >> 8) & empty & maskRank[4]
 		}
-		bitmask |= pawnMoves[color][square] & p.outposts[color^1]
+		bitmask |= pawnAttacks[color][square] & p.outposts[color^1]
 
 		// If the last move set the en-passant square and it is diagonally adjacent
 		// to the current pawn, then add en-passant to the pawn's attack targets.
@@ -64,7 +64,7 @@ func (p *Position) attacks(square int) Bitmask {
 func (p *Position) attacksFor(square int, piece Piece) (bitmask Bitmask) {
 	switch kind, color := piece.kind(), piece.color(); kind {
 	case Pawn:
-		return pawnMoves[color][square]
+		return pawnAttacks[color][square]
 	case Knight:
 		return knightMoves[square]
 	case Bishop:

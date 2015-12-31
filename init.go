@@ -14,7 +14,7 @@ type Magic struct {
 var (
 	kingMoves [64]Bitmask
 	knightMoves [64]Bitmask
-	pawnMoves [2][64]Bitmask
+	pawnAttacks [2][64]Bitmask
 	rookMagicMoves [64][4096]Bitmask
 	bishopMagicMoves [64][512]Bitmask
 
@@ -111,12 +111,12 @@ func initMasks() {
 		// Pawns.
 		if row >= A2H2 && row <= A7H7 {
 			if col > 0 {
-				pawnMoves[White][sq].set(square(row + 1, col - 1))
-				pawnMoves[Black][sq].set(square(row - 1, col - 1))
+				pawnAttacks[White][sq].set(square(row + 1, col - 1))
+				pawnAttacks[Black][sq].set(square(row - 1, col - 1))
 			}
 			if col < 7 {
-				pawnMoves[White][sq].set(square(row + 1, col + 1))
-				pawnMoves[Black][sq].set(square(row - 1, col + 1))
+				pawnAttacks[White][sq].set(square(row + 1, col + 1))
+				pawnAttacks[Black][sq].set(square(row - 1, col + 1))
 			}
 		}
 

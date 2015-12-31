@@ -107,14 +107,14 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 		if (!passed && !supported && !isolated) {
 
 			// Backward pawn should not be attacking enemy pawns.
-			if (pawnMoves[color][square] & herPawns).empty() {
+			if (pawnAttacks[color][square] & herPawns).empty() {
 
 				// Backward pawn should not have friendly pawns behind.
 				if (maskPassed[rival][square] & maskIsolated[col] & hisPawns).empty() {
 
 					// Backward pawn should face enemy pawns on the next two ranks
 					// preventing its advance.
-					enemy := pawnMoves[color][square].pushed(color)
+					enemy := pawnAttacks[color][square].pushed(color)
 					if ((enemy | enemy.pushed(color)) & herPawns).any() {
 						backward = true
 						if !exposed {
