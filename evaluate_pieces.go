@@ -133,7 +133,7 @@ func (e *Evaluation) knights(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 		extra := Score{0, 0}
 		if extra.midgame = extraKnight[flip(color, square)]; extra.midgame > 0 {
 			extra.endgame = extra.midgame / 4
-			if p.pawnAttacks(color).on(square) {
+			if e.attacks[pawn(color)].on(square) {
 				extra.scale(35) // Bump by 35% if supported by a pawn.
 			}
 			score.add(extra)
