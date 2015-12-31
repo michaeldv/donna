@@ -124,7 +124,7 @@ func (e *Evaluation) knights(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 		}
 
 		// Bonus if knight is behind friendly pawn.
-		if rank(color, square) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
+		if rank(color, square) < 4 && p.outposts[pawn(color)].on(square + up[color]) {
 			score.add(behindPawn)
 		}
 
@@ -176,7 +176,7 @@ func (e *Evaluation) bishops(color uint8, maskSafe Bitmask, unsafeKing bool) (sc
 		}
 
 		// Bonus if bishop is behind friendly pawn.
-		if rank(color, square) < 4 && p.outposts[pawn(color)].on(square + eight[color]) {
+		if rank(color, square) < 4 && p.outposts[pawn(color)].on(square + up[color]) {
 			score.add(behindPawn)
 		}
 

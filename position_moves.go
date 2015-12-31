@@ -59,7 +59,7 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 }
 
 func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
-	enpassant := to - eight[capture.color()^1]
+	enpassant := to - up[capture.color()^1]
 
 	p.pieces[enpassant] = 0
 	p.outposts[capture] ^= bit[enpassant]
@@ -120,7 +120,7 @@ func (p *Position) makeMove(move Move) *Position {
 		} else if piece.isPawn() {
 			pp.count50, pp.reversible = 0, false
 			if move.isEnpassant() {
-				pp.enpassant = uint8(from + eight[color]) // Save the en-passant square.
+				pp.enpassant = uint8(from + up[color]) // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}

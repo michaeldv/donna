@@ -18,7 +18,7 @@ import `regexp`
 //                                      -― FORTRAN manual for Xerox Computers
 
 // Your chess engine hates you when you are working on a new version.
-const Version = `X3.1c2`
+const Version = `X3.1d1`
 
 // Limits and conventions.
 const (
@@ -115,7 +115,7 @@ var maskIsolated = [8]Bitmask{
 
 }
 
-var eight = [2]int{ 8, -8 }
+var up = [2]int{ 8, -8 }
 var homeKing = [2]int{ E1, E8 }
 var mask7th = [2]Bitmask{ maskRank[6], maskRank[1] }
 var mask8th = [2]Bitmask{ maskRank[7], maskRank[0] }
