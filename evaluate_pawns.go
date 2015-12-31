@@ -72,7 +72,7 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 		isolated := (maskIsolated[col] & hisPawns).empty()
 		exposed := (maskInFront[color][square] & herPawns).empty()
 		doubled := (maskInFront[color][square] & hisPawns).any()
-		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].pushed(rival)) & hisPawns).any()
+		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].up(rival)) & hisPawns).any()
 
 		// The pawn is passed if a) there are no enemy pawns in the same
 		// and adjacent columns; and b) there are no same color pawns in
@@ -114,8 +114,8 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 
 					// Backward pawn should face enemy pawns on the next two ranks
 					// preventing its advance.
-					enemy := pawnAttacks[color][square].pushed(color)
-					if ((enemy | enemy.pushed(color)) & herPawns).any() {
+					enemy := pawnAttacks[color][square].up(color)
+					if ((enemy | enemy.up(color)) & herPawns).any() {
 						backward = true
 						if !exposed {
 							score.sub(penaltyBackwardPawn[col])

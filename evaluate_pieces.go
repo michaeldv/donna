@@ -25,8 +25,8 @@ func (e *Evaluation) analyzePieces() {
 	// Mobility masks for both sides exclude squares attacked by rival's pawns,
 	// king squares, pawns on first two ranks, and blocked pawns on other ranks.
 	var pawnExclusions = [2]Bitmask {
-		p.outposts[Pawn] & (maskRank[A2H2] | maskRank[A3H3] | p.board.pushed(Black)),
-		p.outposts[BlackPawn] & (maskRank[A7H7] | maskRank[A6H6] | p.board.pushed(White)),
+		p.outposts[Pawn] & (maskRank[A2H2] | maskRank[A3H3] | p.board.up(Black)),
+		p.outposts[BlackPawn] & (maskRank[A7H7] | maskRank[A6H6] | p.board.up(White)),
 	}
 
 	// Initialize safe mobility zones for both sides.
@@ -337,7 +337,7 @@ func (e *Evaluation) kingThreats(piece Piece, attacks Bitmask) {
 // G1 the bitmask covers F1,F2,F3, G2,G3, and H1,H2,H3. For a king on a corner
 // square, say H1, the bitmask covers F1,F2, G1,G2,G3, and H2,H3.
 func (e *Evaluation) setupFort(color uint8) (bitmask Bitmask) {
-	bitmask = e.attacks[king(color)] | e.attacks[king(color)].pushed(color)
+	bitmask = e.attacks[king(color)] | e.attacks[king(color)].up(color)
 	switch e.position.king[color] {
 	case A1, A8:
 		bitmask |= e.attacks[king(color)] << 1

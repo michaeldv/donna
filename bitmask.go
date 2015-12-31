@@ -106,7 +106,7 @@ func (b Bitmask) farthest(color uint8) int {
     return b.first()
 }
 
-func (b Bitmask) pushed(color uint8) Bitmask {
+func (b Bitmask) up(color uint8) Bitmask {
 	if color == White {
 		return b << 8
 	}
