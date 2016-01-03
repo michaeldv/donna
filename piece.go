@@ -7,18 +7,20 @@ package donna
 type Piece uint8
 
 const (
-	Pawn        = 2
-	Knight      = 4
-	Bishop      = 6
-	Rook        = 8
-	Queen       = 10
-	King        = 12
-	BlackPawn   = Pawn | 1
-	BlackKnight = Knight | 1
-	BlackBishop = Bishop | 1
-	BlackRook   = Rook | 1
-	BlackQueen  = Queen | 1
-	BlackKing   = King | 1
+	White = iota	// 0
+	Black		// 1
+	Pawn		// 2
+	BlackPawn	// 3
+	Knight		// 4
+	BlackKnight	// 5
+	Bishop		// 6
+	BlackBishop	// 7
+	Rook		// 8
+	BlackRook	// 9
+	Queen		// 10
+	BlackQueen	// 11
+	King		// 12
+	BlackKing	// 13
 )
 
 func king(color uint8) Piece {
@@ -57,12 +59,16 @@ func (p Piece) color() uint8 {
 	return uint8(p) & 1
 }
 
+func (p Piece) id() int {
+	return int(p >> 1)
+}
+
 func (p Piece) kind() int {
 	return int(p) & 0xFE
 }
 
 func (p Piece) value() int {
-	return pieceValue[p.kind()]
+	return pieceValue[p.id()]
 }
 
 func (p Piece) isWhite() bool {

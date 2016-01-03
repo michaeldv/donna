@@ -40,14 +40,8 @@ var (
 
 // Piece values for calculating most valueable victim/least valueable attacker,
 // indexed by piece.
-var pieceValue = [14]int{
-	0, 0,
-	valuePawn.midgame,   valuePawn.midgame,
-	valueKnight.midgame, valueKnight.midgame,
-	valueBishop.midgame, valueBishop.midgame,
-	valueRook.midgame,   valueRook.midgame,
-	valueQueen.midgame,  valueQueen.midgame,
-	0, 0,
+var pieceValue = [7]int{
+	0, valuePawn.midgame, valueKnight.midgame, valueBishop.midgame, valueRook.midgame, valueQueen.midgame, 0,
 }
 
 // Piece/square table: gets initilized on startup from the bonus arrays below.
@@ -240,9 +234,9 @@ var extraBishop = [64]int{
      //^^^^^^^^^^^^ White ^^^^^^^^^^^^
 }
 
-// Pawn attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
+// Non-hanging pawn attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
 var bonusPawnThreat = [6]Score{
-	{0, 0}, {0, 0}, {53, 69}, {42, 61}, {57, 101}, {60, 108},
+	{0, 0}, {0, 0}, {88, 69}, {65, 63}, {108, 109}, {101, 107},
 }
 
 // Knigh or bishop attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.

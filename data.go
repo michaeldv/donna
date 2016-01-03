@@ -22,8 +22,6 @@ const Version = `X3.1d1`
 
 // Limits and conventions.
 const (
-	White = iota
-	Black
 	MaxPly = 64
 	MaxDepth = 64
 	Checkmate = 0x7FFF - 1	// = 32,766
