@@ -32,7 +32,7 @@ func (e *Engine) replBestMove(move Move) *Engine {
 }
 
 func (e *Engine) replPrincipal(depth, score, status int, duration int64) {
-	fmt.Printf(`%2d %s %9d %9d %9d   `, depth, ms(duration), game.nodes, game.qnodes, nps(duration))
+	fmt.Printf(`%2d %s %9d %9d %9d  `, depth, ms(duration), game.nodes, game.qnodes, nps(duration))
 	switch status {
 	case WhiteWon:
 		fmt.Println(`1-0 White Checkmates`)

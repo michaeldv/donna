@@ -121,7 +121,7 @@ func (game *Game) Think() Move {
 	score, move, status, alpha, beta := 0, Move(0), InProgress, -Checkmate, Checkmate
 
 	if !engine.uci {
-		fmt.Println(`Depth   Time     Nodes    QNodes   Nodes/s     Score   Best`)
+		fmt.Println(`Depth   Time     Nodes    QNodes   Nodes/s    Score   Best`)
 	}
 
 	if !engine.fixedDepth() {
