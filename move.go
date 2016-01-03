@@ -196,7 +196,7 @@ func (m Move) promote(kind int) Move {
 
 // Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() (value int) {
-	value = pieceValue[m.capture().id()] - m.piece().kind()
+	value = pieceValue[m.capture().id()] - int(m.piece())
 	if m.isEnpassant() {
 		value += valuePawn.midgame
 	} else if m.isPromo() {
