@@ -135,11 +135,6 @@ func (e *Evaluation) pawnStructure(color uint8) (score Score) {
 				score.add(bonusSemiPassedPawn[rank(color, square)])
 			}
 		}
-
-		//\\ Encourage center pawn moves.
-		//\\ if maskCenter.on(square) {
-		//\\ 	score.midgame += bonusPawn[0][flip(color, square)] / 2
-		//\\ }
 	}
 
 	return
