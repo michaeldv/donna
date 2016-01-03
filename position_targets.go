@@ -133,15 +133,15 @@ func (p *Position) isAttacked(color uint8, square int) bool {
 	       (p.bishopMoves(square) & (p.outposts[bishop(color)] | p.outposts[queen(color)])) != 0
 }
 
-func (p *Position) pawnAttacks(color uint8) (bitmask Bitmask) {
+func (p *Position) pawnTargets(color uint8, pawns Bitmask) Bitmask {
 	if color == White {
-		bitmask = (p.outposts[Pawn] & ^maskFile[0]) << 7
-		bitmask |= (p.outposts[Pawn] & ^maskFile[7]) << 9
-	} else {
-		bitmask = (p.outposts[BlackPawn] & ^maskFile[0]) >> 9
-		bitmask |= (p.outposts[BlackPawn] & ^maskFile[7]) >> 7
+		return ((pawns & ^maskFile[0]) << 7) | ((pawns & ^maskFile[7]) << 9)
 	}
-	return
+	return ((pawns & ^maskFile[0]) >> 9) | ((pawns & ^maskFile[7]) >> 7)
+}
+
+func (p *Position) pawnAttacks(color uint8) Bitmask {
+	return p.pawnTargets(color, p.outposts[pawn(color)])
 }
 
 func (p *Position) knightAttacks(color uint8) (bitmask Bitmask) {
@@ -179,23 +179,4 @@ func (p *Position) queenAttacks(color uint8) (bitmask Bitmask) {
 
 func (p *Position) kingAttacks(color uint8) Bitmask {
 	return kingMoves[p.king[color]]
-}
-
-func (p *Position) strongestPiece(color uint8, targets Bitmask) Piece {
-	if targets & p.outposts[queen(color)] != 0 {
-		return queen(color)
-	}
-	if targets & p.outposts[rook(color)] != 0 {
-		return rook(color)
-	}
-	if targets & p.outposts[bishop(color)] != 0 {
-		return bishop(color)
-	}
-	if targets & p.outposts[knight(color)] != 0 {
-		return knight(color)
-	}
-	if targets & p.outposts[pawn(color)] != 0 {
-		return pawn(color)
-	}
-	return Piece(0)
 }
