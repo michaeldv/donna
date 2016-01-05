@@ -7,12 +7,11 @@ package donna
 func (e *Evaluation) analyzeSafety() {
 	var score Score
 	var cover, safety Total
-	oppositeBishops := e.oppositeBishops()
 
 	if engine.trace {
 		defer func() {
-			var his, her Score
-			e.checkpoint(`+King`, Total{*his.add(cover.white).add(safety.white), *her.add(cover.black).add(safety.black)})
+			var our, their Score
+			e.checkpoint(`+King`, Total{*our.add(cover.white).add(safety.white), *their.add(cover.black).add(safety.black)})
 			e.checkpoint(`-Cover`, cover)
 			e.checkpoint(`-Safety`, safety)
 		}()
@@ -32,20 +31,12 @@ func (e *Evaluation) analyzeSafety() {
 	cover.white.add(e.pawns.cover[White])
 	cover.black.add(e.pawns.cover[Black])
 
-	// Compute king's safety for both sides.
+	// Calculate king's safety for both sides.
 	if e.safety[White].threats > 0 {
 		safety.white = e.kingSafety(White)
 	}
 	if e.safety[Black].threats > 0 {
 		safety.black = e.kingSafety(Black)
-	}
-
-	// Less safe with opposite bishops.
-	if oppositeBishops && e.isKingUnsafe(White) && safety.white.midgame < -onePawn / 10 * 8 {
-		safety.white.midgame -= bishopDanger.midgame
-	}
-	if oppositeBishops && e.isKingUnsafe(Black) && safety.black.midgame < -onePawn / 10 * 8 {
-		safety.black.midgame -= bishopDanger.midgame
 	}
 
 	// Calculate total king safety and pawn cover score.
@@ -56,7 +47,7 @@ func (e *Evaluation) analyzeSafety() {
 
 func (e *Evaluation) kingSafety(color uint8) (score Score) {
 	p, rival := e.position, color^1
-	safetyIndex, square := 0, int(p.king[color])
+	safetyIndex, checkers, square := 0, 0, int(p.king[color])
 
 	// Find squares around the king that are being attacked by the
 	// enemy and defended by our king only.
@@ -73,6 +64,7 @@ func (e *Evaluation) kingSafety(color uint8) (score Score) {
 		     e.attacks[king(rival)]
 	checks := weak & e.attacks[queen(rival)] & protected & ^p.outposts[rival]
 	if checks.any() {
+		checkers++
 		safetyIndex += queenCheck * checks.count()
 	}
 
@@ -83,23 +75,27 @@ func (e *Evaluation) kingSafety(color uint8) (score Score) {
 	// Are there any safe squares from where enemy Knight could give
 	// us a check?
 	if checks := knightMoves[square] & safe & e.attacks[knight(rival)]; checks.any() {
+		checkers++
 		safetyIndex += checks.count()
 	}
 
 	// Are there any safe squares from where enemy Bishop could give us a check?
 	safeBishopMoves := p.bishopMoves(square) & safe
 	if checks := safeBishopMoves & e.attacks[bishop(rival)]; checks.any() {
+		checkers++
 		safetyIndex += checks.count()
 	}
 
 	// Are there any safe squares from where enemy Rook could give us a check?
 	safeRookMoves := p.rookMoves(square) & safe
 	if checks := safeRookMoves & e.attacks[rook(rival)]; checks.any() {
+		checkers++
 		safetyIndex += checks.count()
 	}
 
 	// Are there any safe squares from where enemy Queen could give us a check?
 	if checks := (safeBishopMoves | safeRookMoves) & e.attacks[queen(rival)]; checks.any() {
+		checkers++
 		safetyIndex += queenCheck / 2 * checks.count()
 	}
 
@@ -110,7 +106,14 @@ func (e *Evaluation) kingSafety(color uint8) (score Score) {
 
 	score.midgame -= kingSafety[safetyIndex]
 
-	return
+	if checkers > 0 {
+		score.add(rightToMove)
+		if count > 1 {
+			score.add(rightToMove)
+		}
+	}
+
+	return score
 }
 
 func (e *Evaluation) kingCover(color uint8) (bonus Score) {
