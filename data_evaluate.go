@@ -23,7 +23,7 @@ var (
 	rookOn7th      = Score{  5, 10 }  // Bonus for rook on 7th file.
 	rookBoxed      = Score{ 45,  0 }  // Penalty for rook boxed by king.
 	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
-	hangingAttack  = Score{  8, 12 }  // Bonus for attacking enemy pieces that are hanging.
+	hangingAttack  = Score{ 24, 14 }  // Bonus for attacking enemy pieces that are hanging.
 	kingByPawn     = Score{  0,  8 }  // Penalty king being too far from friendly pawns.
 )
 
@@ -35,7 +35,7 @@ var (
 	weightPassedPawns   = Score{  86, 107 }
 	weightSafety        = Score{ 125,   0 }
 	weightCenter        = Score{  18,   0 }
-	weightThreats       = Score{ 108,  92 }
+	weightThreats       = Score{ 110,   0 }
 )
 
 // Piece values for calculating most valueable victim/least valueable attacker,
