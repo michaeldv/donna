@@ -17,54 +17,58 @@ func (e *Evaluation) analyzeThreats() {
 		}()
 	}
 
-	threats.white = e.threats(White, e.attacks[White], e.attacks[Black])
-	threats.black = e.threats(Black, e.attacks[Black], e.attacks[White])
+	threats.white = e.threats(White)
+	threats.black = e.threats(Black)
 	score.add(threats.white).sub(threats.black).apply(weightThreats)
 	e.score.add(score)
 
 	if e.material.turf != 0 && e.material.flags & (whiteKingSafety | blackKingSafety) != 0 {
-		center.white = e.center(White, e.attacks[White], e.attacks[Black], e.attacks[pawn(Black)])
-		center.black = e.center(Black, e.attacks[Black], e.attacks[White], e.attacks[pawn(White)])
+		center.white = e.center(White)
+		center.black = e.center(Black)
 		score.clear().add(center.white).sub(center.black).apply(weightCenter)
 		e.score.add(score)
 	}
 }
 
-func (e *Evaluation) threats(color uint8, hisAttacks, herAttacks Bitmask) (score Score) {
-	p := e.position
-	rival := color^1
+func (e *Evaluation) threats(our uint8) (score Score) {
+	p, their := e.position, our^1
 
-	// Find enemy pieces under attack excluding king and pawns.
-	weak := p.outposts[rival] & ^(p.outposts[king(rival)] | p.outposts[pawn(rival)])
-	weak &= ^e.attacks[pawn(rival)] // Not defended by pawns.
-	weak &= hisAttacks
+	// Get our protected and non-hanging pawns.
+	pawns := p.outposts[pawn(our)] & (e.attacks[our] | ^e.attacks[their])
 
-	if weak.any() {
+	// Find enemy pieces attacked by our protected/non-hanging pawns.
+	pieces := p.outposts[their] ^ p.outposts[king(their)] 	// All pieces except king.
+	majors := pieces ^ p.outposts[pawn(their)]		// All pieces except king and pawns.
+	targets := majors & p.pawnTargets(our, pawns)
 
-		// Threat bonus for enemy pieces attacked by our pawns.
-		// targets := weak & e.attacks[pawn(color)]
-		// for targets.any() {
-		// 	piece := p.pieces[targets.pop()]
-		// 	score.add(bonusPawnThreat[piece.kind()/2])
-		// }
+	// Bonus for each enemy piece attacked by our pawn.
+	for targets.any() {
+		piece := p.pieces[targets.pop()]
+		score.add(bonusPawnThreat[piece.id()])
+	}
 
-		// Threat bonus for enemy pieces attacked by knights and bishops.
-		targets := weak & (e.attacks[knight(color)] | e.attacks[bishop(color)])
+	// Find enemy pieces that might be our likely targets: major pieces
+	// attacked by our pawns and all attacked pieces not defended by pawns.
+	defended := majors & e.attacks[pawn(their)]
+	undefended := pieces & ^e.attacks[pawn(their)] & e.attacks[our]
+
+	if likely := defended | undefended; likely.any() {
+		// Bonus for enemy pieces attacked by knights and bishops.
+		targets = likely & (e.attacks[knight(our)] | e.attacks[bishop(our)])
 		for targets.any() {
 			piece := p.pieces[targets.pop()]
-			score.add(bonusMinorThreat[piece.kind()/2])
+			score.add(bonusMinorThreat[piece.id()])
 		}
 
-		// Threat bonus for enemy pieces attacked by rooks.
-		targets = weak & e.attacks[rook(color)]
+		// Bonus for enemy pieces attacked by rooks.
+		targets = (undefended | p.outposts[queen(their)]) & e.attacks[rook(our)]
 		for targets.any() {
 			piece := p.pieces[targets.pop()]
-			score.add(bonusRookThreat[piece.kind()/2])
+			score.add(bonusRookThreat[piece.id()])
 		}
 
-		// Threat bonus for enemy pieces attacked by the king.
-		targets = weak & e.attacks[king(color)]
-		if targets.any() {
+		// Bonus for enemy pieces attacked by the king.
+		if targets = undefended & e.attacks[king(our)]; targets.any() {
 			if count := targets.count(); count == 1 {
 				score.add(Score{2, 30})
 			} else if count > 1 {
@@ -73,8 +77,8 @@ func (e *Evaluation) threats(color uint8, hisAttacks, herAttacks Bitmask) (score
 		}
 
 		// Extra bonus when attacking enemy pieces that are hanging.
-		if hanging := weak & ^herAttacks; hanging.any() {
-			if count := hanging.count(); count > 0 {
+		if targets = undefended & ^e.attacks[their]; targets.any() {
+			if count := targets.count(); count > 0 {
 				score.add(hangingAttack.times(count))
 			}
 		}
@@ -83,11 +87,13 @@ func (e *Evaluation) threats(color uint8, hisAttacks, herAttacks Bitmask) (score
 	return score
 }
 
-func (e *Evaluation) center(color uint8, hisAttacks, herAttacks, herPawnAttacks Bitmask) (score Score) {
-	turf := e.position.outposts[pawn(color)]
-	safe := homeTurf[color] & ^turf & ^herPawnAttacks & (hisAttacks | ^herAttacks)
+func (e *Evaluation) center(our uint8) (score Score) {
+	p, their := e.position, our^1
 
-	if color == White {
+	turf := p.outposts[pawn(our)]
+	safe := homeTurf[our] & ^turf & ^e.attacks[pawn(their)] & (e.attacks[our] | ^e.attacks[their])
+
+	if our == White {
 		turf |= turf >> 8   // A4..H4 -> A3..H3
 		turf |= turf >> 16  // A4..H4 | A3..H3 -> A2..H2 | A1..H1
 		turf &= safe 	    // Keep safe squares only.
