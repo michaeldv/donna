@@ -14,7 +14,7 @@ func (gen *MoveGen) pawnCaptures(color uint8) *MoveGen {
 	enemy := gen.p.outposts[color^1]
 	pawns := gen.p.outposts[pawn(color)]
 
-	for pawns != 0 {
+	for pawns.any() {
 		square := pawns.pop()
 
 		// For pawns on files 2-6 the moves include captures only,
@@ -24,7 +24,7 @@ func (gen *MoveGen) pawnCaptures(color uint8) *MoveGen {
 			gen.movePawn(square, gen.p.targets(square) & enemy)
 		} else {
 			targets := gen.p.targets(square)
-			for targets != 0 {
+			for targets.any() {
 				target := targets.pop()
 				mQ, _, _, _ := NewPromotion(gen.p, square, target)
 				gen.add(mQ)
@@ -37,14 +37,14 @@ func (gen *MoveGen) pawnCaptures(color uint8) *MoveGen {
 // Generates all pseudo-legal captures by pieces other than pawn.
 func (gen *MoveGen) pieceCaptures(color uint8) *MoveGen {
 	enemy := gen.p.outposts[color^1]
-	outposts := gen.p.outposts[color] & ^gen.p.outposts[pawn(color)] & ^gen.p.outposts[king(color)]
+	outposts := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]
 
-	for outposts != 0 {
+	for outposts.any() {
 		square := outposts.pop()
 		gen.movePiece(square, gen.p.targets(square) & enemy)
 	}
-	if king := gen.p.outposts[king(color)]; king != 0 {
-		square := king.pop()
+	if gen.p.outposts[king(color)].any() {
+		square := int(gen.p.king[color])
 		gen.moveKing(square, gen.p.targets(square) & enemy)
 	}
 	return gen

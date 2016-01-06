@@ -54,6 +54,7 @@ func NewRootGen(p *Position, depth int) *MoveGen {
 
 func (gen *MoveGen) reset() *MoveGen {
 	gen.head = 0
+
 	return gen
 }
 
@@ -71,13 +72,13 @@ func (gen *MoveGen) NextMove() (move Move) {
 		gen.head++
 	}
 
-	return
+	return move
 }
 
 // Removes invalid moves from the generated list. We use in iterative deepening
 // to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly() *MoveGen {
-	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
 		if !move.isValid(gen.p, gen.pins) {
 			gen.remove()
 		}
@@ -89,7 +90,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 // Probes a list of generated moves and returns true if it contains at least
 // one valid move.
 func (gen *MoveGen) anyValid() bool {
-	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
 		if move.isValid(gen.p, gen.pins) {
 			return true
 		}
@@ -101,7 +102,7 @@ func (gen *MoveGen) anyValid() bool {
 // Probes valid-only list of generated moves and returns true if the given move
 // is one of them.
 func (gen *MoveGen) amongValid(someMove Move) bool {
-	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
 		if someMove == move {
 			return true
 		}
@@ -212,10 +213,10 @@ func (gen *MoveGen) remove() *MoveGen {
 // Returns an array of generated moves by continuously appending the NextMove()
 // until the list is empty.
 func (gen *MoveGen) allMoves() (moves []Move) {
-	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
+	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
 		moves = append(moves, move)
 	}
 	gen.reset()
 
-	return
+	return moves
 }

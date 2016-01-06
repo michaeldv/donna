@@ -31,7 +31,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 
 	// If checkers mask is not empty then we've got double check and
 	// retreat is the only option.
-	if checkers != 0 {
+	if checkers.any() {
 		attackSquare = checkers.first()
 		if p.pieces[attackSquare] != pawn(enemy) {
 			retreats &= maskEvade[square][attackSquare]
@@ -46,7 +46,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// Pawn captures: do we have any pawns available that could capture
 	// the attacking piece?
 	pawns := maskPawn[color][attackSquare] & p.outposts[pawn(color)]
-	for pawns != 0 {
+	for pawns.any() {
 		move := NewMove(p, pawns.pop(), attackSquare)
 		if attackSquare >= A8 || attackSquare <= H1 {
 			move = move.promote(Queen)
@@ -60,7 +60,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	if p.enpassant != 0 {
 		if enpassant := attackSquare + up[color]; enpassant == int(p.enpassant) {
 			pawns := maskPawn[color][enpassant] & p.outposts[pawn(color)]
-			for pawns != 0 {
+			for pawns.any() {
 				gen.add(NewMove(p, pawns.pop(), enpassant))
 			}
 		}
@@ -81,7 +81,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	pawns &= block; jumps &= block
 
 	// Handle one-square pawn pushes: promote to Queen if reached last rank.
-	for pawns != 0 {
+	for pawns.any() {
 		to := pawns.pop()
 		from := to - up[color]
 		move := NewMove(p, from, to) // Can't cause en-passant.
@@ -92,7 +92,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	}
 
 	// Handle two-square pawn jumps that can cause en-passant.
-	for jumps != 0 {
+	for jumps.any() {
 		to := jumps.pop()
 		from := to - 2 * up[color]
 		gen.add(NewPawnMove(p, from, to))
@@ -101,7 +101,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// What's left is to generate all possible knight, bishop, rook, and
 	// queen moves that evade the check.
 	outposts := p.outposts[color] & ^p.outposts[pawn(color)] & ^p.outposts[king(color)]
-	for outposts != 0 {
+	for outposts.any() {
 		from := outposts.pop()
 		targets := p.targets(from) & block
 		gen.movePiece(from, targets)
