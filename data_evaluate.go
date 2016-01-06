@@ -30,12 +30,12 @@ var (
 // Weight percentages applied to evaluation scores before computing the overall
 // blended score.
 var (
-	weightMobility      = Score{ 112, 134 }
+	weightMobility      = Score{ 108, 134 }
 	weightPawnStructure = Score{  91,  79 }
 	weightPassedPawns   = Score{  86, 107 }
-	weightSafety        = Score{ 125,   0 }
+	weightSafety        = Score{ 122,   0 }
 	weightCenter        = Score{  18,   0 }
-	weightThreats       = Score{ 110,   0 }
+	weightThreats       = Score{ 148,  88 }
 )
 
 // Piece values for calculating most valueable victim/least valueable attacker,

@@ -105,7 +105,7 @@ func (e *Evaluation) center(our uint8) (score Score) {
 		safe >>= 32 	    // Move down to white's half of the board.
 	}
 
-	score.midgame = (safe | turf).count() * e.material.turf / 3
+	score.midgame = (safe | turf).count() * e.material.turf / 2
 
 	return score
 }
