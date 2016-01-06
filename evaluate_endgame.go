@@ -73,7 +73,7 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 		bKing = int(e.position.king[Black])
 		wPawn = e.position.outposts[Pawn].last()
 	} else {
-		color = int(e.position.color) ^ 1
+		color = int(e.position.color)^1
 		wKing = 64 + ^int(e.position.king[Black])
 		bKing = 64 + ^int(e.position.king[White])
 		wPawn = 64 + ^e.position.outposts[BlackPawn].last()
@@ -87,6 +87,7 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 	if stronger == Black {
 		return BlackWinning
 	}
+
 	return WhiteWinning
 }
 
@@ -98,12 +99,12 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	row, col := coordinate(int(e.position.king[color^1]))
 
 	// Pawns on A file with bare king opposing them.
-	if (pawns & ^maskFile[A1] == 0) && (pawns & ^maskInFront[color^1][row*8] == 0) && col <= B1 {
+	if (pawns & ^maskFile[A1]).empty() && (pawns & ^maskInFront[color^1][row * 8]).empty() && col <= B1 {
 		return DrawScore
 	}
 
 	// Pawns on H file with bare king opposing them.
-	if (pawns & ^maskFile[H1] == 0) && (pawns & ^maskInFront[color^1][row*8+7] == 0) && col >= G1 {
+	if (pawns & ^maskFile[H1]).empty() && (pawns & ^maskInFront[color^1][row * 8 + 7]).empty() && col >= G1 {
 		return DrawScore
 	}
 
@@ -139,14 +140,14 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 
 	p := e.position
 	unstoppable := func(color uint8, square int) bool {
-		if (p.outposts[color ^ 1] & maskInFront[color][square]).empty() {
+		if (p.outposts[color^1] & maskInFront[color][square]).empty() {
 			mask := Bitmask(0)
 			if p.color == color {
 				mask = maskSquare[color][square]
 			} else {
 				mask = maskSquareEx[color][square]
 			}
-			return (mask & p.outposts[king(color ^ 1)]).empty()
+			return (mask & p.outposts[king(color^1)]).empty()
 		}
 		return false
 	}
@@ -166,34 +167,30 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 
 	// Try to evaluate the endgame using KPK bitbase. If the opposite side is not loosing
 	// without the pawn it's unlikely the game is lost with the pawn present.
-	color := p.color
-	piece := pawn(color)
+	our := p.color
+	piece := pawn(our)
 	pawns := p.outposts[piece]
 	square := pawns.first()
-	if rank(color, pawns.first()) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).any() {
+	if rank(our, pawns.first()) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).any() {
 
-		// Temporarily remove rival's pawn.
-		piece = pawn(color ^ 1)
-		pawns = p.outposts[piece]		// -> Save: rival's pawn bitmask.
-		square = pawns.first()			// -> Save: rival's pawn square.
+		// Temporarily remove opponent's pawn.
+		piece = pawn(our^1)
+		pawns = p.outposts[piece]		// -> Save: opponent's pawn bitmask.
+		square = pawns.first()			// -> Save: opponent's pawn square.
 
-		p.outposts[piece] = maskNone
+		p.outposts[piece] = Bitmask(0)
 		p.pieces[square] = Piece(0)
 
 		// Temporarily adjust score so that when e.strongerSide() gets called
 		// by kingAndPawnVsBareKing() it returns side to move.
 		score := e.score.endgame		// -> Save: endgame score.
-		if color == White {
-			e.score.endgame = 1
-		} else {
-			e.score.endgame = -1
-		}
+		e.score.endgame = let(our == White, 1, -1)
 
-		// When we're done restore original endgame score and rival's pawn.
+		// When we're done restore original endgame score and opponent's pawn.
 		defer func() {
 			e.score.endgame = score		// <- Restore: endgame score.
-			p.pieces[square] = piece	// <- Restore: rival's pawn square.
-			p.outposts[piece] = pawns	// <- Restore: rival's pawn bitmask.
+			p.pieces[square] = piece	// <- Restore: opponent's pawn square.
+			p.outposts[piece] = pawns	// <- Restore: opponent's pawn bitmask.
 		}()
 
 		if e.kingAndPawnVsBareKing() == DrawScore {
@@ -230,14 +227,14 @@ func (e *Evaluation) lastPawnLeft() int {
 func (e *Evaluation) noPawnsLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
-	whiteMinorOnly := outposts[Queen] == 0 && outposts[Rook] == 0 && (outposts[Bishop] | outposts[Knight]).count() == 1
-	blackMinorOnly := outposts[BlackQueen] == 0 && outposts[BlackRook] == 0 && (outposts[BlackBishop] | outposts[BlackKnight]).count() == 1
+	whiteMinorOnly := outposts[Queen].empty() && outposts[Rook].empty() && (outposts[Bishop] | outposts[Knight]).count() == 1
+	blackMinorOnly := outposts[BlackQueen].empty() && outposts[BlackRook].empty() && (outposts[BlackBishop] | outposts[BlackKnight]).count() == 1
 
-	if color == White && outposts[Pawn] == 0 {
+	if color == White && outposts[Pawn].empty() {
 		if whiteMinorOnly {
 			// There is a theoretical chance of winning if opponent's pawns are on
 			// edge files (ex. some puzzles).
-			if outposts[BlackPawn] & (maskFile[0] | maskFile[7]) != 0 {
+			if (outposts[BlackPawn] & (maskFile[0] | maskFile[7])).any() {
 				return e.fraction(1, 64) // 1/64
 			}
 			return DrawScore
@@ -247,9 +244,9 @@ func (e *Evaluation) noPawnsLeft() int {
 		return e.fraction(3, 16) // 3/16
 	}
 
-	if color == Black && outposts[BlackPawn] == 0 {
+	if color == Black && outposts[BlackPawn].empty() {
 		if blackMinorOnly {
-			if outposts[Pawn] & (maskFile[0] | maskFile[7]) != 0 {
+			if (outposts[Pawn] & (maskFile[0] | maskFile[7])).any() {
 				return e.fraction(1, 64) // 1/64
 			}
 			return DrawScore

@@ -199,14 +199,15 @@ func (b *Bitmask) trim(row, col int) *Bitmask {
 func (b Bitmask) magicify(index int) (bitmask Bitmask) {
 	count := b.count()
 
-	for i, his := 0, b; i < count; i++ {
-		her := ((his - 1) & his) ^ his
-		his &= his - 1
+	for i, our := 0, b; i < count; i++ {
+		their := ((our - 1) & our) ^ our
+		our &= our - 1
 		if (1 << uint(i)) & index != 0 {
-			bitmask |= her
+			bitmask |= their
 		}
 	}
-	return
+
+	return bitmask
 }
 
 

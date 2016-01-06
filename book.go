@@ -41,7 +41,7 @@ func (b *Book) pickMove(position *Position) Move {
 	switch length := len(entries); length {
 	case 0:
 		// TODO: set the "useless book" flag after a few misses.
-		return 0
+		return Move(0)
 	case 1:
 		// The only move available.
 		return b.move(position, entries[0])
@@ -58,7 +58,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 
 	file, err := os.Open(b.fileName)
 	if err != nil {
-		return
+		return entries
 	}
 	defer file.Close()
 
@@ -69,7 +69,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 	first, current, last := int64(-1), int64(0), b.entries
 	for first < last {
 		current = (first + last) / 2
-		file.Seek(current*16, 0)
+		file.Seek(current * 16, 0)
 		binary.Read(file, binary.BigEndian, &entry)
 		if key <= entry.Key {
 			last = current
@@ -79,7 +79,7 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 	}
 
 	// Read all book entries for the given position.
-	file.Seek(first*16, 0)
+	file.Seek(first * 16, 0)
 	for {
 		binary.Read(file, binary.BigEndian, &entry)
 		if key != entry.Key {
@@ -88,7 +88,8 @@ func (b *Book) lookup(position *Position) (entries []Entry) {
 			entries = append(entries, entry)
 		}
 	}
-	return
+
+	return entries
 }
 
 func (b *Book) move(p *Position, entry Entry) Move {
@@ -116,6 +117,7 @@ func (b *Book) move(p *Position, entry Entry) Move {
 	if promo := entry.promoted(); promo != 0 {
 		move.promote(promo)
 	}
+
 	return move
 }
 
@@ -139,13 +141,13 @@ func (e *Entry) promoted() int {
 	if piece == 0 {
 		return piece
 	}
-	return piece*2 + 2
+	return piece * 2 + 2
 }
 
 type byBookScore struct {
 	list []Entry
 }
 
-func (her byBookScore) Len() int           { return len(her.list) }
-func (her byBookScore) Swap(i, j int)      { her.list[i], her.list[j] = her.list[j], her.list[i] }
-func (her byBookScore) Less(i, j int) bool { return her.list[i].Score > her.list[j].Score }
+func (a byBookScore) Len() int           { return len(a.list) }
+func (a byBookScore) Swap(i, j int)      { a.list[i], a.list[j] = a.list[j], a.list[i] }
+func (a byBookScore) Less(i, j int) bool { return a.list[i].Score > a.list[j].Score }
