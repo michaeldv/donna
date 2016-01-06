@@ -46,15 +46,6 @@ func let(ok bool, yes, no int) int {
 	return no
 }
 
-// It sucks even more that we have to write extra code for other data types.
-func bet(ok bool, yes, no Bitmask) Bitmask {
-	if ok {
-		return yes
-	}
-
-	return no
-}
-
 // Flips the square verically for white (ex. E2 becomes E7).
 func flip(color uint8, square int) int {
 	if color == White {
@@ -66,9 +57,10 @@ func flip(color uint8, square int) int {
 // Returns a bitmask with light or dark squares set matching the color of the
 // square.
 func same(square int) Bitmask {
-	if bit[square] & maskDark != 0 {
+	if (bit[square] & maskDark).any() {
 		return maskDark
 	}
+
 	return ^maskDark
 }
 
@@ -152,6 +144,7 @@ func ms(duration int64) string {
 	mm := duration / 1000 / 60
 	ss := duration / 1000 % 60
 	xx := duration - mm * 1000 * 60 - ss * 1000
+
 	return fmt.Sprintf(`%02d:%02d.%03d`, mm, ss, xx)
 }
 
@@ -159,6 +152,7 @@ func ms(duration int64) string {
 // Returns pseudo-random integer in [0, limit] range. It panics if limit <= 0.
 func Random(limit int) int {
 	rand.Seed(time.Now().Unix())
+
 	return rand.Intn(limit)
 }
 

@@ -54,7 +54,8 @@ func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
 	} else {
 		bitmask = p.attacksFor(square, piece) & ^p.outposts[color]
 	}
-	return
+
+	return bitmask
 }
 
 func (p *Position) attacks(square int) Bitmask {
@@ -76,7 +77,8 @@ func (p *Position) attacksFor(square int, piece Piece) (bitmask Bitmask) {
 	case King:
 		return kingMoves[square]
 	}
-	return
+
+	return bitmask
 }
 
 func (p *Position) xrayAttacks(square int) Bitmask {
@@ -92,6 +94,7 @@ func (p *Position) xrayAttacksFor(square int, piece Piece) (bitmask Bitmask) {
 		board := p.board ^ p.outposts[rook(color)] ^ p.outposts[queen(color)]
 		return p.rookMovesAt(square, board)
 	}
+
 	return p.attacksFor(square, piece)
 }
 
@@ -99,15 +102,16 @@ func (p *Position) allAttacks(color uint8) (bitmask Bitmask) {
 	bitmask = p.pawnAttacks(color) | p.knightAttacks(color) | p.kingAttacks(color)
 
 	outposts := p.outposts[bishop(color)] | p.outposts[queen(color)]
-	for outposts != 0 {
+	for outposts.any() {
 		bitmask |= p.bishopMoves(outposts.pop())
 	}
 
 	outposts = p.outposts[rook(color)] | p.outposts[queen(color)]
-	for outposts != 0 {
+	for outposts.any() {
 		bitmask |= p.rookMoves(outposts.pop())
 	}
-	return
+
+	return bitmask
 }
 
 // Returns a bitmask of pieces that attack given square. The resulting bitmask
@@ -116,27 +120,29 @@ func (p *Position) allAttacks(color uint8) (bitmask Bitmask) {
 // This method is used in static exchange evaluation so instead of using current
 // board bitmask (p.board) we pass the one that gets continuously updated during
 // the evaluation.
-func (p *Position) attackers(color uint8, square int, board Bitmask) (attackers Bitmask) {
-	attackers  = knightMoves[square] & p.outposts[knight(color)]
-	attackers |= maskPawn[color][square] & p.outposts[pawn(color)]
-	attackers |= kingMoves[square] & p.outposts[king(color)]
-	attackers |= p.rookMovesAt(square, board) & (p.outposts[rook(color)] | p.outposts[queen(color)])
-	attackers |= p.bishopMovesAt(square, board) & (p.outposts[bishop(color)] | p.outposts[queen(color)])
-	return
+func (p *Position) attackers(color uint8, square int, board Bitmask) (bitmask Bitmask) {
+	bitmask  = knightMoves[square] & p.outposts[knight(color)]
+	bitmask |= maskPawn[color][square] & p.outposts[pawn(color)]
+	bitmask |= kingMoves[square] & p.outposts[king(color)]
+	bitmask |= p.rookMovesAt(square, board) & (p.outposts[rook(color)] | p.outposts[queen(color)])
+	bitmask |= p.bishopMovesAt(square, board) & (p.outposts[bishop(color)] | p.outposts[queen(color)])
+
+	return bitmask
 }
 
 func (p *Position) isAttacked(color uint8, square int) bool {
-	return (knightMoves[square] & p.outposts[knight(color)]) != 0 ||
-	       (maskPawn[color][square] & p.outposts[pawn(color)]) != 0 ||
-	       (kingMoves[square] & p.outposts[king(color)]) != 0 ||
-	       (p.rookMoves(square) & (p.outposts[rook(color)] | p.outposts[queen(color)])) != 0 ||
-	       (p.bishopMoves(square) & (p.outposts[bishop(color)] | p.outposts[queen(color)])) != 0
+	return (knightMoves[square] & p.outposts[knight(color)]).any() ||
+	       (maskPawn[color][square] & p.outposts[pawn(color)]).any() ||
+	       (kingMoves[square] & p.outposts[king(color)]).any() ||
+	       (p.rookMoves(square) & (p.outposts[rook(color)] | p.outposts[queen(color)])).any() ||
+	       (p.bishopMoves(square) & (p.outposts[bishop(color)] | p.outposts[queen(color)])).any()
 }
 
 func (p *Position) pawnTargets(color uint8, pawns Bitmask) Bitmask {
 	if color == White {
 		return ((pawns & ^maskFile[0]) << 7) | ((pawns & ^maskFile[7]) << 9)
 	}
+
 	return ((pawns & ^maskFile[0]) >> 9) | ((pawns & ^maskFile[7]) >> 7)
 }
 
@@ -146,35 +152,39 @@ func (p *Position) pawnAttacks(color uint8) Bitmask {
 
 func (p *Position) knightAttacks(color uint8) (bitmask Bitmask) {
 	outposts := p.outposts[knight(color)]
-	for outposts != 0 {
+	for outposts.any() {
 		bitmask |= knightMoves[outposts.pop()]
 	}
-	return
+
+	return bitmask
 }
 
 func (p *Position) bishopAttacks(color uint8) (bitmask Bitmask) {
 	outposts := p.outposts[bishop(color)]
-	for outposts != 0 {
+	for outposts.any() {
 		bitmask |= p.bishopMoves(outposts.pop())
 	}
-	return
+
+	return bitmask
 }
 
 func (p *Position) rookAttacks(color uint8) (bitmask Bitmask) {
 	outposts := p.outposts[rook(color)]
-	for outposts != 0 {
+	for outposts.any() {
 		bitmask |= p.rookMoves(outposts.pop())
 	}
-	return
+
+	return bitmask
 }
 
 func (p *Position) queenAttacks(color uint8) (bitmask Bitmask) {
 	outposts := p.outposts[queen(color)]
-	for outposts != 0 {
+	for outposts.any() {
 		square := outposts.pop()
 		bitmask |= p.rookMoves(square) | p.bishopMoves(square)
 	}
-	return
+
+	return bitmask
 }
 
 func (p *Position) kingAttacks(color uint8) Bitmask {

@@ -161,7 +161,7 @@ func (e *Evaluation) checkpoint(tag string, metric interface{}) {
 func (e *Evaluation) oppositeBishops() bool {
 	bishops := e.position.outposts[Bishop] | e.position.outposts[BlackBishop]
 
-	return bishops & maskDark != 0 && bishops & ^maskDark != 0
+	return (bishops & maskDark).any() && (bishops & ^maskDark).any()
 }
 
 // Returns true if material tables indicate that the king can't defend himself.

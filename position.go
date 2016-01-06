@@ -52,7 +52,7 @@ func NewPosition(game *Game, white, black string) *Position {
 	}
 
 	for square, piece := range p.pieces {
-		if piece != 0 {
+		if !piece.nil() {
 			p.outposts[piece].set(square)
 			p.outposts[piece.color()].set(square)
 			if piece.isKing() {
@@ -262,7 +262,7 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 		hash ^= polyglotRandomWhite
 	}
 
-	return
+	return hash, pawnHash
 }
 
 // Computes positional valuation score based on PST. When making a move the
@@ -274,7 +274,8 @@ func (p *Position) valuation() (score Score) {
 		piece := p.pieces[square]
 		score.add(pst[piece][square])
 	}
-	return
+
+	return score
 }
 
 // Returns true if material balance is insufficient to win the game.
@@ -314,6 +315,7 @@ func (p *Position) status(move Move, blendedScore int) int {
 			return let(p.color == White, BlackWinning, WhiteWinning)
 		}
 	}
+
 	return InProgress
 }
 
