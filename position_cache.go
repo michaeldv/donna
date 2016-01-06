@@ -31,7 +31,8 @@ func cacheUsage() (hits int) {
 			hits++
 		}
 	}
-	return
+
+	return hits
 }
 
 func uncache(score, ply int) int {
@@ -40,6 +41,7 @@ func uncache(score, ply int) int {
 	} else if score < MaxPly - Checkmate && score >= -Checkmate {
 		return score + ply
 	}
+
 	return score
 }
 
@@ -63,13 +65,13 @@ func NewCache(megaBytes float64) Cache {
 		}
 		return game.cache
 	}
+
 	return nil
 }
 
 func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Position {
 	if cacheSize := len(game.cache); cacheSize > 0 {
 		index := p.id & uint64(cacheSize - 1)
-		// fmt.Printf("cache size %d entries, index %d\n", len(game.cache), index)
 		entry := &game.cache[index]
 
 		if depth > int(entry.depth) || game.token != entry.token {
@@ -94,19 +96,6 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 	return p
 }
 
-func (p *Position) cacheDelta(move Move, score, depth, ply, alpha, beta int) *Position {
-	cacheFlags := cacheNone
-
-	if score > alpha {
-		cacheFlags |= cacheBeta
-	}
-	if score < beta {
-		cacheFlags |= cacheAlpha
-	}
-
-	return p.cache(move, score, depth, ply, cacheFlags)
-}
-
 func (p *Position) probeCache() *CacheEntry {
 	if cacheSize := len(game.cache); cacheSize > 0 {
 		index := p.id & uint64(cacheSize - 1)
@@ -114,6 +103,7 @@ func (p *Position) probeCache() *CacheEntry {
 			return entry
 		}
 	}
+
 	return nil
 }
 
@@ -121,5 +111,6 @@ func (p *Position) cachedMove() Move {
 	if cached := p.probeCache(); cached != nil {
 		return cached.move
 	}
+
 	return Move(0)
 }
