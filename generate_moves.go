@@ -41,7 +41,9 @@ func (gen *MoveGen) generateMoves() *MoveGen {
 }
 
 func (gen *MoveGen) pawnMoves(color uint8) *MoveGen {
-	for pawns := gen.p.outposts[pawn(color)]; pawns.any(); {
+	pawns := gen.p.outposts[pawn(color)]
+
+	for pawns.any() {
 		square := pawns.pop()
 		gen.movePawn(square, gen.p.targets(square))
 	}

@@ -19,7 +19,7 @@ func (p *Position) exchange(move Move) int {
 	from, to, piece, capture := move.split()
 
 	score := exchangeScores[capture]
-	if promo := move.promo(); promo != 0 {
+	if promo := move.promo(); !promo.nil() {
 		score += exchangeScores[promo] - exchangeScores[Pawn]
 		piece = promo
 	}
@@ -36,7 +36,7 @@ func (p *Position) exchangeScore(color uint8, to, score, extra int, board Bitmas
 	}
 
 	from, best := 0, Checkmate
-	for attackers != 0 {
+	for attackers.any() {
 		square := attackers.pop()
 		if index := p.pieces[square]; exchangeScores[index] < best {
 			from = square

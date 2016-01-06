@@ -10,12 +10,12 @@ type MoveWithScore struct {
 }
 
 type MoveGen struct {
-	p        *Position
-	list     [128]MoveWithScore
-	ply      int
-	head     int
-	tail     int
-	pins     Bitmask
+	p	*Position
+	list	[128]MoveWithScore
+	ply	int
+	head	int
+	tail	int
+	pins	Bitmask
 }
 
 // Pre-allocate move generator array (one entry per ply) to avoid garbage
@@ -32,7 +32,7 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen.list = [128]MoveWithScore{}
 	gen.ply = ply
 	gen.head, gen.tail = 0, 0
-	gen.pins = p.pinnedMask(p.king[p.color])
+	gen.pins = p.pins(p.king[p.color])
 
 	return gen
 }

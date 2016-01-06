@@ -113,7 +113,7 @@ func (e *Evaluation) knights(our uint8, maskSafe Bitmask, unsafeKing bool) (scor
 		attacks := Bitmask(0)
 
 		// Bonus for knight's mobility -- unless the knight is pinned.
-		if e.pinned[our].off(square) {
+		if e.pins[our].off(square) {
 			attacks = p.attacks(square)
 			mobility.add(mobilityKnight[(attacks & maskSafe).count()])
 		}
@@ -149,7 +149,7 @@ func (e *Evaluation) bishops(our uint8, maskSafe Bitmask, unsafeKing bool) (scor
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for bishop's mobility: if the bishop is pinned then restrict the attacks.
-		if e.pinned[our].on(square) {
+		if e.pins[our].on(square) {
 			attacks &= maskLine[p.king[our]][square]
 		}
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
@@ -220,7 +220,7 @@ func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score,
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for rook's mobility: if the rook is pinned then restrict the attacks.
-		if e.pinned[our].on(square) {
+		if e.pins[our].on(square) {
 			attacks &= maskLine[p.king[our]][square]
 		}
 		safeSquares := (attacks & maskSafe).count()
@@ -291,7 +291,7 @@ func (e *Evaluation) queens(our uint8, maskSafe Bitmask, unsafeKing bool) (score
 		attacks := p.attacks(square)
 
 		// Bonus for queen's mobility: if the queen is pinned then restrict the attacks.
-		if e.pinned[our].on(square) {
+		if e.pins[our].on(square) {
 			attacks &= maskLine[p.king[our]][square]
 		}
 		mobility.add(mobilityQueen[min(15, (attacks & maskSafe).count())])

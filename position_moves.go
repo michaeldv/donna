@@ -192,6 +192,7 @@ func (p *Position) repetition() bool {
 	if !p.reversible || node < 1 {
 		return false
 	}
+
 	for previous := node - 1; previous >= 0; previous-- {
 		if !tree[previous].reversible {
 			return false
@@ -200,6 +201,7 @@ func (p *Position) repetition() bool {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -219,6 +221,7 @@ func (p *Position) thirdRepetition() bool {
 			}
 		}
 	}
+
 	return false
 }
 
@@ -238,24 +241,26 @@ func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
 		queenside = queenside && (castleQueen[color] & attacks == 0)
 	}
 
-	return
+	return kingside, queenside
 }
 
 // Returns a bitmask of all pinned pieces preventing a check for the king on
 // given square. The color of the pieces match the color of the king.
-func (p *Position) pinnedMask(square uint8) (mask Bitmask) {
-	color := p.pieces[square].color()
-	enemy := color^1
-	attackers := (p.outposts[bishop(enemy)] | p.outposts[queen(enemy)]) & bishopMagicMoves[square][0]
-	attackers |= (p.outposts[rook(enemy)] | p.outposts[queen(enemy)]) & rookMagicMoves[square][0]
+func (p *Position) pins(square uint8) (bitmask Bitmask) {
+	our := p.pieces[square].color()
+	their := our^1
+
+	attackers := (p.outposts[bishop(their)] | p.outposts[queen(their)]) & bishopMagicMoves[square][0]
+	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[square][0]
 
 	for attackers.any() {
 		attackSquare := attackers.pop()
 		blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
 
 		if blockers.count() == 1 {
-			mask |= blockers & p.outposts[color] // Only friendly pieces are pinned.
+			bitmask |= blockers & p.outposts[our] // Only friendly pieces are pinned.
 		}
 	}
-	return
+
+	return bitmask
 }
