@@ -6,8 +6,10 @@ package donna
 
 import (
 	`encoding/binary`
+	`math/rand`
 	`os`
 	`sort`
+	`time`
 )
 
 // Many pages make a thick book.
@@ -37,6 +39,12 @@ func NewBook(bookFile string) (*Book, error) {
 }
 
 func (b *Book) pickMove(position *Position) Move {
+	// The generation of random numbers is too important to be left to chance.
+	// Returns pseudo-random integer in [0, limit] range. It panics if limit <= 0.
+	random := func(limit int) int {
+		rand.Seed(time.Now().Unix()); return rand.Intn(limit)
+	}
+
 	entries := b.lookup(position)
 	switch length := len(entries); length {
 	case 0:
@@ -49,7 +57,7 @@ func (b *Book) pickMove(position *Position) Move {
 		// Sort book entries by score and pick among two best moves.
 		sort.Sort(byBookScore{entries})
 		best := min(2, len(entries))
-		return b.move(position, entries[Random(best)])
+		return b.move(position, entries[random(best)])
 	}
 }
 

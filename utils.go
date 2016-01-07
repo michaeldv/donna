@@ -6,7 +6,6 @@ package donna
 
 import (
 	`fmt`
-	`math/rand`
 	`time`
 )
 
@@ -146,14 +145,6 @@ func ms(duration int64) string {
 	xx := duration - mm * 1000 * 60 - ss * 1000
 
 	return fmt.Sprintf(`%02d:%02d.%03d`, mm, ss, xx)
-}
-
-// The generation of random numbers is too important to be left to chance.
-// Returns pseudo-random integer in [0, limit] range. It panics if limit <= 0.
-func Random(limit int) int {
-	rand.Seed(time.Now().Unix())
-
-	return rand.Intn(limit)
 }
 
 func C(color uint8) string {
