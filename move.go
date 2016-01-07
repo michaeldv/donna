@@ -319,8 +319,8 @@ func (m Move) String() (str string) {
 	}
 	buffer.WriteByte(byte(col(to)) + 'a')
 	buffer.WriteByte(byte(row(to)) + '1')
-	if m & isPromo != 0 {
-		buffer.WriteByte(m.promo().char())
+	if promo := m.promo(); !promo.nil() {
+		buffer.WriteByte(promo.char())
 	}
 
 	return buffer.String()
