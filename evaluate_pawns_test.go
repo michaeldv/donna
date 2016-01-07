@@ -97,14 +97,14 @@ func TestEvaluatePawns410(t *testing.T) {
 	game := NewGame(`Ke1,Rb1,Ng2,a2`, `Ke8,Rh8,Nb7,h7`) // White on open file.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 74)
+	expect.Eq(t, score, 82)
 }
 
 func TestEvaluatePawns420(t *testing.T) {
 	game := NewGame(`Ke1,Rb1,a2,g2`, `Ke8,Rh8,h7,b7`) // White on semi-open file.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 84)
+	expect.Eq(t, score, 108)
 }
 
 // King shield.
@@ -125,7 +125,7 @@ func TestEvaluatePawns510(t *testing.T) {
 	game := NewGame(`Kg1,f2,g2,h2,Qa3,Na4`, `Kg8,f5,g6,h7,Qa6,Na5`) // h2,g2,h2 vs F5,G6,h7
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 40)
+	expect.Eq(t, score, 35)
 }
 
 func TestEvaluatePawns520(t *testing.T) {
