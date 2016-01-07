@@ -69,10 +69,11 @@ func (e *Evaluation) threats(our uint8) (score Score) {
 
 		// Bonus for enemy pieces attacked by the king.
 		if targets = undefended & e.attacks[king(our)]; targets.any() {
-			if count := targets.count(); count == 1 {
-				score.add(Score{2, 30})
-			} else if count > 1 {
-				score.add(Score{2, 30}.times(2))
+			if count := targets.count(); count > 0 {
+				score.add(kingAttack)
+				if count > 1 {
+					score.add(kingAttack)
+				}
 			}
 		}
 

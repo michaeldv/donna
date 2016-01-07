@@ -24,7 +24,9 @@ var (
 	rookBoxed      = Score{ 45,  0 }  // Penalty for rook boxed by king.
 	behindPawn     = Score{  8,  0 }  // Bonus for knight and bishop being behind friendly pawn.
 	hangingAttack  = Score{ 24, 14 }  // Bonus for attacking enemy pieces that are hanging.
+	kingAttack     = Score{  2, 30 }  // Bonus for king attacking other pieces.
 	kingByPawn     = Score{  0,  8 }  // Penalty king being too far from friendly pawns.
+	pawnAlone      = Score{ 10,  5 }  // Penalty for unsupported pawn.
 )
 
 // Weight percentages applied to evaluation scores before computing the overall

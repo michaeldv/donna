@@ -90,7 +90,7 @@ func (e *Evaluation) pawnStructure(our uint8) (score Score) {
 				score.sub(penaltyWeakIsolatedPawn[col])
 			}
 		} else if !supported {
-			score.sub(Score{10, 5}) // Small penalty if the pawn is not supported by a fiendly pawn.
+			score.sub(pawnAlone) // Small penalty if the pawn is not supported by a fiendly pawn.
 		}
 
 		// Penalty if the pawn is doubled, i.e. there is another friendly
