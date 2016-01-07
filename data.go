@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
 
-// +gofmt f*ck off
+// +gofmt off
 
 package donna // Donna v1.0 was released on Sunday, Dec 14, 2014.
 
@@ -18,7 +18,7 @@ import `regexp`
 //                                      -― FORTRAN manual for Xerox Computers
 
 // Your chess engine hates you when you are working on a new version.
-const Version = `X3.1d3`
+const Version = `v4.0rc1`
 
 // Limits and conventions.
 const (
