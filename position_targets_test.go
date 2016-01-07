@@ -21,7 +21,7 @@ func TestTargets010(t *testing.T) {
 
 	expect.Eq(t, position.targets(E2), bit[E3])         // e3
 	expect.Eq(t, position.targets(D3), bit[E4])         // e4
-	expect.Eq(t, position.targets(D4), maskNone)        // None.
+	expect.Eq(t, position.targets(D4), Bitmask(0))      // None.
 	expect.Eq(t, position.targets(E4), bit[D3]|bit[E3]) // d3,e3
 }
 

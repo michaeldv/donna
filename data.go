@@ -62,12 +62,10 @@ const (A1A8 = iota; B1B8; C1C8; D1D8; E1E8; F1F8; G1G8; H1H8)
 
 // Useful masks.
 const (
-	maskNone = Bitmask(0x0000000000000000)
 	maskFull = Bitmask(0xFFFFFFFFFFFFFFFF)
 	maskDark = Bitmask(0xAA55AA55AA55AA55)
 	maskA1H8 = Bitmask(0x8040201008040201)
 	maskH1A8 = Bitmask(0x0102040810204080)
-	maskCenter = Bitmask(0x0000001818000000)
 )
 
 // One man's constant is another man's variable.

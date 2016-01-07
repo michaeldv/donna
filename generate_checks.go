@@ -92,7 +92,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					gen.movePawn(to, p.targets(to) & ^p.board & ^prohibit)
 				case King:
 					// Make sure the king steps out of attack file or rank.
-					prohibit := maskNone
+					prohibit := Bitmask(0)
 					if r := row(from); r == row(square) {
 						prohibit = maskRank[r]
 					} else {
