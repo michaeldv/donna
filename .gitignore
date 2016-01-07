@@ -16,6 +16,7 @@ tmtags
 # Builds, logs and tools.
 donna
 cmd/donna
+bin/donna*
 logs/*
 tools/*
 games/*
