@@ -35,8 +35,7 @@ func square(row, column int) int {
 	return (row << 3) + column
 }
 
-// It sucks that Go doesn't have ternary condition operator. Works best with
-// scalar yes and no.
+// Poor man's ternary. Works best with scalar yes and no.
 func let(ok bool, yes, no int) int {
 	if ok {
 		return yes
