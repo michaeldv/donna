@@ -70,7 +70,7 @@ BUILDING FROM SOURCE
    http://golang.org/dl/). From Donna source directory run "make" or "go build"
    command:
 
-   $ go build -gcflags -B ./cmd/donna.go
+   $ go build -o ./bin/donna -gcflags -B github.com/michaeldv/donna/cmd/donna
 
 USING DONNA
 
@@ -79,7 +79,7 @@ USING DONNA
    play against it in interactive mode:
 
    $ ./donna -i
-   Donna v3.1 Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+   Donna v4.0 Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
    Type ? for help.
 
    donna>

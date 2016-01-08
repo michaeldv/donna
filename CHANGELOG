@@ -1,3 +1,7 @@
+Jan 8, 2016: Version v4.0
+  - Improved search depth on typical time controls.
+  - Many more optimizations and position evaluation tweaks.
+
 Oct 26, 2015: Version v3.1
   - Fine-tuned internal evaluation parameters and weights.
   - Updated mobility evaluation to take into account pinned pieces.
