@@ -45,7 +45,7 @@ func (e *Engine) replPrincipal(depth, score, status int, duration int64) {
 	case FiftyMoves:
 		fmt.Println(`1/2 Fifty Moves`)
 	case WhiteWinning, BlackWinning: // Show moves till checkmate.
-		fmt.Printf("%6dX   %v Checkmate\n", (Checkmate - abs(score)) / 2, game.rootpv.moves[0:game.rootpv.size])
+		fmt.Printf("%6dX   %v Checkmate\n", (Checkmate - abs(score)) / 2 + 1, game.rootpv.moves[0:game.rootpv.size])
 	default:
 		fmt.Printf("%7.2f   %v\n", float32(score) / float32(onePawn), game.rootpv.moves[0:game.rootpv.size])
 	}
