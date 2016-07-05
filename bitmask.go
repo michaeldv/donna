@@ -65,6 +65,9 @@ func (b Bitmask) off(offset int) bool {
 
 // Returns number of bits set.
 func (b Bitmask) count() int {
+	if b.empty() {
+		return 0
+	}
 	b -= (b >> 1) & 0x5555555555555555
 	b = ((b >> 2) & 0x3333333333333333) + (b & 0x3333333333333333)
 	b = ((b >> 4) + b) & 0x0F0F0F0F0F0F0F0F

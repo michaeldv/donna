@@ -162,11 +162,11 @@ func (m Move) nil() bool {
 }
 
 func (m Move) from() int {
-	return int(m & 0xFF)
+	return int(m & 0x3F)
 }
 
 func (m Move) to() int {
-	return int((m >> 8) & 0xFF)
+	return int((m >> 8) & 0x3F)
 }
 
 func (m Move) piece() Piece {
@@ -182,7 +182,7 @@ func (m Move) capture() Piece {
 }
 
 func (m Move) split() (from, to int, piece, capture Piece) {
-	return int(m & 0xFF), int((m >> 8) & 0xFF), Piece((m >> 16) & 0x0F), Piece((m >> 20) & 0x0F)
+	return int(m & 0x3F), int((m >> 8) & 0x3F), Piece((m >> 16) & 0x0F), Piece((m >> 20) & 0x0F)
 }
 
 func (m Move) promo() Piece {
