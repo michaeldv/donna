@@ -95,7 +95,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		}
 
 		position := p.makeMove(move)
-		moveCount++; game.qnodes += moveCount
+		moveCount++; game.qnodes++
 		giveCheck := position.isInCheck(position.color)
 
 		// Prune useless captures -- but make sure it's not a capture move that checks.
