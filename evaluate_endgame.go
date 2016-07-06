@@ -217,7 +217,7 @@ func (e *Evaluation) lastPawnLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
 
-	if (color == White && outposts[Pawn].count() == 1) || (color == Black && outposts[BlackPawn].count() == 1) {
+	if (color == White && outposts[Pawn].single()) || (color == Black && outposts[BlackPawn].single()) {
 		return e.fraction(3, 4) // 3/4
 	}
 
@@ -227,8 +227,8 @@ func (e *Evaluation) lastPawnLeft() int {
 func (e *Evaluation) noPawnsLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
-	whiteMinorOnly := outposts[Queen].empty() && outposts[Rook].empty() && (outposts[Bishop] | outposts[Knight]).count() == 1
-	blackMinorOnly := outposts[BlackQueen].empty() && outposts[BlackRook].empty() && (outposts[BlackBishop] | outposts[BlackKnight]).count() == 1
+	whiteMinorOnly := outposts[Queen].empty() && outposts[Rook].empty() && (outposts[Bishop] | outposts[Knight]).single()
+	blackMinorOnly := outposts[BlackQueen].empty() && outposts[BlackRook].empty() && (outposts[BlackBishop] | outposts[BlackKnight]).single()
 
 	if color == White && outposts[Pawn].empty() {
 		if whiteMinorOnly {

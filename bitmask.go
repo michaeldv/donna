@@ -63,6 +63,11 @@ func (b Bitmask) off(offset int) bool {
 	return !b.on(offset)
 }
 
+// Returns true if a bitmask has single bit set.
+func (b Bitmask) single() bool {
+	return (b & (b - 1)) == 0
+}
+
 // Returns number of bits set.
 func (b Bitmask) count() int {
 	if b.empty() {

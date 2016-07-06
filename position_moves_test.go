@@ -598,7 +598,7 @@ func TestPositionMoves400(t *testing.T) {
 	p = p.makeNullMove()
 	expect.True(t, p.isNull())
 
-	p = p.undoNullMove()
+	p = p.undoLastMove()
 	p = p.makeMove(NewMove(p, E2, E4))
 	expect.False(t, p.isNull())
 }

@@ -101,7 +101,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			position := p.makeNullMove()
 			game.nodes++
 			nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)
-			position.undoNullMove()
+			position.undoLastMove()
 
 			if nullScore >= beta {
 				if isMate(nullScore) {

@@ -168,14 +168,6 @@ func (p *Position) undoLastMove() *Position {
 	return &tree[node]
 }
 
-func (p *Position) undoNullMove() *Position {
-	p.id ^= polyglotRandomWhite
-	p.color ^= 1
-	p.count50--
-
-	return p.undoLastMove()
-}
-
 func (p *Position) isInCheck(color uint8) bool {
 	return p.isAttacked(color^1, int(p.king[color]))
 }
@@ -257,7 +249,7 @@ func (p *Position) pins(square uint8) (bitmask Bitmask) {
 		attackSquare := attackers.pop()
 		blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
 
-		if blockers.count() == 1 {
+		if blockers.single() {
 			bitmask |= blockers & p.outposts[our] // Only friendly pieces are pinned.
 		}
 	}
