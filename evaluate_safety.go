@@ -181,8 +181,8 @@ func (e *Evaluation) kingPawnProximity(our uint8, square int) (penalty int) {
 	if pawns.any() && (pawns & e.attacks[king(our)]).empty() {
 		proximity := 8
 
-		for pawns.any() {
-			proximity = min(proximity, distance[square][pawns.pop()])
+		for bm := pawns; bm.any(); bm = bm.pop() {
+			proximity = min(proximity, distance[square][bm.first()])
 		}
 
 		penalty = -kingByPawn.endgame * (proximity - 1)

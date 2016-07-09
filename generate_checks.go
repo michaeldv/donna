@@ -13,21 +13,18 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 
 	// Non-capturing Knight checks.
 	checks := knightMoves[square]
-	outposts := p.outposts[knight(color)]
-	for outposts.any() {
-		from := outposts.pop()
+	for bm := p.outposts[knight(color)]; bm.any(); bm = bm.pop() {
+		from := bm.first()
 		gen.movePiece(from, knightMoves[from] & checks & ^p.board)
 	}
 
 	// Non-capturing Bishop or Queen checks.
 	checks = p.targetsFor(square, bishop(enemy))
-	outposts = p.outposts[bishop(color)] | p.outposts[queen(color)]
-	for outposts.any() {
-		from := outposts.pop()
-		targets := p.targetsFor(from, bishop(enemy)) & checks & ^p.outposts[enemy]
+	for bm := p.outposts[bishop(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
+		from := bm.first()
 		diagonal := (r != row(from) && c != col(from))
-		for targets.any() {
-			to := targets.pop()
+		for bm := p.targetsFor(from, bishop(enemy)) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
+			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a bishop to check.
 				gen.add(NewMove(p, from, to))
@@ -54,21 +51,19 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 		if p.pieces[from].isQueen() {
 			// Queen could move straight as a rook and check diagonally as a bishop
 			// or move diagonally as a bishop and check straight as a rook.
-			targets = (p.targetsFor(from, rook(color)) & checks) |
-				  (p.targetsFor(from, bishop(color)) & p.targetsFor(square, rook(color)))
+			targets := (p.targetsFor(from, rook(color)) & checks) |
+				   (p.targetsFor(from, bishop(color)) & p.targetsFor(square, rook(color)))
 			gen.movePiece(from, targets & ^p.board)
 		}
 	}
 
 	// Non-capturing Rook or Queen checks.
 	checks = p.targetsFor(square, rook(enemy))
-	outposts = p.outposts[rook(color)] | p.outposts[queen(color)]
-	for outposts.any() {
-		from := outposts.pop()
-		targets := p.targetsFor(from, rook(enemy)) & checks & ^p.outposts[enemy]
+	for bm := p.outposts[rook(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
+		from := bm.first()
 		straight := (r == row(from) || c == col(from))
-		for targets.any() {
-			to := targets.pop()
+		for bm := p.targetsFor(from, rook(enemy)) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
+			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a rook to check.
 				gen.add(NewMove(p, from, to))
@@ -107,11 +102,10 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	}
 
 	// Non-capturing Pawn checks.
-	outposts = p.outposts[pawn(color)] & maskIsolated[col(square)]
-	for outposts.any() {
-		from := outposts.pop()
-		if target := maskPawn[color][square] & p.targets(from); target.any() {
-			gen.add(NewPawnMove(p, from, target.pop()))
+	for bm := p.outposts[pawn(color)] & maskIsolated[col(square)]; bm.any(); bm = bm.pop() {
+		from := bm.first()
+		if bm := maskPawn[color][square] & p.targets(from); bm.any() {
+			gen.add(NewPawnMove(p, from, bm.first()))
 		}
 	}
 

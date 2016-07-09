@@ -121,12 +121,9 @@ func (b Bitmask) up(color uint8) Bitmask {
 	return b >> 8
 }
 
-// Finds *and clears* least significant bit set (LSB) in non-zero
-// bitmask. Returns an integer in 0..63 range.
-func (b *Bitmask) pop() int {
-	mask := *b ^ (*b - 1)
-	*b &= *b - 1
-	return deBruijn[(mask * 0x03F79D71B4CB0A89) >> 58]
+// Returns bitmask with least significant bit off.
+func (b Bitmask) pop() Bitmask {
+	return b & (b - 1)
 }
 
 // Sets a bit at given offset.
@@ -138,24 +135,6 @@ func (b *Bitmask) set(offset int) *Bitmask {
 // Clears a bit at given offset.
 func (b *Bitmask) clear(offset int) *Bitmask {
 	*b &= ^(1 << uint(offset))
-	return b
-}
-
-// Combines two bitmasks using bitwise OR operator.
-func (b *Bitmask) combine(bitmask Bitmask) *Bitmask {
-	*b |= bitmask
-	return b
-}
-
-// Intersects two bitmasks using bitwise AND operator.
-func (b *Bitmask) intersect(bitmask Bitmask) *Bitmask {
-	*b &= bitmask
-	return b
-}
-
-// Excludes bits of one bitmask from another using bitwise XOR operator.
-func (b *Bitmask) exclude(bitmask Bitmask) *Bitmask {
-	*b ^= (bitmask & *b)
 	return b
 }
 
@@ -172,11 +151,11 @@ func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask 
 	mask := bit[square] & board
 
 	for mask.shift(direction); mask.any(); mask.shift(direction) {
-		b.combine(mask)
+		*b |= mask
 		if (mask & occupied).any() {
 			break
 		}
-		mask.intersect(board)
+		mask &= board
 	}
 	return b
 }

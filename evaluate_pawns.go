@@ -62,9 +62,8 @@ func (e *Evaluation) pawnStructure(our uint8) (score Score) {
 	theirPawns := e.position.outposts[pawn(their)]
 	e.pawns.passers[our] = 0
 
-	pawns := ourPawns
-	for pawns.any() {
-		square := pawns.pop()
+	for bm := ourPawns; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		row, col := coordinate(square)
 
 		isolated := (maskIsolated[col] & ourPawns).empty()
@@ -143,9 +142,8 @@ func (e *Evaluation) pawnPassers(our uint8) (score Score) {
 	// If opposing side has no pieces other than pawns then need to check if passers are unstoppable.
 	chase := (p.outposts[their] ^ p.outposts[pawn(their)] ^ p.outposts[king(their)]).empty()
 
-	pawns := e.pawns.passers[our]
-	for pawns.any() {
-		square := pawns.pop()
+	for bm := e.pawns.passers[our]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		rank := rank(our, square)
 		bonus := bonusPassedPawn[rank]
 

@@ -31,13 +31,13 @@ func (p *Position) exchange(move Move) int {
 // Recursive helper method for the static exchange evaluation.
 func (p *Position) exchangeScore(color uint8, to, score, extra int, board Bitmask) int {
 	attackers := p.attackers(color, to, board) & board
-	if attackers == 0 {
+	if attackers.empty() {
 		return score
 	}
 
 	from, best := 0, Checkmate
-	for attackers.any() {
-		square := attackers.pop()
+	for bm := attackers; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		if index := p.pieces[square]; exchangeScores[index] < best {
 			from = square
 			best = exchangeScores[index]

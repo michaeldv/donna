@@ -245,8 +245,8 @@ func (p *Position) pins(square uint8) (bitmask Bitmask) {
 	attackers := (p.outposts[bishop(their)] | p.outposts[queen(their)]) & bishopMagicMoves[square][0]
 	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[square][0]
 
-	for attackers.any() {
-		attackSquare := attackers.pop()
+	for bm := attackers; bm.any(); bm = bm.pop() {
+		attackSquare := bm.first()
 		blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
 
 		if blockers.single() {

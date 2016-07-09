@@ -41,10 +41,8 @@ func (gen *MoveGen) generateMoves() *MoveGen {
 }
 
 func (gen *MoveGen) pawnMoves(color uint8) *MoveGen {
-	pawns := gen.p.outposts[pawn(color)]
-
-	for pawns.any() {
-		square := pawns.pop()
+	for pawns := gen.p.outposts[pawn(color)]; pawns.any(); pawns = pawns.pop() {
+		square := pawns.first()
 		gen.movePawn(square, gen.p.targets(square))
 	}
 
@@ -53,10 +51,8 @@ func (gen *MoveGen) pawnMoves(color uint8) *MoveGen {
 
 // Go over all pieces except pawns and the king.
 func (gen *MoveGen) pieceMoves(color uint8) *MoveGen {
-	outposts := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]
-
-	for outposts.any() {
-		square := outposts.pop()
+	for outposts := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; outposts.any(); outposts = outposts.pop() {
+		square := outposts.first()
 		gen.movePiece(square, gen.p.targets(square))
 	}
 
@@ -81,8 +77,8 @@ func (gen *MoveGen) kingMoves(color uint8) *MoveGen {
 }
 
 func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
-	for targets.any() {
-		target := targets.pop()
+	for bm := targets; bm.any(); bm = bm.pop() {
+		target := bm.first()
 		if target > H1 && target < A8 {
 			gen.add(NewPawnMove(gen.p, square, target))
 		} else { // Promotion.
@@ -95,8 +91,8 @@ func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
 }
 
 func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
-	for targets.any() {
-		target := targets.pop()
+	for bm := targets; bm.any(); bm = bm.pop() {
+		target := bm.first()
 		if abs(square - target) == 2 {
 			gen.add(NewCastle(gen.p, square, target))
 		} else {
@@ -108,8 +104,8 @@ func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
 }
 
 func (gen *MoveGen) movePiece(square int, targets Bitmask) *MoveGen {
-	for targets.any() {
-		gen.add(NewMove(gen.p, square, targets.pop()))
+	for bm := targets; bm.any(); bm = bm.pop() {
+		gen.add(NewMove(gen.p, square, bm.first()))
 	}
 
 	return gen

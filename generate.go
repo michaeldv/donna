@@ -67,10 +67,10 @@ func (gen *MoveGen) onlyMove() bool {
 }
 
 func (gen *MoveGen) NextMove() (move Move) {
-	if gen.head < gen.tail {
+	//if gen.head < gen.tail {
 		move = gen.list[gen.head].move
 		gen.head++
-	}
+	//}
 
 	return move
 }

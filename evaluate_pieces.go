@@ -106,10 +106,9 @@ func (e *Evaluation) analyzePieces() {
 
 func (e *Evaluation) knights(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
-	outposts := p.outposts[knight(our)]
 
-	for outposts.any() {
-		square := outposts.pop()
+	for bm := p.outposts[knight(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := Bitmask(0)
 
 		// Bonus for knight's mobility -- unless the knight is pinned.
@@ -142,10 +141,9 @@ func (e *Evaluation) knights(our uint8, maskSafe Bitmask, unsafeKing bool) (scor
 
 func (e *Evaluation) bishops(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
-	outposts := p.outposts[bishop(our)]
 
-	for outposts.any() {
-		square := outposts.pop()
+	for bm := p.outposts[bishop(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for bishop's mobility: if the bishop is pinned then restrict the attacks.
@@ -209,14 +207,14 @@ func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score,
 	p, their := e.position, our^1
 	ourPawns := p.outposts[pawn(our)]
 	theirPawns := p.outposts[pawn(their)]
-	outposts := p.outposts[rook(our)]
 
 	// Bonus if rook is on 7th rank and enemy's king trapped on 8th.
-	if count := (outposts & mask7th[our]).count(); count > 0 && p.outposts[king(their)] & mask8th[our] != 0 {
-		score.add(rookOn7th.times(count))
+	if bm := (p.outposts[rook(our)] & mask7th[our]); bm.any() && (p.outposts[king(their)] & mask8th[our]).any() {
+		score.add(rookOn7th.times(bm.count()))
 	}
-	for outposts.any() {
-		square := outposts.pop()
+
+	for bm := p.outposts[rook(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for rook's mobility: if the rook is pinned then restrict the attacks.
@@ -284,10 +282,9 @@ func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score,
 
 func (e *Evaluation) queens(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
-	outposts := p.outposts[queen(our)]
 
-	for outposts.any() {
-		square := outposts.pop()
+	for bm := p.outposts[queen(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := p.attacks(square)
 
 		// Bonus for queen's mobility: if the queen is pinned then restrict the attacks.

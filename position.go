@@ -243,9 +243,8 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 // Computes initial values of position's polyglot hash and pawn hash. When
 // making a move these values get updated incrementally.
 func (p *Position) polyglot() (hash, pawnHash uint64) {
-	board := p.board
-	for board.any() {
-		square := board.pop()
+	for board := p.board; board.any(); board = board.pop() {
+		square := board.first()
 		piece := p.pieces[square]
 		random := piece.polyglot(square)
 		hash ^= random
@@ -268,9 +267,8 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 // Computes positional valuation score based on PST. When making a move the
 // valuation tally gets updated incrementally.
 func (p *Position) valuation() (score Score) {
-	board := p.board
-	for board.any() {
-		square := board.pop()
+	for bm := p.board; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		piece := p.pieces[square]
 		score.add(pst[piece][square])
 	}
@@ -422,21 +420,17 @@ func (p *Position) dcf() string {
 		pieces[color] = append(pieces[color], `K` + encode(int(p.king[color])))
 
 		// Queens, Rooks, Bishops, and Knights.
-		outposts := p.outposts[queen(color)]
-		for outposts.any() {
-			pieces[color] = append(pieces[color], `Q` + encode(outposts.pop()))
+		for outposts := p.outposts[queen(color)]; outposts.any(); outposts = outposts.pop() {
+			pieces[color] = append(pieces[color], `Q` + encode(outposts.first()))
 		}
-		outposts = p.outposts[rook(color)]
-		for outposts.any() {
-			pieces[color] = append(pieces[color], `R` + encode(outposts.pop()))
+		for outposts := p.outposts[rook(color)]; outposts.any(); outposts = outposts.pop() {
+			pieces[color] = append(pieces[color], `R` + encode(outposts.first()))
 		}
-		outposts = p.outposts[bishop(color)]
-		for outposts.any() {
-			pieces[color] = append(pieces[color], `B` + encode(outposts.pop()))
+		for outposts := p.outposts[bishop(color)]; outposts.any(); outposts = outposts.pop() {
+			pieces[color] = append(pieces[color], `B` + encode(outposts.first()))
 		}
-		outposts = p.outposts[knight(color)]
-		for outposts.any() {
-			pieces[color] = append(pieces[color], `N` + encode(outposts.pop()))
+		for outposts := p.outposts[knight(color)]; outposts.any(); outposts = outposts.pop() {
+			pieces[color] = append(pieces[color], `N` + encode(outposts.first()))
 		}
 
 		// Castle rights.
@@ -456,9 +450,8 @@ func (p *Position) dcf() string {
 		}
 
 		// Pawns.
-		outposts = p.outposts[pawn(color)]
-		for outposts.any() {
-			pieces[color] = append(pieces[color], encode(outposts.pop()))
+		for outposts := p.outposts[pawn(color)]; outposts.any(); outposts = outposts.pop() {
+			pieces[color] = append(pieces[color], encode(outposts.first()))
 		}
 	}
 

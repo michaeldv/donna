@@ -104,12 +104,11 @@ func TestBitmask070(t *testing.T) { // maskEvade H1->A8 (spot)
 
 func TestBitmask100(t *testing.T) {
 	mask := Bitmask(0x0000000000000001)
-	bit := mask.pop()
-	expect.Eq(t, bit, 0)
-	expect.Eq(t, mask, Bitmask(0x0000000000000000))
+	expect.Eq(t, mask.pop(), Bitmask(0x0000000000000000))
+
+	mask = Bitmask(0xFFFFFFFFFFFFFFF0)
+	expect.Eq(t, mask.pop(), Bitmask(0xFFFFFFFFFFFFFFE0))
 
 	mask = Bitmask(0x8000000000000000)
-	bit = mask.pop()
-	expect.Eq(t, bit, 63)
-	expect.Eq(t, mask, Bitmask(0x0000000000000000))
+	expect.Eq(t, mask.pop(), Bitmask(0x0000000000000000))
 }

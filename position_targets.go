@@ -101,14 +101,12 @@ func (p *Position) xrayAttacksFor(square int, piece Piece) (bitmask Bitmask) {
 func (p *Position) allAttacks(color uint8) (bitmask Bitmask) {
 	bitmask = p.pawnAttacks(color) | p.knightAttacks(color) | p.kingAttacks(color)
 
-	outposts := p.outposts[bishop(color)] | p.outposts[queen(color)]
-	for outposts.any() {
-		bitmask |= p.bishopMoves(outposts.pop())
+	for bm := p.outposts[bishop(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
+		bitmask |= p.bishopMoves(bm.first())
 	}
 
-	outposts = p.outposts[rook(color)] | p.outposts[queen(color)]
-	for outposts.any() {
-		bitmask |= p.rookMoves(outposts.pop())
+	for bm := p.outposts[rook(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
+		bitmask |= p.rookMoves(bm.first())
 	}
 
 	return bitmask
@@ -151,36 +149,32 @@ func (p *Position) pawnAttacks(color uint8) Bitmask {
 }
 
 func (p *Position) knightAttacks(color uint8) (bitmask Bitmask) {
-	outposts := p.outposts[knight(color)]
-	for outposts.any() {
-		bitmask |= knightMoves[outposts.pop()]
+	for bm := p.outposts[knight(color)]; bm.any(); bm = bm.pop() {
+		bitmask |= knightMoves[bm.first()]
 	}
 
 	return bitmask
 }
 
 func (p *Position) bishopAttacks(color uint8) (bitmask Bitmask) {
-	outposts := p.outposts[bishop(color)]
-	for outposts.any() {
-		bitmask |= p.bishopMoves(outposts.pop())
+	for bm := p.outposts[bishop(color)]; bm.any(); bm = bm.pop() {
+		bitmask |= p.bishopMoves(bm.first())
 	}
 
 	return bitmask
 }
 
 func (p *Position) rookAttacks(color uint8) (bitmask Bitmask) {
-	outposts := p.outposts[rook(color)]
-	for outposts.any() {
-		bitmask |= p.rookMoves(outposts.pop())
+	for bm := p.outposts[rook(color)]; bm.any(); bm = bm.pop() {
+		bitmask |= p.rookMoves(bm.first())
 	}
 
 	return bitmask
 }
 
 func (p *Position) queenAttacks(color uint8) (bitmask Bitmask) {
-	outposts := p.outposts[queen(color)]
-	for outposts.any() {
-		square := outposts.pop()
+	for bm := p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		bitmask |= p.rookMoves(square) | p.bishopMoves(square)
 	}
 
