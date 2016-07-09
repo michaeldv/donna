@@ -12,9 +12,9 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// Find out what pieces are checking the king. Usually it's a single
 	// piece but double check is also a possibility.
 	checkers := maskPawn[enemy][square] & p.outposts[pawn(enemy)]
-	checkers |= p.targetsFor(square, knight(color)) & p.outposts[knight(enemy)]
-	checkers |= p.targetsFor(square, bishop(color)) & (p.outposts[bishop(enemy)] | p.outposts[queen(enemy)])
-	checkers |= p.targetsFor(square, rook(color)) & (p.outposts[rook(enemy)] | p.outposts[queen(enemy)])
+	checkers |= p.knightAttacksAt(square, color) & p.outposts[knight(enemy)]
+	checkers |= p.bishopAttacksAt(square, color) & (p.outposts[bishop(enemy)] | p.outposts[queen(enemy)])
+	checkers |= p.rookAttacksAt(square, color) & (p.outposts[rook(enemy)] | p.outposts[queen(enemy)])
 
 	// Generate possible king retreats first, i.e. moves to squares not
 	// occupied by friendly pieces and not attacked by the opponent.

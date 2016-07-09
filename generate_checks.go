@@ -19,11 +19,11 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	}
 
 	// Non-capturing Bishop or Queen checks.
-	checks = p.targetsFor(square, bishop(enemy))
+	checks = p.bishopAttacksAt(square, enemy)
 	for bm := p.outposts[bishop(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
 		from := bm.first()
 		diagonal := (r != row(from) && c != col(from))
-		for bm := p.targetsFor(from, bishop(enemy)) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
+		for bm := p.bishopAttacksAt(from, enemy) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a bishop to check.
@@ -51,18 +51,18 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 		if p.pieces[from].isQueen() {
 			// Queen could move straight as a rook and check diagonally as a bishop
 			// or move diagonally as a bishop and check straight as a rook.
-			targets := (p.targetsFor(from, rook(color)) & checks) |
-				   (p.targetsFor(from, bishop(color)) & p.targetsFor(square, rook(color)))
+			targets := (p.rookAttacksAt(from, color) & checks) |
+				   (p.bishopAttacksAt(from, color) & p.rookAttacksAt(square, color))
 			gen.movePiece(from, targets & ^p.board)
 		}
 	}
 
 	// Non-capturing Rook or Queen checks.
-	checks = p.targetsFor(square, rook(enemy))
+	checks = p.rookAttacksAt(square, enemy)
 	for bm := p.outposts[rook(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
 		from := bm.first()
 		straight := (r == row(from) || c == col(from))
-		for bm := p.targetsFor(from, rook(enemy)) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
+		for bm := p.rookAttacksAt(from, enemy) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a rook to check.

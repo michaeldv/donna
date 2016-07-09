@@ -28,11 +28,8 @@ func (p *Position) rookMovesAt(square int, board Bitmask) Bitmask {
 	return rookMagicMoves[square][magic]
 }
 
-func (p *Position) targets(square int) Bitmask {
-	return p.targetsFor(square, p.pieces[square])
-}
-
-func (p *Position) targetsFor(square int, piece Piece) (bitmask Bitmask) {
+func (p *Position) targets(square int) (bitmask Bitmask) {
+	piece := p.pieces[square]
 	color := piece.color()
 	if piece.isPawn() {
 		// Start with one square push, then try the second square.
@@ -183,4 +180,16 @@ func (p *Position) queenAttacks(color uint8) (bitmask Bitmask) {
 
 func (p *Position) kingAttacks(color uint8) Bitmask {
 	return kingMoves[p.king[color]]
+}
+
+func (p *Position) knightAttacksAt(square int, color uint8) (bitmask Bitmask) {
+	return knightMoves[square] & ^p.outposts[color]
+}
+
+func (p *Position) bishopAttacksAt(square int, color uint8) (bitmask Bitmask) {
+	return p.bishopMovesAt(square, p.board) & ^p.outposts[color]
+}
+
+func (p *Position) rookAttacksAt(square int, color uint8) (bitmask Bitmask) {
+	return p.rookMovesAt(square, p.board) & ^p.outposts[color]
 }
