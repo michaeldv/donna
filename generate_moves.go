@@ -14,7 +14,7 @@ func (gen *MoveGen) generateRootMoves() *MoveGen {
 	return gen
 }
 
-// Copies last move returned by NextMove() to the top of the list shifting
+// Copies last move returned by nextMove() to the top of the list shifting
 // remaining moves down. Head/tail pointers remain unchanged.
 func (gen *MoveGen) rearrangeRootMoves() *MoveGen {
 	if gen.head > 0 {

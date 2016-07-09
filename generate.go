@@ -66,11 +66,9 @@ func (gen *MoveGen) onlyMove() bool {
 	return gen.tail == 1
 }
 
-func (gen *MoveGen) NextMove() (move Move) {
-	//if gen.head < gen.tail {
-		move = gen.list[gen.head].move
-		gen.head++
-	//}
+func (gen *MoveGen) nextMove() (move Move) {
+	move = gen.list[gen.head].move
+	gen.head++
 
 	return move
 }
@@ -78,7 +76,7 @@ func (gen *MoveGen) NextMove() (move Move) {
 // Removes invalid moves from the generated list. We use in iterative deepening
 // to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly() *MoveGen {
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
+	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
 		if !move.isValid(gen.p, gen.pins) {
 			gen.remove()
 		}
@@ -90,7 +88,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 // Probes a list of generated moves and returns true if it contains at least
 // one valid move.
 func (gen *MoveGen) anyValid() bool {
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
+	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
 		if move.isValid(gen.p, gen.pins) {
 			return true
 		}
@@ -102,7 +100,7 @@ func (gen *MoveGen) anyValid() bool {
 // Probes valid-only list of generated moves and returns true if the given move
 // is one of them.
 func (gen *MoveGen) amongValid(someMove Move) bool {
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
+	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
 		if someMove == move {
 			return true
 		}
@@ -111,7 +109,7 @@ func (gen *MoveGen) amongValid(someMove Move) bool {
 	return false
 }
 
-// Assigns given score to the last move returned by the gen.NextMove().
+// Assigns given score to the last move returned by the gen.nextMove().
 func (gen *MoveGen) scoreMove(depth, score int) *MoveGen {
 	current := &gen.list[gen.head - 1]
 
@@ -210,10 +208,10 @@ func (gen *MoveGen) remove() *MoveGen {
 	return gen
 }
 
-// Returns an array of generated moves by continuously appending the NextMove()
+// Returns an array of generated moves by continuously appending the nextMove()
 // until the list is empty.
 func (gen *MoveGen) allMoves() (moves []Move) {
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
+	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
 		moves = append(moves, move)
 	}
 	gen.reset()

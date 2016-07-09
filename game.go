@@ -274,7 +274,7 @@ func (game *Game) saveGood(depth int, move Move) *Game {
 func (game *Game) updatePoor(depth int, bestMove Move, mgen *MoveGen) *Game {
 	value := depth * depth
 
-	for move := mgen.NextMove(); move != 0; move = mgen.NextMove() {
+	for move := mgen.nextMove(); move != 0; move = mgen.nextMove() {
 		if move.isQuiet() {
 			game.history[move.piece()][move.to()] = let(move == bestMove, value, -value)
 		}

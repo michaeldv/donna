@@ -88,7 +88,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	bestAlpha := alpha
 	bestScore := let(p.score != Unknown, p.score, matedIn(ply))
 	bestMove, moveCount := Move(0), 0
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
+	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
 		capture := move.capture()
 		if (!inCheck && !capture.nil() && p.exchange(move) < 0) || !move.isValid(p, gen.pins) {
 			continue
