@@ -19,7 +19,7 @@ func (p *Position) exchange(move Move) int {
 	from, to, piece, capture := move.split()
 
 	score := exchangeScores[capture]
-	if promo := move.promo(); !promo.nil() {
+	if promo := move.promo(); promo.some() {
 		score += exchangeScores[promo] - exchangeScores[Pawn]
 		piece = promo
 	}

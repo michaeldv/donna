@@ -41,7 +41,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			if !isPrincipal &&
 			   ((cached.flags == cacheBeta && cachedScore >= beta) ||
 			   (cached.flags == cacheAlpha && cachedScore <= alpha)) {
-				if cachedScore >= beta && !inCheck && !cachedMove.nil() {
+				if cachedScore >= beta && !inCheck && cachedMove.some() {
 					game.saveGood(depth, cachedMove)
 				}
 				return cachedScore
@@ -70,7 +70,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	if !inCheck && !isPrincipal {
 
 		// No razoring if pawns are on 7th rank.
-		if cachedMove.nil() && depth < 3 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
+		if cachedMove.null() && depth < 3 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
 			razoringMargin := func(depth int) int {
 				return 96 + 64 * (depth - 1)
 			}
@@ -113,7 +113,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	// Internal iterative deepening.
-	if !inCheck && cachedMove.nil() && depth > 4 {
+	if !inCheck && cachedMove.null() && depth > 4 {
 		newDepth := depth / 2
 		if isPrincipal {
 			newDepth = depth - 2
@@ -133,7 +133,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 	bestScore := alpha
 	bestMove, moveCount := Move(0), 0
-	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		if !move.isValid(p, gen.pins) {
 			continue
 		}
@@ -205,7 +205,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	cacheFlags := cacheAlpha
 	if score >= beta {
 		cacheFlags = cacheBeta
-	} else if isPrincipal && !bestMove.nil() {
+	} else if isPrincipal && bestMove.some() {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)

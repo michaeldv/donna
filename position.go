@@ -52,7 +52,7 @@ func NewPosition(game *Game, white, black string) *Position {
 	}
 
 	for square, piece := range p.pieces {
-		if !piece.nil() {
+		if piece.some() {
 			p.outposts[piece].set(square)
 			p.outposts[piece.color()].set(square)
 			if piece.isKing() {
@@ -83,7 +83,7 @@ func NewPosition(game *Game, white, black string) *Position {
 //              By default all castles are allowed, i.e. defult value is "Cc1,Cg1"
 //              for White and "Cc8,Cg8" for Black. The actual castle rights are
 //              checked during position setup to make sure they do not violate
-//              chess rules. If castle rights are specified incorrectly they get
+//              chess rules. If castle rights are specified incorrectly they are
 //              quietly ignored.
 //
 // [E]npassant: specifies en-passant square if any. For example, "Ed3" marks D3
@@ -192,7 +192,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		case '1', '2', '3', '4', '5', '6', '7', '8':
 			sq += int(char - '0')
 		}
-		if !piece.nil() {
+		if piece.some() {
 			p.pieces[sq] = piece
 			p.outposts[piece].set(sq)
 			p.outposts[piece.color()].set(sq)
@@ -284,7 +284,7 @@ func (p *Position) insufficient() bool {
 // Reports game status for current position or after the given move. The status
 // helps to determine whether to continue with search or if the game is over.
 func (p *Position) status(move Move, blendedScore int) int {
-	if !move.nil() {
+	if move.some() {
 		p = p.makeMove(move)
 		defer func() { p = p.undoLastMove() }()
 	}
@@ -329,7 +329,7 @@ func (p *Position) fen() (fen string) {
 			square := square(row, col)
 			piece := p.pieces[square]
 
-			if !piece.nil() {
+			if piece.some() {
 				if empty != 0 {
 					fen += fmt.Sprintf(`%d`, empty)
 					empty = 0
@@ -469,7 +469,7 @@ func (p *Position) String() string {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0; col <= 7; col++ {
 			buffer.WriteByte(' ')
-			if piece := p.pieces[square(row, col)]; !piece.nil() {
+			if piece := p.pieces[square(row, col)]; piece.some() {
 				buffer.WriteString(piece.String())
 			} else {
 				buffer.WriteString("\u22C5")

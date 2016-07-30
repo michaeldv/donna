@@ -47,8 +47,12 @@ func pawn(color uint8) Piece {
 	return Piece(color | Pawn)
 }
 
-func (p Piece) nil() bool {
+func (p Piece) none() bool {
 	return p == Piece(0)
+}
+
+func (p Piece) some() bool {
+	return p != Piece(0)
 }
 
 func (p Piece) polyglot(square int) uint64 {

@@ -157,8 +157,12 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	return
 }
 
-func (m Move) nil() bool {
+func (m Move) null() bool {
 	return m == Move(0)
+}
+
+func (m Move) some() bool {
+	return m != Move(0)
 }
 
 func (m Move) from() int {
@@ -319,7 +323,7 @@ func (m Move) String() (str string) {
 	}
 	buffer.WriteByte(byte(col(to)) + 'a')
 	buffer.WriteByte(byte(row(to)) + '1')
-	if promo := m.promo(); !promo.nil() {
+	if promo := m.promo(); promo.some() {
 		buffer.WriteByte(promo.char())
 	}
 

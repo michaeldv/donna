@@ -20,7 +20,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 	bestAlpha, bestScore := alpha, alpha
 	bestMove, moveCount := Move(0), 0
-	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		position := p.makeMove(move)
 		moveCount++; game.nodes++
 		if engine.uci {
