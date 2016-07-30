@@ -107,7 +107,7 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	defer func() {
 		gen := NewMoveGen(p).generateAllMoves().validOnly()
 		validMoves = gen.allMoves()
-		if move != Move(0) && !gen.amongValid(move) {
+		if move.some() && !gen.amongValid(move) {
 			move = Move(0)
 		}
 	}()
@@ -237,7 +237,7 @@ func (m Move) isPawnAdvance() bool {
 
 // Returns true is the move is one of the killer moves at given ply.
 func (m Move) isKiller(ply int) bool {
-	return m != Move(0) && (m == game.killers[ply][0] || m == game.killers[ply][1])
+	return m.some() && (m == game.killers[ply][0] || m == game.killers[ply][1])
 }
 
 // Returns true if *non-evasion* move is valid, i.e. it is possible to make

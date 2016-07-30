@@ -83,7 +83,7 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 				entry.score = int16(score)
 			}
 			id := uint32(p.id >> 32)
-			if move != Move(0) || id != entry.id {
+			if move.some() || id != entry.id {
 				entry.move = move
 			}
 			entry.depth = int16(depth)

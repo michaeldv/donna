@@ -109,7 +109,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	cacheFlags := cacheAlpha
 	if score >= beta {
 		cacheFlags = cacheBeta
-	} else if bestMove != Move(0) {
+	} else if bestMove.some() {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)
