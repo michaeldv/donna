@@ -65,7 +65,7 @@ func (b Bitmask) off(offset int) bool {
 
 // Returns true if a bitmask has single bit set.
 func (b Bitmask) single() bool {
-	return (b & (b - 1)) == 0
+	return b.pop().empty()
 }
 
 // Returns number of bits set.
@@ -85,7 +85,7 @@ func (b Bitmask) first() int {
 	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
-// MSB: Eugene Nalimov's bitScanReverse.
+// Eugene Nalimov's bitScanReverse: finds most significant bit set (MSB).
 func (b Bitmask) last() (offset int) {
 	if b > 0xFFFFFFFF {
 		b >>= 32; offset = 32
@@ -138,31 +138,42 @@ func (b *Bitmask) clear(offset int) *Bitmask {
 	return b
 }
 
-func (b *Bitmask) shift(offset int) *Bitmask {
+func (b Bitmask) shift(offset int) Bitmask {
 	if offset > 0 {
-		*b <<= uint(offset)
-	} else {
-		*b >>= -uint(offset)
+		return b << uint(offset)
 	}
-	return b
+
+	return b >> -uint(offset)
+}
+
+func (b Bitmask) charm(offset int) (bitmask Bitmask) {
+	count := b.count()
+
+	for i := 0; i < count; i++ {
+		pop := b ^ b.pop()
+		b = b.pop()
+		if (bit[i] & Bitmask(offset)).any() {
+			bitmask |= pop
+		}
+	}
+
+	return bitmask
 }
 
 func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
-	mask := bit[square] & board
-
-	for mask.shift(direction); mask.any(); mask.shift(direction) {
-		*b |= mask
-		if (mask & occupied).any() {
+	for bm := (bit[square] & board).shift(direction); bm.any(); bm = bm.shift(direction) {
+		*b |= bm
+		if (bm & occupied).any() {
 			break
 		}
-		mask &= board
+		bm &= board
 	}
+
 	return b
 }
 
 func (b *Bitmask) spot(square, direction int, board Bitmask) *Bitmask {
-	*b = bit[square] & board
-	*b = ^*(b.shift(direction))
+	*b = ^((bit[square] & board).shift(direction))
 	return b
 }
 
@@ -182,21 +193,6 @@ func (b *Bitmask) trim(row, col int) *Bitmask {
 
 	return b
 }
-
-func (b Bitmask) magicify(index int) (bitmask Bitmask) {
-	count := b.count()
-
-	for i, our := 0, b; i < count; i++ {
-		their := ((our - 1) & our) ^ our
-		our &= our - 1
-		if (1 << uint(i)) & index != 0 {
-			bitmask |= their
-		}
-	}
-
-	return bitmask
-}
-
 
 func (b Bitmask) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h  ")

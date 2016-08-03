@@ -82,11 +82,12 @@ func initMasks() {
 			if i == sq || abs(i-sq) > 17 {
 				continue // No king or knight can reach that far.
 			}
-			if (abs(r-row) == 2 && abs(c-col) == 1) || (abs(r-row) == 1 && abs(c-col) == 2) {
-				knightMoves[sq].set(i)
-			}
-			if abs(r-row) <= 1 && abs(c-col) <= 1 {
+			rows, cols := abs(row - r), abs(col - c)
+			if rows <= 1 && cols <= 1 {
 				kingMoves[sq].set(i)
+			}
+			if (rows == 2 && cols == 1) || (rows == 1 && cols == 2) {
+				knightMoves[sq].set(i)
 			}
 		}
 
@@ -94,7 +95,7 @@ func initMasks() {
 		mask := createRookMask(sq)
 		bits := uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := mask.magicify(i)
+			bitmask := mask.charm(i)
 			index := (bitmask * rookMagic[sq].magic) >> 52
 			rookMagicMoves[sq][index] = createRookAttacks(sq, bitmask)
 		}
@@ -103,7 +104,7 @@ func initMasks() {
 		mask = createBishopMask(sq)
 		bits = uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := mask.magicify(i)
+			bitmask := mask.charm(i)
 			index := (bitmask * bishopMagic[sq].magic) >> 55
 			bishopMagicMoves[sq][index] = createBishopAttacks(sq, bitmask)
 		}
