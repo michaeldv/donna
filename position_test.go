@@ -9,6 +9,8 @@ import(`github.com/michaeldv/donna/expect`; `testing`)
 // Initial position: castles, no en-passant.
 func TestPosition000(t *testing.T) {
 	p := NewGame(`rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`).start()
+	expect.Eq(t, p.id, uint64(0x463B96181691FC9C))
+	expect.Eq(t, p.pawnId, uint64(0x37FC40DA841E1692))
 	expect.Eq(t, p.color, uint8(White))
 	expect.Eq(t, p.castles, uint(0x0F))
 	expect.Eq(t, p.enpassant, uint8(0))

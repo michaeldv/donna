@@ -124,18 +124,18 @@ func initMasks() {
 		// Pawn attacks.
 		if row > 1 { // White pawns can't attack first two ranks.
 			if col != 0 {
-				maskPawn[White][sq] |= bit[sq-9]
+				maskPawn[White][sq].set(sq - 9)
 			}
 			if col != 7 {
-				maskPawn[White][sq] |= bit[sq-7]
+				maskPawn[White][sq].set(sq - 7)
 			}
 		}
 		if row < 6 { // Black pawns can attack 7th and 8th ranks.
 			if col != 0 {
-				maskPawn[Black][sq] |= bit[sq+7]
+				maskPawn[Black][sq].set(sq + 7)
 			}
 			if col != 7 {
-				maskPawn[Black][sq] |= bit[sq+9]
+				maskPawn[Black][sq].set(sq + 9)
 			}
 		}
 

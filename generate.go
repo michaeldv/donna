@@ -76,7 +76,7 @@ func (gen *MoveGen) nextMove() (move Move) {
 // Removes invalid moves from the generated list. We use in iterative deepening
 // to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly() *MoveGen {
-	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		if !move.isValid(gen.p, gen.pins) {
 			gen.remove()
 		}
@@ -88,7 +88,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 // Probes a list of generated moves and returns true if it contains at least
 // one valid move.
 func (gen *MoveGen) anyValid() bool {
-	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		if move.isValid(gen.p, gen.pins) {
 			return true
 		}
@@ -100,7 +100,7 @@ func (gen *MoveGen) anyValid() bool {
 // Probes valid-only list of generated moves and returns true if the given move
 // is one of them.
 func (gen *MoveGen) amongValid(someMove Move) bool {
-	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		if someMove == move {
 			return true
 		}
@@ -211,7 +211,7 @@ func (gen *MoveGen) remove() *MoveGen {
 // Returns an array of generated moves by continuously appending the nextMove()
 // until the list is empty.
 func (gen *MoveGen) allMoves() (moves []Move) {
-	for move := gen.nextMove(); !move.nil(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		moves = append(moves, move)
 	}
 	gen.reset()
