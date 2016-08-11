@@ -43,7 +43,7 @@ func (e *Evaluation) fraction(mul, div int) int {
 	return (mul << 16) | div
 }
 
-func (e *Evaluation) strongerSide() uint8 {
+func (e *Evaluation) strongerSide() int {
 	if e.score.endgame > 0 {
 		return White
 	}
@@ -96,7 +96,7 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	color := e.strongerSide()
 
 	pawns := e.position.outposts[pawn(color)]
-	row, col := coordinate(int(e.position.king[color^1]))
+	row, col := coordinate(e.position.king[color^1])
 
 	// Pawns on A file with bare king opposing them.
 	if (pawns & ^maskFile[A1]).empty() && (pawns & ^maskInFront[color^1][row * 8]).empty() && col <= B1 {
@@ -139,7 +139,7 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 	}
 
 	p := e.position
-	unstoppable := func(color uint8, square int) bool {
+	unstoppable := func(color int, square int) bool {
 		if (p.outposts[color^1] & maskInFront[color][square]).empty() {
 			mask := Bitmask(0)
 			if p.color == color {

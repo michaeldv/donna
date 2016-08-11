@@ -103,7 +103,7 @@ func (p *Position) makeMove(move Move) *Position {
 		pp.movePiece(piece, from, to)
 
 		if piece.isKing() {
-			pp.king[color] = uint8(to)
+			pp.king[color] = to
 			if move.isCastle() {
 				pp.reversible = false
 				switch to {
@@ -120,7 +120,7 @@ func (p *Position) makeMove(move Move) *Position {
 		} else if piece.isPawn() {
 			pp.count50, pp.reversible = 0, false
 			if move.isEnpassant() {
-				pp.enpassant = uint8(from + up[color]) // Save the en-passant square.
+				pp.enpassant = from + up[color] // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
@@ -168,7 +168,7 @@ func (p *Position) undoLastMove() *Position {
 	return &tree[node]
 }
 
-func (p *Position) isInCheck(color uint8) bool {
+func (p *Position) isInCheck(color int) bool {
 	return p.isAttacked(color^1, int(p.king[color]))
 }
 
@@ -219,7 +219,7 @@ func (p *Position) thirdRepetition() bool {
 
 // Returns a pair of booleans that indicate whether given side is allowed to
 // castle kingside and queenside.
-func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
+func (p *Position) canCastle(color int) (kingside, queenside bool) {
 
 	// Start off with simple checks.
 	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board == 0)
@@ -238,7 +238,7 @@ func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
 
 // Returns a bitmask of all pinned pieces preventing a check for the king on
 // given square. The color of the pieces match the color of the king.
-func (p *Position) pins(square uint8) (bitmask Bitmask) {
+func (p *Position) pins(square int) (bitmask Bitmask) {
 	our := p.pieces[square].color()
 	their := our^1
 

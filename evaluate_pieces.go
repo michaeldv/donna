@@ -104,7 +104,7 @@ func (e *Evaluation) analyzePieces() {
 	e.score.add(score)
 }
 
-func (e *Evaluation) knights(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) knights(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
 
 	for bm := p.outposts[knight(our)]; bm.any(); bm = bm.pop() {
@@ -139,7 +139,7 @@ func (e *Evaluation) knights(our uint8, maskSafe Bitmask, unsafeKing bool) (scor
 	return
 }
 
-func (e *Evaluation) bishops(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
 
 	for bm := p.outposts[bishop(our)]; bm.any(); bm = bm.pop() {
@@ -203,7 +203,7 @@ func (e *Evaluation) bishops(our uint8, maskSafe Bitmask, unsafeKing bool) (scor
 }
 
 
-func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
 	ourPawns := p.outposts[pawn(our)]
 	theirPawns := p.outposts[pawn(their)]
@@ -280,7 +280,7 @@ func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score,
 	return
 }
 
-func (e *Evaluation) queens(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) queens(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
 
 	for bm := p.outposts[queen(our)]; bm.any(); bm = bm.pop() {
@@ -326,7 +326,7 @@ func (e *Evaluation) kingThreats(piece Piece, attacks Bitmask) {
 // Initializes the fort bitmask around king's square. For example, for a king on
 // G1 the bitmask covers F1,F2,F3, G2,G3, and H1,H2,H3. For a king on a corner
 // square, say H1, the bitmask covers F1,F2, G1,G2,G3, and H2,H3.
-func (e *Evaluation) setupFort(our uint8) (bitmask Bitmask) {
+func (e *Evaluation) setupFort(our int) (bitmask Bitmask) {
 	bitmask = e.attacks[king(our)] | e.attacks[king(our)].up(our)
 	switch e.position.king[our] {
 	case A1, A8:

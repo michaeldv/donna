@@ -4,7 +4,7 @@
 
 package donna
 
-type Piece uint8
+type Piece int
 
 const (
 	White = iota	// 0
@@ -23,27 +23,27 @@ const (
 	BlackKing	// 13
 )
 
-func king(color uint8) Piece {
+func king(color int) Piece {
 	return Piece(color | King)
 }
 
-func queen(color uint8) Piece {
+func queen(color int) Piece {
 	return Piece(color | Queen)
 }
 
-func rook(color uint8) Piece {
+func rook(color int) Piece {
 	return Piece(color | Rook)
 }
 
-func bishop(color uint8) Piece {
+func bishop(color int) Piece {
 	return Piece(color | Bishop)
 }
 
-func knight(color uint8) Piece {
+func knight(color int) Piece {
 	return Piece(color | Knight)
 }
 
-func pawn(color uint8) Piece {
+func pawn(color int) Piece {
 	return Piece(color | Pawn)
 }
 
@@ -59,12 +59,12 @@ func (p Piece) polyglot(square int) uint64 {
 	return polyglotRandom[polyglotBase[p] + square]
 }
 
-func (p Piece) color() uint8 {
-	return uint8(p) & 1
+func (p Piece) color() int {
+	return int(p) & 1
 }
 
 func (p Piece) id() int {
-	return int(p >> 1)
+	return int(p) >> 1
 }
 
 func (p Piece) kind() int {

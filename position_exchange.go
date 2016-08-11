@@ -29,7 +29,7 @@ func (p *Position) exchange(move Move) int {
 }
 
 // Recursive helper method for the static exchange evaluation.
-func (p *Position) exchangeScore(color uint8, to, score, extra int, board Bitmask) int {
+func (p *Position) exchangeScore(color int, to, score, extra int, board Bitmask) int {
 	attackers := p.attackers(color, to, board) & board
 	if attackers.empty() {
 		return score

@@ -15,20 +15,20 @@ var tree [1024]Position
 var node, rootNode int
 
 type Position struct {		 // 224 bytes long.
-	id           uint64      // Polyglot hash value for the position.
-	pawnId       uint64      // Polyglot hash value for position's pawn structure.
-	board        Bitmask     // Bitmask of all pieces on the board.
-	king         [2]uint8    // King's square for both colors.
-	pieces       [64]Piece   // Array of 64 squares with pieces on them.
+	id           uint64	 // Polyglot hash value for the position.
+	pawnId       uint64	 // Polyglot hash value for position's pawn structure.
+	board        Bitmask	 // Bitmask of all pieces on the board.
+	king         [2]int	 // King's square for both colors.
+	pieces       [64]Piece	 // Array of 64 squares with pieces on them.
 	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
-	tally        Score       // Positional valuation score based on PST.
-	balance      int 	 // Material balance index.
-	score        int         // Blended evaluation score.
-	reversible   bool        // Is this position reversible?
-	color        uint8       // Side to make next move.
-	enpassant    uint8       // En-passant square caused by previous move.
-	castles      uint8       // Castle rights mask.
-	count50      uint8	 // 50 moves rule counter.
+	tally        Score	 // Positional valuation score based on PST.
+	balance      int	 // Material balance index.
+	score        int	 // Blended evaluation score.
+	color        int	 // Side to make next move.
+	enpassant    int	 // En-passant square caused by previous move.
+	count50      int	 // 50 moves rule counter.
+	reversible   bool	 // Is this position reversible?
+	castles      uint8	 // Castle rights mask.
 }
 
 func NewPosition(game *Game, white, black string) *Position {
@@ -56,7 +56,7 @@ func NewPosition(game *Game, white, black string) *Position {
 			p.outposts[piece].set(square)
 			p.outposts[piece.color()].set(square)
 			if piece.isKing() {
-				p.king[piece.color()] = uint8(square)
+				p.king[piece.color()] = square
 			}
 			p.balance += materialBalance[piece]
 		}
@@ -89,8 +89,8 @@ func NewPosition(game *Game, white, black string) *Position {
 // [E]npassant: specifies en-passant square if any. For example, "Ed3" marks D3
 //              square as en-passant. Default value is no en-passant.
 //
-func (p *Position) setupSide(str string, color uint8) *Position {
-	invalid := func (move string, color uint8) {
+func (p *Position) setupSide(str string, color int) *Position {
+	invalid := func (move string, color int) {
 		// Don't panic.
 		panic(fmt.Sprintf("Invalid notation '%s' for %s\n", move, C(color)))
 	}
@@ -117,7 +117,7 @@ func (p *Position) setupSide(str string, color uint8) *Position {
 			case 'N':
 				p.pieces[square] = knight(color)
 			case 'E':
-				p.enpassant = uint8(square)
+				p.enpassant = square
 			case 'C':
 				if (square == C1 + int(color)) || (square == C8 + int(color)) {
 					p.castles |= castleQueenside[color]
@@ -183,10 +183,10 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 			piece = BlackQueen
 		case 'K':
 			piece = King
-			p.king[White] = uint8(sq)
+			p.king[White] = sq
 		case 'k':
 			piece = BlackKing
-			p.king[Black] = uint8(sq)
+			p.king[Black] = sq
 		case '/':
 			sq -= 16
 		case '1', '2', '3', '4', '5', '6', '7', '8':
@@ -202,7 +202,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	}
 
 	// [1] - Color of side to move.
-	p.color = uint8(let(matches[1] == `w`, White, Black))
+	p.color = let(matches[1] == `w`, White, Black)
 
 	// [2] - Castle rights.
 	for _, char := range(matches[2]) {
@@ -222,13 +222,13 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 	// [3] - En-passant square.
 	if matches[3] != `-` {
-		p.enpassant = uint8(square(int(matches[3][1] - '1'), int(matches[3][0] - 'a')))
+		p.enpassant = square(int(matches[3][1] - '1'), int(matches[3][0] - 'a'))
 
 	}
 
 	// [4] - Number of half-moves.
 	if n, err := strconv.Atoi(matches[4]); err == nil {
-		p.count50 = uint8(n)
+		p.count50 = n
 	}
 
 	p.reversible = true
@@ -410,7 +410,7 @@ func (p *Position) dcf() string {
 
 	var pieces [2][]string
 
-	for color := uint8(White); color <= uint8(Black); color++ {
+	for color := White; color <= Black; color++ {
 		// Right to move and (TODO) move number.
 		if color == p.color && color == Black {
 			pieces[color] = append(pieces[color], `M`)

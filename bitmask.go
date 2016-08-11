@@ -100,21 +100,21 @@ func (b Bitmask) last() (offset int) {
 	return offset + msbLookup[b]
 }
 
-func (b Bitmask) closest(color uint8) int {
+func (b Bitmask) closest(color int) int {
 	if color == White {
 		return b.first()
 	}
 	return b.last()
 }
 
-func (b Bitmask) farthest(color uint8) int {
+func (b Bitmask) farthest(color int) int {
     if color == White {
         return b.last()
     }
     return b.first()
 }
 
-func (b Bitmask) up(color uint8) Bitmask {
+func (b Bitmask) up(color int) Bitmask {
 	if color == White {
 		return b << 8
 	}

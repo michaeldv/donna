@@ -10,7 +10,7 @@ func (gen *MoveGen) generateCaptures() *MoveGen {
 }
 
 // Generates all pseudo-legal pawn captures and promotions.
-func (gen *MoveGen) pawnCaptures(color uint8) *MoveGen {
+func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
 	enemy := gen.p.outposts[color^1]
 
 	for pawns := gen.p.outposts[pawn(color)]; pawns.any(); pawns = pawns.pop() {
@@ -34,7 +34,7 @@ func (gen *MoveGen) pawnCaptures(color uint8) *MoveGen {
 }
 
 // Generates all pseudo-legal captures by pieces other than pawn.
-func (gen *MoveGen) pieceCaptures(color uint8) *MoveGen {
+func (gen *MoveGen) pieceCaptures(color int) *MoveGen {
 	enemy := gen.p.outposts[color^1]
 
 	for bm := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; bm.any(); bm = bm.pop() {

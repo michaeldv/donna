@@ -26,7 +26,7 @@ func coordinate(square int) (int, int) {
 
 // Returns relative rank for the square in 0..7 range. For example E2 is rank 1
 // for white and rank 6 for black.
-func rank(color uint8, square int) int {
+func rank(color int, square int) int {
 	return row(square) ^ (int(color) * 7)
 }
 
@@ -45,7 +45,7 @@ func let(ok bool, yes, no int) int {
 }
 
 // Flips the square verically for white (ex. E2 becomes E7).
-func flip(color uint8, square int) int {
+func flip(color int, square int) int {
 	if color == White {
 		return square ^ 56
 	}
@@ -146,7 +146,7 @@ func ms(duration int64) string {
 	return fmt.Sprintf(`%02d:%02d.%03d`, mm, ss, xx)
 }
 
-func C(color uint8) string {
+func C(color int) string {
 	return [2]string{`white`, `black`}[color]
 }
 

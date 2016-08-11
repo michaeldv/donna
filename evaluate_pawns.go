@@ -7,7 +7,7 @@ package donna
 type PawnEntry struct {
 	id       uint64 	// Pawn hash key.
 	score    Score 		// Static score for the given pawn structure.
-	king     [2]uint8 	// King square for both sides.
+	king     [2]int 	// King square for both sides.
 	cover    [2]Score 	// King cover penalties for both sides.
 	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
@@ -56,7 +56,7 @@ func (e *Evaluation) analyzePassers() {
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
-func (e *Evaluation) pawnStructure(our uint8) (score Score) {
+func (e *Evaluation) pawnStructure(our int) (score Score) {
 	their := our^1
 	ourPawns := e.position.outposts[pawn(our)]
 	theirPawns := e.position.outposts[pawn(their)]
@@ -136,7 +136,7 @@ func (e *Evaluation) pawnStructure(our uint8) (score Score) {
 	return score
 }
 
-func (e *Evaluation) pawnPassers(our uint8) (score Score) {
+func (e *Evaluation) pawnPassers(our int) (score Score) {
 	p, their := e.position, our^1
 
 	// If opposing side has no pieces other than pawns then need to check if passers are unstoppable.

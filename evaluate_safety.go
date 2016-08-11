@@ -45,7 +45,7 @@ func (e *Evaluation) analyzeSafety() {
 	e.score.add(score)
 }
 
-func (e *Evaluation) kingSafety(our uint8) (score Score) {
+func (e *Evaluation) kingSafety(our int) (score Score) {
 	p, their := e.position, our^1
 	safetyIndex, checkers, square := 0, 0, int(p.king[our])
 
@@ -116,7 +116,7 @@ func (e *Evaluation) kingSafety(our uint8) (score Score) {
 	return score
 }
 
-func (e *Evaluation) kingCover(our uint8) (score Score) {
+func (e *Evaluation) kingCover(our int) (score Score) {
 	p, square := e.position, int(e.position.king[our])
 
 	// Don't bother with the cover if the king is too far out.
@@ -137,7 +137,7 @@ func (e *Evaluation) kingCover(our uint8) (score Score) {
 	return score
 }
 
-func (e *Evaluation) kingCoverBonus(our uint8, square int) (bonus int) {
+func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 	bonus = onePawn + onePawn / 3
 
 	// Get pawns adjacent to and in front of the king.
@@ -175,7 +175,7 @@ func (e *Evaluation) kingCoverBonus(our uint8, square int) (bonus int) {
 }
 
 // Calculates endgame penalty to encourage a king stay closer to friendly pawns.
-func (e *Evaluation) kingPawnProximity(our uint8, square int) (penalty int) {
+func (e *Evaluation) kingPawnProximity(our int, square int) (penalty int) {
 	pawns := e.position.outposts[pawn(our)]
 
 	if pawns.any() && (pawns & e.attacks[king(our)]).empty() {

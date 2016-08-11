@@ -30,7 +30,7 @@ func (e *Evaluation) analyzeThreats() {
 	}
 }
 
-func (e *Evaluation) threats(our uint8) (score Score) {
+func (e *Evaluation) threats(our int) (score Score) {
 	p, their := e.position, our^1
 
 	// Get our protected and non-hanging pawns.
@@ -85,7 +85,7 @@ func (e *Evaluation) threats(our uint8) (score Score) {
 	return score
 }
 
-func (e *Evaluation) center(our uint8) (score Score) {
+func (e *Evaluation) center(our int) (score Score) {
 	p, their := e.position, our^1
 
 	turf := p.outposts[pawn(our)]

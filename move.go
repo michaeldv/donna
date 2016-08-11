@@ -28,7 +28,7 @@ type Move uint32
 func NewMove(p *Position, from, to int) Move {
 	piece, capture := p.pieces[from], p.pieces[to]
 
-	if p.enpassant != 0 && to == int(p.enpassant) && piece.isPawn() {
+	if p.enpassant != 0 && to == p.enpassant && piece.isPawn() {
 		capture = pawn(piece.color() ^ 1)
 	}
 
@@ -50,7 +50,7 @@ func NewPawnMove(p *Position, square, target int) Move {
 }
 
 func NewEnpassant(p *Position, from, to int) Move {
-	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isEnpassant)
+	return Move(from | (to << 8) | (int(p.pieces[from] << 16)) | isEnpassant)
 }
 
 func NewCastle(p *Position, from, to int) Move {
@@ -144,12 +144,12 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	if e2e4 == `0-0` || e2e4 == `0-0-0` {
 		kingside, queenside := p.canCastle(p.color)
 		if e2e4 == `0-0` && kingside {
-			from, to := int(p.king[p.color]), G1 + int(p.color) * A8
+			from, to := p.king[p.color], G1 + p.color * A8
 			move = NewCastle(p, from, to)
 			return
 		}
 		if e2e4 == `0-0-0` && queenside {
-			from, to := int(p.king[p.color]), C1 + int(p.color) * A8
+			from, to := p.king[p.color], C1 + p.color * A8
 			move = NewCastle(p, from, to)
 			return
 		}
@@ -177,8 +177,8 @@ func (m Move) piece() Piece {
 	return Piece((m >> 16) & 0x0F)
 }
 
-func (m Move) color() uint8 {
-	return uint8((m >> 16) & 1)
+func (m Move) color() int {
+	return int(m >> 16) & 1
 }
 
 func (m Move) capture() Piece {
@@ -195,7 +195,7 @@ func (m Move) promo() Piece {
 
 func (m Move) promote(kind int) Move {
 	piece := Piece(kind | int(m.color()))
-	return m | Move(int(piece) << 24)
+	return m | Move(piece << 24)
 }
 
 // Capture value based on most valueable victim/least valueable attacker.
@@ -251,7 +251,7 @@ func (m Move) isValid(p *Position, pins Bitmask) bool {
 
 	// For rare en-passant pawn captures we validate the move by actually
 	// making it, and then taking it back.
-	if p.enpassant != 0 && to == int(p.enpassant) && capture.isPawn() {
+	if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
 		position := p.makeMove(m)
 		defer position.undoLastMove()
 		return !position.isInCheck(color)
@@ -266,7 +266,7 @@ func (m Move) isValid(p *Position, pins Bitmask) bool {
 	// For all other pieces the move is valid when it doesn't cause a
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
-	return pins.empty() || pins.off(from) || maskLine[from][to].on(int(p.king[color]))
+	return pins.empty() || pins.off(from) || maskLine[from][to].on(p.king[color])
 }
 
 // Returns string representation of the move in long coordinate notation as
