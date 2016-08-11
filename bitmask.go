@@ -8,6 +8,18 @@ import(`bytes`; `fmt`)
 
 type Bitmask uint64
 
+// One man's constant is another man's variable.
+var bit = [64]Bitmask{
+	1<<A1, 1<<B1, 1<<C1, 1<<D1, 1<<E1, 1<<F1, 1<<G1, 1<<H1,
+	1<<A2, 1<<B2, 1<<C2, 1<<D2, 1<<E2, 1<<F2, 1<<G2, 1<<H2,
+	1<<A3, 1<<B3, 1<<C3, 1<<D3, 1<<E3, 1<<F3, 1<<G3, 1<<H3,
+	1<<A4, 1<<B4, 1<<C4, 1<<D4, 1<<E4, 1<<F4, 1<<G4, 1<<H4,
+	1<<A5, 1<<B5, 1<<C5, 1<<D5, 1<<E5, 1<<F5, 1<<G5, 1<<H5,
+	1<<A6, 1<<B6, 1<<C6, 1<<D6, 1<<E6, 1<<F6, 1<<G6, 1<<H6,
+	1<<A7, 1<<B7, 1<<C7, 1<<D7, 1<<E7, 1<<F7, 1<<G7, 1<<H7,
+	1<<A8, 1<<B8, 1<<C8, 1<<D8, 1<<E8, 1<<F8, 1<<G8, 1<<H8,
+}
+
 var deBruijn = [64]int{
 	 0, 47,  1, 56, 48, 27,  2, 60,
 	57, 49, 41, 37, 28, 16,  3, 61,
@@ -55,7 +67,7 @@ func (b Bitmask) any() bool {
 
 // Returns true if a bit at given offset is set.
 func (b Bitmask) on(offset int) bool {
-	return b & (1 << uint(offset)) != 0
+	return (b & bit[offset]).any()
 }
 
 // Returns true if a bit at given offset is clear.
@@ -128,13 +140,13 @@ func (b Bitmask) pop() Bitmask {
 
 // Sets a bit at given offset.
 func (b *Bitmask) set(offset int) *Bitmask {
-	*b |= 1 << uint(offset)
+	*b |= bit[offset]
 	return b
 }
 
 // Clears a bit at given offset.
 func (b *Bitmask) clear(offset int) *Bitmask {
-	*b &= ^(1 << uint(offset))
+	*b &= ^bit[offset]
 	return b
 }
 
