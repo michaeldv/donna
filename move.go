@@ -245,7 +245,7 @@ func (m Move) isKiller(ply int) bool {
 //
 // If the king is in check move generator is expected to generate valid evasions
 // where extra validation is not needed.
-func (m Move) isValid(p *Position, pins Bitmask) bool {
+func (m Move) valid(p *Position, pins Bitmask) bool {
 	color := m.color() // TODO: make color part of move split.
 	from, to, piece, capture := m.split()
 
@@ -267,6 +267,94 @@ func (m Move) isValid(p *Position, pins Bitmask) bool {
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
 	return pins.empty() || pins.off(from) || maskLine[from][to].on(p.king[color])
+}
+
+// Returns true if the move could have be generated on the given board. We
+// use this to test whether cached or killer moves could be returned by the
+// incremental move generator.
+func (m Move) legit(p *Position, pins Bitmask) bool {
+	// from, to, piece, capture := m.split()
+	color := m.color()
+	from, to, piece, capture := m.split()
+
+	// `from` must have a piece and `to` can't have a piece of the same color.
+	if p.outposts[piece].off(from) || p.outposts[color].on(to) {
+		return false
+	}
+
+	// First check pawn captures and pushes.
+	if piece.isPawn() {
+		if p.enpassant != 0 {
+			return m.isEnpassant() && p.enpassant == to
+		}
+		if capture.some() {
+			return pawnAttacks[color][from].on(to) && p.outposts[capture].on(to)
+		} else {
+			// If no capture then the target square should not be occupied.
+			if p.board.on(to) {
+				return false
+			}
+			if row := rank(color, from); row == A7H7 && !m.isPromo() {
+				return false
+			} else if push := from + up[color]; to == push {
+				return true
+			} else { // Must be pawn jump.
+				return row == A1H1 && to == from + 2 * up[color] && p.board.off(push)
+			}
+		}
+	}
+
+	// Anything pawn-related is now non-legit.
+	if m.isEnpassant() || m.isPromo() {
+		return false
+	}
+
+	// Captures should capture, non-captures should be free to move.
+	if (capture.some() && p.outposts[color^1].off(to)) || (capture.none() && p.board.on(to)) {
+		return false
+	}
+
+	// Now check king moves including castles.
+	if piece.isKing() {
+		if m.isCastle() {
+			if from != homeKing[color] {
+				return false
+			}
+			switch to {
+			case G1, G8:
+				if p.outposts[rook(color)].off(to + 1) || (p.castles & castleKingside[color] == 0) || (gapKing[color] & p.board).any() {
+					return false
+				}
+				return (castleKing[color] & p.allAttacks(color^1)).empty()
+			case C1, C8:
+				if p.outposts[rook(color)].off(to - 2) || (p.castles & castleQueenside[color] == 0) || (gapQueen[color] & p.board).any() {
+					return false
+				}
+				return (castleQueen[color] & p.allAttacks(color^1)).empty()
+			}
+			return false
+		}
+		return p.kingAttacksAt(from, color).on(to)
+	}
+
+	// Anything castle-related is now non-legit.
+	if m.isCastle() {
+		return false
+	}
+
+	// Check remaining pieces.
+	switch piece.kind() {
+	case Knight:
+		return p.knightAttacksAt(from, color).on(to)
+	case Bishop:
+		return p.bishopAttacksAt(from, color).on(to)
+	case Rook:
+		return p.rookAttacksAt(from, color).on(to)
+	case Queen:
+		return p.queenAttacksAt(from, color).on(to)
+	}
+
+	return false
 }
 
 // Returns string representation of the move in long coordinate notation as

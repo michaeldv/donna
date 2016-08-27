@@ -136,7 +136,7 @@ func (p *Position) Perft(depth int) (total int64) {
 
 	gen := NewGen(p, depth).generateAllMoves()
 	for move := gen.nextMove(); move != 0; move = gen.nextMove() {
-		if !move.isValid(p, gen.pins) {
+		if !move.valid(p, gen.pins) {
 			continue
 		}
 		position := p.makeMove(move)

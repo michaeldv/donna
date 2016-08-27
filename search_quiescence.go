@@ -90,7 +90,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	bestMove, moveCount := Move(0), 0
 	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		capture := move.capture()
-		if (!inCheck && capture.some() && p.exchange(move) < 0) || !move.isValid(p, gen.pins) {
+		if (!inCheck && capture.some() && p.exchange(move) < 0) || !move.valid(p, gen.pins) {
 			continue
 		}
 

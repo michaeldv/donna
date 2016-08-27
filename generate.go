@@ -77,7 +77,7 @@ func (gen *MoveGen) nextMove() (move Move) {
 // to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly() *MoveGen {
 	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
-		if !move.isValid(gen.p, gen.pins) {
+		if !move.valid(gen.p, gen.pins) {
 			gen.remove()
 		}
 	}
@@ -89,7 +89,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 // one valid move.
 func (gen *MoveGen) anyValid() bool {
 	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
-		if move.isValid(gen.p, gen.pins) {
+		if move.valid(gen.p, gen.pins) {
 			return true
 		}
 	}

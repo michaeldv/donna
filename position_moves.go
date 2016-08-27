@@ -222,15 +222,15 @@ func (p *Position) thirdRepetition() bool {
 func (p *Position) canCastle(color int) (kingside, queenside bool) {
 
 	// Start off with simple checks.
-	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board == 0)
-	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board == 0)
+	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board).empty()
+	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board).empty()
 
 	// If it still looks like the castles are possible perform more expensive
 	// final check.
 	if kingside || queenside {
 		attacks := p.allAttacks(color^1)
-		kingside = kingside && (castleKing[color] & attacks == 0)
-		queenside = queenside && (castleQueen[color] & attacks == 0)
+		kingside = kingside && (castleKing[color] & attacks).empty()
+		queenside = queenside && (castleQueen[color] & attacks).empty()
 	}
 
 	return kingside, queenside

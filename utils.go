@@ -27,7 +27,7 @@ func coordinate(square int) (int, int) {
 // Returns relative rank for the square in 0..7 range. For example E2 is rank 1
 // for white and rank 6 for black.
 func rank(color int, square int) int {
-	return row(square) ^ (int(color) * 7)
+	return row(square) ^ (color * 7)
 }
 
 // Returns 0..63 square number for the given row/column coordinate.

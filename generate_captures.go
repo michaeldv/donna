@@ -42,7 +42,7 @@ func (gen *MoveGen) pieceCaptures(color int) *MoveGen {
 		gen.movePiece(square, gen.p.targets(square) & enemy)
 	}
 	if gen.p.outposts[king(color)].any() {
-		square := int(gen.p.king[color])
+		square := gen.p.king[color]
 		gen.moveKing(square, gen.p.targets(square) & enemy)
 	}
 

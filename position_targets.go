@@ -34,19 +34,14 @@ func (p *Position) targets(square int) (bitmask Bitmask) {
 	if piece.isPawn() {
 		// Start with one square push, then try the second square.
 		empty := ^p.board
-		if color == White {
-			bitmask |= (bit[square] << 8) & empty
-			bitmask |= (bitmask << 8) & empty & maskRank[3]
-		} else {
-			bitmask |= (bit[square] >> 8) & empty
-			bitmask |= (bitmask >> 8) & empty & maskRank[4]
-		}
+		bitmask  = bit[square].up(color) & empty
+		bitmask |= bitmask.up(color) & empty & maskRank[A4H4 + color]
 		bitmask |= pawnAttacks[color][square] & p.outposts[color^1]
 
 		// If the last move set the en-passant square and it is diagonally adjacent
 		// to the current pawn, then add en-passant to the pawn's attack targets.
 		if p.enpassant != 0 && maskPawn[color][p.enpassant].on(square) {
-			bitmask |= bit[p.enpassant]
+			bitmask.set(p.enpassant)
 		}
 	} else {
 		bitmask = p.attacksFor(square, piece) & ^p.outposts[color]
@@ -193,3 +188,12 @@ func (p *Position) bishopAttacksAt(square int, color int) (bitmask Bitmask) {
 func (p *Position) rookAttacksAt(square int, color int) (bitmask Bitmask) {
 	return p.rookMovesAt(square, p.board) & ^p.outposts[color]
 }
+
+func (p *Position) queenAttacksAt(square int, color int) (bitmask Bitmask) {
+	return (p.bishopMovesAt(square, p.board) | p.rookMovesAt(square, p.board)) & ^p.outposts[color]
+}
+
+func (p *Position) kingAttacksAt(square int, color int) Bitmask {
+	return kingMoves[square] & ^p.outposts[color]
+}
+
