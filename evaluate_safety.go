@@ -47,7 +47,7 @@ func (e *Evaluation) analyzeSafety() {
 
 func (e *Evaluation) kingSafety(our int) (score Score) {
 	p, their := e.position, our^1
-	safetyIndex, checkers, square := 0, 0, int(p.king[our])
+	safetyIndex, checkers, square := 0, 0, p.king[our]
 
 	// Find squares around the king that are being attacked by the
 	// enemy and defended by our king only.
@@ -117,7 +117,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 }
 
 func (e *Evaluation) kingCover(our int) (score Score) {
-	p, square := e.position, int(e.position.king[our])
+	p, square := e.position, e.position.king[our]
 
 	// Don't bother with the cover if the king is too far out.
 	if rank(our, square) <= A3H3 {

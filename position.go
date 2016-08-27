@@ -119,9 +119,9 @@ func (p *Position) setupSide(str string, color int) *Position {
 			case 'E':
 				p.enpassant = square
 			case 'C':
-				if (square == C1 + int(color)) || (square == C8 + int(color)) {
+				if (square == C1 + color) || (square == C8 + color) {
 					p.castles |= castleQueenside[color]
-				} else if (square == G1 + int(color)) || (square == G8 + int(color)) {
+				} else if (square == G1 + color) || (square == G8 + color) {
 					p.castles |= castleKingside[color]
 				}
 			default:
@@ -379,7 +379,7 @@ func (p *Position) fen() (fen string) {
 
 	// En-passant square, if any.
 	if p.enpassant != 0 {
-		row, col := coordinate(int(p.enpassant))
+		row, col := coordinate(p.enpassant)
 		fen += fmt.Sprintf(` %c%d`, col + 'a', row + 1)
 	} else {
 		fen += ` -`
@@ -417,7 +417,7 @@ func (p *Position) dcf() string {
 		}
 
 		// King.
-		pieces[color] = append(pieces[color], `K` + encode(int(p.king[color])))
+		pieces[color] = append(pieces[color], `K` + encode(p.king[color]))
 
 		// Queens, Rooks, Bishops, and Knights.
 		for outposts := p.outposts[queen(color)]; outposts.any(); outposts = outposts.pop() {
@@ -436,17 +436,17 @@ func (p *Position) dcf() string {
 		// Castle rights.
 		if p.castles & castleQueenside[color] == 0 || p.castles & castleKingside[color] == 0 {
 			if p.castles & castleQueenside[color] != 0 {
-				pieces[color] = append(pieces[color], `C` + encode(C1 + 56 * int(color)))
+				pieces[color] = append(pieces[color], `C` + encode(C1 + 56 * color))
 			}
 			if p.castles & castleKingside[color] != 0 {
-				pieces[color] = append(pieces[color], `C` + encode(G1 + 56 * int(color)))
+				pieces[color] = append(pieces[color], `C` + encode(G1 + 56 * color))
 			}
 		}
 
 		// En-passant square if any. Note that this gets assigned to the
 		// current side to move.
 		if p.enpassant != 0 && color == p.color {
-			pieces[color] = append(pieces[color], `E` + encode(int(p.enpassant)))
+			pieces[color] = append(pieces[color], `E` + encode(p.enpassant))
 		}
 
 		// Pawns.

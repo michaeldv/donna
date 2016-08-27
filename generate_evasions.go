@@ -7,7 +7,7 @@ package donna
 func (gen *MoveGen) generateEvasions() *MoveGen {
 	p := gen.p
 	color, enemy := p.color, p.color^1
-	square := int(p.king[color])
+	square := p.king[color]
 
 	// Find out what pieces are checking the king. Usually it's a single
 	// piece but double check is also a possibility.
@@ -57,7 +57,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// For example: Ke4, c5, e5 vs. Ke8, d7. Black's d7-d5+ could be
 	// evaded by c5xd6 or e5xd6 en-passant captures.
 	if p.enpassant != 0 {
-		if enpassant := attackSquare + up[color]; enpassant == int(p.enpassant) {
+		if enpassant := attackSquare + up[color]; enpassant == p.enpassant {
 			for bm := maskPawn[color][enpassant] & p.outposts[pawn(color)]; bm.any(); bm = bm.pop() {
 				gen.add(NewMove(p, bm.first(), enpassant))
 			}

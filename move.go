@@ -194,7 +194,7 @@ func (m Move) promo() Piece {
 }
 
 func (m Move) promote(kind int) Move {
-	piece := Piece(kind | int(m.color()))
+	piece := Piece(kind | m.color())
 	return m | Move(piece << 24)
 }
 

@@ -8,7 +8,7 @@ package donna
 func (gen *MoveGen) generateChecks() *MoveGen {
 	p := gen.p
 	color, enemy := p.color, p.color^1
-	square := int(p.king[enemy])
+	square := p.king[enemy]
 	r, c := coordinate(square)
 
 	// Non-capturing Knight checks.

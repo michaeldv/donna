@@ -68,14 +68,14 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 
 	stronger := e.strongerSide()
 	if stronger == White {
-		color = int(e.position.color)
-		wKing = int(e.position.king[White])
-		bKing = int(e.position.king[Black])
+		color = e.position.color
+		wKing = e.position.king[White]
+		bKing = e.position.king[Black]
 		wPawn = e.position.outposts[Pawn].last()
 	} else {
-		color = int(e.position.color)^1
-		wKing = 64 + ^int(e.position.king[Black])
-		bKing = 64 + ^int(e.position.king[White])
+		color = e.position.color ^ 1
+		wKing = 64 + ^e.position.king[Black]
+		bKing = 64 + ^e.position.king[White]
 		wPawn = 64 + ^e.position.outposts[BlackPawn].last()
 	}
 

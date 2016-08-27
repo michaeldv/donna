@@ -61,7 +61,7 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
 
 func (gen *MoveGen) kingMoves(color int) *MoveGen {
 	if gen.p.outposts[king(color)].any() {
-		square := int(gen.p.king[color])
+		square := gen.p.king[color]
 		gen.moveKing(square, gen.p.targets(square))
 
 		kingside, queenside := gen.p.canCastle(color)

@@ -91,7 +91,7 @@ func (p *Position) makeMove(move Move) *Position {
 
 	if capture != 0 {
 		pp.count50, pp.reversible = 0, false
-		if to != 0 && to == int(p.enpassant) {
+		if to != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(color^1), from, to)
 			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
 		} else {
@@ -169,7 +169,7 @@ func (p *Position) undoLastMove() *Position {
 }
 
 func (p *Position) isInCheck(color int) bool {
-	return p.isAttacked(color^1, int(p.king[color]))
+	return p.isAttacked(color ^ 1, p.king[color])
 }
 
 func (p *Position) isNull() bool {
