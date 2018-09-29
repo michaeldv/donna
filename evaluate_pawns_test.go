@@ -71,7 +71,7 @@ func TestEvaluatePawns250(t *testing.T) {
 	game := NewGame(`Ke1,a5,b2`, `Kd8,g7,h7`) // Both passing but white is much closer.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 101)
+	expect.Eq(t, score, 102)
 }
 
 // Isolated pawns.
@@ -101,7 +101,7 @@ func TestEvaluatePawns410(t *testing.T) {
 	game := NewGame(`Ke1,Rb1,Ng2,a2`, `Ke8,Rh8,Nb7,h7`) // White on open file.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 82)
+	expect.Eq(t, score, 81)
 }
 
 func TestEvaluatePawns420(t *testing.T) {
@@ -179,21 +179,21 @@ func TestEvaluatePawns600(t *testing.T) {
 	game := NewGame(`Kd4,f2,g2,h2`, `Kg8,g7,h7,a3`) // Kd4-c3 stops A3 pawn.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, -88)
+	expect.Eq(t, score, -90)
 }
 
 func TestEvaluatePawns610(t *testing.T) {
 	game := NewGame(`Kd4,f2,g2,h2`, `M99,Kg8,g7,h7,a3`) // a3-a2 makes the pawn unstoppable.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 1178)
+	expect.Eq(t, score, 1190)
 }
 
 func TestEvaluatePawns620(t *testing.T) {
 	game := NewGame(`Ka1,b4,g2`, `Kg8,g7,h7`) // b4-b5 is unstoppable.
 	score := game.start().Evaluate()
 
-	expect.Eq(t, score, 1053)
+	expect.Eq(t, score, 1063)
 }
 
 func TestEvaluatePawns630(t *testing.T) {
