@@ -16,7 +16,6 @@ var (
 	rightToMove    = Score{ 10, 10 }  // Tempo bonus.
 	bishopPawn     = Score{  4,  6 }  // Penalty for each pawn on the same colored square as a bishop.
 	bishopBoxed    = Score{ 73,  0 }  // Penalty for patterns like Bc1,d2,Nd3.
-	bishopDanger   = Score{ 35,  0 }  // Bonus when king is under attack and sides have opposite-colored bishops.
 	rookOnPawn     = Score{  6, 14 }  // Bonus for rook attacking a pawn.
 	rookOnOpen     = Score{ 22, 10 }  // Bonus for rook on open file.
 	rookOnSemiOpen = Score{ 10,  5 }  // Bonus for rook on semi-open file.
@@ -34,10 +33,10 @@ var (
 var (
 	weightMobility      = Score{ 108, 134 }
 	weightPawnStructure = Score{  91,  79 }
-	weightPassedPawns   = Score{  86, 107 }
+	weightPassedPawns   = Score{  86, 108 }
 	weightSafety        = Score{ 122,   0 }
-	weightCenter        = Score{  18,   0 }
-	weightThreats       = Score{ 148,  88 }
+	weightCenter        = Score{  19,   0 }
+	weightThreats       = Score{ 148,  87 }
 )
 
 // Piece values for calculating most valueable victim/least valueable attacker,
