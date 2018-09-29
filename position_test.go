@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -9,11 +13,13 @@ import(`github.com/michaeldv/donna/expect`; `testing`)
 // Initial position: castles, no en-passant.
 func TestPosition000(t *testing.T) {
 	p := NewGame(`rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`).start()
-	expect.Eq(t, p.color, uint8(White))
+	expect.Eq(t, p.id, uint64(0x463B96181691FC9C))
+	expect.Eq(t, p.pawnId, uint64(0x37FC40DA841E1692))
+	expect.Eq(t, p.color, White)
+	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.king[White], E1)
+	expect.Eq(t, p.king[Black], E8)
 	expect.Eq(t, p.castles, uint(0x0F))
-	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.king[White], uint8(E1))
-	expect.Eq(t, p.king[Black], uint8(E8))
 	expect.Eq(t, p.outposts[Pawn], bit[A2]|bit[B2]|bit[C2]|bit[D2]|bit[E2]|bit[F2]|bit[G2]|bit[H2])
 	expect.Eq(t, p.outposts[Knight], bit[B1]|bit[G1])
 	expect.Eq(t, p.outposts[Bishop], bit[C1]|bit[F1])
@@ -31,11 +37,11 @@ func TestPosition000(t *testing.T) {
 // Castles, no en-passant.
 func TestPosition010(t *testing.T) {
 	p := NewGame(`2r1kb1r/pp3ppp/2n1b3/1q1N2B1/1P2Q3/8/P4PPP/3RK1NR w Kk - 42 42`).start()
-	expect.Eq(t, p.color, uint8(White))
+	expect.Eq(t, p.color, White)
 	expect.Eq(t, p.castles, castleKingside[White] | castleKingside[Black])
-	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.king[White], uint8(E1))
-	expect.Eq(t, p.king[Black], uint8(E8))
+	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.king[White], E1)
+	expect.Eq(t, p.king[Black], E8)
 	expect.Eq(t, p.outposts[Pawn], bit[A2]|bit[B4]|bit[F2]|bit[G2]|bit[H2])
 	expect.Eq(t, p.outposts[Knight], bit[D5]|bit[G1])
 	expect.Eq(t, p.outposts[Bishop], bit[G5])
@@ -53,11 +59,11 @@ func TestPosition010(t *testing.T) {
 // No castles, en-passant.
 func TestPosition020(t *testing.T) {
 	p := NewGame(`1rr2k2/p1q5/3p2Q1/3Pp2p/8/1P3P2/1KPRN3/8 w - e6 42 42`).start()
-	expect.Eq(t, p.color, uint8(White))
+	expect.Eq(t, p.color, White)
 	expect.Eq(t, p.castles, uint8(0))
-	expect.Eq(t, p.enpassant, uint8(E6))
-	expect.Eq(t, p.king[White], uint8(B2))
-	expect.Eq(t, p.king[Black], uint8(F8))
+	expect.Eq(t, p.enpassant, E6)
+	expect.Eq(t, p.king[White], B2)
+	expect.Eq(t, p.king[Black], F8)
 	expect.Eq(t, p.outposts[Pawn], bit[B3]|bit[C2]|bit[D5]|bit[F3])
 	expect.Eq(t, p.outposts[Knight], bit[E2])
 	expect.Eq(t, p.outposts[Bishop], Bitmask(0))
@@ -166,9 +172,9 @@ func TestPosition250(t *testing.T) {
 // Restricted mobility for pinned pieces.
 func TestPosition300(t *testing.T) {
 	p := NewGame(`Ka1,a2,Nc3`, `Kh8,h7,Bg8`).start() // Nc3 vs Bishop, no pin.
-	expect.Eq(t, p.Evaluate(), -13)
+	expect.Eq(t, p.Evaluate(), -12)
 	p = NewGame(`Ka1,a2,Nc3`, `Kh8,h7,Bg7`).start() // Nc3 vs Bishop, pin on C3-G7 diagonal.
-	expect.Eq(t, p.Evaluate(), -64)
+	expect.Eq(t, p.Evaluate(), -63)
 
 }
 
@@ -180,6 +186,6 @@ func TestPosition310(t *testing.T) {
 	p = NewGame(`Ka3,a2,Bc3`, `Kh8,h7,Rh1`).start() // Bc3 vs Rook, no pin.
 	expect.Eq(t, p.Evaluate(), -206)
 	p = NewGame(`Ka3,a2,Bc3`, `Kh8,h7,Rh3`).start() // Bc3 vs Rook, pin on C3-H3 file.
-	expect.Eq(t, p.Evaluate(), -320)
+	expect.Eq(t, p.Evaluate(), -319)
 
 }

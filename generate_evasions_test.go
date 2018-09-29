@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -104,7 +108,7 @@ func TestGenEvasions385(t *testing.T) {
 	game := NewGame(`Ke4,c5,e5`, `M,Ke7,d7`)
 	black := game.start()
 	white := NewMoveGen(black.makeMove(NewEnpassant(black, D7, D5))).generateEvasions()
-	for move := white.NextMove(); move != 0; move = white.NextMove() {
+	for move := white.nextMove(); move != 0; move = white.nextMove() {
 		if move.piece() == Pawn {
 			expect.Eq(t, move.to(), D6)
 			expect.Eq(t, move.color(), uint8(White))

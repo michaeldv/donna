@@ -1,12 +1,28 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
 import(`bytes`; `fmt`)
 
 type Bitmask uint64
+
+// One man's constant is another man's variable.
+var bit = [64]Bitmask{
+	1<<A1, 1<<B1, 1<<C1, 1<<D1, 1<<E1, 1<<F1, 1<<G1, 1<<H1,
+	1<<A2, 1<<B2, 1<<C2, 1<<D2, 1<<E2, 1<<F2, 1<<G2, 1<<H2,
+	1<<A3, 1<<B3, 1<<C3, 1<<D3, 1<<E3, 1<<F3, 1<<G3, 1<<H3,
+	1<<A4, 1<<B4, 1<<C4, 1<<D4, 1<<E4, 1<<F4, 1<<G4, 1<<H4,
+	1<<A5, 1<<B5, 1<<C5, 1<<D5, 1<<E5, 1<<F5, 1<<G5, 1<<H5,
+	1<<A6, 1<<B6, 1<<C6, 1<<D6, 1<<E6, 1<<F6, 1<<G6, 1<<H6,
+	1<<A7, 1<<B7, 1<<C7, 1<<D7, 1<<E7, 1<<F7, 1<<G7, 1<<H7,
+	1<<A8, 1<<B8, 1<<C8, 1<<D8, 1<<E8, 1<<F8, 1<<G8, 1<<H8,
+}
 
 var deBruijn = [64]int{
 	 0, 47,  1, 56, 48, 27,  2, 60,
@@ -55,7 +71,7 @@ func (b Bitmask) any() bool {
 
 // Returns true if a bit at given offset is set.
 func (b Bitmask) on(offset int) bool {
-	return b & (1 << uint(offset)) != 0
+	return (b & bit[offset]).any()
 }
 
 // Returns true if a bit at given offset is clear.
@@ -63,8 +79,16 @@ func (b Bitmask) off(offset int) bool {
 	return !b.on(offset)
 }
 
+// Returns true if a bitmask has single bit set.
+func (b Bitmask) single() bool {
+	return b.pop().empty()
+}
+
 // Returns number of bits set.
 func (b Bitmask) count() int {
+	if b.empty() {
+		return 0
+	}
 	b -= (b >> 1) & 0x5555555555555555
 	b = ((b >> 2) & 0x3333333333333333) + (b & 0x3333333333333333)
 	b = ((b >> 4) + b) & 0x0F0F0F0F0F0F0F0F
@@ -77,7 +101,7 @@ func (b Bitmask) first() int {
 	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
 }
 
-// MSB: Eugene Nalimov's bitScanReverse.
+// Eugene Nalimov's bitScanReverse: finds most significant bit set (MSB).
 func (b Bitmask) last() (offset int) {
 	if b > 0xFFFFFFFF {
 		b >>= 32; offset = 32
@@ -92,90 +116,80 @@ func (b Bitmask) last() (offset int) {
 	return offset + msbLookup[b]
 }
 
-func (b Bitmask) closest(color uint8) int {
+func (b Bitmask) closest(color int) int {
 	if color == White {
 		return b.first()
 	}
 	return b.last()
 }
 
-func (b Bitmask) farthest(color uint8) int {
+func (b Bitmask) farthest(color int) int {
     if color == White {
         return b.last()
     }
     return b.first()
 }
 
-func (b Bitmask) up(color uint8) Bitmask {
+func (b Bitmask) up(color int) Bitmask {
 	if color == White {
 		return b << 8
 	}
 	return b >> 8
 }
 
-// Finds *and clears* least significant bit set (LSB) in non-zero
-// bitmask. Returns an integer in 0..63 range.
-func (b *Bitmask) pop() int {
-	mask := *b ^ (*b - 1)
-	*b &= *b - 1
-	return deBruijn[(mask * 0x03F79D71B4CB0A89) >> 58]
+// Returns bitmask with least significant bit off.
+func (b Bitmask) pop() Bitmask {
+	return b & (b - 1)
 }
 
 // Sets a bit at given offset.
 func (b *Bitmask) set(offset int) *Bitmask {
-	*b |= 1 << uint(offset)
+	*b |= bit[offset]
 	return b
 }
 
 // Clears a bit at given offset.
 func (b *Bitmask) clear(offset int) *Bitmask {
-	*b &= ^(1 << uint(offset))
+	*b &= ^bit[offset]
 	return b
 }
 
-// Combines two bitmasks using bitwise OR operator.
-func (b *Bitmask) combine(bitmask Bitmask) *Bitmask {
-	*b |= bitmask
-	return b
-}
-
-// Intersects two bitmasks using bitwise AND operator.
-func (b *Bitmask) intersect(bitmask Bitmask) *Bitmask {
-	*b &= bitmask
-	return b
-}
-
-// Excludes bits of one bitmask from another using bitwise XOR operator.
-func (b *Bitmask) exclude(bitmask Bitmask) *Bitmask {
-	*b ^= (bitmask & *b)
-	return b
-}
-
-func (b *Bitmask) shift(offset int) *Bitmask {
+func (b Bitmask) shift(offset int) Bitmask {
 	if offset > 0 {
-		*b <<= uint(offset)
-	} else {
-		*b >>= -uint(offset)
+		return b << uint(offset)
 	}
-	return b
+
+	return b >> -uint(offset)
+}
+
+func (b Bitmask) charm(offset int) (bitmask Bitmask) {
+	count := b.count()
+
+	for i := 0; i < count; i++ {
+		pop := b ^ b.pop()
+		b = b.pop()
+		if (bit[i] & Bitmask(offset)).any() {
+			bitmask |= pop
+		}
+	}
+
+	return bitmask
 }
 
 func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
-	mask := bit[square] & board
-
-	for mask.shift(direction); mask.any(); mask.shift(direction) {
-		b.combine(mask)
-		if (mask & occupied).any() {
+	for bm := (bit[square] & board).shift(direction); bm.any(); bm = bm.shift(direction) {
+		*b |= bm
+		if (bm & occupied).any() {
 			break
 		}
-		mask.intersect(board)
+		bm &= board
 	}
+
 	return b
 }
 
 func (b *Bitmask) spot(square, direction int, board Bitmask) *Bitmask {
-	*b = bit[square] & board
-	*b = ^*(b.shift(direction))
+	*b = ^((bit[square] & board).shift(direction))
 	return b
 }
 
@@ -195,21 +209,6 @@ func (b *Bitmask) trim(row, col int) *Bitmask {
 
 	return b
 }
-
-func (b Bitmask) magicify(index int) (bitmask Bitmask) {
-	count := b.count()
-
-	for i, our := 0, b; i < count; i++ {
-		their := ((our - 1) & our) ^ our
-		our &= our - 1
-		if (1 << uint(i)) & index != 0 {
-			bitmask |= their
-		}
-	}
-
-	return bitmask
-}
-
 
 func (b Bitmask) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h  ")

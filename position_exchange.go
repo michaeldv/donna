@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -19,7 +23,7 @@ func (p *Position) exchange(move Move) int {
 	from, to, piece, capture := move.split()
 
 	score := exchangeScores[capture]
-	if promo := move.promo(); !promo.nil() {
+	if promo := move.promo(); promo.some() {
 		score += exchangeScores[promo] - exchangeScores[Pawn]
 		piece = promo
 	}
@@ -29,15 +33,15 @@ func (p *Position) exchange(move Move) int {
 }
 
 // Recursive helper method for the static exchange evaluation.
-func (p *Position) exchangeScore(color uint8, to, score, extra int, board Bitmask) int {
+func (p *Position) exchangeScore(color int, to, score, extra int, board Bitmask) int {
 	attackers := p.attackers(color, to, board) & board
-	if attackers == 0 {
+	if attackers.empty() {
 		return score
 	}
 
 	from, best := 0, Checkmate
-	for attackers.any() {
-		square := attackers.pop()
+	for bm := attackers; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		if index := p.pieces[square]; exchangeScores[index] < best {
 			from = square
 			best = exchangeScores[index]

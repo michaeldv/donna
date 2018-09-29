@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -16,7 +20,6 @@ var (
 	rightToMove    = Score{ 10, 10 }  // Tempo bonus.
 	bishopPawn     = Score{  4,  6 }  // Penalty for each pawn on the same colored square as a bishop.
 	bishopBoxed    = Score{ 73,  0 }  // Penalty for patterns like Bc1,d2,Nd3.
-	bishopDanger   = Score{ 35,  0 }  // Bonus when king is under attack and sides have opposite-colored bishops.
 	rookOnPawn     = Score{  6, 14 }  // Bonus for rook attacking a pawn.
 	rookOnOpen     = Score{ 22, 10 }  // Bonus for rook on open file.
 	rookOnSemiOpen = Score{ 10,  5 }  // Bonus for rook on semi-open file.
@@ -34,10 +37,10 @@ var (
 var (
 	weightMobility      = Score{ 108, 134 }
 	weightPawnStructure = Score{  91,  79 }
-	weightPassedPawns   = Score{  86, 107 }
+	weightPassedPawns   = Score{  86, 108 }
 	weightSafety        = Score{ 122,   0 }
-	weightCenter        = Score{  18,   0 }
-	weightThreats       = Score{ 148,  88 }
+	weightCenter        = Score{  19,   0 }
+	weightThreats       = Score{ 148,  87 }
 )
 
 // Piece values for calculating most valueable victim/least valueable attacker,

@@ -1,8 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
-
-// +gofmt off
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna // Donna v1.0 was released on Sunday, Dec 14, 2014.
 
@@ -18,7 +20,7 @@ import `regexp`
 //                                      -― FORTRAN manual for Xerox Computers
 
 // Your chess engine hates you when you are working on a new version.
-const Version = `4.0`
+const Version = `4.1-rc2`
 
 // Limits and conventions.
 const (
@@ -68,18 +70,6 @@ const (
 	maskH1A8 = Bitmask(0x0102040810204080)
 )
 
-// One man's constant is another man's variable.
-var bit = [64]Bitmask{
-	1<<A1, 1<<B1, 1<<C1, 1<<D1, 1<<E1, 1<<F1, 1<<G1, 1<<H1,
-	1<<A2, 1<<B2, 1<<C2, 1<<D2, 1<<E2, 1<<F2, 1<<G2, 1<<H2,
-	1<<A3, 1<<B3, 1<<C3, 1<<D3, 1<<E3, 1<<F3, 1<<G3, 1<<H3,
-	1<<A4, 1<<B4, 1<<C4, 1<<D4, 1<<E4, 1<<F4, 1<<G4, 1<<H4,
-	1<<A5, 1<<B5, 1<<C5, 1<<D5, 1<<E5, 1<<F5, 1<<G5, 1<<H5,
-	1<<A6, 1<<B6, 1<<C6, 1<<D6, 1<<E6, 1<<F6, 1<<G6, 1<<H6,
-	1<<A7, 1<<B7, 1<<C7, 1<<D7, 1<<E7, 1<<F7, 1<<G7, 1<<H7,
-	1<<A8, 1<<B8, 1<<C8, 1<<D8, 1<<E8, 1<<F8, 1<<G8, 1<<H8,
-}
-
 var castleKingside = [2]uint8{ 1, 4 }
 var castleQueenside = [2]uint8{ 2, 8 }
 var castleRights = [64]uint8{
@@ -108,7 +98,6 @@ var maskFile = [8]Bitmask{ // A to H
 var maskIsolated = [8]Bitmask{
 	0x0202020202020202, 0x0505050505050505, 0x0A0A0A0A0A0A0A0A, 0x1414141414141414,
 	0x2828282828282828, 0x5050505050505050, 0xA0A0A0A0A0A0A0A0, 0x4040404040404040,
-
 }
 
 var up = [2]int{ 8, -8 }

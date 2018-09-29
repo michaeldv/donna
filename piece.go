@@ -1,10 +1,14 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
-type Piece uint8
+type Piece int
 
 const (
 	White = iota	// 0
@@ -23,44 +27,48 @@ const (
 	BlackKing	// 13
 )
 
-func king(color uint8) Piece {
+func king(color int) Piece {
 	return Piece(color | King)
 }
 
-func queen(color uint8) Piece {
+func queen(color int) Piece {
 	return Piece(color | Queen)
 }
 
-func rook(color uint8) Piece {
+func rook(color int) Piece {
 	return Piece(color | Rook)
 }
 
-func bishop(color uint8) Piece {
+func bishop(color int) Piece {
 	return Piece(color | Bishop)
 }
 
-func knight(color uint8) Piece {
+func knight(color int) Piece {
 	return Piece(color | Knight)
 }
 
-func pawn(color uint8) Piece {
+func pawn(color int) Piece {
 	return Piece(color | Pawn)
 }
 
-func (p Piece) nil() bool {
+func (p Piece) none() bool {
 	return p == Piece(0)
+}
+
+func (p Piece) some() bool {
+	return p != Piece(0)
 }
 
 func (p Piece) polyglot(square int) uint64 {
 	return polyglotRandom[polyglotBase[p] + square]
 }
 
-func (p Piece) color() uint8 {
-	return uint8(p) & 1
+func (p Piece) color() int {
+	return int(p) & 1
 }
 
 func (p Piece) id() int {
-	return int(p >> 1)
+	return int(p) >> 1
 }
 
 func (p Piece) kind() int {

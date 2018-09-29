@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -104,12 +108,11 @@ func (e *Evaluation) analyzePieces() {
 	e.score.add(score)
 }
 
-func (e *Evaluation) knights(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) knights(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
-	outposts := p.outposts[knight(our)]
 
-	for outposts.any() {
-		square := outposts.pop()
+	for bm := p.outposts[knight(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := Bitmask(0)
 
 		// Bonus for knight's mobility -- unless the knight is pinned.
@@ -140,12 +143,11 @@ func (e *Evaluation) knights(our uint8, maskSafe Bitmask, unsafeKing bool) (scor
 	return
 }
 
-func (e *Evaluation) bishops(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
-	outposts := p.outposts[bishop(our)]
 
-	for outposts.any() {
-		square := outposts.pop()
+	for bm := p.outposts[bishop(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for bishop's mobility: if the bishop is pinned then restrict the attacks.
@@ -205,18 +207,18 @@ func (e *Evaluation) bishops(our uint8, maskSafe Bitmask, unsafeKing bool) (scor
 }
 
 
-func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
 	ourPawns := p.outposts[pawn(our)]
 	theirPawns := p.outposts[pawn(their)]
-	outposts := p.outposts[rook(our)]
 
 	// Bonus if rook is on 7th rank and enemy's king trapped on 8th.
-	if count := (outposts & mask7th[our]).count(); count > 0 && p.outposts[king(their)] & mask8th[our] != 0 {
-		score.add(rookOn7th.times(count))
+	if bm := (p.outposts[rook(our)] & mask7th[our]); bm.any() && (p.outposts[king(their)] & mask8th[our]).any() {
+		score.add(rookOn7th.times(bm.count()))
 	}
-	for outposts.any() {
-		square := outposts.pop()
+
+	for bm := p.outposts[rook(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for rook's mobility: if the rook is pinned then restrict the attacks.
@@ -252,7 +254,7 @@ func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score,
 		// Middle game penalty if a rook is boxed. Extra penalty if castle
 		// rights have been lost.
 		if safeSquares <= 3 || !isFileAjar {
-			kingSquare := int(p.king[our])
+			kingSquare := p.king[our]
 			kingColumn := col(kingSquare)
 
 			// Queenside box: king on D/C/B vs. rook on A/B/C files. Increase the
@@ -282,12 +284,11 @@ func (e *Evaluation) rooks(our uint8, maskSafe Bitmask, unsafeKing bool) (score,
 	return
 }
 
-func (e *Evaluation) queens(our uint8, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
+func (e *Evaluation) queens(our int, maskSafe Bitmask, unsafeKing bool) (score, mobility Score) {
 	p, their := e.position, our^1
-	outposts := p.outposts[queen(our)]
 
-	for outposts.any() {
-		square := outposts.pop()
+	for bm := p.outposts[queen(our)]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		attacks := p.attacks(square)
 
 		// Bonus for queen's mobility: if the queen is pinned then restrict the attacks.
@@ -329,7 +330,7 @@ func (e *Evaluation) kingThreats(piece Piece, attacks Bitmask) {
 // Initializes the fort bitmask around king's square. For example, for a king on
 // G1 the bitmask covers F1,F2,F3, G2,G3, and H1,H2,H3. For a king on a corner
 // square, say H1, the bitmask covers F1,F2, G1,G2,G3, and H2,H3.
-func (e *Evaluation) setupFort(our uint8) (bitmask Bitmask) {
+func (e *Evaluation) setupFort(our int) (bitmask Bitmask) {
 	bitmask = e.attacks[king(our)] | e.attacks[king(our)].up(our)
 	switch e.position.king[our] {
 	case A1, A8:

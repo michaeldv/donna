@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -45,9 +49,9 @@ func (e *Evaluation) analyzeSafety() {
 	e.score.add(score)
 }
 
-func (e *Evaluation) kingSafety(our uint8) (score Score) {
+func (e *Evaluation) kingSafety(our int) (score Score) {
 	p, their := e.position, our^1
-	safetyIndex, checkers, square := 0, 0, int(p.king[our])
+	safetyIndex, checkers, square := 0, 0, p.king[our]
 
 	// Find squares around the king that are being attacked by the
 	// enemy and defended by our king only.
@@ -116,8 +120,8 @@ func (e *Evaluation) kingSafety(our uint8) (score Score) {
 	return score
 }
 
-func (e *Evaluation) kingCover(our uint8) (score Score) {
-	p, square := e.position, int(e.position.king[our])
+func (e *Evaluation) kingCover(our int) (score Score) {
+	p, square := e.position, e.position.king[our]
 
 	// Don't bother with the cover if the king is too far out.
 	if rank(our, square) <= A3H3 {
@@ -137,7 +141,7 @@ func (e *Evaluation) kingCover(our uint8) (score Score) {
 	return score
 }
 
-func (e *Evaluation) kingCoverBonus(our uint8, square int) (bonus int) {
+func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 	bonus = onePawn + onePawn / 3
 
 	// Get pawns adjacent to and in front of the king.
@@ -175,14 +179,14 @@ func (e *Evaluation) kingCoverBonus(our uint8, square int) (bonus int) {
 }
 
 // Calculates endgame penalty to encourage a king stay closer to friendly pawns.
-func (e *Evaluation) kingPawnProximity(our uint8, square int) (penalty int) {
+func (e *Evaluation) kingPawnProximity(our int, square int) (penalty int) {
 	pawns := e.position.outposts[pawn(our)]
 
 	if pawns.any() && (pawns & e.attacks[king(our)]).empty() {
 		proximity := 8
 
-		for pawns.any() {
-			proximity = min(proximity, distance[square][pawns.pop()])
+		for bm := pawns; bm.any(); bm = bm.pop() {
+			proximity = min(proximity, distance[square][bm.first()])
 		}
 
 		penalty = -kingByPawn.endgame * (proximity - 1)

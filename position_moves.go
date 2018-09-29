@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -91,7 +95,7 @@ func (p *Position) makeMove(move Move) *Position {
 
 	if capture != 0 {
 		pp.count50, pp.reversible = 0, false
-		if to != 0 && to == int(p.enpassant) {
+		if to != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(color^1), from, to)
 			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
 		} else {
@@ -103,7 +107,7 @@ func (p *Position) makeMove(move Move) *Position {
 		pp.movePiece(piece, from, to)
 
 		if piece.isKing() {
-			pp.king[color] = uint8(to)
+			pp.king[color] = to
 			if move.isCastle() {
 				pp.reversible = false
 				switch to {
@@ -120,7 +124,7 @@ func (p *Position) makeMove(move Move) *Position {
 		} else if piece.isPawn() {
 			pp.count50, pp.reversible = 0, false
 			if move.isEnpassant() {
-				pp.enpassant = uint8(from + up[color]) // Save the en-passant square.
+				pp.enpassant = from + up[color] // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
@@ -168,16 +172,8 @@ func (p *Position) undoLastMove() *Position {
 	return &tree[node]
 }
 
-func (p *Position) undoNullMove() *Position {
-	p.id ^= polyglotRandomWhite
-	p.color ^= 1
-	p.count50--
-
-	return p.undoLastMove()
-}
-
-func (p *Position) isInCheck(color uint8) bool {
-	return p.isAttacked(color^1, int(p.king[color]))
+func (p *Position) isInCheck(color int) bool {
+	return p.isAttacked(color ^ 1, p.king[color])
 }
 
 func (p *Position) isNull() bool {
@@ -227,18 +223,18 @@ func (p *Position) thirdRepetition() bool {
 
 // Returns a pair of booleans that indicate whether given side is allowed to
 // castle kingside and queenside.
-func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
+func (p *Position) canCastle(color int) (kingside, queenside bool) {
 
 	// Start off with simple checks.
-	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board == 0)
-	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board == 0)
+	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board).empty()
+	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board).empty()
 
 	// If it still looks like the castles are possible perform more expensive
 	// final check.
 	if kingside || queenside {
 		attacks := p.allAttacks(color^1)
-		kingside = kingside && (castleKing[color] & attacks == 0)
-		queenside = queenside && (castleQueen[color] & attacks == 0)
+		kingside = kingside && (castleKing[color] & attacks).empty()
+		queenside = queenside && (castleQueen[color] & attacks).empty()
 	}
 
 	return kingside, queenside
@@ -246,18 +242,18 @@ func (p *Position) canCastle(color uint8) (kingside, queenside bool) {
 
 // Returns a bitmask of all pinned pieces preventing a check for the king on
 // given square. The color of the pieces match the color of the king.
-func (p *Position) pins(square uint8) (bitmask Bitmask) {
+func (p *Position) pins(square int) (bitmask Bitmask) {
 	our := p.pieces[square].color()
 	their := our^1
 
 	attackers := (p.outposts[bishop(their)] | p.outposts[queen(their)]) & bishopMagicMoves[square][0]
 	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[square][0]
 
-	for attackers.any() {
-		attackSquare := attackers.pop()
+	for bm := attackers; bm.any(); bm = bm.pop() {
+		attackSquare := bm.first()
 		blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
 
-		if blockers.count() == 1 {
+		if blockers.single() {
 			bitmask |= blockers & p.outposts[our] // Only friendly pieces are pinned.
 		}
 	}

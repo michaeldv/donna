@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -26,8 +30,8 @@ func coordinate(square int) (int, int) {
 
 // Returns relative rank for the square in 0..7 range. For example E2 is rank 1
 // for white and rank 6 for black.
-func rank(color uint8, square int) int {
-	return row(square) ^ (int(color) * 7)
+func rank(color int, square int) int {
+	return row(square) ^ (color * 7)
 }
 
 // Returns 0..63 square number for the given row/column coordinate.
@@ -45,7 +49,7 @@ func let(ok bool, yes, no int) int {
 }
 
 // Flips the square verically for white (ex. E2 becomes E7).
-func flip(color uint8, square int) int {
+func flip(color int, square int) int {
 	if color == White {
 		return square ^ 56
 	}
@@ -146,7 +150,7 @@ func ms(duration int64) string {
 	return fmt.Sprintf(`%02d:%02d.%03d`, mm, ss, xx)
 }
 
-func C(color uint8) string {
+func C(color int) string {
 	return [2]string{`white`, `black`}[color]
 }
 

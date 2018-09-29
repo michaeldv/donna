@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -92,11 +96,11 @@ func TestGenerateMoves100(t *testing.T) {
 func TestGenerateMoves200(t *testing.T) {
 	p := NewGame(`Ka1,a6,b7`, `Kh8,g3,h2`).start()
 	white := NewMoveGen(p).pawnMoves(White)
-	expect.Eq(t, white.allMoves(), `[a6-a7 b7-b8Q b7-b8R b7-b8B b7-b8N]`)
+	expect.Eq(t, white.allMoves(), `[a6-a7 b7-b8Q b7-b8N b7-b8R b7-b8B]`)
 
 	p.color = Black
 	black := NewMoveGen(p).pawnMoves(Black)
-	expect.Eq(t, black.allMoves(), `[h2-h1Q h2-h1R h2-h1B h2-h1N g3-g2]`)
+	expect.Eq(t, black.allMoves(), `[h2-h1Q h2-h1N h2-h1R h2-h1B g3-g2]`)
 }
 
 // Pawn moves that include jumps.

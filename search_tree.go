@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -41,7 +45,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			if !isPrincipal &&
 			   ((cached.flags == cacheBeta && cachedScore >= beta) ||
 			   (cached.flags == cacheAlpha && cachedScore <= alpha)) {
-				if cachedScore >= beta && !inCheck && !cachedMove.nil() {
+				if cachedScore >= beta && !inCheck && cachedMove.some() {
 					game.saveGood(depth, cachedMove)
 				}
 				return cachedScore
@@ -70,7 +74,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	if !inCheck && !isPrincipal {
 
 		// No razoring if pawns are on 7th rank.
-		if cachedMove.nil() && depth < 3 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
+		if cachedMove.null() && depth < 3 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
 			razoringMargin := func(depth int) int {
 				return 96 + 64 * (depth - 1)
 			}
@@ -101,7 +105,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			position := p.makeNullMove()
 			game.nodes++
 			nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)
-			position.undoNullMove()
+			position.undoLastMove()
 
 			if nullScore >= beta {
 				if isMate(nullScore) {
@@ -113,7 +117,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	}
 
 	// Internal iterative deepening.
-	if !inCheck && cachedMove.nil() && depth > 4 {
+	if !inCheck && cachedMove.null() && depth > 4 {
 		newDepth := depth / 2
 		if isPrincipal {
 			newDepth = depth - 2
@@ -133,8 +137,8 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 	bestScore := alpha
 	bestMove, moveCount := Move(0), 0
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
-		if !move.isValid(p, gen.pins) {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
+		if !move.valid(p, gen.pins) {
 			continue
 		}
 
@@ -205,7 +209,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	cacheFlags := cacheAlpha
 	if score >= beta {
 		cacheFlags = cacheBeta
-	} else if isPrincipal && !bestMove.nil() {
+	} else if isPrincipal && bestMove.some() {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)

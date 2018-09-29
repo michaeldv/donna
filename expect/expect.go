@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package expect
 
@@ -59,9 +63,9 @@ func log(t *testing.T, actual, expected interface{}, passed bool) {
 	// All shortcuts have disappeared.
 	// Screen. Mind. Both are blank.
 	if !passed {
-		t.Errorf("\r\t\x1B[31m%s line %d\nExpected: %v\n  Actual: %v\x1B[0m", file, line, expected, actual)
+		t.Errorf("\r        \x1B[31m%s line %d\nExpected: %v\n  Actual: %v\x1B[0m", file, line, expected, actual)
 	} else if (testing.Verbose()) {
-		t.Logf("\r\t\x1B[32m%s line %d: %v\x1B[0m", file, line, actual)
+		t.Logf("\r        \x1B[32m%s line %d: %v\x1B[0m", file, line, actual)
 	}
 }
 
@@ -75,8 +79,8 @@ func match(t *testing.T, actual, expected string, contains bool) {
 	// Today it is not working.
 	// Windows is like that.
 	if !passed {
-		t.Errorf("\r\t\x1B[31m%s line %d\nContains: %s\n  Actual: %s\x1B[0m", file, line, expected, actual)
+		t.Errorf("\r        \x1B[31m%s line %d\nContains: %s\n  Actual: %s\x1B[0m", file, line, expected, actual)
 	} else if (testing.Verbose()) {
-		t.Logf("\r\t\x1B[32m%s line %d: %v\x1B[0m", file, line, actual)
+		t.Logf("\r        \x1B[32m%s line %d: %v\x1B[0m", file, line, actual)
 	}
 }

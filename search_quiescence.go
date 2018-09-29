@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -88,14 +92,14 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	bestAlpha := alpha
 	bestScore := let(p.score != Unknown, p.score, matedIn(ply))
 	bestMove, moveCount := Move(0), 0
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		capture := move.capture()
-		if (!inCheck && !capture.nil() && p.exchange(move) < 0) || !move.isValid(p, gen.pins) {
+		if (!inCheck && capture.some() && p.exchange(move) < 0) || !move.valid(p, gen.pins) {
 			continue
 		}
 
 		position := p.makeMove(move)
-		moveCount++; game.qnodes += moveCount
+		moveCount++; game.qnodes++
 		giveCheck := position.isInCheck(position.color)
 
 		// Prune useless captures -- but make sure it's not a capture move that checks.

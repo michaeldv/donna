@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -43,7 +47,7 @@ func (e *Evaluation) fraction(mul, div int) int {
 	return (mul << 16) | div
 }
 
-func (e *Evaluation) strongerSide() uint8 {
+func (e *Evaluation) strongerSide() int {
 	if e.score.endgame > 0 {
 		return White
 	}
@@ -68,19 +72,19 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 
 	stronger := e.strongerSide()
 	if stronger == White {
-		color = int(e.position.color)
-		wKing = int(e.position.king[White])
-		bKing = int(e.position.king[Black])
+		color = e.position.color
+		wKing = e.position.king[White]
+		bKing = e.position.king[Black]
 		wPawn = e.position.outposts[Pawn].last()
 	} else {
-		color = int(e.position.color)^1
-		wKing = 64 + ^int(e.position.king[Black])
-		bKing = 64 + ^int(e.position.king[White])
+		color = e.position.color ^ 1
+		wKing = 64 + ^e.position.king[Black]
+		bKing = 64 + ^e.position.king[White]
 		wPawn = 64 + ^e.position.outposts[BlackPawn].last()
 	}
 
 	index := color + (wKing << 1) + (bKing << 7) + ((wPawn - 8) << 13)
-	if bitbase[index / 64] & (1 << uint(index & 0x3F)) == 0 {
+	if (bitbase[index / 64] & bit[index & 0x3F]).empty() {
 		return DrawScore
 	}
 
@@ -96,7 +100,7 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	color := e.strongerSide()
 
 	pawns := e.position.outposts[pawn(color)]
-	row, col := coordinate(int(e.position.king[color^1]))
+	row, col := coordinate(e.position.king[color^1])
 
 	// Pawns on A file with bare king opposing them.
 	if (pawns & ^maskFile[A1]).empty() && (pawns & ^maskInFront[color^1][row * 8]).empty() && col <= B1 {
@@ -139,7 +143,7 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 	}
 
 	p := e.position
-	unstoppable := func(color uint8, square int) bool {
+	unstoppable := func(color int, square int) bool {
 		if (p.outposts[color^1] & maskInFront[color][square]).empty() {
 			mask := Bitmask(0)
 			if p.color == color {
@@ -217,7 +221,7 @@ func (e *Evaluation) lastPawnLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
 
-	if (color == White && outposts[Pawn].count() == 1) || (color == Black && outposts[BlackPawn].count() == 1) {
+	if (color == White && outposts[Pawn].single()) || (color == Black && outposts[BlackPawn].single()) {
 		return e.fraction(3, 4) // 3/4
 	}
 
@@ -227,8 +231,8 @@ func (e *Evaluation) lastPawnLeft() int {
 func (e *Evaluation) noPawnsLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
-	whiteMinorOnly := outposts[Queen].empty() && outposts[Rook].empty() && (outposts[Bishop] | outposts[Knight]).count() == 1
-	blackMinorOnly := outposts[BlackQueen].empty() && outposts[BlackRook].empty() && (outposts[BlackBishop] | outposts[BlackKnight]).count() == 1
+	whiteMinorOnly := outposts[Queen].empty() && outposts[Rook].empty() && (outposts[Bishop] | outposts[Knight]).single()
+	blackMinorOnly := outposts[BlackQueen].empty() && outposts[BlackRook].empty() && (outposts[BlackBishop] | outposts[BlackKnight]).single()
 
 	if color == White && outposts[Pawn].empty() {
 		if whiteMinorOnly {

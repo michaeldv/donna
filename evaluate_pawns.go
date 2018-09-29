@@ -1,13 +1,17 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
 type PawnEntry struct {
 	id       uint64 	// Pawn hash key.
 	score    Score 		// Static score for the given pawn structure.
-	king     [2]uint8 	// King square for both sides.
+	king     [2]int 	// King square for both sides.
 	cover    [2]Score 	// King cover penalties for both sides.
 	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
@@ -56,15 +60,14 @@ func (e *Evaluation) analyzePassers() {
 // Calculates extra bonus and penalty based on pawn structure. Specifically,
 // a bonus is awarded for passed pawns, and penalty applied for isolated and
 // doubled pawns.
-func (e *Evaluation) pawnStructure(our uint8) (score Score) {
+func (e *Evaluation) pawnStructure(our int) (score Score) {
 	their := our^1
 	ourPawns := e.position.outposts[pawn(our)]
 	theirPawns := e.position.outposts[pawn(their)]
 	e.pawns.passers[our] = 0
 
-	pawns := ourPawns
-	for pawns.any() {
-		square := pawns.pop()
+	for bm := ourPawns; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		row, col := coordinate(square)
 
 		isolated := (maskIsolated[col] & ourPawns).empty()
@@ -137,15 +140,14 @@ func (e *Evaluation) pawnStructure(our uint8) (score Score) {
 	return score
 }
 
-func (e *Evaluation) pawnPassers(our uint8) (score Score) {
+func (e *Evaluation) pawnPassers(our int) (score Score) {
 	p, their := e.position, our^1
 
 	// If opposing side has no pieces other than pawns then need to check if passers are unstoppable.
 	chase := (p.outposts[their] ^ p.outposts[pawn(their)] ^ p.outposts[king(their)]).empty()
 
-	pawns := e.pawns.passers[our]
-	for pawns.any() {
-		square := pawns.pop()
+	for bm := e.pawns.passers[our]; bm.any(); bm = bm.pop() {
+		square := bm.first()
 		rank := rank(our, square)
 		bonus := bonusPassedPawn[rank]
 

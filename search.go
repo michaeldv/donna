@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -20,7 +24,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 	bestAlpha, bestScore := alpha, alpha
 	bestMove, moveCount := Move(0), 0
-	for move := gen.NextMove(); !move.nil(); move = gen.NextMove() {
+	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
 		position := p.makeMove(move)
 		moveCount++; game.nodes++
 		if engine.uci {
@@ -109,7 +113,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	cacheFlags := cacheAlpha
 	if score >= beta {
 		cacheFlags = cacheBeta
-	} else if bestMove != Move(0) {
+	} else if bestMove.some() {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)
@@ -135,8 +139,8 @@ func (p *Position) Perft(depth int) (total int64) {
 	}
 
 	gen := NewGen(p, depth).generateAllMoves()
-	for move := gen.NextMove(); move != 0; move = gen.NextMove() {
-		if !move.isValid(p, gen.pins) {
+	for move := gen.nextMove(); move != 0; move = gen.nextMove() {
+		if !move.valid(p, gen.pins) {
 			continue
 		}
 		position := p.makeMove(move)

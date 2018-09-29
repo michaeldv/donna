@@ -1,10 +1,14 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
-var bitbase = [2*64*48]uint64 {
+var bitbase = [2*64*48]Bitmask {
 	0x5555555F55505550, 0x5555555555555555, 0x5555555F55405540, 0x5555555555555555,
 	0xFFFFFFFFFF00FF03, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFC0CFC0F, 0xFFFFFFFFFFFFFFFF,
 	0xFFFFFFFFF03CF03F, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFC0FCC0FF, 0xFFFFFFFFFFFFFFFF,

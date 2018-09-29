@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -82,11 +86,12 @@ func initMasks() {
 			if i == sq || abs(i-sq) > 17 {
 				continue // No king or knight can reach that far.
 			}
-			if (abs(r-row) == 2 && abs(c-col) == 1) || (abs(r-row) == 1 && abs(c-col) == 2) {
-				knightMoves[sq].set(i)
-			}
-			if abs(r-row) <= 1 && abs(c-col) <= 1 {
+			rows, cols := abs(row - r), abs(col - c)
+			if rows <= 1 && cols <= 1 {
 				kingMoves[sq].set(i)
+			}
+			if (rows == 2 && cols == 1) || (rows == 1 && cols == 2) {
+				knightMoves[sq].set(i)
 			}
 		}
 
@@ -94,7 +99,7 @@ func initMasks() {
 		mask := createRookMask(sq)
 		bits := uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := mask.magicify(i)
+			bitmask := mask.charm(i)
 			index := (bitmask * rookMagic[sq].magic) >> 52
 			rookMagicMoves[sq][index] = createRookAttacks(sq, bitmask)
 		}
@@ -103,7 +108,7 @@ func initMasks() {
 		mask = createBishopMask(sq)
 		bits = uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := mask.magicify(i)
+			bitmask := mask.charm(i)
 			index := (bitmask * bishopMagic[sq].magic) >> 55
 			bishopMagicMoves[sq][index] = createBishopAttacks(sq, bitmask)
 		}
@@ -123,18 +128,18 @@ func initMasks() {
 		// Pawn attacks.
 		if row > 1 { // White pawns can't attack first two ranks.
 			if col != 0 {
-				maskPawn[White][sq] |= bit[sq-9]
+				maskPawn[White][sq].set(sq - 9)
 			}
 			if col != 7 {
-				maskPawn[White][sq] |= bit[sq-7]
+				maskPawn[White][sq].set(sq - 7)
 			}
 		}
 		if row < 6 { // Black pawns can attack 7th and 8th ranks.
 			if col != 0 {
-				maskPawn[Black][sq] |= bit[sq+7]
+				maskPawn[Black][sq].set(sq + 7)
 			}
 			if col != 7 {
-				maskPawn[Black][sq] |= bit[sq+9]
+				maskPawn[Black][sq].set(sq + 9)
 			}
 		}
 
