@@ -1,6 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna
 
@@ -142,7 +146,7 @@ func (e *Engine) Repl() *Engine {
 		}
 	}
 
-	fmt.Printf("Donna v%s Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.\nType ? for help.\n\n", Version)
+	fmt.Printf("Donna v%s Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.\nType ? for help.\n\n", Version)
 	for command, parameter := ``, ``; ; command, parameter = ``, `` {
 		fmt.Print(`donna> `)
 		fmt.Scanln(&command, &parameter)

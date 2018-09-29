@@ -1,8 +1,10 @@
-// Copyright (c) 2014-2016 by Michael Dvorkin. All Rights Reserved.
+// Copyright (c) 2014-2018 by Michael Dvorkin. All Rights Reserved.
 // Use of this source code is governed by a MIT-style license that can
 // be found in the LICENSE file.
-
-// +gofmt off
+//
+// I am making my contributions/submissions to this project solely in my
+// personal capacity and am not conveying any rights to any intellectual
+// property of any third parties.
 
 package donna // Donna v1.0 was released on Sunday, Dec 14, 2014.
 
