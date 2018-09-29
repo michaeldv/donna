@@ -80,6 +80,7 @@ func NewEngine(args ...interface{}) *Engine {
 // Dumps the string to standard output.
 func (e *Engine) print(arg string) *Engine {
 	os.Stdout.WriteString(arg)
+	os.Stdout.Sync() // <-- Flush it.
 	return e
 }
 
