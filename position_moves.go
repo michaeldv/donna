@@ -91,46 +91,42 @@ func (p *Position) makeMove(move Move) *Position {
 	pp := &tree[node]
 
 	pp.enpassant, pp.reversible = 0, true
-	pp.count50++
 
-	if capture != 0 {
+	if capture != 0 && (to == 0 || to != p.enpassant) {
+		pp.count50, pp.reversible = 0, false
+		pp.capturePiece(capture, from, to)
+	}
+
+	if piece.isPawn() {
 		pp.count50, pp.reversible = 0, false
 		if to != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(color^1), from, to)
 			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
-		} else {
-			pp.capturePiece(capture, from, to)
 		}
-	}
-
-	if promo := move.promo(); promo == 0 {
-		pp.movePiece(piece, from, to)
-
-		if piece.isKing() {
-			pp.king[color] = to
-			if move.isCastle() {
-				pp.reversible = false
-				switch to {
-				case G1:
-					pp.movePiece(Rook, H1, F1)
-				case C1:
-					pp.movePiece(Rook, A1, D1)
-				case G8:
-					pp.movePiece(BlackRook, H8, F8)
-				case C8:
-					pp.movePiece(BlackRook, A8, D8)
-				}
-			}
-		} else if piece.isPawn() {
-			pp.count50, pp.reversible = 0, false
+		if promo := move.promo(); promo != 0 {
+			pp.promotePawn(piece, from, to, promo)
+		} else {
+			pp.movePiece(piece, from, to)
 			if move.isEnpassant() {
 				pp.enpassant = from + up[color] // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
+	} else if piece.isKing() {
+		pp.movePiece(piece, from, to)
+		pp.count50++
+		pp.king[color] = to
+		if move.isCastle() {
+			pp.reversible = false
+			if to == from + 2 {
+				pp.movePiece(rook(color), to + 1, to - 1)
+			} else if to == from - 2 {
+				pp.movePiece(rook(color), to - 2, to + 1)
+			}
+		}
 	} else {
-		pp.count50, pp.reversible = 0, false
-		pp.promotePawn(piece, from, to, promo)
+		pp.movePiece(piece, from, to)
+		pp.count50++
 	}
 
 	// Set up the board bitmask, update castle rights, finish off incremental
