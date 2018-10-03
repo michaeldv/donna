@@ -13,9 +13,14 @@ func (p *Position) bishopMoves(square int) Bitmask {
 	return p.bishopMovesAt(square, p.board)
 }
 
-// Returns a bitmask of possible Rook moves from the given square.
+// Ditto for Rook.
 func (p *Position) rookMoves(square int) Bitmask {
 	return p.rookMovesAt(square, p.board)
+}
+
+// Ditto for Queen.
+func (p *Position) queenMoves(square int) Bitmask {
+	return p.bishopMovesAt(square, p.board) | p.rookMovesAt(square, p.board)
 }
 
 // Returns a bitmask of possible Bishop moves from the given square whereas
@@ -25,11 +30,15 @@ func (p *Position) bishopMovesAt(square int, board Bitmask) Bitmask {
 	return bishopMagicMoves[square][magic]
 }
 
-// Returns a bitmask of possible Rook moves from the given square whereas
-// other pieces on the board are represented by the explicit parameter.
+// Ditto for Rook.
 func (p *Position) rookMovesAt(square int, board Bitmask) Bitmask {
 	magic := ((rookMagic[square].mask & board) * rookMagic[square].magic) >> 52
 	return rookMagicMoves[square][magic]
+}
+
+// Ditto for Queen.
+func (p *Position) queenMovesAt(square int, board Bitmask) Bitmask {
+	return p.bishopMovesAt(square, board) | p.rookMovesAt(square, board)
 }
 
 func (p *Position) targets(square int) (bitmask Bitmask) {
@@ -59,9 +68,9 @@ func (p *Position) attacks(square int) Bitmask {
 }
 
 func (p *Position) attacksFor(square int, piece Piece) (bitmask Bitmask) {
-	switch kind, color := piece.kind(), piece.color(); kind {
+	switch piece.kind() {
 	case Pawn:
-		return pawnAttacks[color][square]
+		return pawnAttacks[piece.color()][square]
 	case Knight:
 		return knightMoves[square]
 	case Bishop:
@@ -69,7 +78,7 @@ func (p *Position) attacksFor(square int, piece Piece) (bitmask Bitmask) {
 	case Rook:
 		return p.rookMoves(square)
 	case Queen:
-		return p.bishopMoves(square) | p.rookMoves(square)
+		return p.queenMoves(square)
 	case King:
 		return kingMoves[square]
 	}
@@ -170,8 +179,7 @@ func (p *Position) rookAttacks(color int) (bitmask Bitmask) {
 
 func (p *Position) queenAttacks(color int) (bitmask Bitmask) {
 	for bm := p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
-		square := bm.first()
-		bitmask |= p.rookMoves(square) | p.bishopMoves(square)
+		bitmask |= p.queenMoves(bm.first())
 	}
 
 	return bitmask
@@ -186,15 +194,15 @@ func (p *Position) knightAttacksAt(square int, color int) (bitmask Bitmask) {
 }
 
 func (p *Position) bishopAttacksAt(square int, color int) (bitmask Bitmask) {
-	return p.bishopMovesAt(square, p.board) & ^p.outposts[color]
+	return p.bishopMoves(square) & ^p.outposts[color]
 }
 
 func (p *Position) rookAttacksAt(square int, color int) (bitmask Bitmask) {
-	return p.rookMovesAt(square, p.board) & ^p.outposts[color]
+	return p.rookMoves(square) & ^p.outposts[color]
 }
 
 func (p *Position) queenAttacksAt(square int, color int) (bitmask Bitmask) {
-	return (p.bishopMovesAt(square, p.board) | p.rookMovesAt(square, p.board)) & ^p.outposts[color]
+	return p.queenMoves(square) & ^p.outposts[color]
 }
 
 func (p *Position) kingAttacksAt(square int, color int) Bitmask {

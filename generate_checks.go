@@ -14,12 +14,15 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	color, enemy := p.color, p.color^1
 	square := p.king[enemy]
 	r, c := coordinate(square)
+	prohibit := Bitmask(0)
+	empty := ^p.board
+	friendly := ^p.outposts[enemy]
 
 	// Non-capturing Knight checks.
 	checks := knightMoves[square]
 	for bm := p.outposts[knight(color)]; bm.any(); bm = bm.pop() {
 		from := bm.first()
-		gen.movePiece(from, knightMoves[from] & checks & ^p.board)
+		gen.movePiece(from, knightMoves[from] & checks & empty)
 	}
 
 	// Non-capturing Bishop or Queen checks.
@@ -27,7 +30,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	for bm := p.outposts[bishop(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
 		from := bm.first()
 		diagonal := (r != row(from) && c != col(from))
-		for bm := p.bishopAttacksAt(from, enemy) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
+		for bm := p.bishopAttacksAt(from, enemy) & checks & friendly; bm.any(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a bishop to check.
@@ -39,16 +42,16 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 				case Pawn:
 					// Block pawn promotions (since they are treated as
 					// captures) and en-passant captures.
-					prohibit := maskRank[0] | maskRank[7]
+					prohibit = maskRank[0] | maskRank[7]
 					if p.enpassant != 0 {
-						prohibit |= bit[p.enpassant]
+						prohibit.set(p.enpassant)
 					}
-					gen.movePawn(to, p.targets(to) & ^p.board & ^prohibit)
+					gen.movePawn(to, p.targets(to) & empty & ^prohibit)
 				case King:
 					// Make sure the king steps out of attack diaginal.
-					gen.moveKing(to, p.targets(to) & ^p.board & ^maskBlock[from][square])
+					gen.moveKing(to, p.targets(to) & empty & ^maskBlock[from][square])
 				default:
-					gen.movePiece(to, p.targets(to) & ^p.board)
+					gen.movePiece(to, p.targets(to) & empty)
 				}
 			}
 		}
@@ -57,7 +60,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 			// or move diagonally as a bishop and check straight as a rook.
 			targets := (p.rookAttacksAt(from, color) & checks) |
 				   (p.bishopAttacksAt(from, color) & p.rookAttacksAt(square, color))
-			gen.movePiece(from, targets & ^p.board)
+			gen.movePiece(from, targets & empty)
 		}
 	}
 
@@ -66,7 +69,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	for bm := p.outposts[rook(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
 		from := bm.first()
 		straight := (r == row(from) || c == col(from))
-		for bm := p.rookAttacksAt(from, enemy) & checks & ^p.outposts[enemy]; bm.any(); bm = bm.pop() {
+		for bm := p.rookAttacksAt(from, enemy) & checks & friendly; bm.any(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a rook to check.
@@ -84,29 +87,28 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					}
 					// Block pawn promotions (since they are treated as captures)
 					// and en-passant captures.
-					prohibit := maskRank[0] | maskRank[7]
+					prohibit = maskRank[0] | maskRank[7]
 					if p.enpassant != 0 {
-						prohibit |= bit[p.enpassant]
+						prohibit.set(p.enpassant)
 					}
-					gen.movePawn(to, p.targets(to) & ^p.board & ^prohibit)
+					gen.movePawn(to, p.targets(to) & empty & ^prohibit)
 				case King:
 					// Make sure the king steps out of attack file or rank.
-					prohibit := Bitmask(0)
-					if r := row(from); r == row(square) {
+					if row(from) == r {
 						prohibit = maskRank[r]
 					} else {
-						prohibit = maskFile[col(square)]
+						prohibit = maskFile[c]
 					}
-					gen.moveKing(to, p.targets(to) & ^p.board & ^prohibit)
+					gen.moveKing(to, p.targets(to) & empty & ^prohibit)
 				default:
-					gen.movePiece(to, p.targets(to) & ^p.board)
+					gen.movePiece(to, p.targets(to) & empty)
 				}
 			}
 		}
 	}
 
 	// Non-capturing Pawn checks.
-	for bm := p.outposts[pawn(color)] & maskIsolated[col(square)]; bm.any(); bm = bm.pop() {
+	for bm := p.outposts[pawn(color)] & maskIsolated[c]; bm.any(); bm = bm.pop() {
 		from := bm.first()
 		if bm := maskPawn[color][square] & p.targets(from); bm.any() {
 			gen.add(NewPawnMove(p, from, bm.first()))

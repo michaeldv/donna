@@ -6,12 +6,12 @@
 # personal capacity and am not conveying any rights to any intellectual
 # property of any third parties.
 
-VERSION = 4.1rc2
+VERSION = 4.1rc3
 GOFLAGS = -gcflags -B
 PACKAGE = github.com/michaeldv/donna/cmd/donna
 
 build:
-	go build -x -o ./bin/donna $(GOFLAGS) $(PACKAGE)
+	go build -x -a -o ./bin/donna $(GOFLAGS) $(PACKAGE)
 
 install:
 	go install -x $(GOFLAGS) $(PACKAGE)
@@ -23,8 +23,8 @@ test:
 	go test
 
 buildall:
-	GOOS=darwin  GOARCH=amd64 go build $(GOFLAGS) -o ./bin/donna-$(VERSION)-osx-64         $(PACKAGE)
-	GOOS=freebsd GOARCH=amd64 go build $(GOFLAGS) -o ./bin/donna-$(VERSION)-freebsd-64     $(PACKAGE)
-	GOOS=linux   GOARCH=amd64 go build $(GOFLAGS) -o ./bin/donna-$(VERSION)-linux-64       $(PACKAGE)
-	GOOS=windows GOARCH=amd64 go build $(GOFLAGS) -o ./bin/donna-$(VERSION)-windows-64.exe $(PACKAGE)
-	GOOS=windows GOARCH=386   go build $(GOFLAGS) -o ./bin/donna-$(VERSION)-windows-32.exe $(PACKAGE)
+	GOOS=darwin  GOARCH=amd64 go build -a $(GOFLAGS) -o ./bin/donna-$(VERSION)-osx-64         $(PACKAGE)
+	GOOS=freebsd GOARCH=amd64 go build -a $(GOFLAGS) -o ./bin/donna-$(VERSION)-freebsd-64     $(PACKAGE)
+	GOOS=linux   GOARCH=amd64 go build -a $(GOFLAGS) -o ./bin/donna-$(VERSION)-linux-64       $(PACKAGE)
+	GOOS=windows GOARCH=amd64 go build -a $(GOFLAGS) -o ./bin/donna-$(VERSION)-windows-64.exe $(PACKAGE)
+	GOOS=windows GOARCH=386   go build -a $(GOFLAGS) -o ./bin/donna-$(VERSION)-windows-32.exe $(PACKAGE)

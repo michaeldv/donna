@@ -80,7 +80,7 @@ func (e *Evaluation) pawnStructure(our int) (score Score) {
 		// front of us.
 		passed := !doubled && (maskPassed[our][square] & theirPawns).empty()
 		if passed {
-			e.pawns.passers[our].set(square)
+			e.pawns.passers[our] |= bit[square]
 		}
 
 		// Penalty if the pawn is isolated, i.e. has no friendly pawns
