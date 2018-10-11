@@ -41,16 +41,13 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	newDepth := let(inCheck || depth >= 0, 0, -1)
 
 	// Probe cache.
-	cachedMove := Move(0)
-	cached := p.probeCache()
+	cached, cachedMove := p.probeCache(), Move(0)
 	if cached != nil {
 		cachedMove = cached.move
-		if int(cached.depth) >= newDepth {
-			cachedScore := uncache(int(cached.score), ply)
-			if !isPrincipal &&
-			   ((cached.flags == cacheBeta  && cachedScore >= beta) ||
-			   (cached.flags == cacheAlpha && cachedScore <= alpha)) {
-				return cachedScore
+		if !isPrincipal && cached.depth() >= newDepth {
+			bounds, score := cached.bounds(), cached.score(ply)
+			if (bounds == cacheBeta && score >= beta) || (bounds == cacheAlpha && score <= alpha) {
+				return score
 			}
 		}
 	}

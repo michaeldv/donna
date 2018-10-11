@@ -18,8 +18,8 @@ func TestCache000(t *testing.T) {
 
 	cached := p.probeCache()
 	expect.Eq(t, cached.move, move)
-	expect.Eq(t, cached.score, int16(42))
-	expect.Eq(t, cached.depth, int16(1))
-	expect.Eq(t, cached.flags, uint8(cacheExact))
+	expect.Eq(t, cached.xscore, int16(42))
+	expect.Eq(t, cached.xdepth, int8(1))
+	expect.Eq(t, cached.flags, uint8(cacheExact | game.token))
 	expect.Eq(t, cached.id, uint32(p.id >> 32))
 }

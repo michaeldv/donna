@@ -36,19 +36,16 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	isPrincipal := (beta - alpha > 1)
 
 	// Probe cache.
-	cachedMove := Move(0)
-	cached := p.probeCache()
+	cached, cachedMove := p.probeCache(), Move(0)
 	if cached != nil {
 		cachedMove = cached.move
-		if int(cached.depth) >= depth {
-			cachedScore := uncache(int(cached.score), ply)
-			if !isPrincipal &&
-			   ((cached.flags == cacheBeta && cachedScore >= beta) ||
-			   (cached.flags == cacheAlpha && cachedScore <= alpha)) {
-				if cachedScore >= beta && !inCheck && cachedMove.some() {
+		if !isPrincipal && cached.depth() >= depth {
+			bounds, score := cached.bounds(), cached.score(ply)
+			if (bounds == cacheBeta && score >= beta) || (bounds == cacheAlpha && score <= alpha) {
+				if score >= beta && !inCheck && cachedMove.some() {
 					game.saveGood(depth, cachedMove)
 				}
-				return cachedScore
+				return score
 			}
 		}
 	}

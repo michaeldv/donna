@@ -6,7 +6,7 @@
 # personal capacity and am not conveying any rights to any intellectual
 # property of any third parties.
 
-VERSION = 4.1rc3
+VERSION = 4.1rc4
 GOFLAGS = -gcflags -B
 PACKAGE = github.com/michaeldv/donna/cmd/donna
 

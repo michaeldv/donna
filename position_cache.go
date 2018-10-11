@@ -19,12 +19,12 @@ const (
 )
 
 type CacheEntry struct {
-	id    uint32
-	move  Move
-	score int16
-	depth int16
-	flags uint8
-	token uint8
+	id	uint32	// 4
+	move	Move	// +4 = 8
+	xscore	int16	// +2 = 10
+	xdepth	int8	// +1 = 11
+	flags	uint8	// +1 = 12
+	padding	uint8	// +1 = 13
 }
 
 type Cache []CacheEntry
@@ -39,14 +39,28 @@ func cacheUsage() (hits int) {
 	return hits
 }
 
-func uncache(score, ply int) int {
-	if score > Checkmate - MaxPly && score <= Checkmate {
+func (ce *CacheEntry) score(ply int) int {
+	score := int(ce.xscore)
+
+	if score >= matingIn(MaxPly) {
 		return score - ply
-	} else if score < MaxPly - Checkmate && score >= -Checkmate {
+	} else if score <= matedIn(MaxPly) {
 		return score + ply
 	}
 
 	return score
+}
+
+func (ce *CacheEntry) depth() int {
+	return int(ce.xdepth)
+}
+
+func (ce *CacheEntry) token() uint8 {
+	return ce.flags & 0xFC
+}
+
+func (ce *CacheEntry) bounds() uint8 {
+	return ce.flags & 3
 }
 
 // Creates new or resets existing game cache (aka transposition table).
@@ -78,21 +92,20 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 		index := p.id & uint64(cacheSize - 1)
 		entry := &game.cache[index]
 
-		if depth > int(entry.depth) || game.token != entry.token {
-			if score > Checkmate - MaxPly && score <= Checkmate {
-				entry.score = int16(score + ply)
-			} else if score < MaxPly - Checkmate && score >= -Checkmate {
-				entry.score = int16(score - ply)
+		if depth > entry.depth() || game.token != entry.token() {
+			if score >= matingIn(MaxPly) {
+				entry.xscore = int16(score + ply)
+			} else if score <= matedIn(MaxPly) {
+				entry.xscore = int16(score - ply)
 			} else {
-				entry.score = int16(score)
+				entry.xscore = int16(score)
 			}
 			id := uint32(p.id >> 32)
 			if move.some() || id != entry.id {
 				entry.move = move
 			}
-			entry.depth = int16(depth)
-			entry.flags = flags
-			entry.token = game.token
+			entry.xdepth = int8(depth)
+			entry.flags = flags | game.token
 			entry.id = id
 		}
 	}
@@ -103,18 +116,10 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 func (p *Position) probeCache() *CacheEntry {
 	if cacheSize := len(game.cache); cacheSize > 0 {
 		index := p.id & uint64(cacheSize - 1)
-		if entry := &game.cache[index]; entry.id == uint32(p.id >>32) {
+		if entry := &game.cache[index]; entry.id == uint32(p.id >> 32) {
 			return entry
 		}
 	}
 
 	return nil
-}
-
-func (p *Position) cachedMove() Move {
-	if cached := p.probeCache(); cached != nil {
-		return cached.move
-	}
-
-	return Move(0)
 }
