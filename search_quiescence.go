@@ -80,7 +80,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		gen.generateEvasions().quickRank()
 	} else {
 		gen.generateCaptures()
-		if depth >= 0 {
+		if depth == 0 {
 			gen.generateChecks()
 		}
 		gen.rank(cachedMove)
