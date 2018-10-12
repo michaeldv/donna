@@ -151,9 +151,11 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			score = -position.searchTree(-beta, -alpha, newDepth)
 		} else {
 			reduction := 0
-			if !isPrincipal && !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
+			if !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
 				reduction = lateMoveReductions[min(63, moveCount-1)][min(63, depth)]
-				if game.history[move.piece()][move.to()] < 0 {
+				if isPrincipal {
+					reduction /= 2
+				} else if game.history[move.piece()][move.to()] < 0 {
 					reduction++
 				}
 			}
