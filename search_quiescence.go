@@ -41,16 +41,13 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	newDepth := let(inCheck || depth >= 0, 0, -1)
 
 	// Probe cache.
-	cachedMove := Move(0)
-	cached := p.probeCache()
+	cached, cachedMove := p.probeCache(), Move(0)
 	if cached != nil {
 		cachedMove = cached.move
-		if int(cached.depth) >= newDepth {
-			cachedScore := uncache(int(cached.score), ply)
-			if !isPrincipal &&
-			   ((cached.flags == cacheBeta  && cachedScore >= beta) ||
-			   (cached.flags == cacheAlpha && cachedScore <= alpha)) {
-				return cachedScore
+		if !isPrincipal && cached.depth() >= newDepth {
+			bounds, score := cached.bounds(), cached.score(ply)
+			if (bounds & cacheBeta != 0 && score >= beta) || (bounds & cacheAlpha != 0 && score <= alpha) {
+				return score
 			}
 		}
 	}
@@ -62,13 +59,16 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 			if p.score == Unknown {
 				p.score = p.Evaluate()
 			}
-		} else {
-			if isNull {
-				p.score = rightToMove.midgame * 2 - tree[node-1].score
-			} else {
-				p.score = p.Evaluate()
+			bounds, score := cached.bounds(), cached.score(ply)
+			if (score > p.score && (bounds & cacheBeta != 0)) || (score <= p.score && (bounds & cacheAlpha != 0)) {
+				p.score = score
 			}
+		} else if isNull {
+			p.score = rightToMove.midgame * 2 - tree[node-1].score
+		} else {
+			p.score = p.Evaluate()
 		}
+
 		if p.score >= beta {
 			return p.score
 		}
@@ -83,7 +83,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		gen.generateEvasions().quickRank()
 	} else {
 		gen.generateCaptures()
-		if depth >= 0 {
+		if depth == 0 {
 			gen.generateChecks()
 		}
 		gen.rank(cachedMove)

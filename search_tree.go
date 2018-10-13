@@ -36,19 +36,16 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	isPrincipal := (beta - alpha > 1)
 
 	// Probe cache.
-	cachedMove := Move(0)
-	cached := p.probeCache()
+	cached, cachedMove := p.probeCache(), Move(0)
 	if cached != nil {
 		cachedMove = cached.move
-		if int(cached.depth) >= depth {
-			cachedScore := uncache(int(cached.score), ply)
-			if !isPrincipal &&
-			   ((cached.flags == cacheBeta && cachedScore >= beta) ||
-			   (cached.flags == cacheAlpha && cachedScore <= alpha)) {
-				if cachedScore >= beta && !inCheck && cachedMove.some() {
+		if !isPrincipal && cached.depth() >= depth {
+			bounds, score := cached.bounds(), cached.score(ply)
+			if (score >= beta && (bounds & cacheBeta != 0)) || (score <= alpha && (bounds & cacheAlpha != 0)) {
+				if score >= beta && !inCheck && cachedMove.some() {
 					game.saveGood(depth, cachedMove)
 				}
-				return cachedScore
+				return score
 			}
 		}
 	}
@@ -61,12 +58,14 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			if p.score == Unknown {
 				p.score = p.Evaluate()
 			}
-		} else {
-			if isNull {
-				p.score = rightToMove.midgame * 2 - tree[node-1].score
-			} else {
-				p.score = p.Evaluate()
+			bounds, score := cached.bounds(), cached.score(ply)
+			if (score > p.score && (bounds & cacheBeta != 0)) || (score <= p.score && (bounds & cacheAlpha != 0)) {
+				p.score = score
 			}
+		} else if isNull {
+			p.score = rightToMove.midgame * 2 - tree[node-1].score
+		} else {
+			p.score = p.Evaluate()
 		}
 	}
 
@@ -154,10 +153,19 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 			score = -position.searchTree(-beta, -alpha, newDepth)
 		} else {
 			reduction := 0
-			if !isPrincipal && !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
+			if !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
 				reduction = lateMoveReductions[min(63, moveCount-1)][min(63, depth)]
-				if game.history[move.piece()][move.to()] < 0 {
-					reduction++
+				if isPrincipal {
+					reduction /= 2
+				} else {
+					// Reduce more if the score is not improving.
+					if node > 1 && bestScore < tree[node-2].score && tree[node-2].score != Unknown {
+						reduction++
+					}
+					// Reduce more for weak queit moves.
+					if move.isQuiet() && game.history[move.piece()][move.to()] < 0 {
+						reduction++
+					}
 				}
 			}
 

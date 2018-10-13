@@ -185,7 +185,7 @@ func initArrays() {
 	// Late move reductions.
 	for i := 0; i < 64; i++ {
 		for j := 0; j < 64; j++ {
-			value := math.Log1p(float64(i)) * math.Log1p(float64(j)) / 1.25 - 3.25  //\\1.6 - 2.3
+			value := math.Log1p(float64(i)) * math.Log1p(float64(j)) / 1.6 - 2.3
 			if value < 0.0 {
 				value = 0.0
 			}

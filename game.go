@@ -89,7 +89,7 @@ func (game *Game) getReady() *Game {
 	game.deepening = false
 	game.improving = true
 	game.volatility = 0.0
-	game.token++ // <-- Wraps around: ...254, 255, 0, 1...
+	game.token += 4 // <-- Wraps around: ...248, 252, 0, 4... reserving last 2 bits.
 
 	rootNode = node
 	return game
