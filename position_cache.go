@@ -19,19 +19,19 @@ const (
 )
 
 type CacheEntry struct {
-	id	uint32	// 4
-	move	Move	// +4 = 8
-	xscore	int16	// +2 = 10
-	xdepth	int8	// +1 = 11
-	flags	uint8	// +1 = 12
-	padding	uint8	// +1 = 13
+	id	uint16	// 2
+	move	Move	// +4 = 6
+	xscore	int16	// +2 = 8
+	xdepth	int8	// +1 = 9
+	flags	uint8	// +1 = 10
+	padding	uint8	// +1 = 11
 }
 
 type Cache []CacheEntry
 
 func cacheUsage() (hits int) {
 	for i := 0; i < len(game.cache); i++ {
-		if game.cache[i].id != uint32(0) {
+		if game.cache[i].id != uint16(0) {
 			hits++
 		}
 	}
@@ -100,7 +100,7 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 			} else {
 				entry.xscore = int16(score)
 			}
-			id := uint32(p.id >> 32)
+			id := uint16(p.id >> 48)
 			if move.some() || id != entry.id {
 				entry.move = move
 			}
@@ -116,7 +116,7 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 func (p *Position) probeCache() *CacheEntry {
 	if cacheSize := len(game.cache); cacheSize > 0 {
 		index := p.id & uint64(cacheSize - 1)
-		if entry := &game.cache[index]; entry.id == uint32(p.id >> 32) {
+		if entry := &game.cache[index]; entry.id == uint16(p.id >> 48) {
 			return entry
 		}
 	}
