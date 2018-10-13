@@ -46,7 +46,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		cachedMove = cached.move
 		if !isPrincipal && cached.depth() >= newDepth {
 			bounds, score := cached.bounds(), cached.score(ply)
-			if (bounds == cacheBeta && score >= beta) || (bounds == cacheAlpha && score <= alpha) {
+			if (bounds & cacheBeta != 0 && score >= beta) || (bounds & cacheAlpha != 0 && score <= alpha) {
 				return score
 			}
 		}
@@ -59,13 +59,16 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 			if p.score == Unknown {
 				p.score = p.Evaluate()
 			}
-		} else {
-			if isNull {
-				p.score = rightToMove.midgame * 2 - tree[node-1].score
-			} else {
-				p.score = p.Evaluate()
+			bounds, score := cached.bounds(), cached.score(ply)
+			if (score > p.score && (bounds & cacheBeta != 0)) || (score <= p.score && (bounds & cacheAlpha != 0)) {
+				p.score = score
 			}
+		} else if isNull {
+			p.score = rightToMove.midgame * 2 - tree[node-1].score
+		} else {
+			p.score = p.Evaluate()
 		}
+
 		if p.score >= beta {
 			return p.score
 		}
