@@ -233,3 +233,41 @@ func TestEndgame380(t *testing.T) {
 	score := NewGame(`Kf1,h3`, `M,Kh1,h4`).start().Evaluate()
 	expect.Eq(t, score, 0)
 }
+
+// Opposite-colored donkeys.
+
+// Don't drop a score when a side has extra piece.
+func TestEndgame400(t *testing.T) {
+	score := NewGame(`Ke1,Bf1,Nc3,Nf3,f2,g3,h4`, `Ke8,Bf8,Nf6,f7,g6,h5`).start().Evaluate()
+	expect.Eq(t, score, 444) // Extra Nc3.
+
+	score = NewGame(`Ke1,Bf1,Nf3,f2,g3,h4`, `Ke8,Ra8,Bf8,Nf6,f7,g6,h5`).start().Evaluate()
+	expect.Eq(t, score, -709) // Extra Ra8 for black.
+}
+
+// Don't drop a score when a side has more that 2 extra pawns.
+func TestEndgame410(t *testing.T) {
+	score := NewGame(`Ke1,Bf1,Nf3,a2,b2,f2,g3,h4`, `Ke8,Bf8,Nf6,f7,g6,h5`).start().Evaluate()
+	expect.Eq(t, score, 95) // Extra a2,b2 pawns, drop the score (266 -> 95).
+
+	score = NewGame(`Ke1,Bf1,Nf3,f2,g3,h4`, `Ke8,Bf8,Nf6,a7,b7,c7,f7,g6,h5`).start().Evaluate()
+	expect.Eq(t, score, -373) // Extra a7,b7,c7 for black, don't drop the score.
+}
+
+// Draw if single passer and a king blocks it on safe color square.
+func TestEndgame420(t *testing.T) {
+	score := NewGame(`Ke1,Bf1,a6`, `Ka7,Bf8`).start().Evaluate() // King blocks on a7.
+	expect.Eq(t, score, 0)
+
+	score = NewGame(`Kf6,Be2,e7`, `Ke8,Bf2`).start().Evaluate() // King on e8 is not blocking (Bh5+).
+	expect.Eq(t, score, 206)
+}
+
+// Draw if single passer and a bishop controls a square in front of it.
+func TestEndgame430(t *testing.T) {
+	score := NewGame(`Ke1,Bg3`, `Ke8,Bc8,h3`).start().Evaluate() // Bg3 controls h2.
+	expect.Eq(t, score, 0)
+
+	score = NewGame(`Kd6,Bb8`, `M,Ke8,Bc8,h3`).start().Evaluate() // Bb8 is blocked by Kd6 and doesn't control h2.
+	expect.Eq(t, score, 295)
+}
