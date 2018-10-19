@@ -58,7 +58,7 @@ func (e *Engine) uciPrincipal(depth, score int, duration int64) *Engine {
 		}
 		str += fmt.Sprintf(" mate %d", mate / 2)
 	}
-	str += fmt.Sprintf(" nodes %d nps %d time %d pv", game.nodes + game.qnodes, nps(duration), duration)
+	str += fmt.Sprintf(" nodes %d nps %d hashfull %d time %d pv", game.nodes + game.qnodes, nps(duration), hashfull(), duration)
 
 	for i := 0; i < game.rootpv.size; i++ {
 		str += " " + game.rootpv.moves[i].notation()

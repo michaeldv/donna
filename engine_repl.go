@@ -22,6 +22,7 @@ var (
 	ansiRed   = "\033[0;31m"
 	ansiGreen = "\033[0;32m"
 	ansiTeal  = "\033[0;36m"
+	ansiWhite = "\033[0;37m"
 	ansiNone  = "\033[0m"
 )
 
@@ -36,7 +37,7 @@ func (e *Engine) replBestMove(move Move) *Engine {
 }
 
 func (e *Engine) replPrincipal(depth, score, status int, duration int64) {
-	fmt.Printf(`%2d %s %9d %9d %9d  `, depth, ms(duration), game.nodes, game.qnodes, nps(duration))
+	fmt.Printf(`%2d %s %9d %9d %8.1fK %6.1f%%  `, depth, ms(duration), game.nodes, game.qnodes, float32(nps(duration)) / 1000.0, float32(hashfull()) / 10.0)
 	switch status {
 	case WhiteWon:
 		fmt.Println(`1-0 White Checkmates`)
