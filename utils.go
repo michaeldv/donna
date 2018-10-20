@@ -141,6 +141,22 @@ func nps(duration int64) int64 {
 	return nodes
 }
 
+// Returns a number of used items in a sample of 1000 cache entries.
+func hashfull() int {
+	count := 0
+
+	if cacheSize := len(game.cache); cacheSize > 1000 {
+		start := (game.nodes + game.qnodes) % (cacheSize - 1000) // 0 <= start < cacheSize - 1000.
+		for i := start; i < start + 1000; i++ {
+			if game.cache[i].token() == game.token {
+				count++
+			}
+		}
+	}
+
+	return count
+}
+
 // Formats time duration in milliseconds in human readable form (MM:SS.XXX).
 func ms(duration int64) string {
 	mm := duration / 1000 / 60

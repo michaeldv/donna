@@ -119,7 +119,7 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 func (e *Evaluation) bishopsAndPawns() int {
 	if e.oppositeBishops() {
 		outposts := &e.position.outposts
-		if (outposts[Pawn] | outposts[BlackPawn]).count() == 2 {
+		if abs(outposts[Pawn].count() - outposts[BlackPawn].count()) == 1 {
 			return e.fraction(1, 8) // 1/8
 		}
 		return e.fraction(1, 2) // 1/2
@@ -128,10 +128,18 @@ func (e *Evaluation) bishopsAndPawns() int {
 	return ExistingScore
 }
 
-// Single bishops plus some minors: drop the score if we have opposite-colored bishops.
+// Single bishops plus some other pieces: drop the score if we have opposite-colored
+// bishops but only if other minors/majors are balanced.
 func (e *Evaluation) drawishBishops() int {
 	if e.oppositeBishops() {
-		return e.fraction(1, 4) // 1/4
+		outposts := &e.position.outposts
+		wN, bN := outposts[Knight].count(), outposts[BlackKnight].count()
+		wR, bR := outposts[Rook].count(), outposts[BlackRook].count()
+		extraPawns := abs(outposts[Pawn].count() - outposts[BlackPawn].count())
+
+		if wN == bN && wR == bR && extraPawns <= 2 {
+			return e.fraction(1, 4) // 1/4
+		}
 	}
 
 	return ExistingScore
@@ -217,22 +225,46 @@ func (e *Evaluation) queenVsRookAndPawns() int { 	// STUB.
 	return ExistingScore
 }
 
+// One side has 1 pawn and the other side has 1 or more pawns: reduce
+// score if both sides have exactly 1 pawn.
 func (e *Evaluation) lastPawnLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
 
-	if (color == White && outposts[Pawn].single()) || (color == Black && outposts[BlackPawn].single()) {
+	if outposts[pawn(color)].single() && outposts[pawn(color^1)].single() {
 		return e.fraction(3, 4) // 3/4
 	}
 
 	return ExistingScore
 }
 
+// One side has 0 pawn and the other side has 0 or more pawns.
 func (e *Evaluation) noPawnsLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
 	whiteMinorOnly := outposts[Queen].empty() && outposts[Rook].empty() && (outposts[Bishop] | outposts[Knight]).single()
 	blackMinorOnly := outposts[BlackQueen].empty() && outposts[BlackRook].empty() && (outposts[BlackBishop] | outposts[BlackKnight]).single()
+
+	// Check for opposite bishops first.
+	if whiteMinorOnly && blackMinorOnly && outposts[Knight].empty() && outposts[BlackKnight].empty() && e.oppositeBishops() {
+		pawn := outposts[pawn(color)]			// The passer.
+		king := outposts[king(color^1)]			// Defending king.
+		path := maskInFront[color][pawn.first()]	// Path in front of the passer.
+		safe := maskDark				// Safe squares for king to block on.
+		if (outposts[bishop(color)] & maskDark).any() {
+			safe = ^maskDark
+		}
+
+		// Draw if king blocks the passer on safe square.
+		if (king & safe).any() && (king & path).any() {
+			return DrawScore
+		}
+
+		// Draw if bishop attacks a square in front of the passer.
+		if (e.position.bishopAttacks(color^1) & path).any() {
+			return DrawScore
+		}
+	}
 
 	if color == White && outposts[Pawn].empty() {
 		if whiteMinorOnly {

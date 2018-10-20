@@ -15,9 +15,7 @@ func (e *Evaluation) analyzeThreats() {
 	if engine.trace {
 		defer func() {
 			e.checkpoint(`Threats`, threats)
-			if e.material.turf != 0 && e.material.flags & (whiteKingSafety | blackKingSafety) != 0 {
-				e.checkpoint(`Center`, center)
-			}
+			e.checkpoint(`Center`, center)
 		}()
 	}
 
