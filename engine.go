@@ -10,7 +10,7 @@ package donna
 
 import (`fmt`; `os`; `time`)
 
-const Ping = 125 // Check time 8 times a second.
+const Ping = 250 // Check time 4 times a second.
 
 type Clock struct {
 	halt        bool     // Stop search immediately when set to true.
