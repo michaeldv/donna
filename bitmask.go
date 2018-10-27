@@ -71,7 +71,7 @@ func (b Bitmask) any() bool {
 
 // Returns true if a bit at given offset is set.
 func (b Bitmask) on(offset int) bool {
-	return (b & bit[offset]).any()
+	return (b & bit[offset & 63]).any()
 }
 
 // Returns true if a bit at given offset is clear.
@@ -89,16 +89,21 @@ func (b Bitmask) count() int {
 	if b.empty() {
 		return 0
 	}
-	b -= (b >> 1) & 0x5555555555555555
-	b = ((b >> 2) & 0x3333333333333333) + (b & 0x3333333333333333)
-	b = ((b >> 4) + b) & 0x0F0F0F0F0F0F0F0F
-	return int((b * 0x0101010101010101) >> 56)
+
+	b -= ((b >> 1) & 0x5555555555555555)
+	b =  ((b >> 2) & 0x3333333333333333) + (b & 0x3333333333333333)
+	b =  ((b >> 4) + b) & 0x0F0F0F0F0F0F0F0F
+	b += b >> 8
+	b += b >> 16
+	b += b >> 32
+
+	return int(b) & 63
 }
 
 // Finds least significant bit set (LSB) in non-zero bitmask. Returns
 // an integer in 0..63 range.
 func (b Bitmask) first() int {
-	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58]
+	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58] & 63
 }
 
 // Eugene Nalimov's bitScanReverse: finds most significant bit set (MSB).

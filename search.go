@@ -42,7 +42,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		} else {
 			reduction := 0
 			if !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
-				reduction = lateMoveReductions[min(63, moveCount-1)][min(63, depth)]
+				reduction = lateMoveReductions[(moveCount-1) & 63][depth & 63]
 				if game.history[move.piece()][move.to()] < 0 {
 					reduction++
 				}

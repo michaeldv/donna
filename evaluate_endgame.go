@@ -228,10 +228,9 @@ func (e *Evaluation) queenVsRookAndPawns() int { 	// STUB.
 // One side has 1 pawn and the other side has 1 or more pawns: reduce
 // score if both sides have exactly 1 pawn.
 func (e *Evaluation) lastPawnLeft() int {
-	color := e.strongerSide()
 	outposts := &e.position.outposts
 
-	if outposts[pawn(color)].single() && outposts[pawn(color^1)].single() {
+	if outposts[Pawn].single() && outposts[BlackPawn].single() {
 		return e.fraction(3, 4) // 3/4
 	}
 
