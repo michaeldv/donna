@@ -1,3 +1,11 @@
+Oct 27, 2018: Version v4.1
+  - Added quiet move generator.
+  - Improved late move reduction.
+  - Increased density of transposition table.
+  - Added `hashfull` metrics in UCI mode and cache hits in REPL mode.
+  - Improved endgame evaluation for positions with opposite-colored bishops.
+  - Many small improvements and tweaks.
+
 Jan 8, 2016: Version v4.0
   - Improved search depth on typical time controls.
   - Many more optimizations and position evaluation tweaks.
