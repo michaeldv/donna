@@ -208,9 +208,9 @@ func Summary(metrics map[string]interface{}) {
 		float32(final.midgame)/units, float32(final.endgame)/units, float32(final.blended(phase))/units)
 }
 
-// Logging wrapper around fmt.Printf() that could be turned on as needed. Typical
-// usage is Log(); defer Log() in tests.
-func Log(args ...interface{}) {
+// Logging wrapper around `fmt.Printf()` that could be turned on as needed. Typical
+// usage is `log(); defer log()` in tests.
+func log(args ...interface{}) {
 	switch len(args) {
 	case 0:
 		// Calling Log() with no arguments flips the logging setting.
@@ -223,7 +223,7 @@ func Log(args ...interface{}) {
 			engine.fancy = args[0].(bool)
 		default:
 			if engine.log {
-				fmt.Println(args...)
+				fmt.Println(args[0])
 			}
 		}
 	default:
