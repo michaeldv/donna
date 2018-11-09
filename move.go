@@ -32,7 +32,7 @@ type Move uint32
 func NewMove(p *Position, from, to int) Move {
 	piece, capture := p.pieces[from], p.pieces[to]
 
-	if p.enpassant != 0 && to == p.enpassant && piece.isPawn() {
+	if p.enpassant != 0 && to == p.enpassant && piece.pawnʔ() {
 		capture = pawn(piece.color() ^ 1)
 	}
 
@@ -75,13 +75,13 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 	to := square(int(e2e4[3] - '1'), int(e2e4[2] - 'a'))
 
 	// Check if this is a castle.
-	if p.pieces[from].isKing() && abs(from - to) == 2 {
+	if p.pieces[from].kingʔ() && abs(from - to) == 2 {
 		return NewCastle(p, from, to)
 	}
 
 	// Special handling for pawn pushes because they might cause en-passant
 	// and result in promotion.
-	if p.pieces[from].isPawn() {
+	if p.pieces[from].pawnʔ() {
 		move := NewPawnMove(p, from, to)
 		if len(e2e4) > 4 {
 			switch e2e4[4] {
@@ -111,7 +111,7 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	defer func() {
 		gen := NewMoveGen(p).generateAllMoves().validOnly()
 		validMoves = gen.allMoves()
-		if move.some() && !gen.amongValid(move) {
+		if move.someʔ() && !gen.amongValidʔ(move) {
 			move = Move(0)
 		}
 	}()
@@ -146,7 +146,7 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 
 	// Special castle move notation.
 	if e2e4 == `0-0` || e2e4 == `0-0-0` {
-		kingside, queenside := p.canCastle(p.color)
+		kingside, queenside := p.canCastleʔ(p.color)
 		if e2e4 == `0-0` && kingside {
 			from, to := p.king[p.color], G1 + p.color * A8
 			move = NewCastle(p, from, to)
@@ -161,11 +161,11 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	return
 }
 
-func (m Move) null() bool {
+func (m Move) nullʔ() bool {
 	return m == Move(0)
 }
 
-func (m Move) some() bool {
+func (m Move) someʔ() bool {
 	return m != Move(0)
 }
 
@@ -205,43 +205,43 @@ func (m Move) promote(kind int) Move {
 // Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() (value int) {
 	value = pieceValue[m.capture().id()] - int(m.piece())
-	if m.isEnpassant() {
+	if m.enpassantʔ() {
 		value += valuePawn.midgame
-	} else if m.isPromo() {
+	} else if m.promoʔ() {
 		value += pieceValue[m.promo().id()] - valuePawn.midgame
 	}
 	return
 }
 
-func (m Move) isCastle() bool {
+func (m Move) castleʔ() bool {
 	return m & isCastle != 0
 }
 
-func (m Move) isCapture() bool {
+func (m Move) captureʔ() bool {
 	return m & isCapture != 0
 }
 
-func (m Move) isEnpassant() bool {
+func (m Move) enpassantʔ() bool {
 	return m & isEnpassant != 0
 }
 
-func (m Move) isPromo() bool {
+func (m Move) promoʔ() bool {
 	return m & isPromo != 0
 }
 
 // Returns true if the move doesn't change material balance.
-func (m Move) isQuiet() bool {
+func (m Move) quietʔ() bool {
 	return m & (isCapture | isPromo) == 0 // | isEnpassant) == 0
 }
 
 // Returns true for pawn pushes beyond home half of the board.
-func (m Move) isPawnAdvance() bool {
-	return m.piece().isPawn() && rank(m.color(), m.to()) > A4H4
+func (m Move) pawnAdvanceʔ() bool {
+	return m.piece().pawnʔ() && rank(m.color(), m.to()) > A4H4
 }
 
 // Returns true is the move is one of the killer moves at given ply.
-func (m Move) isKiller(ply int) bool {
-	return m.some() && (m == game.killers[ply][0] || m == game.killers[ply][1])
+func (m Move) killerʔ(ply int) bool {
+	return m.someʔ() && (m == game.killers[ply][0] || m == game.killers[ply][1])
 }
 
 // Returns true if *non-evasion* move is valid, i.e. it is possible to make
@@ -249,113 +249,113 @@ func (m Move) isKiller(ply int) bool {
 //
 // If the king is in check move generator is expected to generate valid evasions
 // where extra validation is not needed.
-func (m Move) valid(p *Position, pins Bitmask) bool {
+func (m Move) validʔ(p *Position, pins Bitmask) bool {
 	color := m.color() // TODO: make color part of move split.
 	from, to, piece, capture := m.split()
 
 	// For rare en-passant pawn captures we validate the move by actually
 	// making it, and then taking it back.
-	if p.enpassant != 0 && to == p.enpassant && capture.isPawn() {
+	if p.enpassant != 0 && to == p.enpassant && capture.pawnʔ() {
 		position := p.makeMove(m)
 		defer position.undoLastMove()
-		return !position.isInCheck(color)
+		return !position.inCheckʔ(color)
 	}
 
 	// King's move is valid when a) the move is a castle or b) the destination
 	// square is not being attacked by the opponent.
-	if piece.isKing() {
-		return m.isCastle() || !p.isAttacked(color^1, to)
+	if piece.kingʔ() {
+		return m.castleʔ() || !p.attackedʔ(color^1, to)
 	}
 
 	// For all other pieces the move is valid when it doesn't cause a
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
-	return pins.empty() || pins.off(from) || maskLine[from][to].on(p.king[color])
+	return pins.noneʔ() || pins.offʔ(from) || maskLine[from][to].onʔ(p.king[color])
 }
 
 // Returns true if the move could have be generated on the given board. We
 // use this to test whether cached or killer moves could be returned by the
 // incremental move generator.
-func (m Move) legit(p *Position, pins Bitmask) bool {
+func (m Move) legitʔ(p *Position, pins Bitmask) bool {
 	// from, to, piece, capture := m.split()
 	color := m.color()
 	from, to, piece, capture := m.split()
 
 	// `from` must have a piece and `to` can't have a piece of the same color.
-	if p.outposts[piece].off(from) || p.outposts[color].on(to) {
+	if p.outposts[piece].offʔ(from) || p.outposts[color].onʔ(to) {
 		return false
 	}
 
 	// First check pawn captures and pushes.
-	if piece.isPawn() {
+	if piece.pawnʔ() {
 		if p.enpassant != 0 {
-			return m.isEnpassant() && p.enpassant == to
+			return m.enpassantʔ() && p.enpassant == to
 		}
-		if capture.some() {
-			return pawnAttacks[color][from].on(to) && p.outposts[capture].on(to)
+		if capture.someʔ() {
+			return pawnAttacks[color][from].onʔ(to) && p.outposts[capture].onʔ(to)
 		} else {
 			// If no capture then the target square should not be occupied.
-			if p.board.on(to) {
+			if p.board.onʔ(to) {
 				return false
 			}
-			if row := rank(color, from); row == A7H7 && !m.isPromo() {
+			if row := rank(color, from); row == A7H7 && !m.promoʔ() {
 				return false
 			} else if push := from + up[color]; to == push {
 				return true
 			} else { // Must be pawn jump.
-				return row == A1H1 && to == from + 2 * up[color] && p.board.off(push)
+				return row == A1H1 && to == from + 2 * up[color] && p.board.offʔ(push)
 			}
 		}
 	}
 
 	// Anything pawn-related is now non-legit.
-	if m.isEnpassant() || m.isPromo() {
+	if m.enpassantʔ() || m.promoʔ() {
 		return false
 	}
 
 	// Captures should capture, non-captures should be free to move.
-	if (capture.some() && p.outposts[color^1].off(to)) || (capture.none() && p.board.on(to)) {
+	if (capture.someʔ() && p.outposts[color^1].offʔ(to)) || (capture.noneʔ() && p.board.onʔ(to)) {
 		return false
 	}
 
 	// Now check king moves including castles.
-	if piece.isKing() {
-		if m.isCastle() {
+	if piece.kingʔ() {
+		if m.castleʔ() {
 			if from != homeKing[color] {
 				return false
 			}
 			switch to {
 			case G1, G8:
-				if p.outposts[rook(color)].off(to + 1) || (p.castles & castleKingside[color] == 0) || (gapKing[color] & p.board).any() {
+				if p.outposts[rook(color)].offʔ(to + 1) || (p.castles & castleKingside[color] == 0) || (gapKing[color] & p.board).anyʔ() {
 					return false
 				}
-				return (castleKing[color] & p.allAttacks(color^1)).empty()
+				return (castleKing[color] & p.allAttacks(color^1)).noneʔ()
 			case C1, C8:
-				if p.outposts[rook(color)].off(to - 2) || (p.castles & castleQueenside[color] == 0) || (gapQueen[color] & p.board).any() {
+				if p.outposts[rook(color)].offʔ(to - 2) || (p.castles & castleQueenside[color] == 0) || (gapQueen[color] & p.board).anyʔ() {
 					return false
 				}
-				return (castleQueen[color] & p.allAttacks(color^1)).empty()
+				return (castleQueen[color] & p.allAttacks(color^1)).noneʔ()
 			}
 			return false
 		}
-		return p.kingAttacksAt(from, color).on(to)
+		return p.kingAttacksAt(from, color).onʔ(to)
 	}
 
 	// Anything castle-related is now non-legit.
-	if m.isCastle() {
+	if m.castleʔ() {
 		return false
 	}
 
 	// Check remaining pieces.
 	switch piece.kind() {
 	case Knight:
-		return p.knightAttacksAt(from, color).on(to)
+		return p.knightAttacksAt(from, color).onʔ(to)
 	case Bishop:
-		return p.bishopAttacksAt(from, color).on(to)
+		return p.bishopAttacksAt(from, color).onʔ(to)
 	case Rook:
-		return p.rookAttacksAt(from, color).on(to)
+		return p.rookAttacksAt(from, color).onʔ(to)
 	case Queen:
-		return p.queenAttacksAt(from, color).on(to)
+		return p.queenAttacksAt(from, color).onʔ(to)
 	}
 
 	return false
@@ -381,9 +381,9 @@ func (m Move) notation() string {
 // Returns string representation of the move in long algebraic notation using
 // ASCII characters only.
 func (m Move) str() (str string) {
-	if engine.fancy {
-		defer func() { engine.fancy = true }()
-		engine.fancy = false
+	if engine.fancyʔ {
+		defer func() { engine.fancyʔ = true }()
+		engine.fancyʔ = false
 	}
 
 	return m.String()
@@ -396,14 +396,14 @@ func (m Move) String() (str string) {
 	var buffer bytes.Buffer
 
 	from, to, piece, capture := m.split()
-	if m.isCastle() {
+	if m.castleʔ() {
 		if to > from {
 			return `0-0`
 		}
 		return `0-0-0`
 	}
 
-	if !piece.isPawn() {
+	if !piece.pawnʔ() {
 		buffer.WriteByte(piece.char())
 	}
 	buffer.WriteByte(byte(col(from)) + 'a')
@@ -415,7 +415,7 @@ func (m Move) String() (str string) {
 	}
 	buffer.WriteByte(byte(col(to)) + 'a')
 	buffer.WriteByte(byte(row(to)) + '1')
-	if promo := m.promo(); promo.some() {
+	if promo := m.promo(); promo.someʔ() {
 		buffer.WriteByte(promo.char())
 	}
 

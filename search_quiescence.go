@@ -9,16 +9,16 @@
 package donna
 
 // Quiescence search.
-func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score int) {
+func (p *Position) searchQuiescence(alpha, beta, depth int, inCheckʔ bool) (score int) {
 	ply := ply()
 
 	// Return if it's time to stop search.
-	if ply >= MaxPly || engine.clock.halt {
+	if ply >= MaxPly || engine.clock.haltʔ {
 		return p.Evaluate()
 	}
 
 	// Insufficient material and repetition/perpetual check pruning.
-	if p.fifty() || p.insufficient() || p.repetition() {
+	if p.fiftyʔ() || p.insufficientʔ() || p.repetitionʔ() {
 		return 0
 	}
 
@@ -31,20 +31,20 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	// If you pick up a starving dog and make him prosperous, he will not
 	// bite you. This is the principal difference between a dog and a man.
         // ―- Mark Twain
-	isNull := p.isNull()
-	isPrincipal := (beta - alpha > 1)
-	if isPrincipal {
+	nlNodeʔ := p.nlNodeʔ()
+	pvNodeʔ := (beta - alpha > 1)
+	if pvNodeʔ {
 		game.pv[ply].size = 0 // Reset principal variation.
 	}
 
 	// Use fixed depth for caching.
-	newDepth := let(inCheck || depth >= 0, 0, -1)
+	newDepth := let(inCheckʔ || depth >= 0, 0, -1)
 
 	// Probe cache.
 	cached, cachedMove := p.probeCache(), Move(0)
 	if cached != nil {
 		cachedMove = cached.move
-		if !isPrincipal && cached.depth() >= newDepth {
+		if !pvNodeʔ && cached.depth() >= newDepth {
 			bounds, score := cached.bounds(), cached.score(ply)
 			if (bounds & cacheBeta != 0 && score >= beta) || (bounds & cacheAlpha != 0 && score <= alpha) {
 				return score
@@ -52,7 +52,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		}
 	}
 
-	if inCheck {
+	if inCheckʔ {
 		p.score = Unknown
 	} else {
 		if cached != nil {
@@ -63,7 +63,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 			if (score > p.score && (bounds & cacheBeta != 0)) || (score <= p.score && (bounds & cacheAlpha != 0)) {
 				p.score = score
 			}
-		} else if isNull {
+		} else if nlNodeʔ {
 			p.score = rightToMove.midgame * 2 - tree[node-1].score
 		} else {
 			p.score = p.Evaluate()
@@ -72,14 +72,14 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		if p.score >= beta {
 			return p.score
 		}
-		if isPrincipal {
+		if pvNodeʔ {
 			alpha = max(alpha, p.score)
 		}
 	}
 
 	// Generate check evasions or captures.
 	gen := NewGen(p, ply)
-	if inCheck {
+	if inCheckʔ {
 		gen.generateEvasions().quickRank()
 	} else {
 		gen.generateCaptures()
@@ -92,18 +92,18 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 	bestAlpha := alpha
 	bestScore := let(p.score != Unknown, p.score, matedIn(ply))
 	bestMove, moveCount := Move(0), 0
-	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
 		capture := move.capture()
-		if (!inCheck && capture.some() && p.exchange(move) < 0) || !move.valid(p, gen.pins) {
+		if (!inCheckʔ && capture.someʔ() && p.exchange(move) < 0) || !move.validʔ(p, gen.pins) {
 			continue
 		}
 
 		position := p.makeMove(move)
 		moveCount++; game.qnodes++
-		giveCheck := position.isInCheck(position.color)
+		giveCheck := position.inCheckʔ(position.color)
 
 		// Prune useless captures -- but make sure it's not a capture move that checks.
-		if !inCheck && !giveCheck && !isPrincipal && capture != 0 && !move.isPromo() && p.score + pieceValue[capture.id()] + 72 < alpha {
+		if !inCheckʔ && !giveCheck && !pvNodeʔ && capture != 0 && !move.promoʔ() && p.score + pieceValue[capture.id()] + 72 < alpha {
 			position.undoLastMove()
 			continue
 		}
@@ -111,17 +111,17 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		position.undoLastMove()
 
 		// Don't touch anything if the time has elapsed and we need to abort th search.
-		if engine.clock.halt {
+		if engine.clock.haltʔ {
 			return alpha
 		}
 
 		if score > bestScore {
 			bestScore = score
 			if score > alpha {
-				if isPrincipal {
+				if pvNodeʔ {
 					game.saveBest(ply, move)
 				}
-				if isPrincipal && score < beta {
+				if pvNodeʔ && score < beta {
 					alpha = score
 					bestMove = move
 				} else {
@@ -132,10 +132,10 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheck bool) (score
 		}
 	}
 
-	score = let(inCheck && moveCount == 0, matedIn(ply), bestScore)
+	score = let(inCheckʔ && moveCount == 0, matedIn(ply), bestScore)
 
 	cacheFlags := cacheAlpha
-	if isPrincipal && score > bestAlpha {
+	if pvNodeʔ && score > bestAlpha {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, newDepth, ply, cacheFlags)

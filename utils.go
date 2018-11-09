@@ -59,7 +59,7 @@ func flip(color int, square int) int {
 // Returns a bitmask with light or dark squares set matching the color of the
 // square.
 func same(square int) Bitmask {
-	if (bit[square] & maskDark).any() {
+	if (bit[square] & maskDark).anyʔ() {
 		return maskDark
 	}
 
@@ -87,7 +87,7 @@ func mateDistance(alpha, beta, ply int) (int, int) {
 	return max(matedIn(ply), alpha), min(matingIn(ply + 1), beta)
 }
 
-func isMate(score int) bool {
+func mateʔ(score int) bool {
 	return abs(score) >= Checkmate - MaxPly
 }
 
@@ -214,20 +214,20 @@ func log(args ...interface{}) {
 	switch len(args) {
 	case 0:
 		// Calling Log() with no arguments flips the logging setting.
-		engine.log = !engine.log
-		engine.fancy = !engine.fancy
+		engine.logʔ = !engine.logʔ
+		engine.fancyʔ = !engine.fancyʔ
 	case 1:
 		switch args[0].(type) {
 		case bool:
-			engine.log = args[0].(bool)
-			engine.fancy = args[0].(bool)
+			engine.logʔ = args[0].(bool)
+			engine.fancyʔ = args[0].(bool)
 		default:
-			if engine.log {
+			if engine.logʔ {
 				fmt.Println(args[0])
 			}
 		}
 	default:
-		if engine.log {
+		if engine.logʔ {
 			fmt.Printf(args[0].(string), args[1:]...)
 		}
 	}

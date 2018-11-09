@@ -166,7 +166,7 @@ func TestPosition240(t *testing.T) {
 // Insufficient material.
 func TestPosition250(t *testing.T) {
 	p := NewGame(`Ka1,Bb2`, `Kh5`).start()
-	expect.True(t, p.insufficient())
+	expect.True(t, p.insufficientʔ())
 }
 
 // Restricted mobility for pinned pieces.

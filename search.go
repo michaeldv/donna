@@ -11,7 +11,7 @@ package donna
 // Root node search. Basic principle is expressed by Boob's Law: you always find
 // something in the last place you look.
 func (p *Position) search(alpha, beta, depth int) (score int) {
-	ply, inCheck := ply(), p.isInCheck(p.color)
+	ply, inCheckʔ := ply(), p.inCheckʔ(p.color)
 
 	// Root move generator makes sure all generated moves are valid. The
 	// best move found so far is always the first one we search.
@@ -24,24 +24,24 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 	bestAlpha, bestScore := alpha, alpha
 	bestMove, moveCount := Move(0), 0
-	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
 		position := p.makeMove(move)
 		moveCount++; game.nodes++
-		if engine.uci {
+		if engine.uciʔ {
 			engine.uciMove(move, moveCount, depth)
 		}
 
 		// Reduce search depth if we're not checking.
-		giveCheck := position.isInCheck(position.color)
+		giveCheck := position.inCheckʔ(position.color)
 		newDepth := let(giveCheck && p.exchange(move) >= 0, depth, depth - 1)
 
 		// Start search with full window.
-		game.deepening = (moveCount == 1)
+		game.deepeningʔ = (moveCount == 1)
 		if moveCount == 1 {
 			score = -position.searchTree(-beta, -alpha, newDepth)
 		} else {
 			reduction := 0
-			if !inCheck && !giveCheck && depth > 2 && move.isQuiet() && !move.isKiller(ply) && !move.isPawnAdvance() {
+			if !inCheckʔ && !giveCheck && depth > 2 && move.quietʔ() && !move.killerʔ(ply) && !move.pawnAdvanceʔ() {
 				reduction = lateMoveReductions[(moveCount-1) & 63][depth & 63]
 				if game.history[move.piece()][move.to()] < 0 {
 					reduction++
@@ -63,7 +63,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 		position.undoLastMove()
 
 		// Don't touch anything if the time has elapsed and we need to abort th search.
-		if engine.clock.halt {
+		if engine.clock.haltʔ {
 			return alpha
 		}
 
@@ -87,7 +87,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 					bestMove = move
 				} else {
 					p.cache(move, score, depth, ply, cacheBeta)
-					if !inCheck && alpha > bestAlpha {
+					if !inCheckʔ && alpha > bestAlpha {
 						game.saveGood(depth, bestMove).updatePoor(depth, bestMove, gen.reset())
 					}
 					return score
@@ -98,26 +98,26 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 
 
 	if moveCount == 0 {
-		score = let(inCheck, -Checkmate, 0) // Mate if in check, stalemate otherwise.
-		if engine.uci {
+		score = let(inCheckʔ, -Checkmate, 0) // Mate if in check, stalemate otherwise.
+		if engine.uciʔ {
 			engine.uciScore(depth, score, alpha, beta)
 		}
 		return score
 	}
 	score = bestScore
 
-	if !inCheck && alpha > bestAlpha {
+	if !inCheckʔ && alpha > bestAlpha {
 		game.saveGood(depth, bestMove).updatePoor(depth, bestMove, gen.reset())
 	}
 
 	cacheFlags := cacheAlpha
 	if score >= beta {
 		cacheFlags = cacheBeta
-	} else if bestMove.some() {
+	} else if bestMove.someʔ() {
 		cacheFlags = cacheExact
 	}
 	p.cache(bestMove, score, depth, ply, cacheFlags)
-	if engine.uci {
+	if engine.uciʔ {
 		engine.uciScore(depth, score, alpha, beta)
 	}
 

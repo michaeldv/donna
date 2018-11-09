@@ -72,7 +72,7 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 	eval.init(p)
 	eval.metrics = make(Metrics)
 
-	engine.trace = true
+	engine.traceʔ = true
 	defer func() {
 		var tempo Total
 		var final Score
@@ -90,7 +90,7 @@ func (p *Position) EvaluateWithTrace() (int, Metrics) {
 		eval.checkpoint(`PST`, p.tally)
 		eval.checkpoint(`Tempo`, tempo)
 		eval.checkpoint(`Final`, final)
-		engine.trace = false
+		engine.traceʔ = false
 	}()
 
 	return eval.run(), eval.metrics
@@ -162,14 +162,14 @@ func (e *Evaluation) checkpoint(tag string, metric interface{}) {
 	e.metrics[tag] = metric
 }
 
-func (e *Evaluation) oppositeBishops() bool {
+func (e *Evaluation) oppositeBishopsʔ() bool {
 	bishops := e.position.outposts[Bishop] | e.position.outposts[BlackBishop]
 
-	return (bishops & maskDark).any() && (bishops & ^maskDark).any()
+	return (bishops & maskDark).anyʔ() && (bishops & ^maskDark).anyʔ()
 }
 
 // Returns true if material tables indicate that the king can't defend himself.
-func (e *Evaluation) isKingUnsafe(color int) bool {
+func (e *Evaluation) unsafeKingʔ(color int) bool {
 	if color == White {
 		return e.material.flags & whiteKingSafety != 0
 	}

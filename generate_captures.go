@@ -17,7 +17,7 @@ func (gen *MoveGen) generateCaptures() *MoveGen {
 func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
 	enemy := gen.p.outposts[color^1]
 
-	for pawns := gen.p.outposts[pawn(color)]; pawns.any(); pawns = pawns.pop() {
+	for pawns := gen.p.outposts[pawn(color)]; pawns.anyʔ(); pawns = pawns.pop() {
 		square := pawns.first()
 
 		// For pawns on files 2-6 the moves include captures only,
@@ -26,7 +26,7 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
 		if rank(color, square) != A7H7 {
 			gen.movePawn(square, gen.p.targets(square) & enemy)
 		} else {
-			for bm := gen.p.targets(square); bm.any(); bm = bm.pop() {
+			for bm := gen.p.targets(square); bm.anyʔ(); bm = bm.pop() {
 				target := bm.first()
 				mQ, _, _, _ := NewPromotion(gen.p, square, target)
 				gen.add(mQ)
@@ -41,11 +41,11 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
 func (gen *MoveGen) pieceCaptures(color int) *MoveGen {
 	enemy := gen.p.outposts[color^1]
 
-	for bm := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; bm.any(); bm = bm.pop() {
+	for bm := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePiece(square, gen.p.targets(square) & enemy)
 	}
-	if gen.p.outposts[king(color)].any() {
+	if gen.p.outposts[king(color)].anyʔ() {
 		square := gen.p.king[color]
 		gen.moveKing(square, gen.p.targets(square) & enemy)
 	}

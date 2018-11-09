@@ -12,7 +12,7 @@ func (e *Evaluation) analyzeSafety() {
 	var score Score
 	var cover, safety Total
 
-	if engine.trace {
+	if engine.traceʔ {
 		defer func() {
 			var our, their Score
 			e.checkpoint(`+King`, Total{*our.add(cover.white).add(safety.white), *their.add(cover.black).add(safety.black)})
@@ -67,7 +67,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 		     e.attacks[bishop(their)] | e.attacks[rook(their)] |
 		     e.attacks[king(their)]
 	checks := weak & e.attacks[queen(their)] & protected & ^p.outposts[their]
-	if checks.any() {
+	if checks.anyʔ() {
 		checkers++
 		safetyIndex += queenCheck * checks.count()
 	}
@@ -78,27 +78,27 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 
 	// Are there any safe squares from where enemy Knight could give
 	// us a check?
-	if checks := knightMoves[square] & safe & e.attacks[knight(their)]; checks.any() {
+	if checks := knightMoves[square] & safe & e.attacks[knight(their)]; checks.anyʔ() {
 		checkers++
 		safetyIndex += checks.count()
 	}
 
 	// Are there any safe squares from where enemy Bishop could give us a check?
 	safeBishopMoves := p.bishopMoves(square) & safe
-	if checks := safeBishopMoves & e.attacks[bishop(their)]; checks.any() {
+	if checks := safeBishopMoves & e.attacks[bishop(their)]; checks.anyʔ() {
 		checkers++
 		safetyIndex += checks.count()
 	}
 
 	// Are there any safe squares from where enemy Rook could give us a check?
 	safeRookMoves := p.rookMoves(square) & safe
-	if checks := safeRookMoves & e.attacks[rook(their)]; checks.any() {
+	if checks := safeRookMoves & e.attacks[rook(their)]; checks.anyʔ() {
 		checkers++
 		safetyIndex += checks.count()
 	}
 
 	// Are there any safe squares from where enemy Queen could give us a check?
-	if checks := (safeBishopMoves | safeRookMoves) & e.attacks[queen(their)]; checks.any() {
+	if checks := (safeBishopMoves | safeRookMoves) & e.attacks[queen(their)]; checks.anyʔ() {
 		checkers++
 		safetyIndex += queenCheck / 2 * checks.count()
 	}
@@ -157,13 +157,13 @@ func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 
 		// Friendly pawns protecting the kings.
 		closest := 0
-		if pawns := (cover & maskFile[c]); pawns.any() {
+		if pawns := (cover & maskFile[c]); pawns.anyʔ() {
 			closest = rank(our, pawns.closest(our))
 		}
 		bonus -= penaltyCover[closest]
 
 		// Enemy pawns facing the king.
-		if pawns := (storm & maskFile[c]); pawns.any() {
+		if pawns := (storm & maskFile[c]); pawns.anyʔ() {
 			farthest := rank(our, pawns.farthest(our^1))
 			if closest == 0 { // No opposing friendly pawn.
 				bonus -= penaltyStorm[farthest]
@@ -182,10 +182,10 @@ func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 func (e *Evaluation) kingPawnProximity(our int, square int) (penalty int) {
 	pawns := e.position.outposts[pawn(our)]
 
-	if pawns.any() && (pawns & e.attacks[king(our)]).empty() {
+	if pawns.anyʔ() && (pawns & e.attacks[king(our)]).noneʔ() {
 		proximity := 8
 
-		for bm := pawns; bm.any(); bm = bm.pop() {
+		for bm := pawns; bm.anyʔ(); bm = bm.pop() {
 			proximity = min(proximity, distance[square][bm.first()])
 		}
 

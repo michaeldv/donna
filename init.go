@@ -418,7 +418,7 @@ func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for r := row + 1; r <= 7; r++ {
 		sq := square(r, col)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}
@@ -426,7 +426,7 @@ func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for c := col + 1; c <= 7; c++ {
 		sq := square(row, c)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}
@@ -434,7 +434,7 @@ func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for r := row - 1; r >= 0; r-- {
 		sq := square(r, col)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}
@@ -442,7 +442,7 @@ func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for c := col - 1; c >= 0; c-- {
 		sq := square(row, c)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}
@@ -456,7 +456,7 @@ func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for c, r := col + 1, row + 1; c <= 7 && r <= 7; c, r = c+1, r+1 {
 		sq := square(r, c)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}
@@ -464,7 +464,7 @@ func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for c, r := col + 1, row - 1; c <= 7 && r >= 0; c, r = c+1, r-1 {
 		sq := square(r, c)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}
@@ -472,7 +472,7 @@ func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for c, r := col - 1, row - 1; c >= 0 && r >= 0; c, r = c-1, r-1 {
 		sq := square(r, c)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}
@@ -480,7 +480,7 @@ func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	for c, r := col - 1, row + 1; c >= 0 && r <= 7; c, r = c-1, r+1 {
 		sq := square(r, c)
 		bitmask.set(sq)
-		if mask.on(sq) {
+		if mask.onʔ(sq) {
 			break
 		}
 	}

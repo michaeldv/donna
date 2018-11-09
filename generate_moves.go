@@ -11,7 +11,7 @@ package donna
 func (gen *MoveGen) generateRootMoves() *MoveGen {
 	gen.generateAllMoves()
 
-	if !gen.onlyMove() {
+	if !gen.onlyMoveʔ() {
 		gen.validOnly().rank(Move(0))
 	}
 
@@ -31,7 +31,7 @@ func (gen *MoveGen) rearrangeRootMoves() *MoveGen {
 }
 
 func (gen *MoveGen) generateAllMoves() *MoveGen {
-	if gen.p.isInCheck(gen.p.color) {
+	if gen.p.inCheckʔ(gen.p.color) {
 		return gen.generateEvasions()
 	}
 
@@ -45,7 +45,7 @@ func (gen *MoveGen) generateMoves() *MoveGen {
 }
 
 func (gen *MoveGen) pawnMoves(color int) *MoveGen {
-	for bm := gen.p.outposts[pawn(color)]; bm.any(); bm = bm.pop() {
+	for bm := gen.p.outposts[pawn(color)]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePawn(square, gen.p.targets(square))
 	}
@@ -55,7 +55,7 @@ func (gen *MoveGen) pawnMoves(color int) *MoveGen {
 
 // Go over all pieces except pawns and the king.
 func (gen *MoveGen) pieceMoves(color int) *MoveGen {
-	for bm := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; bm.any(); bm = bm.pop() {
+	for bm := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePiece(square, gen.p.targets(square))
 	}
@@ -64,11 +64,11 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
 }
 
 func (gen *MoveGen) kingMoves(color int) *MoveGen {
-	if gen.p.outposts[king(color)].any() {
+	if gen.p.outposts[king(color)].anyʔ() {
 		square := gen.p.king[color]
 		gen.moveKing(square, gen.p.targets(square))
 
-		kingside, queenside := gen.p.canCastle(color)
+		kingside, queenside := gen.p.canCastleʔ(color)
 		if kingside {
 			gen.moveKing(square, bit[G1 + 56 * color])
 		}
@@ -81,7 +81,7 @@ func (gen *MoveGen) kingMoves(color int) *MoveGen {
 }
 
 func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
-	for bm := targets; bm.any(); bm = bm.pop() {
+	for bm := targets; bm.anyʔ(); bm = bm.pop() {
 		target := bm.first()
 		if target > H1 && target < A8 {
 			gen.add(NewPawnMove(gen.p, square, target))
@@ -95,7 +95,7 @@ func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
 }
 
 func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
-	for bm := targets; bm.any(); bm = bm.pop() {
+	for bm := targets; bm.anyʔ(); bm = bm.pop() {
 		target := bm.first()
 		if abs(square - target) == 2 {
 			gen.add(NewCastle(gen.p, square, target))
@@ -108,7 +108,7 @@ func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
 }
 
 func (gen *MoveGen) movePiece(square int, targets Bitmask) *MoveGen {
-	for bm := targets; bm.any(); bm = bm.pop() {
+	for bm := targets; bm.anyʔ(); bm = bm.pop() {
 		gen.add(NewMove(gen.p, square, bm.first()))
 	}
 

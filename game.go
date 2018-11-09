@@ -26,8 +26,8 @@ type Game struct {
 	nodes       int 	// Number of regular nodes searched.
 	qnodes      int 	// Number of quiescence nodes searched.
 	token       uint8 	// Cache's expiration token.
-	deepening   bool 	// True when searching first root move.
-	improving   bool 	// True when root search score is not falling.
+	deepeningʔ  bool 	// True when searching first root move.
+	improvingʔ  bool 	// True when root search score is not falling.
 	volatility  float32 	// Root search stability count.
 	initial     string   	// Initial position (FEN or algebraic).
 	history     History  	// Good moves history.
@@ -63,7 +63,7 @@ func NewGame(args ...string) *Game {
 }
 
 func (game *Game) start() *Position {
-	engine.clock.halt = false
+	engine.clock.haltʔ = false
 	tree, node, rootNode = [1024]Position{}, 0, 0
 
 	// Was the game started with FEN or algebraic notation?
@@ -86,8 +86,8 @@ func (game *Game) getReady() *Game {
 	game.pv = Pv{}
 	game.killers = Killers{}
 	game.history = History{}
-	game.deepening = false
-	game.improving = true
+	game.deepeningʔ = false
+	game.improvingʔ = true
 	game.volatility = 0.0
 	game.token += 4 // <-- Wraps around: ...248, 252, 0, 4... reserving last 2 bits.
 
@@ -116,7 +116,7 @@ func (game *Game) Think() Move {
 				game.printBestMove(move, since(start))
 				return move
 			}
-		} else if !engine.uci {
+		} else if !engine.uciʔ {
 			fmt.Printf("Book error: %v\n", err)
 		}
 	}
@@ -124,15 +124,15 @@ func (game *Game) Think() Move {
 	game.getReady()
 	score, move, status, alpha, beta := 0, Move(0), InProgress, -Checkmate, Checkmate
 
-	if !engine.uci {
+	if !engine.uciʔ {
 		fmt.Println(ansiWhite + `Depth   Time     Nodes    QNodes   Nodes/s   Cache    Score   Best` + ansiNone)
 	}
 
-	if !engine.fixedDepth() {
+	if !engine.fixedDepthʔ() {
 		engine.startClock(); defer engine.stopClock();
 	}
 
-	for depth := 1; game.keepThinking(depth, status, move); depth++ {
+	for depth := 1; game.keepThinkingʔ(depth, status, move); depth++ {
 		// Save previous best score in case search gets interrupted.
 		bestScore := score
 
@@ -162,12 +162,12 @@ func (game *Game) Think() Move {
 					updateRootPv()
 				}
 
-				if !engine.fixedDepth() && engine.clock.halt {
+				if !engine.fixedDepthʔ() && engine.clock.haltʔ {
 					break
 				}
 
 				if score <= alpha {
-					game.improving = false
+					game.improvingʔ = false
 					alpha = max(score - aspiration, -Checkmate)
 				} else if score >= beta {
 					beta = min(score + aspiration, Checkmate)
@@ -179,7 +179,7 @@ func (game *Game) Think() Move {
 			}
 			// TBD: position.cache(game.rootpv[0], score, 0, 0)
 		}
-		if engine.clock.halt {
+		if engine.clock.haltʔ {
 			score = bestScore
 		}
 
@@ -194,26 +194,26 @@ func (game *Game) Think() Move {
 }
 
 // When in doubt, do what the President does ―- guess.
-func (game *Game) keepThinking(depth, status int, move Move) bool {
+func (game *Game) keepThinkingʔ(depth, status int, move Move) bool {
 	if depth == 1 || depth > MaxDepth || status != InProgress {
 		return depth == 1
 	}
 
-	if engine.fixedDepth() {
+	if engine.fixedDepthʔ() {
 		return depth <= engine.options.maxDepth
-	} else if engine.clock.halt {
+	} else if engine.clock.haltʔ {
 		return false
 	}
 
 	// Stop deepening if it's the only move.
 	gen := NewRootGen(nil, depth)
-	if gen.onlyMove() {
+	if gen.onlyMoveʔ() {
 		//\\ engine.debug("# Depth %02d Only move %s\n", depth, move)
 		return false
 	}
 
 	// Stop if the time left is not enough to gets through the next iteration.
-	if engine.varyingTime() {
+	if engine.varyingTimeʔ() {
 		elapsed := engine.elapsed(time.Now())
 		remaining := engine.factor(depth, game.volatility).remaining()
 
@@ -228,7 +228,7 @@ func (game *Game) keepThinking(depth, status int, move Move) bool {
 }
 
 func (game *Game) printBestMove(move Move, duration int64) {
-	if engine.uci {
+	if engine.uciʔ {
 		engine.uciBestMove(move, duration)
 	} else {
 		engine.replBestMove(move)
@@ -239,7 +239,7 @@ func (game *Game) printBestMove(move Move, duration int64) {
 // and advantage black is -score whereas in UCI +score is advantage current side
 // and -score is advantage opponent.
 func (game *Game) printPrincipal(depth, score, status int, duration int64) {
-	if engine.uci {
+	if engine.uciʔ {
 		engine.uciPrincipal(depth, score, duration)
 	} else {
 		if game.position().color == Black {
@@ -263,7 +263,7 @@ func (game *Game) saveBest(ply int, move Move) *Game {
 }
 
 func (game *Game) saveGood(depth int, move Move) *Game {
-	if move.isQuiet() {
+	if move.quietʔ() {
 		if ply := ply(); move != game.killers[ply][0] {
 			game.killers[ply][1] = game.killers[ply][0]
 			game.killers[ply][0] = move
@@ -279,7 +279,7 @@ func (game *Game) updatePoor(depth int, bestMove Move, mgen *MoveGen) *Game {
 	value := depth * depth
 
 	for move := mgen.nextMove(); move != 0; move = mgen.nextMove() {
-		if move.isQuiet() {
+		if move.quietʔ() {
 			game.history[move.piece()][move.to()] = let(move == bestMove, value, -value)
 		}
 	}

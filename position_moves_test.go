@@ -30,87 +30,87 @@ func TestPositionMoves010(t *testing.T) {
 // Castle tests.
 func TestPositionMoves030(t *testing.T) { // Everything is OK.
 	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8`).start()
-	kingside, queenside := p.canCastle(p.color)
+	kingside, queenside := p.canCastleʔ(p.color)
 	expect.True(t, kingside)
 	expect.True(t, queenside)
 
 	p = NewGame(`Ke1`, `M,Ke8,Ra8,Rh8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.True(t, kingside)
 	expect.True(t, queenside)
 }
 
 func TestPositionMoves040(t *testing.T) { // King checked.
 	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8,Bg3`).start()
-	kingside, queenside := p.canCastle(p.color)
+	kingside, queenside := p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke1,Bg6`, `M,Ke8,Ra8,Rh8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 }
 
 func TestPositionMoves050(t *testing.T) { // Attacked square.
 	p := NewGame(`Ke1,Ra1,Rh1`, `Ke8,Bb3,Bh3`).start()
-	kingside, queenside := p.canCastle(p.color)
+	kingside, queenside := p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke1,Bb6,Bh6`, `M,Ke8,Ra8,Rh8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 }
 
 func TestPositionMoves060(t *testing.T) { // Wrong square.
 	p := NewGame(`Ke1,Ra8,Rh8`, `Ke5`).start()
-	kingside, queenside := p.canCastle(p.color)
+	kingside, queenside := p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke2,Ra1,Rh1`, `Ke8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke4`, `M,Ke8,Ra1,Rh1`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke4`, `M,Ke7,Ra8,Rh8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 }
 
 func TestPositionMoves070(t *testing.T) { // Missing rooks.
 	p := NewGame(`Ke1`, `Ke8`).start()
-	kingside, queenside := p.canCastle(p.color)
+	kingside, queenside := p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke1`, `M,Ke8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 }
 
 func TestPositionMoves080(t *testing.T) { // Rooks on wrong squares.
 	p := NewGame(`Ke1,Rb1`, `Ke8`).start()
-	kingside, queenside := p.canCastle(p.color)
+	kingside, queenside := p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke1,Rb1,Rh1`, `Ke8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.True(t, kingside)
 	expect.False(t, queenside)
 
 	p = NewGame(`Ke1,Ra1,Rf1`, `Ke8`).start()
-	kingside, queenside = p.canCastle(p.color)
+	kingside, queenside = p.canCastleʔ(p.color)
 	expect.False(t, kingside)
 	expect.True(t, queenside)
 }
@@ -121,7 +121,7 @@ func TestPositionMoves081(t *testing.T) { // Rook has moved.
 	p = p.makeMove(NewMove(p, E8, E7))
 	p = p.makeMove(NewMove(p, A2, A1))
 
-	kingside, queenside := p.canCastle(White)
+	kingside, queenside := p.canCastleʔ(White)
 	expect.True(t, kingside)
 	expect.False(t, queenside)
 }
@@ -132,7 +132,7 @@ func TestPositionMoves082(t *testing.T) { // King has moved.
 	p = p.makeMove(NewMove(p, E1, E2))
 	p = p.makeMove(NewMove(p, E7, E8))
 
-	kingside, queenside := p.canCastle(Black)
+	kingside, queenside := p.canCastleʔ(Black)
 	expect.False(t, kingside)
 	expect.False(t, queenside)
 }
@@ -141,7 +141,7 @@ func TestPositionMoves083(t *testing.T) { // Rook is taken.
 	p := NewGame(`Ke1,Nb6`, `Ke8,Ra8,Rh8`).start()
 	p = p.makeMove(NewMove(p, B6, A8))
 
-	kingside, queenside := p.canCastle(Black)
+	kingside, queenside := p.canCastleʔ(Black)
 	expect.True(t, kingside)
 	expect.False(t, queenside)
 }
@@ -150,7 +150,7 @@ func TestPositionMoves083(t *testing.T) { // Rook is taken.
 func TestPositionMoves084(t *testing.T) {
 	p := NewGame(`Ke1`, `M,Ke8,Ra8,Rh8,Ng8`).start()
 
-	kingside, queenside := p.canCastle(Black)
+	kingside, queenside := p.canCastleʔ(Black)
 	expect.False(t, kingside)
 	expect.True(t, queenside)
 }
@@ -159,7 +159,7 @@ func TestPositionMoves084(t *testing.T) {
 func TestPositionMoves085(t *testing.T) {
 	p := NewGame(`Ke1`, `M,Ke8,Ra8,Rh8,Nb8`).start()
 
-	kingside, queenside := p.canCastle(Black)
+	kingside, queenside := p.canCastleʔ(Black)
 	expect.True(t, kingside)
 	expect.False(t, queenside)
 }
@@ -169,28 +169,28 @@ func TestPositionMoves100(t *testing.T) {
 	p := NewGame().start() // Initial 1.
 	p = p.makeMove(NewMove(p, G1, F3))
 	p = p.makeMove(NewMove(p, G8, F6)) // 1.
-	expect.False(t, p.repetition())
-	expect.False(t, p.thirdRepetition())
+	expect.False(t, p.repetitionʔ())
+	expect.False(t, p.thirdRepetitionʔ())
 
 	p = p.makeMove(NewMove(p, F3, G1))
 	p = p.makeMove(NewMove(p, F6, G8)) // Initial 2.
-	expect.True(t, p.repetition())
-	expect.False(t, p.thirdRepetition())
+	expect.True(t, p.repetitionʔ())
+	expect.False(t, p.thirdRepetitionʔ())
 
 	p = p.makeMove(NewMove(p, G1, F3))
 	p = p.makeMove(NewMove(p, G8, F6)) // 2.
-	expect.True(t, p.repetition())
-	expect.False(t, p.thirdRepetition())
+	expect.True(t, p.repetitionʔ())
+	expect.False(t, p.thirdRepetitionʔ())
 
 	p = p.makeMove(NewMove(p, F3, G1))
 	p = p.makeMove(NewMove(p, F6, G8)) // Initial 3.
-	expect.True(t, p.repetition())
-	expect.True(t, p.thirdRepetition())
+	expect.True(t, p.repetitionʔ())
+	expect.True(t, p.thirdRepetitionʔ())
 
 	p = p.makeMove(NewMove(p, G1, F3))
 	p = p.makeMove(NewMove(p, G8, F6)) // 3.
-	expect.True(t, p.repetition())
-	expect.True(t, p.thirdRepetition())
+	expect.True(t, p.repetitionʔ())
+	expect.True(t, p.thirdRepetitionʔ())
 }
 
 // Repetition with some moves in between.
@@ -208,8 +208,8 @@ func TestPositionMoves110(t *testing.T) {
 	p = p.makeMove(NewMove(p, C6, B8))
 	p = p.makeMove(NewMove(p, C4, F1))
 	p = p.makeMove(NewMove(p, C5, F8)) // 2.
-	expect.True(t, p.repetition())
-	expect.False(t, p.thirdRepetition())
+	expect.True(t, p.repetitionʔ())
+	expect.False(t, p.thirdRepetitionʔ())
 
 	p = p.makeMove(NewMove(p, F1, C4))
 	p = p.makeMove(NewMove(p, F8, C5))
@@ -219,8 +219,8 @@ func TestPositionMoves110(t *testing.T) {
 	p = p.makeMove(NewMove(p, C5, F8))
 	p = p.makeMove(NewMove(p, C3, B1))
 	p = p.makeMove(NewMove(p, C6, B8)) // 3.
-	expect.True(t, p.repetition())
-	expect.True(t, p.thirdRepetition())
+	expect.True(t, p.repetitionʔ())
+	expect.True(t, p.thirdRepetitionʔ())
 }
 
 // Irreversible 0-0.
@@ -236,15 +236,15 @@ func TestPositionMoves120(t *testing.T) {
 	p = p.makeMove(NewMove(p, E8, E7)) // King has moved again.
 	p = p.makeMove(NewMove(p, E2, E1))
 	p = p.makeMove(NewMove(p, E7, E8)) // 3.
-	expect.True(t, p.repetition())
-	expect.False(t, p.thirdRepetition()) // <-- Lost 0-0 right.
+	expect.True(t, p.repetitionʔ())
+	expect.False(t, p.thirdRepetitionʔ()) // <-- Lost 0-0 right.
 
 	p = p.makeMove(NewMove(p, E1, E2))
 	p = p.makeMove(NewMove(p, E8, E7)) // King has moved again.
 	p = p.makeMove(NewMove(p, E2, E1))
 	p = p.makeMove(NewMove(p, E7, E8)) // 4.
-	expect.True(t, p.repetition())
-	expect.True(t, p.thirdRepetition()) // <-- 3 time repetioion with lost 0-0 right.
+	expect.True(t, p.repetitionʔ())
+	expect.True(t, p.thirdRepetitionʔ()) // <-- 3 time repetioion with lost 0-0 right.
 }
 
 // 50 moves draw (no captures, no pawn moves).
@@ -270,7 +270,7 @@ func TestPositionMoves130(t *testing.T) {
 			p = p.makeMove(NewMove(p, B8, A8))
 		}
 
-		expect.Eq(t, p.fifty(), move >= 50)
+		expect.Eq(t, p.fiftyʔ(), move >= 50)
 	}
 }
 
@@ -600,11 +600,11 @@ func TestPositionMoves400(t *testing.T) {
 	p := NewGame(`Ke1,Qd1,d2,e2`, `Kg8,Qf8,f7,g7`).start()
 
 	p = p.makeNullMove()
-	expect.True(t, p.isNull())
+	expect.True(t, p.nlNodeʔ())
 
 	p = p.undoLastMove()
 	p = p.makeMove(NewMove(p, E2, E4))
-	expect.False(t, p.isNull())
+	expect.False(t, p.nlNodeʔ())
 }
 
 // isInCheck
@@ -614,6 +614,6 @@ func TestPositionMoves410(t *testing.T) {
 	p = p.makeMove(NewMove(p, F7, F6))
 	position := p.makeMove(NewMove(p, D1, H5))
 
-	expect.True(t, position.isInCheck(position.color))
-	expect.True(t, position.isInCheck(p.color^1))
+	expect.True(t, position.inCheckʔ(position.color))
+	expect.True(t, position.inCheckʔ(p.color^1))
 }

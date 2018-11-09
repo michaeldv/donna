@@ -26,7 +26,7 @@ func (e *Evaluation) analyzePawns() {
 	e.pawns = &game.pawnCache[index]
 
 	// Bypass pawns cache if evaluation tracing is enabled.
-	if e.pawns.id != key || engine.trace {
+	if e.pawns.id != key || engine.traceʔ {
 		white, black := e.pawnStructure(White), e.pawnStructure(Black)
 		e.pawns.score.clear().add(white).sub(black).apply(weightPawnStructure)
 		e.pawns.id = key
@@ -35,7 +35,7 @@ func (e *Evaluation) analyzePawns() {
 		// will be viewed as if the king has moved.
 		e.pawns.king[White], e.pawns.king[Black] = 0xFF, 0xFF
 
-		if engine.trace {
+		if engine.traceʔ {
 			e.checkpoint(`Pawns`, Total{white, black})
 		}
 	}
@@ -46,7 +46,7 @@ func (e *Evaluation) analyzePawns() {
 func (e *Evaluation) analyzePassers() {
 	var white, black, score Score
 
-	if engine.trace {
+	if engine.traceʔ {
 		defer func() {
 			e.checkpoint(`Passers`, Total{white, black})
 		}()
@@ -66,58 +66,58 @@ func (e *Evaluation) pawnStructure(our int) (score Score) {
 	theirPawns := e.position.outposts[pawn(their)]
 	e.pawns.passers[our] = 0
 
-	for bm := ourPawns; bm.any(); bm = bm.pop() {
+	for bm := ourPawns; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		row, col := coordinate(square)
 
-		isolated := (maskIsolated[col] & ourPawns).empty()
-		exposed := (maskInFront[our][square] & theirPawns).empty()
-		doubled := (maskInFront[our][square] & ourPawns).any()
-		supported := (maskIsolated[col] & (maskRank[row] | maskRank[row].up(their)) & ourPawns).any()
+		isolatedʔ := (maskIsolated[col] & ourPawns).noneʔ()
+		exposedʔ := (maskInFront[our][square] & theirPawns).noneʔ()
+		doubledʔ := (maskInFront[our][square] & ourPawns).anyʔ()
+		supportedʔ := (maskIsolated[col] & (maskRank[row] | maskRank[row].up(their)) & ourPawns).anyʔ()
 
 		// The pawn is passed if a) there are no enemy pawns in the same
 		// and adjacent columns; and b) there are no same our pawns in
 		// front of us.
-		passed := !doubled && (maskPassed[our][square] & theirPawns).empty()
-		if passed {
+		passedʔ := !doubledʔ && (maskPassed[our][square] & theirPawns).noneʔ()
+		if passedʔ {
 			e.pawns.passers[our] |= bit[square]
 		}
 
 		// Penalty if the pawn is isolated, i.e. has no friendly pawns
 		// on adjacent files. The penalty goes up if isolated pawn is
 		// exposed on semi-open file.
-		if isolated {
-			if !exposed {
+		if isolatedʔ {
+			if !exposedʔ {
 				score.sub(penaltyIsolatedPawn[col])
 			} else {
 				score.sub(penaltyWeakIsolatedPawn[col])
 			}
-		} else if !supported {
+		} else if !supportedʔ {
 			score.sub(pawnAlone) // Small penalty if the pawn is not supported by a fiendly pawn.
 		}
 
 		// Penalty if the pawn is doubled, i.e. there is another friendly
 		// pawn in front of us.
-		if doubled {
+		if doubledʔ {
 			score.sub(penaltyDoubledPawn[col])
 		}
 
 		// Penalty if the pawn is backward.
-		backward := false
-		if (!passed && !supported && !isolated) {
+		backwardʔ := false
+		if (!passedʔ && !supportedʔ && !isolatedʔ) {
 
 			// Backward pawn should not be attacking enemy pawns.
-			if (pawnAttacks[our][square] & theirPawns).empty() {
+			if (pawnAttacks[our][square] & theirPawns).noneʔ() {
 
 				// Backward pawn should not have friendly pawns behind.
-				if (maskPassed[their][square] & maskIsolated[col] & ourPawns).empty() {
+				if (maskPassed[their][square] & maskIsolated[col] & ourPawns).noneʔ() {
 
 					// Backward pawn should face enemy pawns on the next two ranks
 					// preventing its advance.
 					enemy := pawnAttacks[our][square].up(our)
-					if ((enemy | enemy.up(our)) & theirPawns).any() {
-						backward = true
-						if !exposed {
+					if ((enemy | enemy.up(our)) & theirPawns).anyʔ() {
+						backwardʔ = true
+						if !exposedʔ {
 							score.sub(penaltyBackwardPawn[col])
 						} else {
 							score.sub(penaltyWeakBackwardPawn[col])
@@ -128,7 +128,7 @@ func (e *Evaluation) pawnStructure(our int) (score Score) {
 		}
 
 		// Bonus if the pawn has good chance to become a passed pawn.
-		if exposed && !isolated && !passed && !backward {
+		if exposedʔ && !isolatedʔ && !passedʔ && !backwardʔ {
 			his := maskPassed[their][square + up[our]] & maskIsolated[col] & ourPawns
 			her := maskPassed[our][square] & maskIsolated[col] & theirPawns
 			if his.count() >= her.count() {
@@ -144,9 +144,9 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 	p, their := e.position, our^1
 
 	// If opposing side has no pieces other than pawns then need to check if passers are unstoppable.
-	chase := (p.outposts[their] ^ p.outposts[pawn(their)] ^ p.outposts[king(their)]).empty()
+	chase := (p.outposts[their] ^ p.outposts[pawn(their)] ^ p.outposts[king(their)]).noneʔ()
 
-	for bm := e.pawns.passers[our]; bm.any(); bm = bm.pop() {
+	for bm := e.pawns.passers[our]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		rank := rank(our, square)
 		bonus := bonusPassedPawn[rank]
@@ -160,7 +160,7 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 			bonus.endgame += (distance[p.king[their]][nextSquare] * 5 - distance[p.king[our]][nextSquare] * 2) * extra
 
 			// Check if the pawn can step forward.
-			if p.board.off(nextSquare) {
+			if p.board.offʔ(nextSquare) {
 				boost := 0
 
 				// Assume all squares in front of the pawn are under attack.
@@ -170,14 +170,14 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 				// Boost the bonus if squares in front of the pawn are defended.
 				if defended == attacked {
 					boost += 6 // All squares.
-				} else if defended.on(nextSquare) {
+				} else if defended.onʔ(nextSquare) {
 					boost += 4 // Next square only.
 				}
 
 				// Check who is attacking the squares in front of the pawn including
 				// queen and rook x-ray attacks from behind.
 				enemy := maskInFront[their][square] & (p.outposts[queen(their)] | p.outposts[rook(their)])
-				if enemy.empty() || (enemy & p.rookMoves(square)).empty() {
+				if enemy.noneʔ() || (enemy & p.rookMoves(square)).noneʔ() {
 
 					// Since nobody attacks the pawn from behind adjust the attacked
 					// bitmask to only include squares attacked or occupied by the enemy.
@@ -186,9 +186,9 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 
 				// Boost the bonus if passed pawn is free to advance to the 8th rank
 				// or at least safely step forward.
-				if attacked.empty() {
+				if attacked.noneʔ() {
 					boost += 15 // Remaining squares are not under attack.
-				} else if attacked.off(nextSquare) {
+				} else if attacked.offʔ(nextSquare) {
 					boost += 9  // Next square is not under attack.
 				}
 
@@ -199,7 +199,7 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 		}
 
 		// Before chasing the unstoppable make sure own pieces are not blocking the passer.
-		if chase && (p.outposts[our] & maskInFront[our][square]).empty() {
+		if chase && (p.outposts[our] & maskInFront[our][square]).noneʔ() {
 			// Pick square rule bitmask for the pawn. If defending king has the right
 			// to move then pick extended square mask.
 			bits := maskNone
@@ -208,7 +208,7 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 			} else {
 				bits = maskSquareEx[our][square]
 			}
-			if (bits & p.outposts[king(their)]).empty() {
+			if (bits & p.outposts[king(their)]).noneʔ() {
 				bonus.endgame += unstoppablePawn
 			}
 		}

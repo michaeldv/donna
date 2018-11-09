@@ -20,22 +20,22 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 
 	// Non-capturing Knight checks.
 	checks := knightMoves[square]
-	for bm := p.outposts[knight(color)]; bm.any(); bm = bm.pop() {
+	for bm := p.outposts[knight(color)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		gen.movePiece(from, knightMoves[from] & checks & empty)
 	}
 
 	// Non-capturing Bishop or Queen checks.
 	checks = p.bishopAttacksAt(square, enemy)
-	for bm := p.outposts[bishop(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
+	for bm := p.outposts[bishop(color)] | p.outposts[queen(color)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		diagonal := (r != row(from) && c != col(from))
-		for bm := p.bishopAttacksAt(from, enemy) & checks & friendly; bm.any(); bm = bm.pop() {
+		for bm := p.bishopAttacksAt(from, enemy) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a bishop to check.
 				gen.add(NewMove(p, from, to))
-			} else if diagonal && piece.color() == color && maskLine[from][square].any() {
+			} else if diagonal && piece.color() == color && maskLine[from][square].anyʔ() {
 				// Non-empty square occupied by friendly piece on the same
 				// diagonal: moving the piece away causes discovered check.
 				switch piece.kind() {
@@ -55,7 +55,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 				}
 			}
 		}
-		if p.pieces[from].isQueen() {
+		if p.pieces[from].queenʔ() {
 			// Queen could move straight as a rook and check diagonally as a bishop
 			// or move diagonally as a bishop and check straight as a rook.
 			targets := (p.rookAttacksAt(from, color) & checks) |
@@ -66,15 +66,15 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 
 	// Non-capturing Rook or Queen checks.
 	checks = p.rookAttacksAt(square, enemy)
-	for bm := p.outposts[rook(color)] | p.outposts[queen(color)]; bm.any(); bm = bm.pop() {
+	for bm := p.outposts[rook(color)] | p.outposts[queen(color)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		straight := (r == row(from) || c == col(from))
-		for bm := p.rookAttacksAt(from, enemy) & checks & friendly; bm.any(); bm = bm.pop() {
+		for bm := p.rookAttacksAt(from, enemy) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a rook to check.
 				gen.add(NewMove(p, from, to))
-			} else if straight && piece.color() == color && maskLine[from][square].any() {
+			} else if straight && piece.color() == color && maskLine[from][square].anyʔ() {
 				// Non-empty square occupied by friendly piece on the same
 				// file or rank: moving the piece away causes discovered check.
 				switch piece.kind() {
@@ -108,9 +108,9 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	}
 
 	// Non-capturing Pawn checks.
-	for bm := p.outposts[pawn(color)] & maskIsolated[c]; bm.any(); bm = bm.pop() {
+	for bm := p.outposts[pawn(color)] & maskIsolated[c]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
-		if bm := maskPawn[color][square] & p.targets(from); bm.any() {
+		if bm := maskPawn[color][square] & p.targets(from); bm.anyʔ() {
 			gen.add(NewPawnMove(p, from, bm.first()))
 		}
 	}

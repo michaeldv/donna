@@ -35,7 +35,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 
 	// If checkers mask is not empty then we've got double check and
 	// retreat is the only option.
-	if checkers = checkers.pop(); checkers.any() {
+	if checkers = checkers.pop(); checkers.anyʔ() {
 		attackSquare = checkers.first()
 		if p.pieces[attackSquare] != pawn(enemy) {
 			retreats &= maskEvade[square][attackSquare]
@@ -49,7 +49,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 
 	// Pawn captures: do we have any pawns available that could capture
 	// the attacking piece?
-	for bm := maskPawn[color][attackSquare] & p.outposts[pawn(color)]; bm.any(); bm = bm.pop() {
+	for bm := maskPawn[color][attackSquare] & p.outposts[pawn(color)]; bm.anyʔ(); bm = bm.pop() {
 		move := NewMove(p, bm.first(), attackSquare)
 		if attackSquare >= A8 || attackSquare <= H1 {
 			move = move.promote(Queen)
@@ -62,7 +62,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// evaded by c5xd6 or e5xd6 en-passant captures.
 	if p.enpassant != 0 {
 		if enpassant := attackSquare + up[color]; enpassant == p.enpassant {
-			for bm := maskPawn[color][enpassant] & p.outposts[pawn(color)]; bm.any(); bm = bm.pop() {
+			for bm := maskPawn[color][enpassant] & p.outposts[pawn(color)]; bm.anyʔ(); bm = bm.pop() {
 				gen.add(NewMove(p, bm.first(), enpassant))
 			}
 		}
@@ -82,7 +82,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	}
 
 	// Handle one-square pawn pushes: promote to Queen if reached last rank.
-	for bm := pawns & block; bm.any(); bm = bm.pop() {
+	for bm := pawns & block; bm.anyʔ(); bm = bm.pop() {
 		to := bm.first()
 		from := to - up[color]
 		move := NewMove(p, from, to) // Can't cause en-passant.
@@ -93,7 +93,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	}
 
 	// Handle two-square pawn jumps that can cause en-passant.
-	for bm := jumps & block; bm.any(); bm = bm.pop() {
+	for bm := jumps & block; bm.anyʔ(); bm = bm.pop() {
 		to := bm.first()
 		from := to - 2 * up[color]
 		gen.add(NewPawnMove(p, from, to))
@@ -101,7 +101,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 
 	// What's left is to generate all possible knight, bishop, rook, and
 	// queen moves that evade the check.
-	for bm := p.outposts[color] & ^p.outposts[pawn(color)] & ^p.outposts[king(color)]; bm.any(); bm = bm.pop() {
+	for bm := p.outposts[color] & ^p.outposts[pawn(color)] & ^p.outposts[king(color)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		gen.movePiece(from, p.targets(from) & block)
 	}

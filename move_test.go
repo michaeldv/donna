@@ -136,7 +136,7 @@ func TestMove130(t *testing.T) {
 	m1, _ := NewMoveFromString(p, `d7d5`)
 	m2, _ := NewMoveFromString(p, `d7-d5`)
 	expect.Eq(t, m1, move)
-	expect.True(t, m2.isEnpassant())
+	expect.True(t, m2.enpassantʔ())
 }
 
 // Move to UCI coordinate notation.
@@ -209,7 +209,7 @@ func TestMove330(t *testing.T) {
 	move := NewPawnMove(p, D7, D5) // Causes en-passant on D6.
 
 	expect.Eq(t, NewMoveFromNotation(p, `d7d5`), move)
-	expect.True(t, NewMoveFromNotation(p, `d7d5`).isEnpassant())
+	expect.True(t, NewMoveFromNotation(p, `d7d5`).enpassantʔ())
 }
 
 // Only pawns can do en-passant capture.

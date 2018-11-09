@@ -66,7 +66,7 @@ func (gen *MoveGen) size() int {
 	return gen.tail
 }
 
-func (gen *MoveGen) onlyMove() bool {
+func (gen *MoveGen) onlyMoveʔ() bool {
 	return gen.tail == 1
 }
 
@@ -80,8 +80,8 @@ func (gen *MoveGen) nextMove() (move Move) {
 // Removes invalid moves from the generated list. We use in iterative deepening
 // to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly() *MoveGen {
-	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
-		if !move.valid(gen.p, gen.pins) {
+	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
+		if !move.validʔ(gen.p, gen.pins) {
 			gen.remove()
 		}
 	}
@@ -91,9 +91,9 @@ func (gen *MoveGen) validOnly() *MoveGen {
 
 // Probes a list of generated moves and returns true if it contains at least
 // one valid move.
-func (gen *MoveGen) anyValid() bool {
-	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
-		if move.valid(gen.p, gen.pins) {
+func (gen *MoveGen) anyValidʔ() bool {
+	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
+		if move.validʔ(gen.p, gen.pins) {
 			return true
 		}
 	}
@@ -103,8 +103,8 @@ func (gen *MoveGen) anyValid() bool {
 
 // Probes valid-only list of generated moves and returns true if the given move
 // is one of them.
-func (gen *MoveGen) amongValid(someMove Move) bool {
-	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
+func (gen *MoveGen) amongValidʔ(someMove Move) bool {
+	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
 		if someMove == move {
 			return true
 		}
@@ -165,7 +165,7 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 		move := gen.list[i].move
 		if move == bestMove {
 			gen.list[i].score = 0xFFFF
-		} else if !move.isQuiet() || move.isEnpassant() {
+		} else if !move.quietʔ() || move.enpassantʔ() {
 			gen.list[i].score = 8192 + move.value()
 		} else if move == game.killers[gen.ply][0] {
 			gen.list[i].score = 4096
@@ -185,7 +185,7 @@ func (gen *MoveGen) quickRank() *MoveGen {
 	}
 
 	for i := gen.head; i < gen.tail; i++ {
-		if move := gen.list[i].move; !move.isQuiet() || move.isEnpassant() {
+		if move := gen.list[i].move; !move.quietʔ() || move.enpassantʔ() {
 			gen.list[i].score = 8192 + move.value()
 		} else {
 			gen.list[i].score = game.good(move)
@@ -215,7 +215,7 @@ func (gen *MoveGen) remove() *MoveGen {
 // Returns an array of generated moves by continuously appending the nextMove()
 // until the list is empty.
 func (gen *MoveGen) allMoves() (moves []Move) {
-	for move := gen.nextMove(); move.some(); move = gen.nextMove() {
+	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
 		moves = append(moves, move)
 	}
 	gen.reset()

@@ -16,7 +16,7 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	// Update position's hash values.
 	random := piece.polyglot(from) ^ piece.polyglot(to)
 	p.id ^= random
-	if piece.isPawn() {
+	if piece.pawnʔ() {
 		p.pawnId ^= random
 	}
 
@@ -51,7 +51,7 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	// Update position's hash values and material balance.
 	random := capture.polyglot(to)
 	p.id ^= random
-	if capture.isPawn() {
+	if capture.pawnʔ() {
 		p.pawnId ^= random
 	}
 	p.balance -= materialBalance[capture]
@@ -90,15 +90,15 @@ func (p *Position) makeMove(move Move) *Position {
 	tree[node] = *p // => tree[node] = tree[node - 1]
 	pp := &tree[node]
 
-	pp.enpassant, pp.reversible = 0, true
+	pp.enpassant, pp.reversibleʔ = 0, true
 
 	if capture != 0 && (to == 0 || to != p.enpassant) {
-		pp.count50, pp.reversible = 0, false
+		pp.count50, pp.reversibleʔ = 0, false
 		pp.capturePiece(capture, from, to)
 	}
 
-	if piece.isPawn() {
-		pp.count50, pp.reversible = 0, false
+	if piece.pawnʔ() {
+		pp.count50, pp.reversibleʔ = 0, false
 		if to != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(color^1), from, to)
 			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
@@ -107,17 +107,17 @@ func (p *Position) makeMove(move Move) *Position {
 			pp.promotePawn(piece, from, to, promo)
 		} else {
 			pp.movePiece(piece, from, to)
-			if move.isEnpassant() {
+			if move.enpassantʔ() {
 				pp.enpassant = from + up[color] // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
-	} else if piece.isKing() {
+	} else if piece.kingʔ() {
 		pp.movePiece(piece, from, to)
 		pp.count50++
 		pp.king[color] = to
-		if move.isCastle() {
-			pp.reversible = false
+		if move.castleʔ() {
+			pp.reversibleʔ = false
 			if to == from + 2 {
 				pp.movePiece(rook(color), to + 1, to - 1)
 			} else if to == from - 2 {
@@ -168,25 +168,25 @@ func (p *Position) undoLastMove() *Position {
 	return &tree[node]
 }
 
-func (p *Position) isInCheck(color int) bool {
-	return p.isAttacked(color ^ 1, p.king[color])
+func (p *Position) inCheckʔ(color int) bool {
+	return p.attackedʔ(color ^ 1, p.king[color])
 }
 
-func (p *Position) isNull() bool {
+func (p *Position) nlNodeʔ() bool {
 	return node > 0 && tree[node].board == tree[node-1].board
 }
 
-func (p *Position) fifty() bool {
+func (p *Position) fiftyʔ() bool {
 	return p.count50 >= 100
 }
 
-func (p *Position) repetition() bool {
-	if !p.reversible || node < 1 {
+func (p *Position) repetitionʔ() bool {
+	if !p.reversibleʔ || node < 1 {
 		return false
 	}
 
 	for previous := node - 1; previous >= 0; previous-- {
-		if !tree[previous].reversible {
+		if !tree[previous].reversibleʔ {
 			return false
 		}
 		if tree[previous].id == p.id {
@@ -197,13 +197,13 @@ func (p *Position) repetition() bool {
 	return false
 }
 
-func (p *Position) thirdRepetition() bool {
-	if !p.reversible || node < 4 {
+func (p *Position) thirdRepetitionʔ() bool {
+	if !p.reversibleʔ || node < 4 {
 		return false
 	}
 
 	for previous, repetitions := node - 2, 1; previous >= 0; previous -= 2 {
-		if !tree[previous].reversible || !tree[previous + 1].reversible {
+		if !tree[previous].reversibleʔ || !tree[previous + 1].reversibleʔ {
 			return false
 		}
 		if tree[previous].id == p.id {
@@ -219,18 +219,18 @@ func (p *Position) thirdRepetition() bool {
 
 // Returns a pair of booleans that indicate whether given side is allowed to
 // castle kingside and queenside.
-func (p *Position) canCastle(color int) (kingside, queenside bool) {
+func (p *Position) canCastleʔ(color int) (kingside, queenside bool) {
 
 	// Start off with simple checks.
-	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board).empty()
-	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board).empty()
+	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board).noneʔ()
+	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board).noneʔ()
 
 	// If it still looks like the castles are possible perform more expensive
 	// final check.
 	if kingside || queenside {
 		attacks := p.allAttacks(color^1)
-		kingside = kingside && (castleKing[color] & attacks).empty()
-		queenside = queenside && (castleQueen[color] & attacks).empty()
+		kingside = kingside && (castleKing[color] & attacks).noneʔ()
+		queenside = queenside && (castleQueen[color] & attacks).noneʔ()
 	}
 
 	return kingside, queenside
@@ -245,11 +245,11 @@ func (p *Position) pins(square int) (bitmask Bitmask) {
 	attackers := (p.outposts[bishop(their)] | p.outposts[queen(their)]) & bishopMagicMoves[square][0]
 	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[square][0]
 
-	for bm := attackers; bm.any(); bm = bm.pop() {
+	for bm := attackers; bm.anyʔ(); bm = bm.pop() {
 		attackSquare := bm.first()
 		blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
 
-		if blockers.single() {
+		if blockers.singleʔ() {
 			bitmask |= blockers & p.outposts[our] // Only friendly pieces are pinned.
 		}
 	}

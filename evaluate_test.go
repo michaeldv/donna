@@ -69,23 +69,23 @@ func TestEvaluate060(t *testing.T) {
 func TestEvaluate070(t *testing.T) {
 	p := NewGame(`Ke1,Bc1`, `Ke8,Bc8`).start()
 	eval.init(p)
-	expect.True(t, eval.oppositeBishops())
+	expect.True(t, eval.oppositeBishopsʔ())
 }
 
 func TestEvaluate071(t *testing.T) {
 	p := NewGame(`Kc4,Bd4`, `Ke8,Bd5`).start()
 	eval.init(p)
-	expect.True(t, eval.oppositeBishops())
+	expect.True(t, eval.oppositeBishopsʔ())
 }
 
 func TestEvaluate072(t *testing.T) {
 	p := NewGame(`Kc4,Bd4`, `Ke8,Be5`).start()
 	eval.init(p)
-	expect.False(t, eval.oppositeBishops())
+	expect.False(t, eval.oppositeBishopsʔ())
 }
 
 func TestEvaluate073(t *testing.T) {
 	p := NewGame(`Ke1,Bc1`, `Ke8,Bf8`).start()
 	eval.init(p)
-	expect.False(t, eval.oppositeBishops())
+	expect.False(t, eval.oppositeBishopsʔ())
 }

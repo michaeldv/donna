@@ -51,11 +51,11 @@ func pawn(color int) Piece {
 	return Piece(color | Pawn)
 }
 
-func (p Piece) none() bool {
+func (p Piece) noneʔ() bool {
 	return p == Piece(0)
 }
 
-func (p Piece) some() bool {
+func (p Piece) someʔ() bool {
 	return p != Piece(0)
 }
 
@@ -79,35 +79,35 @@ func (p Piece) value() int {
 	return pieceValue[p.id()]
 }
 
-func (p Piece) isWhite() bool {
-	return p & 1 == 0
+func (p Piece) whiteʔ() bool {
+	return p & 1 == White
 }
 
-func (p Piece) isBlack() bool {
-	return p & 1 == 1
+func (p Piece) blackʔ() bool {
+	return p & 1 == Black
 }
 
-func (p Piece) isKing() bool {
+func (p Piece) kingʔ() bool {
 	return p & 0xFE == King
 }
 
-func (p Piece) isQueen() bool {
+func (p Piece) queenʔ() bool {
 	return p & 0xFE == Queen
 }
 
-func (p Piece) isRook() bool {
+func (p Piece) rookʔ() bool {
 	return p & 0xFE == Rook
 }
 
-func (p Piece) isBishop() bool {
+func (p Piece) bishopʔ() bool {
 	return p & 0xFE == Bishop
 }
 
-func (p Piece) isKnight() bool {
+func (p Piece) knightʔ() bool {
 	return p & 0xFE == Knight
 }
 
-func (p Piece) isPawn() bool {
+func (p Piece) pawnʔ() bool {
 	return p & 0xFE == Pawn
 }
 
@@ -120,7 +120,7 @@ func (p Piece) String() string {
 	plain := []string{ ` `, ` `, `P`, `p`, `N`, `n`, `B`, `b`, `R`, `r`, `Q`, `q`, `K`, `k` }
 	fancy := []string{ ` `, ` `, "\u2659", "\u265F", "\u2658", "\u265E", "\u2657", "\u265D", "\u2656", "\u265C", "\u2655", "\u265B", "\u2654", "\u265A" }
 
-	if engine.fancy {
+	if engine.fancyʔ {
 		return fancy[p]
 	}
 	return plain[p]

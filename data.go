@@ -64,7 +64,7 @@ const (A1A8 = iota; B1B8; C1C8; D1D8; E1E8; F1F8; G1G8; H1H8)
 
 // Useful masks.
 const (
-	maskNone = maskNone
+	maskNone = Bitmask(0)
 	maskFull = Bitmask(0xFFFFFFFFFFFFFFFF)
 	maskDark = Bitmask(0xAA55AA55AA55AA55)
 	maskA1H8 = Bitmask(0x8040201008040201)

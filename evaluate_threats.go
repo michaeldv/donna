@@ -12,7 +12,7 @@ func (e *Evaluation) analyzeThreats() {
 	var score Score
 	var threats, center Total
 
-	if engine.trace {
+	if engine.traceʔ {
 		defer func() {
 			e.checkpoint(`Threats`, threats)
 			e.checkpoint(`Center`, center)
@@ -43,7 +43,7 @@ func (e *Evaluation) threats(our int) (score Score) {
 	majors := pieces ^ p.outposts[pawn(their)]		// All pieces except king and pawns.
 
 	// Bonus for each enemy piece attacked by our pawn.
-	for bm := majors & p.pawnTargets(our, pawns); bm.any(); bm = bm.pop() {
+	for bm := majors & p.pawnTargets(our, pawns); bm.anyʔ(); bm = bm.pop() {
 		piece := p.pieces[bm.first()]
 		score.add(bonusPawnThreat[piece.id()])
 	}
@@ -53,21 +53,21 @@ func (e *Evaluation) threats(our int) (score Score) {
 	defended := majors & e.attacks[pawn(their)]
 	undefended := pieces & ^e.attacks[pawn(their)] & e.attacks[our]
 
-	if likely := defended | undefended; likely.any() {
+	if likely := defended | undefended; likely.anyʔ() {
 		// Bonus for enemy pieces attacked by knights and bishops.
-		for bm := likely & (e.attacks[knight(our)] | e.attacks[bishop(our)]); bm.any(); bm = bm.pop() {
+		for bm := likely & (e.attacks[knight(our)] | e.attacks[bishop(our)]); bm.anyʔ(); bm = bm.pop() {
 			piece := p.pieces[bm.first()]
 			score.add(bonusMinorThreat[piece.id()])
 		}
 
 		// Bonus for enemy pieces attacked by rooks.
-		for bm := (undefended | p.outposts[queen(their)]) & e.attacks[rook(our)]; bm.any(); bm = bm.pop() {
+		for bm := (undefended | p.outposts[queen(their)]) & e.attacks[rook(our)]; bm.anyʔ(); bm = bm.pop() {
 			piece := p.pieces[bm.first()]
 			score.add(bonusRookThreat[piece.id()])
 		}
 
 		// Bonus for enemy pieces attacked by the king.
-		if bm := undefended & e.attacks[king(our)]; bm.any() {
+		if bm := undefended & e.attacks[king(our)]; bm.anyʔ() {
 			if count := bm.count(); count > 0 {
 				score.add(kingAttack)
 				if count > 1 {
@@ -77,7 +77,7 @@ func (e *Evaluation) threats(our int) (score Score) {
 		}
 
 		// Extra bonus when attacking enemy pieces that are hanging.
-		if bm := undefended & ^e.attacks[their]; bm.any() {
+		if bm := undefended & ^e.attacks[their]; bm.anyʔ() {
 			if count := bm.count(); count > 0 {
 				score.add(hangingAttack.times(count))
 			}

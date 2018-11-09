@@ -13,7 +13,7 @@ import (`fmt`; `os`; `time`)
 const Ping = 250 // Check time 4 times a second.
 
 type Clock struct {
-	halt        bool     // Stop search immediately when set to true.
+	haltʔ       bool     // Stop search immediately when set to true.
 	softStop    int64    // Target soft time limit to make a move.
 	hardStop    int64    // Immediate stop time limit.
 	extra       float32  // Extra time factor based on search volatility.
@@ -22,8 +22,8 @@ type Clock struct {
 }
 
 type Options struct {
-	ponder      bool     // (-) Pondering mode.
-	infinite    bool     // (-) Search until the "stop" command.
+	ponderʔ     bool     // (-) Pondering mode.
+	infiniteʔ   bool     // (-) Search until the "stop" command.
 	maxDepth    int      // Search X plies only.
 	maxNodes    int      // (-) Search X nodes only.
 	moveTime    int64    // Search exactly X milliseconds per move.
@@ -33,10 +33,10 @@ type Options struct {
 }
 
 type Engine struct {
-	log         bool     // Enable logging.
-	uci	    bool     // Use UCI protocol.
-	trace       bool     // Trace evaluation scores.
-	fancy       bool     // Represent pieces as UTF-8 characters.
+	logʔ        bool     // Enable logging.
+	uciʔ        bool     // Use UCI protocol.
+	traceʔ      bool     // Trace evaluation scores.
+	fancyʔ      bool     // Represent pieces as UTF-8 characters.
 	status      uint8    // Engine status.
 	logFile     string   // Log file name.
 	bookFile    string   // Polyglot opening book file name.
@@ -53,17 +53,17 @@ func NewEngine(args ...interface{}) *Engine {
 	for i := 0; i < len(args); i += 2 {
 		switch value := args[i+1]; args[i] {
 		case `log`:
-			engine.log = value.(bool)
+			engine.logʔ = value.(bool)
 		case `logfile`:
 			engine.logFile = value.(string)
 		case `bookfile`:
 			engine.bookFile = value.(string)
 		case `uci`:
-			engine.uci = value.(bool)
+			engine.uciʔ = value.(bool)
 		case `trace`:
-			engine.trace = value.(bool)
+			engine.traceʔ = value.(bool)
 		case `fancy`:
-			engine.fancy = value.(bool)
+			engine.fancyʔ = value.(bool)
 		case `depth`:
 			engine.options.maxDepth = value.(int)
 		case `movetime`:
@@ -118,15 +118,15 @@ func (e *Engine) reply(args ...interface{}) *Engine {
 	return e
 }
 
-func (e *Engine) fixedDepth() bool {
+func (e *Engine) fixedDepthʔ() bool {
 	return e.options.maxDepth > 0
 }
 
-func (e *Engine) fixedTime() bool {
+func (e *Engine) fixedTimeʔ() bool {
 	return e.options.moveTime > 0
 }
 
-func (e *Engine) varyingTime() bool {
+func (e *Engine) varyingTimeʔ() bool {
 	return e.options.moveTime == 0
 }
 
@@ -156,7 +156,7 @@ func (e *Engine) factor(depth int, volatility float32) *Engine {
 // Starts the clock setting ticker callback function. The callback function is
 // different for fixed and variable time controls.
 func (e *Engine) startClock() *Engine {
-	e.clock.halt = false
+	e.clock.haltʔ = false
 
 	if e.options.moveTime == 0 && e.options.timeLeft == 0 {
 		return e
@@ -165,7 +165,7 @@ func (e *Engine) startClock() *Engine {
 	e.clock.start = time.Now()
 	e.clock.ticker = time.NewTicker(time.Millisecond * Ping)
 
-	if e.fixedTime() {
+	if e.fixedTimeʔ() {
 		return e.fixedTimeTicker()
 	}
 
@@ -194,7 +194,7 @@ func (e *Engine) fixedTimeTicker() *Engine {
 				continue // Haven't found the move yet.
 			}
 			if e.elapsed(now) >= e.options.moveTime - Ping {
-				e.clock.halt = true
+				e.clock.haltʔ = true
 				return
 			}
 		}
@@ -215,10 +215,10 @@ func (e *Engine) varyingTimeTicker() *Engine {
 				continue // Haven't found the move yet.
 			}
 			elapsed := e.elapsed(now)
-			if (game.deepening && game.improving && elapsed > e.remaining() * 4 / 5) || elapsed > e.clock.hardStop {
+			if (game.deepeningʔ && game.improvingʔ && elapsed > e.remaining() * 4 / 5) || elapsed > e.clock.hardStop {
 				//\\ e.debug("# Halt: Flags %v Elapsed %s Remaining %s Hard stop %s\n",
-				//\\	game.deepening && game.improving, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop))
-				e.clock.halt = true
+				//\\	game.deepeningʔ && game.improvingʔ, ms(elapsed), ms(e.remaining() * 4 / 5), ms(e.clock.hardStop))
+				e.clock.haltʔ = true
 				return
 			}
 		}
@@ -238,8 +238,8 @@ func (e *Engine) varyingLimits(options Options) *Engine {
 
 	// Note if it's a new time control before saving the options.
 	e.options = options
-	e.options.ponder = false
-	e.options.infinite = false
+	e.options.ponderʔ = false
+	e.options.infiniteʔ = false
 	e.options.maxDepth = 0
 	e.options.maxNodes = 0
 	e.options.moveTime = 0

@@ -1581,20 +1581,20 @@ func Bitbase() {
 
 		// The wPawn can be promoted if: a) black king is too far to capture it or
 		// b) promotion square is protected by the white king.		
-		promoted := func () bool {
+		promotedʔ := func () bool {
 			square := wPawn + 8
 			return square >= A8 && (distance[bKing][square] > 1 || distance[wKing][square] == 1)
 		}
 
-		undefended := func () bool {
+		undefendedʔ := func () bool {
 			return distance[bKing][wPawn] == 1 && distance[wKing][wPawn] > 1
 		}
 
-		cornered := func () bool {
+		corneredʔ := func () bool {
 			return kingMoves[wKing] & ^(kingMoves[bKing] | bit[wPawn]) == 0 && wPawn + 8 == wKing
 		}
 
-		stalemate := func () bool {
+		stalemateʔ := func () bool {
 			return kingMoves[bKing] & ^(kingMoves[wKing] | pawnMoves[White][wPawn]) == 0
 		}
 
@@ -1608,13 +1608,13 @@ func Bitbase() {
 			if pawnMoves[White][wPawn] & bit[bKing] != 0 {
 				return Invalid
 			}
-			if cornered() {
+			if corneredʔ() {
 				return Draw
 			}
-			if promoted() {
+			if promotedʔ() {
 				return Win
 			}
-		} else if undefended() || stalemate() {
+		} else if undefendedʔ() || stalemateʔ() {
 			return Draw
 		}
 		return Unclear

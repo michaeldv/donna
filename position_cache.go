@@ -101,7 +101,7 @@ func (p *Position) cache(move Move, score, depth, ply int, flags uint8) *Positio
 				entry.xscore = int16(score)
 			}
 			id := uint16(p.id >> 48)
-			if move.some() || id != entry.id {
+			if move.someʔ() || id != entry.id {
 				entry.move = move
 			}
 			entry.xdepth = int8(depth)

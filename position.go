@@ -31,7 +31,7 @@ type Position struct {		 // 224 bytes long.
 	color        int	 // Side to make next move.
 	enpassant    int	 // En-passant square caused by previous move.
 	count50      int	 // 50 moves rule counter.
-	reversible   bool	 // Is this position reversible?
+	reversibleʔ  bool	 // Is this position reversible?
 	castles      uint8	 // Castle rights mask.
 }
 
@@ -56,17 +56,17 @@ func NewPosition(game *Game, white, black string) *Position {
 	}
 
 	for square, piece := range p.pieces {
-		if piece.some() {
+		if piece.someʔ() {
 			p.outposts[piece] |= bit[square]
 			p.outposts[piece.color()] |= bit[square]
-			if piece.isKing() {
+			if piece.kingʔ() {
 				p.king[piece.color()] = square
 			}
 			p.balance += materialBalance[piece]
 		}
 	}
 
-	p.reversible = true
+	p.reversibleʔ = true
 	p.board = p.outposts[White] | p.outposts[Black]
 	p.id, p.pawnId = p.polyglot()
 	p.tally = p.valuation()
@@ -196,7 +196,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		case '1', '2', '3', '4', '5', '6', '7', '8':
 			sq += int(char - '0')
 		}
-		if piece.some() {
+		if piece.someʔ() {
 			p.pieces[sq] = piece
 			p.outposts[piece] |= bit[sq]
 			p.outposts[piece.color()] |= bit[sq]
@@ -235,7 +235,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		p.count50 = n
 	}
 
-	p.reversible = true
+	p.reversibleʔ = true
 	p.board = p.outposts[White] | p.outposts[Black]
 	p.id, p.pawnId = p.polyglot()
 	p.tally = p.valuation()
@@ -247,12 +247,12 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 // Computes initial values of position's polyglot hash and pawn hash. When
 // making a move these values get updated incrementally.
 func (p *Position) polyglot() (hash, pawnHash uint64) {
-	for board := p.board; board.any(); board = board.pop() {
+	for board := p.board; board.anyʔ(); board = board.pop() {
 		square := board.first()
 		piece := p.pieces[square]
 		random := piece.polyglot(square)
 		hash ^= random
-		if piece.isPawn() {
+		if piece.pawnʔ() {
 			pawnHash ^= random
 		}
 	}
@@ -271,7 +271,7 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 // Computes positional valuation score based on PST. When making a move the
 // valuation tally gets updated incrementally.
 func (p *Position) valuation() (score Score) {
-	for bm := p.board; bm.any(); bm = bm.pop() {
+	for bm := p.board; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		piece := p.pieces[square]
 		score.add(pst[piece][square])
@@ -281,14 +281,14 @@ func (p *Position) valuation() (score Score) {
 }
 
 // Returns true if material balance is insufficient to win the game.
-func (p *Position) insufficient() bool {
+func (p *Position) insufficientʔ() bool {
 	return materialBase[p.balance].flags & materialDraw != 0
 }
 
 // Reports game status for current position or after the given move. The status
 // helps to determine whether to continue with search or if the game is over.
 func (p *Position) status(move Move, blendedScore int) int {
-	if move.some() {
+	if move.someʔ() {
 		p = p.makeMove(move)
 		defer func() { p = p.undoLastMove() }()
 	}
@@ -296,19 +296,19 @@ func (p *Position) status(move Move, blendedScore int) int {
 	switch ply, score := ply(), abs(blendedScore); score {
 	case 0:
 		if ply == 1 {
-			if p.insufficient() {
+			if p.insufficientʔ() {
 				return Insufficient
-			} else if p.thirdRepetition() {
+			} else if p.thirdRepetitionʔ() {
 				return Repetition
-			} else if p.fifty() {
+			} else if p.fiftyʔ() {
 				return FiftyMoves
 			}
 		}
-		if !NewGen(p, MaxPly).generateMoves().anyValid() {
+		if !NewGen(p, MaxPly).generateMoves().anyValidʔ() {
 			return Stalemate
 		}
 	case Checkmate - ply:
-		if p.isInCheck(p.color) {
+		if p.inCheckʔ(p.color) {
 			return let(p.color == White, BlackWon, WhiteWon)
 		}
 		return Stalemate
@@ -323,8 +323,8 @@ func (p *Position) status(move Move, blendedScore int) int {
 
 // Encodes position as FEN string.
 func (p *Position) fen() (fen string) {
-	fancy := engine.fancy
-	engine.fancy = false; defer func() { engine.fancy = fancy }()
+	fancy := engine.fancyʔ
+	engine.fancyʔ = false; defer func() { engine.fancyʔ = fancy }()
 
 	// Board: start from A8->H8 going down to A1->H1.
 	empty := 0
@@ -333,7 +333,7 @@ func (p *Position) fen() (fen string) {
 			square := square(row, col)
 			piece := p.pieces[square]
 
-			if piece.some() {
+			if piece.someʔ() {
 				if empty != 0 {
 					fen += fmt.Sprintf(`%d`, empty)
 					empty = 0
@@ -400,8 +400,8 @@ func (p *Position) fen() (fen string) {
 
 // Encodes position as DCF string (Donna Chess Format).
 func (p *Position) dcf() string {
-	fancy := engine.fancy
-	engine.fancy = false; defer func() { engine.fancy = fancy }()
+	fancy := engine.fancyʔ
+	engine.fancyʔ = false; defer func() { engine.fancyʔ = fancy }()
 
 	encode := func (square int) string {
 		var buffer bytes.Buffer
@@ -424,16 +424,16 @@ func (p *Position) dcf() string {
 		pieces[color] = append(pieces[color], `K` + encode(p.king[color]))
 
 		// Queens, Rooks, Bishops, and Knights.
-		for outposts := p.outposts[queen(color)]; outposts.any(); outposts = outposts.pop() {
+		for outposts := p.outposts[queen(color)]; outposts.anyʔ(); outposts = outposts.pop() {
 			pieces[color] = append(pieces[color], `Q` + encode(outposts.first()))
 		}
-		for outposts := p.outposts[rook(color)]; outposts.any(); outposts = outposts.pop() {
+		for outposts := p.outposts[rook(color)]; outposts.anyʔ(); outposts = outposts.pop() {
 			pieces[color] = append(pieces[color], `R` + encode(outposts.first()))
 		}
-		for outposts := p.outposts[bishop(color)]; outposts.any(); outposts = outposts.pop() {
+		for outposts := p.outposts[bishop(color)]; outposts.anyʔ(); outposts = outposts.pop() {
 			pieces[color] = append(pieces[color], `B` + encode(outposts.first()))
 		}
-		for outposts := p.outposts[knight(color)]; outposts.any(); outposts = outposts.pop() {
+		for outposts := p.outposts[knight(color)]; outposts.anyʔ(); outposts = outposts.pop() {
 			pieces[color] = append(pieces[color], `N` + encode(outposts.first()))
 		}
 
@@ -454,7 +454,7 @@ func (p *Position) dcf() string {
 		}
 
 		// Pawns.
-		for outposts := p.outposts[pawn(color)]; outposts.any(); outposts = outposts.pop() {
+		for outposts := p.outposts[pawn(color)]; outposts.anyʔ(); outposts = outposts.pop() {
 			pieces[color] = append(pieces[color], encode(outposts.first()))
 		}
 	}
@@ -464,7 +464,7 @@ func (p *Position) dcf() string {
 
 func (p *Position) String() string {
 	buffer := bytes.NewBufferString("  a b c d e f g h  " + C(p.color) + " to move")
-	if !p.isInCheck(p.color) {
+	if !p.inCheckʔ(p.color) {
 		buffer.WriteString("\n")
 	} else {
 		buffer.WriteString(", check\n")
@@ -473,7 +473,7 @@ func (p *Position) String() string {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0; col <= 7; col++ {
 			buffer.WriteByte(' ')
-			if piece := p.pieces[square(row, col)]; piece.some() {
+			if piece := p.pieces[square(row, col)]; piece.someʔ() {
 				buffer.WriteString(piece.String())
 			} else {
 				buffer.WriteString("\u22C5")

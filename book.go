@@ -120,7 +120,7 @@ func (b *Book) move(p *Position, entry Entry) Move {
 	} else {
 		// Special treatment for non-promo pawn moves since they might
 		// cause en-passant.
-		if piece := p.pieces[from]; piece.isPawn() && to > H1 && to < A8 {
+		if piece := p.pieces[from]; piece.pawnʔ() && to > H1 && to < A8 {
 			return NewPawnMove(p, from, to)
 		}
 	}

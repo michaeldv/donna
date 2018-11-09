@@ -20,7 +20,7 @@ import (
 func (e *Engine) uciScore(depth, score, alpha, beta int) *Engine {
 	str := fmt.Sprintf("info depth %d score", depth)
 
-	if !isMate(score) {
+	if !mateʔ(score) {
 		str += fmt.Sprintf(" cp %d", score * 100 / onePawn)
 	} else {
 		mate := -Checkmate - score
@@ -49,7 +49,7 @@ func (e *Engine) uciBestMove(move Move, duration int64) *Engine {
 func (e *Engine) uciPrincipal(depth, score int, duration int64) *Engine {
 	str := fmt.Sprintf("info depth %d score", depth)
 
-	if !isMate(score) {
+	if !mateʔ(score) {
 		str += fmt.Sprintf(" cp %d", score * 100 / onePawn)
 	} else {
 		mate := -Checkmate - score
@@ -73,7 +73,7 @@ func (e *Engine) Uci() *Engine {
 	var game *Game
 	var position *Position
 
-	e.uci = true
+	e.uciʔ = true
 
 	// "uci" command handler.
 	doUci := func(args []string) {
@@ -141,9 +141,9 @@ func (e *Engine) Uci() *Engine {
 		for i, token := range args {
 			// Boolen "infinite" and "ponder" commands have no arguments.
 			if token == `infinite` {
-				options = Options{infinite: true}
+				options = Options{infiniteʔ: true}
 			} else if token == `ponder` {
-				options = Options{ponder: true}
+				options = Options{ponderʔ: true}
 			} else if token == `test` { // <-- Custom token for use in tests.
 				think = false
 			} else if len(args) > i+1 {
@@ -206,7 +206,7 @@ func (e *Engine) Uci() *Engine {
 
 	// Stop calculating as soon as possible.
 	doStop := func(args []string) {
-		e.clock.halt = true
+		e.clock.haltʔ = true
 	}
 
 	// Set UCI option. So far we only support "setoption name Hash value 32..1024".

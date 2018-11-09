@@ -23,7 +23,7 @@ func (p *Position) exchange(move Move) int {
 	from, to, piece, capture := move.split()
 
 	score := exchangeScores[capture]
-	if promo := move.promo(); promo.some() {
+	if promo := move.promo(); promo.someʔ() {
 		score += exchangeScores[promo] - exchangeScores[Pawn]
 		piece = promo
 	}
@@ -35,12 +35,12 @@ func (p *Position) exchange(move Move) int {
 // Recursive helper method for the static exchange evaluation.
 func (p *Position) exchangeScore(color int, to, score, extra int, board Bitmask) int {
 	attackers := p.attackers(color, to, board) & board
-	if attackers.empty() {
+	if attackers.noneʔ() {
 		return score
 	}
 
 	from, best := 0, Checkmate
-	for bm := attackers; bm.any(); bm = bm.pop() {
+	for bm := attackers; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		if index := p.pieces[square]; exchangeScores[index] < best {
 			from = square

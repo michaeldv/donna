@@ -60,33 +60,33 @@ func init() {
 
 // Returns true if all bitmask bits are clear. Even if it's wrong, it's only
 // off by a bit.
-func (b Bitmask) empty() bool {
+func (b Bitmask) noneʔ() bool {
 	return b == 0
 }
 
 // Returns true if at least one bit is set.
-func (b Bitmask) any() bool {
+func (b Bitmask) anyʔ() bool {
 	return b != 0
 }
 
 // Returns true if a bit at given offset is set.
-func (b Bitmask) on(offset int) bool {
-	return (b & bit[offset & 63]).any()
+func (b Bitmask) onʔ(offset int) bool {
+	return (b & bit[offset & 63]).anyʔ()
 }
 
 // Returns true if a bit at given offset is clear.
-func (b Bitmask) off(offset int) bool {
-	return !b.on(offset)
+func (b Bitmask) offʔ(offset int) bool {
+	return !b.onʔ(offset)
 }
 
 // Returns true if a bitmask has single bit set.
-func (b Bitmask) single() bool {
-	return b.pop().empty()
+func (b Bitmask) singleʔ() bool {
+	return b.pop().noneʔ()
 }
 
 // Returns number of bits set.
 func (b Bitmask) count() int {
-	if b.empty() {
+	if b.noneʔ() {
 		return 0
 	}
 
@@ -173,7 +173,7 @@ func (b Bitmask) charm(offset int) (bitmask Bitmask) {
 	for i := 0; i < count; i++ {
 		pop := b ^ b.pop()
 		b = b.pop()
-		if (bit[i] & Bitmask(offset)).any() {
+		if (bit[i] & Bitmask(offset)).anyʔ() {
 			bitmask |= pop
 		}
 	}
@@ -182,9 +182,9 @@ func (b Bitmask) charm(offset int) (bitmask Bitmask) {
 }
 
 func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
-	for bm := (bit[square] & board).shift(direction); bm.any(); bm = bm.shift(direction) {
+	for bm := (bit[square] & board).shift(direction); bm.anyʔ(); bm = bm.shift(direction) {
 		*b |= bm
-		if (bm & occupied).any() {
+		if (bm & occupied).anyʔ() {
 			break
 		}
 		bm &= board
@@ -223,7 +223,7 @@ func (b Bitmask) String() string {
 		for col := 0; col <= 7; col++ {
 			offset := row << 3 + col
 			buffer.WriteByte(' ')
-			if b.on(offset) {
+			if b.onʔ(offset) {
 				buffer.WriteString("\u2022") // Set
 			} else {
 				buffer.WriteString("\u22C5") // Clear

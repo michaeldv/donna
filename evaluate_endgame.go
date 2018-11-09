@@ -84,7 +84,7 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 	}
 
 	index := color + (wKing << 1) + (bKing << 7) + ((wPawn - 8) << 13)
-	if (bitbase[index / 64] & bit[index & 0x3F]).empty() {
+	if (bitbase[index / 64] & bit[index & 0x3F]).noneʔ() {
 		return DrawScore
 	}
 
@@ -103,12 +103,12 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	row, col := coordinate(e.position.king[color^1])
 
 	// Pawns on A file with bare king opposing them.
-	if (pawns & ^maskFile[A1]).empty() && (pawns & ^maskInFront[color^1][row * 8]).empty() && col <= B1 {
+	if (pawns & ^maskFile[A1]).noneʔ() && (pawns & ^maskInFront[color^1][row * 8]).noneʔ() && col <= B1 {
 		return DrawScore
 	}
 
 	// Pawns on H file with bare king opposing them.
-	if (pawns & ^maskFile[H1]).empty() && (pawns & ^maskInFront[color^1][row * 8 + 7]).empty() && col >= G1 {
+	if (pawns & ^maskFile[H1]).noneʔ() && (pawns & ^maskInFront[color^1][row * 8 + 7]).noneʔ() && col >= G1 {
 		return DrawScore
 	}
 
@@ -117,7 +117,7 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 
 // Bishop-only endgame: drop the score if we have opposite-colored bishops.
 func (e *Evaluation) bishopsAndPawns() int {
-	if e.oppositeBishops() {
+	if e.oppositeBishopsʔ() {
 		outposts := &e.position.outposts
 		if abs(outposts[Pawn].count() - outposts[BlackPawn].count()) == 1 {
 			return e.fraction(1, 8) // 1/8
@@ -131,7 +131,7 @@ func (e *Evaluation) bishopsAndPawns() int {
 // Single bishops plus some other pieces: drop the score if we have opposite-colored
 // bishops but only if other minors/majors are balanced.
 func (e *Evaluation) drawishBishops() int {
-	if e.oppositeBishops() {
+	if e.oppositeBishopsʔ() {
 		outposts := &e.position.outposts
 		wN, bN := outposts[Knight].count(), outposts[BlackKnight].count()
 		wR, bR := outposts[Rook].count(), outposts[BlackRook].count()
@@ -151,22 +151,22 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 	}
 
 	p := e.position
-	unstoppable := func(color int, square int) bool {
-		if (p.outposts[color^1] & maskInFront[color][square]).empty() {
+	unstoppableʔ := func(color int, square int) bool {
+		if (p.outposts[color^1] & maskInFront[color][square]).noneʔ() {
 			mask := maskNone
 			if p.color == color {
 				mask = maskSquare[color][square]
 			} else {
 				mask = maskSquareEx[color][square]
 			}
-			return (mask & p.outposts[king(color^1)]).empty()
+			return (mask & p.outposts[king(color^1)]).noneʔ()
 		}
 		return false
 	}
 
 	// Check if either side has unstoppable pawn.
-	white := unstoppable(White, p.outposts[pawn(White)].first())
-	black := unstoppable(Black, p.outposts[pawn(Black)].first())
+	white := unstoppableʔ(White, p.outposts[pawn(White)].first())
+	black := unstoppableʔ(Black, p.outposts[pawn(Black)].first())
 	if white {
 		e.score.endgame = WhiteWinning
 	}
@@ -183,7 +183,7 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 	piece := pawn(our)
 	pawns := p.outposts[piece]
 	square := pawns.first()
-	if rank(our, pawns.first()) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).any() {
+	if rank(our, pawns.first()) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).anyʔ() {
 
 		// Temporarily remove opponent's pawn.
 		piece = pawn(our^1)
@@ -230,7 +230,7 @@ func (e *Evaluation) queenVsRookAndPawns() int { 	// STUB.
 func (e *Evaluation) lastPawnLeft() int {
 	outposts := &e.position.outposts
 
-	if outposts[Pawn].single() && outposts[BlackPawn].single() {
+	if outposts[Pawn].singleʔ() && outposts[BlackPawn].singleʔ() {
 		return e.fraction(3, 4) // 3/4
 	}
 
@@ -241,35 +241,35 @@ func (e *Evaluation) lastPawnLeft() int {
 func (e *Evaluation) noPawnsLeft() int {
 	color := e.strongerSide()
 	outposts := &e.position.outposts
-	whiteMinorOnly := outposts[Queen].empty() && outposts[Rook].empty() && (outposts[Bishop] | outposts[Knight]).single()
-	blackMinorOnly := outposts[BlackQueen].empty() && outposts[BlackRook].empty() && (outposts[BlackBishop] | outposts[BlackKnight]).single()
+	whiteMinorOnly := outposts[Queen].noneʔ() && outposts[Rook].noneʔ() && (outposts[Bishop] | outposts[Knight]).singleʔ()
+	blackMinorOnly := outposts[BlackQueen].noneʔ() && outposts[BlackRook].noneʔ() && (outposts[BlackBishop] | outposts[BlackKnight]).singleʔ()
 
 	// Check for opposite bishops first.
-	if whiteMinorOnly && blackMinorOnly && outposts[Knight].empty() && outposts[BlackKnight].empty() && e.oppositeBishops() {
+	if whiteMinorOnly && blackMinorOnly && outposts[Knight].noneʔ() && outposts[BlackKnight].noneʔ() && e.oppositeBishopsʔ() {
 		pawn := outposts[pawn(color)]			// The passer.
 		king := outposts[king(color^1)]			// Defending king.
 		path := maskInFront[color][pawn.first()]	// Path in front of the passer.
 		safe := maskDark				// Safe squares for king to block on.
-		if (outposts[bishop(color)] & maskDark).any() {
+		if (outposts[bishop(color)] & maskDark).anyʔ() {
 			safe = ^maskDark
 		}
 
 		// Draw if king blocks the passer on safe square.
-		if (king & safe).any() && (king & path).any() {
+		if (king & safe).anyʔ() && (king & path).anyʔ() {
 			return DrawScore
 		}
 
 		// Draw if bishop attacks a square in front of the passer.
-		if (e.position.bishopAttacks(color^1) & path).any() {
+		if (e.position.bishopAttacks(color^1) & path).anyʔ() {
 			return DrawScore
 		}
 	}
 
-	if color == White && outposts[Pawn].empty() {
+	if color == White && outposts[Pawn].noneʔ() {
 		if whiteMinorOnly {
 			// There is a theoretical chance of winning if opponent's pawns are on
 			// edge files (ex. some puzzles).
-			if (outposts[BlackPawn] & (maskFile[0] | maskFile[7])).any() {
+			if (outposts[BlackPawn] & (maskFile[0] | maskFile[7])).anyʔ() {
 				return e.fraction(1, 64) // 1/64
 			}
 			return DrawScore
@@ -279,9 +279,9 @@ func (e *Evaluation) noPawnsLeft() int {
 		return e.fraction(3, 16) // 3/16
 	}
 
-	if color == Black && outposts[BlackPawn].empty() {
+	if color == Black && outposts[BlackPawn].noneʔ() {
 		if blackMinorOnly {
-			if (outposts[Pawn] & (maskFile[0] | maskFile[7])).any() {
+			if (outposts[Pawn] & (maskFile[0] | maskFile[7])).anyʔ() {
 				return e.fraction(1, 64) // 1/64
 			}
 			return DrawScore
