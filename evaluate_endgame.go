@@ -153,7 +153,7 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 	p := e.position
 	unstoppable := func(color int, square int) bool {
 		if (p.outposts[color^1] & maskInFront[color][square]).empty() {
-			mask := Bitmask(0)
+			mask := maskNone
 			if p.color == color {
 				mask = maskSquare[color][square]
 			} else {
@@ -190,7 +190,7 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 		pawns = p.outposts[piece]		// -> Save: opponent's pawn bitmask.
 		square = pawns.first()			// -> Save: opponent's pawn square.
 
-		p.outposts[piece] = Bitmask(0)
+		p.outposts[piece] = maskNone
 		p.pieces[square] = Piece(0)
 
 		// Temporarily adjust score so that when e.strongerSide() gets called

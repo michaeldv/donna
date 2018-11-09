@@ -113,7 +113,7 @@ func (e *Evaluation) knights(our int, maskSafe Bitmask, unsafeKing bool) (score,
 
 	for bm := p.outposts[knight(our)]; bm.any(); bm = bm.pop() {
 		square := bm.first()
-		attacks := Bitmask(0)
+		attacks := maskNone
 
 		// Bonus for knight's mobility -- unless the knight is pinned.
 		if e.pins[our].off(square) {

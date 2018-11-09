@@ -72,7 +72,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	block := maskBlock[square][attackSquare] | bit[attackSquare]
 
 	// Create masks for one-square pawn pushes and two-square jumps.
-	pawns, jumps := Bitmask(0), ^p.board
+	pawns, jumps := maskNone, ^p.board
 	if color == White {
 		pawns = (p.outposts[Pawn] << 8) & ^p.board
 		jumps &= maskRank[3] & (pawns << 8)

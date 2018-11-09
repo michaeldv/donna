@@ -14,7 +14,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	color, enemy := p.color, p.color^1
 	square := p.king[enemy]
 	r, c := coordinate(square)
-	prohibit := Bitmask(0)
+	prohibit := maskNone
 	empty := ^p.board
 	friendly := ^p.outposts[enemy]
 

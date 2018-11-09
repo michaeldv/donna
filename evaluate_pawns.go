@@ -202,7 +202,7 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 		if chase && (p.outposts[our] & maskInFront[our][square]).empty() {
 			// Pick square rule bitmask for the pawn. If defending king has the right
 			// to move then pick extended square mask.
-			bits := Bitmask(0)
+			bits := maskNone
 			if p.color == our {
 				bits = maskSquare[our][square]
 			} else {

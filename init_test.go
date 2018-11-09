@@ -19,7 +19,7 @@ func TestMagic000(t *testing.T) {
 	expect.Eq(t, maskBlock[C3][C1], Bitmask( bit[C2] | bit[C1]                               ))
 	expect.Eq(t, maskBlock[C3][E1], Bitmask( bit[D2] | bit[E1]                               ))
 	expect.Eq(t, maskBlock[C3][H3], Bitmask( bit[D3] | bit[E3] | bit[F3] | bit[G3] | bit[H3] ))
-	expect.Eq(t, maskBlock[C3][E7], Bitmask(0))
+	expect.Eq(t, maskBlock[C3][E7], maskNone)
 }
 
 func TestMagic010(t *testing.T) {
@@ -51,8 +51,8 @@ func TestMagic030(t *testing.T) {
 	expect.Eq(t, maskLine[A2][F2], maskRank[1])
 	expect.Eq(t, maskLine[H6][B6], maskRank[5])
 	// Edge cases.
-	expect.Eq(t, maskLine[A1][C5], Bitmask(0)) // Random squares.
-	expect.Eq(t, maskLine[E4][E4], Bitmask(0)) // Same square.
+	expect.Eq(t, maskLine[A1][C5], maskNone) // Random squares.
+	expect.Eq(t, maskLine[E4][E4], maskNone) // Same square.
 }
 
 func TestMagic040(t *testing.T) {
@@ -65,8 +65,8 @@ func TestMagic040(t *testing.T) {
 	expect.Eq(t, maskLine[F3][B7], maskH1A8)
 	expect.Eq(t, maskLine[H3][D7], bit[H3] | bit[G4] | bit[F5] | bit[E6] | bit[D7] | bit[C8])
 	// Edge cases.
-	expect.Eq(t, maskLine[A2][G4], Bitmask(0)) // Random squares.
-	expect.Eq(t, maskLine[E4][E4], Bitmask(0)) // Same square.
+	expect.Eq(t, maskLine[A2][G4], maskNone) // Random squares.
+	expect.Eq(t, maskLine[E4][E4], maskNone) // Same square.
 }
 
 // Material base tests.
