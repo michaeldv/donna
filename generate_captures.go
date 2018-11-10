@@ -9,22 +9,22 @@
 package donna
 
 func (gen *MoveGen) generateCaptures() *MoveGen {
-	color := gen.p.color
-	return gen.pawnCaptures(color).pieceCaptures(color)
+	our, their := gen.p.colors()
+	return gen.pawnCaptures(our, their).pieceCaptures(our, their)
 }
 
 // Generates all pseudo-legal pawn captures and promotions.
-func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
-	enemy := gen.p.outposts[color^1]
+func (gen *MoveGen) pawnCaptures(our, their int) *MoveGen {
+	opponent := gen.p.outposts[their&1]
 
-	for pawns := gen.p.outposts[pawn(color)]; pawns.anyʔ(); pawns = pawns.pop() {
+	for pawns := gen.p.outposts[pawn(our)]; pawns.anyʔ(); pawns = pawns.pop() {
 		square := pawns.first()
 
 		// For pawns on files 2-6 the moves include captures only,
 		// while for pawns on the 7th file the moves include captures
 		// as well as queen promotion.
-		if rank(color, square) != A7H7 {
-			gen.movePawn(square, gen.p.targets(square) & enemy)
+		if rank(our, square) != A7H7 {
+			gen.movePawn(square, gen.p.targets(square) & opponent)
 		} else {
 			for bm := gen.p.targets(square); bm.anyʔ(); bm = bm.pop() {
 				target := bm.first()
@@ -38,16 +38,16 @@ func (gen *MoveGen) pawnCaptures(color int) *MoveGen {
 }
 
 // Generates all pseudo-legal captures by pieces other than pawn.
-func (gen *MoveGen) pieceCaptures(color int) *MoveGen {
-	enemy := gen.p.outposts[color^1]
+func (gen *MoveGen) pieceCaptures(our, their int) *MoveGen {
+	opponent := gen.p.outposts[their&1]
 
-	for bm := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := gen.p.outposts[our&1] ^ gen.p.outposts[pawn(our)] ^ gen.p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
-		gen.movePiece(square, gen.p.targets(square) & enemy)
+		gen.movePiece(square, gen.p.targets(square) & opponent)
 	}
-	if gen.p.outposts[king(color)].anyʔ() {
-		square := gen.p.king[color]
-		gen.moveKing(square, gen.p.targets(square) & enemy)
+	if gen.p.outposts[king(our)].anyʔ() {
+		square := gen.p.king[our&1]
+		gen.moveKing(square, gen.p.targets(square) & opponent)
 	}
 
 	return gen

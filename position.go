@@ -321,6 +321,10 @@ func (p *Position) status(move Move, blendedScore int) int {
 	return InProgress
 }
 
+func (p *Position) colors() (int, int) {
+	return p.color, p.color^1
+}
+
 // Encodes position as FEN string.
 func (p *Position) fen() (fen string) {
 	fancy := engine.fancyʔ

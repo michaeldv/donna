@@ -39,13 +39,13 @@ func (gen *MoveGen) generateAllMoves() *MoveGen {
 }
 
 func (gen *MoveGen) generateMoves() *MoveGen {
-	color := gen.p.color
+	our := gen.p.color
 
-	return gen.pawnMoves(color).pieceMoves(color).kingMoves(color)
+	return gen.pawnMoves(our).pieceMoves(our).kingMoves(our)
 }
 
-func (gen *MoveGen) pawnMoves(color int) *MoveGen {
-	for bm := gen.p.outposts[pawn(color)]; bm.anyʔ(); bm = bm.pop() {
+func (gen *MoveGen) pawnMoves(our int) *MoveGen {
+	for bm := gen.p.outposts[pawn(our)]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePawn(square, gen.p.targets(square))
 	}
@@ -54,8 +54,8 @@ func (gen *MoveGen) pawnMoves(color int) *MoveGen {
 }
 
 // Go over all pieces except pawns and the king.
-func (gen *MoveGen) pieceMoves(color int) *MoveGen {
-	for bm := gen.p.outposts[color] ^ gen.p.outposts[pawn(color)] ^ gen.p.outposts[king(color)]; bm.anyʔ(); bm = bm.pop() {
+func (gen *MoveGen) pieceMoves(our int) *MoveGen {
+	for bm := gen.p.outposts[our&1] ^ gen.p.outposts[pawn(our)] ^ gen.p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePiece(square, gen.p.targets(square))
 	}
@@ -63,17 +63,17 @@ func (gen *MoveGen) pieceMoves(color int) *MoveGen {
 	return gen
 }
 
-func (gen *MoveGen) kingMoves(color int) *MoveGen {
-	if gen.p.outposts[king(color)].anyʔ() {
-		square := gen.p.king[color]
+func (gen *MoveGen) kingMoves(our int) *MoveGen {
+	if gen.p.outposts[king(our)].anyʔ() {
+		square := gen.p.king[our&1]
 		gen.moveKing(square, gen.p.targets(square))
 
-		kingside, queenside := gen.p.canCastleʔ(color)
+		kingside, queenside := gen.p.canCastleʔ(our)
 		if kingside {
-			gen.moveKing(square, bit(G1 + 56 * color))
+			gen.moveKing(square, bit(G1 + 56 * our))
 		}
 		if queenside {
-			gen.moveKing(square, bit(C1 + 56 * color))
+			gen.moveKing(square, bit(C1 + 56 * our))
 		}
 	}
 
