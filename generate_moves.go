@@ -70,10 +70,10 @@ func (gen *MoveGen) kingMoves(color int) *MoveGen {
 
 		kingside, queenside := gen.p.canCastleʔ(color)
 		if kingside {
-			gen.moveKing(square, bit[G1 + 56 * color])
+			gen.moveKing(square, bit(G1 + 56 * color))
 		}
 		if queenside {
-			gen.moveKing(square, bit[C1 + 56 * color])
+			gen.moveKing(square, bit(C1 + 56 * color))
 		}
 	}
 

@@ -144,8 +144,8 @@ func initMasks() {
 		}
 
 		// Vertical squares in front of a pawn.
-		maskInFront[White][sq] = (maskBlock[sq][A8+col] | bit[A8+col]) & ^bit[sq]
-		maskInFront[Black][sq] = (maskBlock[A1+col][sq] | bit[A1+col]) & ^bit[sq]
+		maskInFront[White][sq] = (maskBlock[sq][A8+col] | bit(A8+col)) & ^bit(sq)
+		maskInFront[Black][sq] = (maskBlock[A1+col][sq] | bit(A1+col)) & ^bit(sq)
 
 		// Masks to check for passed pawns.
 		if col > 0 {
@@ -387,7 +387,7 @@ func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame 
 
 func createRookMask(square int) (bitmask Bitmask) {
 	r, c := coordinate(square)
-	bitmask = (maskRank[r] | maskFile[c]) ^ bit[square]
+	bitmask = (maskRank[r] | maskFile[c]) ^ bit(square)
 
 	return *bitmask.trim(r, c)
 }
@@ -406,7 +406,7 @@ func createBishopMask(square int) (bitmask Bitmask) {
 	} else if sq := square - 9; sq >= A1 && col(sq) == c - 1 {
 		bitmask |= maskLine[square][sq]
 	}
-	bitmask ^= bit[square]
+	bitmask ^= bit(square)
 
 	return *bitmask.trim(r, c)
 }
@@ -490,10 +490,10 @@ func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 func setupMasks(square, target, row, col, r, c int) {
 	if row == r {
 		if col < c {
-			maskBlock[square][target].fill(square, 1, bit[target], maskFull)
+			maskBlock[square][target].fill(square, 1, bit(target), maskFull)
 			maskEvade[square][target].spot(square, -1, ^maskFile[0])
 		} else if col > c {
-			maskBlock[square][target].fill(square, -1, bit[target], maskFull)
+			maskBlock[square][target].fill(square, -1, bit(target), maskFull)
 			maskEvade[square][target].spot(square, 1, ^maskFile[7])
 		}
 		if col != c {
@@ -501,10 +501,10 @@ func setupMasks(square, target, row, col, r, c int) {
 		}
 	} else if col == c {
 		if row < r {
-			maskBlock[square][target].fill(square, 8, bit[target], maskFull)
+			maskBlock[square][target].fill(square, 8, bit(target), maskFull)
 			maskEvade[square][target].spot(square, -8, ^maskRank[0])
 		} else {
-			maskBlock[square][target].fill(square, -8, bit[target], maskFull)
+			maskBlock[square][target].fill(square, -8, bit(target), maskFull)
 			maskEvade[square][target].spot(square, 8, ^maskRank[7])
 		}
 		if row != r {
@@ -512,10 +512,10 @@ func setupMasks(square, target, row, col, r, c int) {
 		}
 	} else if r+col == row+c { // Diagonals (A1->H8).
 		if col < c {
-			maskBlock[square][target].fill(square, 9, bit[target], maskFull)
+			maskBlock[square][target].fill(square, 9, bit(target), maskFull)
 			maskEvade[square][target].spot(square, -9,  ^maskRank[0] & ^maskFile[0])
 		} else {
-			maskBlock[square][target].fill(square, -9, bit[target], maskFull)
+			maskBlock[square][target].fill(square, -9, bit(target), maskFull)
 			maskEvade[square][target].spot(square, 9, ^maskRank[7] & ^maskFile[7])
 		}
 		if shift := (r - c) & 15; shift < 8 { // A1-A8-H8
@@ -525,10 +525,10 @@ func setupMasks(square, target, row, col, r, c int) {
 		}
 	} else if row+col == r+c { // AntiDiagonals (H1->A8).
 		if col < c {
-			maskBlock[square][target].fill(square, -7, bit[target], maskFull)
+			maskBlock[square][target].fill(square, -7, bit(target), maskFull)
 			maskEvade[square][target].spot(square, 7, ^maskRank[7] & ^maskFile[0])
 		} else {
-			maskBlock[square][target].fill(square, 7, bit[target], maskFull)
+			maskBlock[square][target].fill(square, 7, bit(target), maskFull)
 			maskEvade[square][target].spot(square, -7, ^maskRank[0] & ^maskFile[7])
 		}
 		if shift := 7 ^ (r + c); shift < 8 { // A8-A1-H1

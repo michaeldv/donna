@@ -113,20 +113,20 @@ var homeTurf = [2]Bitmask{
 
 // Castle squares that should be *empty* in order for the castle to be valid.
 var gapKing = [2]Bitmask{
-	bit[F1]|bit[G1], bit[F8]|bit[G8],
+	bit(F1)|bit(G1), bit(F8)|bit(G8),
 }
 
 var gapQueen = [2]Bitmask{
-	bit[B1]|bit[C1]|bit[D1], bit[B8]|bit[C8]|bit[D8],
+	bit(B1)|bit(C1)|bit(D1), bit(B8)|bit(C8)|bit(D8),
 }
 
 // Castle squares that should be *safe* in order for the castle to be valid.
 var castleKing = [2]Bitmask{
-	bit[E1]|bit[F1]|bit[G1], bit[E8]|bit[F8]|bit[G8],
+	bit(E1)|bit(F1)|bit(G1), bit(E8)|bit(F8)|bit(G8),
 }
 
 var castleQueen = [2]Bitmask{
-	bit[C1]|bit[D1]|bit[E1], bit[C8]|bit[D8]|bit[E8],
+	bit(C1)|bit(D1)|bit(E1), bit(C8)|bit(D8)|bit(E8),
 }
 
 // Base offsets to polyglotRandom table for each of the pieces. Note that we're

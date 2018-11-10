@@ -69,7 +69,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	}
 
 	// See if the check could be blocked or the attacked piece captured.
-	block := maskBlock[square][attackSquare] | bit[attackSquare]
+	block := maskBlock[square][attackSquare] | bit(attackSquare)
 
 	// Create masks for one-square pawn pushes and two-square jumps.
 	pawns, jumps := maskNone, ^p.board

@@ -1591,7 +1591,7 @@ func Bitbase() {
 		}
 
 		corneredʔ := func () bool {
-			return kingMoves[wKing] & ^(kingMoves[bKing] | bit[wPawn]) == 0 && wPawn + 8 == wKing
+			return kingMoves[wKing] & ^(kingMoves[bKing] | bit(wPawn)) == 0 && wPawn + 8 == wKing
 		}
 
 		stalemateʔ := func () bool {
@@ -1605,7 +1605,7 @@ func Bitbase() {
 
 		if color == White {
 			// Reject the index if black king is in check.
-			if pawnMoves[White][wPawn] & bit[bKing] != 0 {
+			if pawnMoves[White][wPawn] & bit(bKing) != 0 {
 				return Invalid
 			}
 			if corneredʔ() {

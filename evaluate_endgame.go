@@ -84,7 +84,7 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 	}
 
 	index := color + (wKing << 1) + (bKing << 7) + ((wPawn - 8) << 13)
-	if (bitbase[index / 64] & bit[index & 0x3F]).noneʔ() {
+	if (bitbase[index / 64] & bit(index)).noneʔ() {
 		return DrawScore
 	}
 

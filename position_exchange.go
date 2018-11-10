@@ -28,7 +28,7 @@ func (p *Position) exchange(move Move) int {
 		piece = promo
 	}
 
-	board := p.board ^ bit[from]
+	board := p.board ^ bit(from)
 	return -p.exchangeScore(piece.color()^1, to, -score, exchangeScores[piece], board)
 }
 
@@ -49,7 +49,7 @@ func (p *Position) exchangeScore(color int, to, score, extra int, board Bitmask)
 	}
 
 	if best != Checkmate {
-		board ^= bit[from]
+		board ^= bit(from)
 	}
 
 	return max(score, -p.exchangeScore(color^1, to, -(score + extra), best, board))

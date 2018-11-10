@@ -8,6 +8,7 @@
 
 package donna
 
+// One man's constant is another man's variable.
 const onePawn = 100
 const unstoppablePawn = onePawn * 10
 var (
@@ -343,17 +344,17 @@ var mobilityQueen = [16]Score{
 
 // Boxed rooks.
 var kingBoxA = [2]Bitmask{
-	bit[D1]|bit[C1]|bit[B1], bit[D8]|bit[C8]|bit[B8],
+	bit(D1)|bit(C1)|bit(B1), bit(D8)|bit(C8)|bit(B8),
 }
 
 var kingBoxH = [2]Bitmask{
-	bit[E1]|bit[F1]|bit[G1], bit[E8]|bit[F8]|bit[G8],
+	bit(E1)|bit(F1)|bit(G1), bit(E8)|bit(F8)|bit(G8),
 }
 
 var rookBoxA = [2]Bitmask{
-	bit[A1]|bit[B1]|bit[C1], bit[A8]|bit[B8]|bit[C8],
+	bit(A1)|bit(B1)|bit(C1), bit(A8)|bit(B8)|bit(C8),
 }
 
 var rookBoxH = [2]Bitmask{
-	bit[H1]|bit[G1]|bit[F1], bit[H8]|bit[G8]|bit[F8],
+	bit(H1)|bit(G1)|bit(F1), bit(H8)|bit(G8)|bit(F8),
 }

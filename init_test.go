@@ -11,36 +11,36 @@ package donna
 import(`github.com/michaeldv/donna/expect`; `testing`)
 
 func TestMagic000(t *testing.T) {
-	expect.Eq(t, maskBlock[C3][H8], Bitmask( bit[D4] | bit[E5] | bit[F6] | bit[G7] | bit[H8] ))
-	expect.Eq(t, maskBlock[C3][C8], Bitmask( bit[C4] | bit[C5] | bit[C6] | bit[C7] | bit[C8] ))
-	expect.Eq(t, maskBlock[C3][A5], Bitmask( bit[B4] | bit[A5]                               ))
-	expect.Eq(t, maskBlock[C3][A3], Bitmask( bit[B3] | bit[A3]                               ))
-	expect.Eq(t, maskBlock[C3][A1], Bitmask( bit[B2] | bit[A1]                               ))
-	expect.Eq(t, maskBlock[C3][C1], Bitmask( bit[C2] | bit[C1]                               ))
-	expect.Eq(t, maskBlock[C3][E1], Bitmask( bit[D2] | bit[E1]                               ))
-	expect.Eq(t, maskBlock[C3][H3], Bitmask( bit[D3] | bit[E3] | bit[F3] | bit[G3] | bit[H3] ))
+	expect.Eq(t, maskBlock[C3][H8], Bitmask( bit(D4) | bit(E5) | bit(F6) | bit(G7) | bit(H8) ))
+	expect.Eq(t, maskBlock[C3][C8], Bitmask( bit(C4) | bit(C5) | bit(C6) | bit(C7) | bit(C8) ))
+	expect.Eq(t, maskBlock[C3][A5], Bitmask( bit(B4) | bit(A5)                               ))
+	expect.Eq(t, maskBlock[C3][A3], Bitmask( bit(B3) | bit(A3)                               ))
+	expect.Eq(t, maskBlock[C3][A1], Bitmask( bit(B2) | bit(A1)                               ))
+	expect.Eq(t, maskBlock[C3][C1], Bitmask( bit(C2) | bit(C1)                               ))
+	expect.Eq(t, maskBlock[C3][E1], Bitmask( bit(D2) | bit(E1)                               ))
+	expect.Eq(t, maskBlock[C3][H3], Bitmask( bit(D3) | bit(E3) | bit(F3) | bit(G3) | bit(H3) ))
 	expect.Eq(t, maskBlock[C3][E7], maskNone)
 }
 
 func TestMagic010(t *testing.T) {
-	expect.Eq(t, maskEvade[C3][H8], Bitmask( ^bit[B2] ))
-	expect.Eq(t, maskEvade[C3][C8], Bitmask( ^bit[C2] ))
-	expect.Eq(t, maskEvade[C3][A5], Bitmask( ^bit[D2] ))
-	expect.Eq(t, maskEvade[C3][A3], Bitmask( ^bit[D3] ))
-	expect.Eq(t, maskEvade[C3][A1], Bitmask( ^bit[D4] ))
-	expect.Eq(t, maskEvade[C3][C1], Bitmask( ^bit[C4] ))
-	expect.Eq(t, maskEvade[C3][E1], Bitmask( ^bit[B4] ))
-	expect.Eq(t, maskEvade[C3][H3], Bitmask( ^bit[B3] ))
+	expect.Eq(t, maskEvade[C3][H8], Bitmask( ^bit(B2) ))
+	expect.Eq(t, maskEvade[C3][C8], Bitmask( ^bit(C2) ))
+	expect.Eq(t, maskEvade[C3][A5], Bitmask( ^bit(D2) ))
+	expect.Eq(t, maskEvade[C3][A3], Bitmask( ^bit(D3) ))
+	expect.Eq(t, maskEvade[C3][A1], Bitmask( ^bit(D4) ))
+	expect.Eq(t, maskEvade[C3][C1], Bitmask( ^bit(C4) ))
+	expect.Eq(t, maskEvade[C3][E1], Bitmask( ^bit(B4) ))
+	expect.Eq(t, maskEvade[C3][H3], Bitmask( ^bit(B3) ))
 	expect.Eq(t, maskEvade[C3][E7], Bitmask(maskFull))
 }
 
 func TestMagic020(t *testing.T) {
-	expect.Eq(t, maskPawn[White][A3], Bitmask( bit[B2] ))
-	expect.Eq(t, maskPawn[White][D5], Bitmask( bit[C4] | bit[E4] ))
-	expect.Eq(t, maskPawn[White][F8], Bitmask( bit[E7] | bit[G7] ))
-	expect.Eq(t, maskPawn[Black][H4], Bitmask( bit[G5] ))
-	expect.Eq(t, maskPawn[Black][C5], Bitmask( bit[B6] | bit[D6] ))
-	expect.Eq(t, maskPawn[Black][B1], Bitmask( bit[A2] | bit[C2] ))
+	expect.Eq(t, maskPawn[White][A3], Bitmask( bit(B2) ))
+	expect.Eq(t, maskPawn[White][D5], Bitmask( bit(C4) | bit(E4) ))
+	expect.Eq(t, maskPawn[White][F8], Bitmask( bit(E7) | bit(G7) ))
+	expect.Eq(t, maskPawn[Black][H4], Bitmask( bit(G5) ))
+	expect.Eq(t, maskPawn[Black][C5], Bitmask( bit(B6) | bit(D6) ))
+	expect.Eq(t, maskPawn[Black][B1], Bitmask( bit(A2) | bit(C2) ))
 }
 
 func TestMagic030(t *testing.T) {
@@ -57,13 +57,13 @@ func TestMagic030(t *testing.T) {
 
 func TestMagic040(t *testing.T) {
 	// Same diagonal.
-	expect.Eq(t, maskLine[C4][F7], bit[A2] | bit[B3] | bit[C4] | bit[D5] | bit[E6] | bit[F7] | bit[G8])
+	expect.Eq(t, maskLine[C4][F7], bit(A2) | bit(B3) | bit(C4) | bit(D5) | bit(E6) | bit(F7) | bit(G8))
 	expect.Eq(t, maskLine[F6][H8], maskA1H8)
-	expect.Eq(t, maskLine[F1][H3], bit[F1] | bit[G2] | bit[H3])
+	expect.Eq(t, maskLine[F1][H3], bit(F1) | bit(G2) | bit(H3))
 	// Same anti-diagonal.
-	expect.Eq(t, maskLine[C2][B3], bit[D1] | bit[C2] | bit[B3] | bit[A4])
+	expect.Eq(t, maskLine[C2][B3], bit(D1) | bit(C2) | bit(B3) | bit(A4))
 	expect.Eq(t, maskLine[F3][B7], maskH1A8)
-	expect.Eq(t, maskLine[H3][D7], bit[H3] | bit[G4] | bit[F5] | bit[E6] | bit[D7] | bit[C8])
+	expect.Eq(t, maskLine[H3][D7], bit(H3) | bit(G4) | bit(F5) | bit(E6) | bit(D7) | bit(C8))
 	// Edge cases.
 	expect.Eq(t, maskLine[A2][G4], maskNone) // Random squares.
 	expect.Eq(t, maskLine[E4][E4], maskNone) // Same square.

@@ -555,14 +555,14 @@ func TestPositionMoves300(t *testing.T) {
 	p := NewGame(`Ka1,Qe1,Ra8,Rh8,Bb5`, `Ke8,Re7,Bc8,Bf8,Nc6`).start()
 	pinned := p.pins(E8)
 
-	expect.Eq(t, pinned, bit[C6] | bit[C8] | bit[E7] | bit[F8])
+	expect.Eq(t, pinned, bit(C6) | bit(C8) | bit(E7) | bit(F8))
 }
 
 func TestPositionMoves310(t *testing.T) {
 	p := NewGame(`Ke4,Qe5,Rd5,Nd4,Nf4`, `M,Ka7,Qe8,Ra4,Rh4,Ba8`).start()
 	pinned := p.pins(E4)
 
-	expect.Eq(t, pinned, bit[D5] | bit[E5] | bit[D4] | bit[F4])
+	expect.Eq(t, pinned, bit(D5) | bit(E5) | bit(D4) | bit(F4))
 }
 
 // Not a pin (friendly blockers).
@@ -570,14 +570,14 @@ func TestPositionMoves320(t *testing.T) {
 	p := NewGame(`Ka1,Qe1,Ra8,Rh8,Bb5,Nb8,Ng8,e4`, `Ke8,Re7,Bc8,Bf8,Nc6`).start()
 	pinned := p.pins(E8)
 
-	expect.Eq(t, pinned, bit[C6])
+	expect.Eq(t, pinned, bit(C6))
 }
 
 func TestPositionMoves330(t *testing.T) {
 	p := NewGame(`Ke4,Qe7,Rc6,Nb4,Ng4`, `M,Ka7,Qe8,Ra4,Rh4,Ba8,c4,e6,f4`).start()
 	pinned := p.pins(E4)
 
-	expect.Eq(t, pinned, bit[C6])
+	expect.Eq(t, pinned, bit(C6))
 }
 
 // Not a pin (enemy blockers).
@@ -585,14 +585,14 @@ func TestPositionMoves340(t *testing.T) {
 	p := NewGame(`Ka1,Qe1,Ra8,Rh8,Bb5`, `Ke8,Re7,Rg8,Bc8,Bf8,Nc6,Nb8,e4`).start()
 	pinned := p.pins(E8)
 
-	expect.Eq(t, pinned, bit[C6])
+	expect.Eq(t, pinned, bit(C6))
 }
 
 func TestPositionMoves350(t *testing.T) {
 	p := NewGame(`Ke4,Qe7,Rc6,Nb4,Ng4,c4,e5,f4`, `M,Ka7,Qe8,Ra4,Rh4,Ba8`).start()
 	pinned := p.pins(E4)
 
-	expect.Eq(t, pinned, bit[C6])
+	expect.Eq(t, pinned, bit(C6))
 }
 
 // Position after null move.

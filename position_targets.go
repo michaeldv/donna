@@ -47,7 +47,7 @@ func (p *Position) targets(square int) (bitmask Bitmask) {
 	if piece.pawnʔ() {
 		// Start with one square push, then try the second square.
 		empty := ^p.board
-		bitmask  = bit[square].up(color) & empty
+		bitmask  = bit(square).up(color) & empty
 		bitmask |= bitmask.up(color) & empty & maskRank[A4H4 + color]
 		bitmask |= pawnAttacks[color][square] & p.outposts[color^1]
 

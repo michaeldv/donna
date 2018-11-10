@@ -10,8 +10,8 @@ package donna
 
 func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	p.pieces[from], p.pieces[to] = 0, piece
-	p.outposts[piece] ^= bit[from] | bit[to]
-	p.outposts[piece.color()] ^= bit[from] | bit[to]
+	p.outposts[piece] ^= bit(from) | bit(to)
+	p.outposts[piece.color()] ^= bit(from) | bit(to)
 
 	// Update position's hash values.
 	random := piece.polyglot(from) ^ piece.polyglot(to)
@@ -28,9 +28,9 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 
 func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position {
 	p.pieces[from], p.pieces[to] = 0, promo
-	p.outposts[pawn] ^= bit[from]
-	p.outposts[promo] ^= bit[to]
-	p.outposts[pawn.color()] ^= bit[from] | bit[to]
+	p.outposts[pawn] ^= bit(from)
+	p.outposts[promo] ^= bit(to)
+	p.outposts[pawn.color()] ^= bit(from) | bit(to)
 
 	// Update position's hash values and material balance.
 	random := pawn.polyglot(from)
@@ -45,8 +45,8 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 }
 
 func (p *Position) capturePiece(capture Piece, from, to int) *Position {
-	p.outposts[capture] ^= bit[to]
-	p.outposts[capture.color()] ^= bit[to]
+	p.outposts[capture] ^= bit(to)
+	p.outposts[capture.color()] ^= bit(to)
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(to)
@@ -66,8 +66,8 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	enpassant := to - up[capture.color()^1]
 
 	p.pieces[enpassant] = 0
-	p.outposts[capture] ^= bit[enpassant]
-	p.outposts[capture.color()] ^= bit[enpassant]
+	p.outposts[capture] ^= bit(enpassant)
+	p.outposts[capture.color()] ^= bit(enpassant)
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(enpassant)
@@ -247,7 +247,7 @@ func (p *Position) pins(square int) (bitmask Bitmask) {
 
 	for bm := attackers; bm.anyʔ(); bm = bm.pop() {
 		attackSquare := bm.first()
-		blockers := maskBlock[square][attackSquare] & ^bit[attackSquare] & p.board
+		blockers := maskBlock[square][attackSquare] & ^bit(attackSquare) & p.board
 
 		if blockers.singleʔ() {
 			bitmask |= blockers & p.outposts[our] // Only friendly pieces are pinned.

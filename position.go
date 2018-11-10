@@ -57,8 +57,8 @@ func NewPosition(game *Game, white, black string) *Position {
 
 	for square, piece := range p.pieces {
 		if piece.someʔ() {
-			p.outposts[piece] |= bit[square]
-			p.outposts[piece.color()] |= bit[square]
+			p.outposts[piece] |= bit(square)
+			p.outposts[piece.color()] |= bit(square)
 			if piece.kingʔ() {
 				p.king[piece.color()] = square
 			}
@@ -198,8 +198,8 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		}
 		if piece.someʔ() {
 			p.pieces[sq] = piece
-			p.outposts[piece] |= bit[sq]
-			p.outposts[piece.color()] |= bit[sq]
+			p.outposts[piece] |= bit(sq)
+			p.outposts[piece.color()] |= bit(sq)
 			p.balance += materialBalance[piece]
 			sq++
 		}
