@@ -167,7 +167,10 @@ func ms(duration int64) string {
 }
 
 func C(color int) string {
-	return [2]string{`white`, `black`}[color]
+	if color == White {
+		return `white`
+	}
+	return `black`
 }
 
 func Summary(metrics map[string]interface{}) {

@@ -33,7 +33,7 @@ func NewMove(p *Position, from, to int) Move {
 	piece, capture := p.pieces[from], p.pieces[to]
 
 	if p.enpassant != 0 && to == p.enpassant && piece.pawnʔ() {
-		capture = pawn(piece.color() ^ 1)
+		capture = pawn(piece.color()^1)
 	}
 
 	return Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
@@ -44,7 +44,7 @@ func NewPawnMove(p *Position, square, target int) Move {
 
 		// Check if pawn jump causes en-passant. This is done by verifying
 		// whether enemy pawns occupy squares ajacent to the target square.
-		pawns := p.outposts[pawn(p.color ^ 1)]
+		pawns := p.outposts[pawn(p.color^1)]
 		if pawns & maskIsolated[col(target)] & maskRank[row(target)] != 0 {
 			return NewEnpassant(p, square, target)
 		}
@@ -148,12 +148,12 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	if e2e4 == `0-0` || e2e4 == `0-0-0` {
 		kingside, queenside := p.canCastleʔ(p.color)
 		if e2e4 == `0-0` && kingside {
-			from, to := p.king[p.color], G1 + p.color * A8
+			from, to := p.king[p.color&1], G1 + p.color * A8
 			move = NewCastle(p, from, to)
 			return
 		}
 		if e2e4 == `0-0-0` && queenside {
-			from, to := p.king[p.color], C1 + p.color * A8
+			from, to := p.king[p.color&1], C1 + p.color * A8
 			move = NewCastle(p, from, to)
 			return
 		}
@@ -250,7 +250,7 @@ func (m Move) killerʔ(ply int) bool {
 // If the king is in check move generator is expected to generate valid evasions
 // where extra validation is not needed.
 func (m Move) validʔ(p *Position, pins Bitmask) bool {
-	color := m.color() // TODO: make color part of move split.
+	our := m.color(); their := our^1
 	from, to, piece, capture := m.split()
 
 	// For rare en-passant pawn captures we validate the move by actually
@@ -258,19 +258,19 @@ func (m Move) validʔ(p *Position, pins Bitmask) bool {
 	if p.enpassant != 0 && to == p.enpassant && capture.pawnʔ() {
 		position := p.makeMove(m)
 		defer position.undoLastMove()
-		return !position.inCheckʔ(color)
+		return !position.inCheckʔ(our)
 	}
 
 	// King's move is valid when a) the move is a castle or b) the destination
 	// square is not being attacked by the opponent.
 	if piece.kingʔ() {
-		return m.castleʔ() || !p.attackedʔ(color^1, to)
+		return m.castleʔ() || !p.attackedʔ(their, to)
 	}
 
 	// For all other pieces the move is valid when it doesn't cause a
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
-	return pins.noneʔ() || pins.offʔ(from) || maskLine[from][to].onʔ(p.king[color])
+	return pins.noneʔ() || pins.offʔ(from) || maskLine[from][to].onʔ(p.king[our&1])
 }
 
 // Returns true if the move could have be generated on the given board. We
@@ -278,11 +278,11 @@ func (m Move) validʔ(p *Position, pins Bitmask) bool {
 // incremental move generator.
 func (m Move) legitʔ(p *Position, pins Bitmask) bool {
 	// from, to, piece, capture := m.split()
-	color := m.color()
+	our := m.color(); their := our^1
 	from, to, piece, capture := m.split()
 
 	// `from` must have a piece and `to` can't have a piece of the same color.
-	if p.outposts[piece].offʔ(from) || p.outposts[color].onʔ(to) {
+	if p.outposts[piece].offʔ(from) || p.outposts[our&1].onʔ(to) {
 		return false
 	}
 
@@ -292,18 +292,18 @@ func (m Move) legitʔ(p *Position, pins Bitmask) bool {
 			return m.enpassantʔ() && p.enpassant == to
 		}
 		if capture.someʔ() {
-			return pawnAttacks[color][from].onʔ(to) && p.outposts[capture].onʔ(to)
+			return pawnAttacks[our&1][from].onʔ(to) && p.outposts[capture].onʔ(to)
 		} else {
 			// If no capture then the target square should not be occupied.
 			if p.board.onʔ(to) {
 				return false
 			}
-			if row := rank(color, from); row == A7H7 && !m.promoʔ() {
+			if row := rank(our, from); row == A7H7 && !m.promoʔ() {
 				return false
-			} else if push := from + up[color]; to == push {
+			} else if push := from + up[our&1]; to == push {
 				return true
 			} else { // Must be pawn jump.
-				return row == A1H1 && to == from + 2 * up[color] && p.board.offʔ(push)
+				return row == A1H1 && to == from + 2 * up[our&1] && p.board.offʔ(push)
 			}
 		}
 	}
@@ -314,31 +314,31 @@ func (m Move) legitʔ(p *Position, pins Bitmask) bool {
 	}
 
 	// Captures should capture, non-captures should be free to move.
-	if (capture.someʔ() && p.outposts[color^1].offʔ(to)) || (capture.noneʔ() && p.board.onʔ(to)) {
+	if (capture.someʔ() && p.outposts[their&1].offʔ(to)) || (capture.noneʔ() && p.board.onʔ(to)) {
 		return false
 	}
 
 	// Now check king moves including castles.
 	if piece.kingʔ() {
 		if m.castleʔ() {
-			if from != homeKing[color] {
+			if from != homeKing[our&1] {
 				return false
 			}
 			switch to {
 			case G1, G8:
-				if p.outposts[rook(color)].offʔ(to + 1) || (p.castles & castleKingside[color] == 0) || (gapKing[color] & p.board).anyʔ() {
+				if p.outposts[rook(our)].offʔ(to + 1) || (p.castles & castleKingside[our&1] == 0) || (gapKing[our&1] & p.board).anyʔ() {
 					return false
 				}
-				return (castleKing[color] & p.allAttacks(color^1)).noneʔ()
+				return (castleKing[our&1] & p.allAttacks(their)).noneʔ()
 			case C1, C8:
-				if p.outposts[rook(color)].offʔ(to - 2) || (p.castles & castleQueenside[color] == 0) || (gapQueen[color] & p.board).anyʔ() {
+				if p.outposts[rook(our)].offʔ(to - 2) || (p.castles & castleQueenside[our&1] == 0) || (gapQueen[our&1] & p.board).anyʔ() {
 					return false
 				}
-				return (castleQueen[color] & p.allAttacks(color^1)).noneʔ()
+				return (castleQueen[our&1] & p.allAttacks(their)).noneʔ()
 			}
 			return false
 		}
-		return p.kingAttacksAt(from, color).onʔ(to)
+		return p.kingAttacksAt(from, our).onʔ(to)
 	}
 
 	// Anything castle-related is now non-legit.
@@ -349,13 +349,13 @@ func (m Move) legitʔ(p *Position, pins Bitmask) bool {
 	// Check remaining pieces.
 	switch piece.kind() {
 	case Knight:
-		return p.knightAttacksAt(from, color).onʔ(to)
+		return p.knightAttacksAt(from, our).onʔ(to)
 	case Bishop:
-		return p.bishopAttacksAt(from, color).onʔ(to)
+		return p.bishopAttacksAt(from, our).onʔ(to)
 	case Rook:
-		return p.rookAttacksAt(from, color).onʔ(to)
+		return p.rookAttacksAt(from, our).onʔ(to)
 	case Queen:
-		return p.queenAttacksAt(from, color).onʔ(to)
+		return p.queenAttacksAt(from, our).onʔ(to)
 	}
 
 	return false

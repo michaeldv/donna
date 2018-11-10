@@ -93,7 +93,7 @@ func NewPosition(game *Game, white, black string) *Position {
 // [E]npassant: specifies en-passant square if any. For example, "Ed3" marks D3
 //              square as en-passant. Default value is no en-passant.
 //
-func (p *Position) setupSide(str string, color int) *Position {
+func (p *Position) setupSide(str string, our int) *Position {
 	invalid := func (move string, color int) {
 		// Don't panic.
 		panic(fmt.Sprintf("Invalid notation '%s' for %s\n", move, C(color)))
@@ -101,36 +101,36 @@ func (p *Position) setupSide(str string, color int) *Position {
 
 	for _, move := range strings.Split(str, `,`) {
 		if move[0] == 'M' { // TODO: parse move number.
-			p.color = color
+			p.color = our
 		} else {
 			arr := reMove.FindStringSubmatch(move)
 			if len(arr) == 0 {
-				invalid(move, color)
+				invalid(move, our)
 			}
 			square := square(int(arr[3][0]-'1'), int(arr[2][0]-'a'))
 
 			switch move[0] {
 			case 'K':
-				p.pieces[square] = king(color)
+				p.pieces[square] = king(our)
 			case 'Q':
-				p.pieces[square] = queen(color)
+				p.pieces[square] = queen(our)
 			case 'R':
-				p.pieces[square] = rook(color)
+				p.pieces[square] = rook(our)
 			case 'B':
-				p.pieces[square] = bishop(color)
+				p.pieces[square] = bishop(our)
 			case 'N':
-				p.pieces[square] = knight(color)
+				p.pieces[square] = knight(our)
 			case 'E':
 				p.enpassant = square
 			case 'C':
-				if (square == C1 + color) || (square == C8 + color) {
-					p.castles |= castleQueenside[color]
-				} else if (square == G1 + color) || (square == G8 + color) {
-					p.castles |= castleKingside[color]
+				if (square == C1 + our) || (square == C8 + our) {
+					p.castles |= castleQueenside[our&1]
+				} else if (square == G1 + our) || (square == G8 + our) {
+					p.castles |= castleKingside[our&1]
 				}
 			default:
 				// When everything else fails, read the instructions.
-				p.pieces[square] = pawn(color)
+				p.pieces[square] = pawn(our)
 			}
 		}
 	}
@@ -421,45 +421,45 @@ func (p *Position) dcf() string {
 	for color := White; color <= Black; color++ {
 		// Right to move and (TODO) move number.
 		if color == p.color && color == Black {
-			pieces[color] = append(pieces[color], `M`)
+			pieces[color&1] = append(pieces[color&1], `M`)
 		}
 
 		// King.
-		pieces[color] = append(pieces[color], `K` + encode(p.king[color]))
+		pieces[color&1] = append(pieces[color&1], `K` + encode(p.king[color&1]))
 
 		// Queens, Rooks, Bishops, and Knights.
 		for outposts := p.outposts[queen(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color] = append(pieces[color], `Q` + encode(outposts.first()))
+			pieces[color&1] = append(pieces[color&1], `Q` + encode(outposts.first()))
 		}
 		for outposts := p.outposts[rook(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color] = append(pieces[color], `R` + encode(outposts.first()))
+			pieces[color&1] = append(pieces[color&1], `R` + encode(outposts.first()))
 		}
 		for outposts := p.outposts[bishop(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color] = append(pieces[color], `B` + encode(outposts.first()))
+			pieces[color&1] = append(pieces[color&1], `B` + encode(outposts.first()))
 		}
 		for outposts := p.outposts[knight(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color] = append(pieces[color], `N` + encode(outposts.first()))
+			pieces[color&1] = append(pieces[color&1], `N` + encode(outposts.first()))
 		}
 
 		// Castle rights.
-		if p.castles & castleQueenside[color] == 0 || p.castles & castleKingside[color] == 0 {
-			if p.castles & castleQueenside[color] != 0 {
-				pieces[color] = append(pieces[color], `C` + encode(C1 + 56 * color))
+		if p.castles & castleQueenside[color&1] == 0 || p.castles & castleKingside[color&1] == 0 {
+			if p.castles & castleQueenside[color&1] != 0 {
+				pieces[color&1] = append(pieces[color&1], `C` + encode(C1 + 56 * color))
 			}
-			if p.castles & castleKingside[color] != 0 {
-				pieces[color] = append(pieces[color], `C` + encode(G1 + 56 * color))
+			if p.castles & castleKingside[color&1] != 0 {
+				pieces[color&1] = append(pieces[color&1], `C` + encode(G1 + 56 * color))
 			}
 		}
 
 		// En-passant square if any. Note that this gets assigned to the
 		// current side to move.
 		if p.enpassant != 0 && color == p.color {
-			pieces[color] = append(pieces[color], `E` + encode(p.enpassant))
+			pieces[color&1] = append(pieces[color&1], `E` + encode(p.enpassant))
 		}
 
 		// Pawns.
 		for outposts := p.outposts[pawn(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color] = append(pieces[color], encode(outposts.first()))
+			pieces[color&1] = append(pieces[color&1], encode(outposts.first()))
 		}
 	}
 

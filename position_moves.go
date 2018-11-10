@@ -9,9 +9,10 @@
 package donna
 
 func (p *Position) movePiece(piece Piece, from, to int) *Position {
+	bm := bit(from) | bit(to)
 	p.pieces[from], p.pieces[to] = 0, piece
-	p.outposts[piece] ^= bit(from) | bit(to)
-	p.outposts[piece.color()] ^= bit(from) | bit(to)
+	p.outposts[piece] ^= bm
+	p.outposts[piece.color()] ^= bm
 
 	// Update position's hash values.
 	random := piece.polyglot(from) ^ piece.polyglot(to)
@@ -82,7 +83,8 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 }
 
 func (p *Position) makeMove(move Move) *Position {
-	color := move.color()
+	our := move.color()
+	their := our^1
 	from, to, piece, capture := move.split()
 
 	// Copy over the contents of previous tree node to the current one.
@@ -100,7 +102,7 @@ func (p *Position) makeMove(move Move) *Position {
 	if piece.pawnʔ() {
 		pp.count50, pp.reversibleʔ = 0, false
 		if to != 0 && to == p.enpassant {
-			pp.captureEnpassant(pawn(color^1), from, to)
+			pp.captureEnpassant(pawn(their), from, to)
 			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
 		}
 		if promo := move.promo(); promo != 0 {
@@ -108,20 +110,20 @@ func (p *Position) makeMove(move Move) *Position {
 		} else {
 			pp.movePiece(piece, from, to)
 			if move.enpassantʔ() {
-				pp.enpassant = from + up[color] // Save the en-passant square.
+				pp.enpassant = from + up[our&1] // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}
 	} else if piece.kingʔ() {
 		pp.movePiece(piece, from, to)
 		pp.count50++
-		pp.king[color] = to
+		pp.king[our&1] = to
 		if move.castleʔ() {
 			pp.reversibleʔ = false
 			if to == from + 2 {
-				pp.movePiece(rook(color), to + 1, to - 1)
+				pp.movePiece(rook(our), to + 1, to - 1)
 			} else if to == from - 2 {
-				pp.movePiece(rook(color), to - 2, to + 1)
+				pp.movePiece(rook(our), to - 2, to + 1)
 			}
 		}
 	} else {
@@ -168,8 +170,8 @@ func (p *Position) undoLastMove() *Position {
 	return &tree[node]
 }
 
-func (p *Position) inCheckʔ(color int) bool {
-	return p.attackedʔ(color ^ 1, p.king[color])
+func (p *Position) inCheckʔ(our int) bool {
+	return p.attackedʔ(our^1, p.king[our&1])
 }
 
 func (p *Position) nlNodeʔ() bool {
@@ -219,18 +221,18 @@ func (p *Position) thirdRepetitionʔ() bool {
 
 // Returns a pair of booleans that indicate whether given side is allowed to
 // castle kingside and queenside.
-func (p *Position) canCastleʔ(color int) (kingside, queenside bool) {
+func (p *Position) canCastleʔ(our int) (kingside, queenside bool) {
 
 	// Start off with simple checks.
-	kingside = (p.castles & castleKingside[color] != 0) && (gapKing[color] & p.board).noneʔ()
-	queenside = (p.castles & castleQueenside[color] != 0) && (gapQueen[color] & p.board).noneʔ()
+	kingside = (p.castles & castleKingside[our&1] != 0) && (gapKing[our&1] & p.board).noneʔ()
+	queenside = (p.castles & castleQueenside[our&1] != 0) && (gapQueen[our&1] & p.board).noneʔ()
 
 	// If it still looks like the castles are possible perform more expensive
 	// final check.
 	if kingside || queenside {
-		attacks := p.allAttacks(color^1)
-		kingside = kingside && (castleKing[color] & attacks).noneʔ()
-		queenside = queenside && (castleQueen[color] & attacks).noneʔ()
+		attacks := p.allAttacks(our^1)
+		kingside = kingside && (castleKing[our&1] & attacks).noneʔ()
+		queenside = queenside && (castleQueen[our&1] & attacks).noneʔ()
 	}
 
 	return kingside, queenside
@@ -246,11 +248,11 @@ func (p *Position) pins(square int) (bitmask Bitmask) {
 	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[square][0]
 
 	for bm := attackers; bm.anyʔ(); bm = bm.pop() {
-		attackSquare := bm.first()
-		blockers := maskBlock[square][attackSquare] & ^bit(attackSquare) & p.board
+		target := bm.first()
+		blockers := maskBlock[square][target] & ^bit(target) & p.board
 
 		if blockers.singleʔ() {
-			bitmask |= blockers & p.outposts[our] // Only friendly pieces are pinned.
+			bitmask |= blockers & p.outposts[our&1] // Only friendly pieces are pinned.
 		}
 	}
 

@@ -43,21 +43,23 @@ func (p *Position) queenMovesAt(square int, board Bitmask) Bitmask {
 
 func (p *Position) targets(square int) (bitmask Bitmask) {
 	piece := p.pieces[square]
-	color := piece.color()
+	our := piece.color()
+	their := our^1
+
 	if piece.pawnʔ() {
 		// Start with one square push, then try the second square.
 		empty := ^p.board
-		bitmask  = bit(square).up(color) & empty
-		bitmask |= bitmask.up(color) & empty & maskRank[A4H4 + color]
-		bitmask |= pawnAttacks[color][square] & p.outposts[color^1]
+		bitmask  = bit(square).up(our) & empty
+		bitmask |= bitmask.up(our) & empty & maskRank[A4H4 + our]
+		bitmask |= pawnAttacks[our&1][square] & p.outposts[their&1]
 
 		// If the last move set the en-passant square and it is diagonally adjacent
 		// to the current pawn, then add en-passant to the pawn's attack targets.
-		if p.enpassant != 0 && maskPawn[color][p.enpassant].onʔ(square) {
+		if p.enpassant != 0 && maskPawn[our&1][p.enpassant].onʔ(square) {
 			bitmask.set(p.enpassant)
 		}
 	} else {
-		bitmask = p.attacksFor(square, piece) & ^p.outposts[color]
+		bitmask = p.attacksFor(square, piece) & ^p.outposts[our&1]
 	}
 
 	return bitmask
@@ -70,7 +72,7 @@ func (p *Position) attacks(square int) Bitmask {
 func (p *Position) attacksFor(square int, piece Piece) (bitmask Bitmask) {
 	switch piece.kind() {
 	case Pawn:
-		return pawnAttacks[piece.color()][square]
+		return pawnAttacks[piece.color()&1][square]
 	case Knight:
 		return knightMoves[square]
 	case Bishop:
@@ -91,26 +93,26 @@ func (p *Position) xrayAttacks(square int) Bitmask {
 }
 
 func (p *Position) xrayAttacksFor(square int, piece Piece) (bitmask Bitmask) {
-	switch kind, color := piece.kind(), piece.color(); kind {
+	switch kind, our := piece.kind(), piece.color(); kind {
 	case Bishop:
-		board := p.board ^ p.outposts[queen(color)]
+		board := p.board ^ p.outposts[queen(our)]
 		return p.bishopMovesAt(square, board)
 	case Rook:
-		board := p.board ^ p.outposts[rook(color)] ^ p.outposts[queen(color)]
+		board := p.board ^ p.outposts[rook(our)] ^ p.outposts[queen(our)]
 		return p.rookMovesAt(square, board)
 	}
 
 	return p.attacksFor(square, piece)
 }
 
-func (p *Position) allAttacks(color int) (bitmask Bitmask) {
-	bitmask = p.pawnAttacks(color) | p.knightAttacks(color) | p.kingAttacks(color)
+func (p *Position) allAttacks(our int) (bitmask Bitmask) {
+	bitmask = p.pawnAttacks(our) | p.knightAttacks(our) | p.kingAttacks(our)
 
-	for bm := p.outposts[bishop(color)] | p.outposts[queen(color)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.outposts[bishop(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.bishopMoves(bm.first())
 	}
 
-	for bm := p.outposts[rook(color)] | p.outposts[queen(color)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.outposts[rook(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.rookMoves(bm.first())
 	}
 
@@ -123,89 +125,89 @@ func (p *Position) allAttacks(color int) (bitmask Bitmask) {
 // This method is used in static exchange evaluation so instead of using current
 // board bitmask (p.board) we pass the one that gets continuously updated during
 // the evaluation.
-func (p *Position) attackers(color int, square int, board Bitmask) (bitmask Bitmask) {
-	bitmask  = knightMoves[square] & p.outposts[knight(color)]
-	bitmask |= maskPawn[color][square] & p.outposts[pawn(color)]
-	bitmask |= kingMoves[square] & p.outposts[king(color)]
-	bitmask |= p.rookMovesAt(square, board) & (p.outposts[rook(color)] | p.outposts[queen(color)])
-	bitmask |= p.bishopMovesAt(square, board) & (p.outposts[bishop(color)] | p.outposts[queen(color)])
+func (p *Position) attackers(our int, square int, board Bitmask) (bitmask Bitmask) {
+	bitmask  = knightMoves[square] & p.outposts[knight(our)]
+	bitmask |= maskPawn[our&1][square] & p.outposts[pawn(our)]
+	bitmask |= kingMoves[square] & p.outposts[king(our)]
+	bitmask |= p.rookMovesAt(square, board) & (p.outposts[rook(our)] | p.outposts[queen(our)])
+	bitmask |= p.bishopMovesAt(square, board) & (p.outposts[bishop(our)] | p.outposts[queen(our)])
 
 	return bitmask
 }
 
-func (p *Position) attackedʔ(color int, square int) bool {
-	return (knightMoves[square] & p.outposts[knight(color)]).anyʔ() ||
-	       (maskPawn[color][square] & p.outposts[pawn(color)]).anyʔ() ||
-	       (kingMoves[square] & p.outposts[king(color)]).anyʔ() ||
-	       (p.rookMoves(square) & (p.outposts[rook(color)] | p.outposts[queen(color)])).anyʔ() ||
-	       (p.bishopMoves(square) & (p.outposts[bishop(color)] | p.outposts[queen(color)])).anyʔ()
+func (p *Position) attackedʔ(our int, square int) bool {
+	return (knightMoves[square] & p.outposts[knight(our)]).anyʔ() ||
+	       (maskPawn[our&1][square] & p.outposts[pawn(our)]).anyʔ() ||
+	       (kingMoves[square] & p.outposts[king(our)]).anyʔ() ||
+	       (p.rookMoves(square) & (p.outposts[rook(our)] | p.outposts[queen(our)])).anyʔ() ||
+	       (p.bishopMoves(square) & (p.outposts[bishop(our)] | p.outposts[queen(our)])).anyʔ()
 }
 
-func (p *Position) pawnTargets(color int, pawns Bitmask) Bitmask {
-	if color == White {
+func (p *Position) pawnTargets(our int, pawns Bitmask) Bitmask {
+	if our == White {
 		return ((pawns & ^maskFile[0]) << 7) | ((pawns & ^maskFile[7]) << 9)
 	}
 
 	return ((pawns & ^maskFile[0]) >> 9) | ((pawns & ^maskFile[7]) >> 7)
 }
 
-func (p *Position) pawnAttacks(color int) Bitmask {
-	return p.pawnTargets(color, p.outposts[pawn(color)])
+func (p *Position) pawnAttacks(our int) Bitmask {
+	return p.pawnTargets(our, p.outposts[pawn(our)])
 }
 
-func (p *Position) knightAttacks(color int) (bitmask Bitmask) {
-	for bm := p.outposts[knight(color)]; bm.anyʔ(); bm = bm.pop() {
+func (p *Position) knightAttacks(our int) (bitmask Bitmask) {
+	for bm := p.outposts[knight(our)]; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= knightMoves[bm.first()]
 	}
 
 	return bitmask
 }
 
-func (p *Position) bishopAttacks(color int) (bitmask Bitmask) {
-	for bm := p.outposts[bishop(color)]; bm.anyʔ(); bm = bm.pop() {
+func (p *Position) bishopAttacks(our int) (bitmask Bitmask) {
+	for bm := p.outposts[bishop(our)]; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.bishopMoves(bm.first())
 	}
 
 	return bitmask
 }
 
-func (p *Position) rookAttacks(color int) (bitmask Bitmask) {
-	for bm := p.outposts[rook(color)]; bm.anyʔ(); bm = bm.pop() {
+func (p *Position) rookAttacks(our int) (bitmask Bitmask) {
+	for bm := p.outposts[rook(our)]; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.rookMoves(bm.first())
 	}
 
 	return bitmask
 }
 
-func (p *Position) queenAttacks(color int) (bitmask Bitmask) {
-	for bm := p.outposts[queen(color)]; bm.anyʔ(); bm = bm.pop() {
+func (p *Position) queenAttacks(our int) (bitmask Bitmask) {
+	for bm := p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.queenMoves(bm.first())
 	}
 
 	return bitmask
 }
 
-func (p *Position) kingAttacks(color int) Bitmask {
-	return kingMoves[p.king[color]]
+func (p *Position) kingAttacks(our int) Bitmask {
+	return kingMoves[p.king[our&1]]
 }
 
-func (p *Position) knightAttacksAt(square int, color int) (bitmask Bitmask) {
-	return knightMoves[square] & ^p.outposts[color]
+func (p *Position) knightAttacksAt(square int, our int) (bitmask Bitmask) {
+	return knightMoves[square] & ^p.outposts[our&1]
 }
 
-func (p *Position) bishopAttacksAt(square int, color int) (bitmask Bitmask) {
-	return p.bishopMoves(square) & ^p.outposts[color]
+func (p *Position) bishopAttacksAt(square int, our int) (bitmask Bitmask) {
+	return p.bishopMoves(square) & ^p.outposts[our&1]
 }
 
-func (p *Position) rookAttacksAt(square int, color int) (bitmask Bitmask) {
-	return p.rookMoves(square) & ^p.outposts[color]
+func (p *Position) rookAttacksAt(square int, our int) (bitmask Bitmask) {
+	return p.rookMoves(square) & ^p.outposts[our&1]
 }
 
-func (p *Position) queenAttacksAt(square int, color int) (bitmask Bitmask) {
-	return p.queenMoves(square) & ^p.outposts[color]
+func (p *Position) queenAttacksAt(square int, our int) (bitmask Bitmask) {
+	return p.queenMoves(square) & ^p.outposts[our&1]
 }
 
-func (p *Position) kingAttacksAt(square int, color int) Bitmask {
-	return kingMoves[square] & ^p.outposts[color]
+func (p *Position) kingAttacksAt(square int, our int) Bitmask {
+	return kingMoves[square] & ^p.outposts[our&1]
 }
 
