@@ -283,7 +283,7 @@ func TestPositionMoves200(t *testing.T) { // 1. e4
 	expect.Eq(t, hash, uint64(0x823C9B50FD114196))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x0B2D6B38C0B92E91))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
@@ -299,7 +299,7 @@ func TestPositionMoves210(t *testing.T) { // 1. e4 d5
 	expect.Eq(t, hash, uint64(0x0756B94461C50FB0))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x76916F86F34AE5BE))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
@@ -317,7 +317,7 @@ func TestPositionMoves220(t *testing.T) {
 	expect.Eq(t, hash, uint64(0x662FAFB965DB29D4))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xEF3E5FD1587346D3))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
@@ -336,7 +336,7 @@ func TestPositionMoves230(t *testing.T) {
 	expect.Eq(t, hash, uint64(0x22A48B5A8E47FF78))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(F6))
@@ -356,7 +356,7 @@ func TestPositionMoves240(t *testing.T) {
 	expect.Eq(t, hash, uint64(0x652A607CA3F242C1))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
@@ -377,7 +377,7 @@ func TestPositionMoves250(t *testing.T) {
 	expect.Eq(t, hash, uint64(0x00FDD303C946BDD9))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
@@ -397,7 +397,7 @@ func TestPositionMoves260(t *testing.T) {
 	expect.Eq(t, hash, uint64(0x3C8123EA7B067637))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xB5AA405AF42E7052))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(C3))
@@ -419,7 +419,7 @@ func TestPositionMoves270(t *testing.T) {
 	expect.Eq(t, hash, uint64(0x5C3F9B829B279560))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xE214F040EAA135A0))
-	expect.Eq(t, pawnHash, p.pawnId)
+	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1 - materialBalance[Pawn])
 	expect.Eq(t, p.enpassant, uint8(0))

@@ -19,7 +19,7 @@ type PawnEntry struct {
 type PawnCache [8192*2]PawnEntry
 
 func (e *Evaluation) analyzePawns() {
-	key := e.position.pawnId
+	key := e.position.pid
 
 	// Since pawn hash is fairly small we can use much faster 32-bit index.
 	index := uint32(key) % uint32(len(game.pawnCache))

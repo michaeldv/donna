@@ -20,7 +20,7 @@ var node, rootNode int
 
 type Position struct {		 // 224 bytes long.
 	id           uint64	 // Polyglot hash value for the position.
-	pawnId       uint64	 // Polyglot hash value for position's pawn structure.
+	pid          uint64	 // Polyglot hash value for position's pawn structure.
 	board        Bitmask	 // Bitmask of all pieces on the board.
 	king         [2]int	 // King's square for both colors.
 	pieces       [64]Piece	 // Array of 64 squares with pieces on them.
@@ -68,7 +68,7 @@ func NewPosition(game *Game, white, black string) *Position {
 
 	p.reversibleʔ = true
 	p.board = p.outposts[White] | p.outposts[Black]
-	p.id, p.pawnId = p.polyglot()
+	p.id, p.pid = p.polyglot()
 	p.tally = p.valuation()
 	p.score = Unknown
 
@@ -237,7 +237,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 
 	p.reversibleʔ = true
 	p.board = p.outposts[White] | p.outposts[Black]
-	p.id, p.pawnId = p.polyglot()
+	p.id, p.pid = p.polyglot()
 	p.tally = p.valuation()
 	p.score = Unknown
 
