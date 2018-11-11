@@ -148,12 +148,12 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	if e2e4 == `0-0` || e2e4 == `0-0-0` {
 		kingside, queenside := p.canCastleʔ(p.color)
 		if e2e4 == `0-0` && kingside {
-			from, to := p.king[p.color&1], G1 + p.color * A8
+			from, to := p.side().home, G1 + p.color * A8
 			move = NewCastle(p, from, to)
 			return
 		}
 		if e2e4 == `0-0-0` && queenside {
-			from, to := p.king[p.color&1], C1 + p.color * A8
+			from, to := p.side().home, C1 + p.color * A8
 			move = NewCastle(p, from, to)
 			return
 		}
@@ -270,7 +270,7 @@ func (m Move) validʔ(p *Position, pins Bitmask) bool {
 	// For all other pieces the move is valid when it doesn't cause a
 	// check. For pinned sliders this includes moves along the pinning
 	// file, rank, or diagonal.
-	return pins.noneʔ() || pins.offʔ(from) || maskLine[from][to].onʔ(p.king[our&1])
+	return pins.noneʔ() || pins.offʔ(from) || maskLine[from][to].onʔ(p.pick(our).home)
 }
 
 // Returns string representation of the move in long coordinate notation as

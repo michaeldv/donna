@@ -188,7 +188,7 @@ func (p *Position) queenAttacks(our int) (bitmask Bitmask) {
 }
 
 func (p *Position) kingAttacks(our int) Bitmask {
-	return kingMoves[p.king[our&1]]
+	return kingMoves[p.pick(our).home]
 }
 
 func (p *Position) knightAttacksAt(square int, our int) (bitmask Bitmask) {

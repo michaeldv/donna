@@ -11,7 +11,7 @@ package donna
 func (gen *MoveGen) generateEvasions() *MoveGen {
 	p := gen.p
 	our, their := p.colors()
-	square := p.king[our&1]
+	square := p.pick(our).home
 
 	// Find out what pieces are checking the king. Usually it's a single
 	// piece but double check is also a possibility.

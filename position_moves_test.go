@@ -264,7 +264,7 @@ func TestPositionMoves130(t *testing.T) {
 	// White rook is zigzaging while black king bounces back and forth.
 	for move := 1; move < len(squares); move++ {
 		p = p.makeMove(NewMove(p, squares[move-1], squares[move]))
-		if p.king[Black] == A8 {
+		if p.black.home == A8 {
 			p = p.makeMove(NewMove(p, A8, B8))
 		} else {
 			p = p.makeMove(NewMove(p, B8, A8))

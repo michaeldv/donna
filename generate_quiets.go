@@ -79,7 +79,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	}
 
 	// King.
-	square := p.king[our&1]
+	square := p.side().home
 	for bm := (kingMoves[square] & empty); bm.anyʔ(); bm = bm.pop() {
 		gen.addQuiet(NewMove(p, square, bm.first()))
 	}

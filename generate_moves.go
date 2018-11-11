@@ -65,7 +65,7 @@ func (gen *MoveGen) pieceMoves(our int) *MoveGen {
 
 func (gen *MoveGen) kingMoves(our int) *MoveGen {
 	if gen.p.outposts[king(our)].anyʔ() {
-		square := gen.p.king[our&1]
+		square := gen.p.pick(our).home
 		gen.moveKing(square, gen.p.targets(square))
 
 		kingside, queenside := gen.p.canCastleʔ(our)

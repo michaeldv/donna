@@ -22,13 +22,13 @@ func (e *Evaluation) analyzeSafety() {
 	}
 
 	// If any of the pawns or a king have moved then recalculate cover score.
-	if e.position.king[White] != e.pawns.king[White] {
+	if e.position.white.home != e.pawns.king[White] {
 		e.pawns.cover[White] = e.kingCover(White)
-		e.pawns.king[White] = e.position.king[White]
+		e.pawns.king[White] = e.position.white.home
 	}
-	if e.position.king[Black] != e.pawns.king[Black] {
+	if e.position.black.home != e.pawns.king[Black] {
 		e.pawns.cover[Black] = e.kingCover(Black)
-		e.pawns.king[Black] = e.position.king[Black]
+		e.pawns.king[Black] = e.position.black.home
 	}
 
 	// Fetch king cover score from the pawn cache.
@@ -51,7 +51,7 @@ func (e *Evaluation) analyzeSafety() {
 
 func (e *Evaluation) kingSafety(our int) (score Score) {
 	p, their := e.position, our^1
-	safetyIndex, checkers, square := 0, 0, p.king[our]
+	safetyIndex, checkers, square := 0, 0, p.pick(our).home
 
 	// Find squares around the king that are being attacked by the
 	// enemy and defended by our king only.
@@ -121,7 +121,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 }
 
 func (e *Evaluation) kingCover(our int) (score Score) {
-	p, square := e.position, e.position.king[our]
+	p, square := e.position, e.position.pick(our).home
 
 	// Don't bother with the cover if the king is too far out.
 	if rank(our, square) <= A3H3 {

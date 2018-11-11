@@ -157,7 +157,7 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 
 			// Adjust endgame bonus based on how close the kings are from the
 			// step forward square.
-			bonus.endgame += (distance[p.king[their]][nextSquare] * 5 - distance[p.king[our]][nextSquare] * 2) * extra
+			bonus.endgame += (distance[p.pick(their).home][nextSquare] * 5 - distance[p.pick(our).home][nextSquare] * 2) * extra
 
 			// Check if the pawn can step forward.
 			if p.board.offʔ(nextSquare) {

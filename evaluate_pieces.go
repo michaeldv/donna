@@ -152,7 +152,7 @@ func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKingʔ bool) (scor
 
 		// Bonus for bishop's mobility: if the bishop is pinned then restrict the attacks.
 		if e.pins[our].onʔ(square) {
-			attacks &= maskLine[p.king[our]][square]
+			attacks &= maskLine[p.pick(our).home][square]
 		}
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
 
@@ -223,7 +223,7 @@ func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score,
 
 		// Bonus for rook's mobility: if the rook is pinned then restrict the attacks.
 		if e.pins[our].onʔ(square) {
-			attacks &= maskLine[p.king[our]][square]
+			attacks &= maskLine[p.pick(our).home][square]
 		}
 		safeSquares := (attacks & maskSafe).count()
 		mobility.add(mobilityRook[safeSquares])
@@ -254,7 +254,7 @@ func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score,
 		// Middle game penalty if a rook is boxed. Extra penalty if castle
 		// rights have been lost.
 		if safeSquares <= 3 || !isFileAjar {
-			kingSquare := p.king[our]
+			kingSquare := p.pick(our).home
 			kingColumn := col(kingSquare)
 
 			// Queenside box: king on D/C/B vs. rook on A/B/C files. Increase the
@@ -293,7 +293,7 @@ func (e *Evaluation) queens(our int, maskSafe Bitmask, unsafeKingʔ bool) (score
 
 		// Bonus for queen's mobility: if the queen is pinned then restrict the attacks.
 		if e.pins[our].onʔ(square) {
-			attacks &= maskLine[p.king[our]][square]
+			attacks &= maskLine[p.pick(our).home][square]
 		}
 		mobility.add(mobilityQueen[min(15, (attacks & maskSafe).count())])
 
@@ -332,7 +332,7 @@ func (e *Evaluation) kingThreats(piece Piece, attacks Bitmask) {
 // square, say H1, the bitmask covers F1,F2, G1,G2,G3, and H2,H3.
 func (e *Evaluation) setupFort(our int) (bitmask Bitmask) {
 	bitmask = e.attacks[king(our)] | e.attacks[king(our)].up(our)
-	switch e.position.king[our] {
+	switch e.position.pick(our).home {
 	case A1, A8:
 		bitmask |= e.attacks[king(our)] << 1
 	case H1, H8:

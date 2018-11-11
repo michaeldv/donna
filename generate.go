@@ -36,7 +36,7 @@ func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen.list = [128]MoveWithScore{}
 	gen.ply = ply
 	gen.head, gen.tail = 0, 0
-	gen.pins = p.pins(p.king[p.color])
+	gen.pins = p.pins(p.side().home)
 
 	return gen
 }

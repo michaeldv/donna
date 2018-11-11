@@ -73,13 +73,13 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 	stronger, _ := e.strongerSide()
 	if stronger == White {
 		color = e.position.color
-		wKing = e.position.king[White]
-		bKing = e.position.king[Black]
+		wKing = e.position.white.home
+		bKing = e.position.black.home
 		wPawn = e.position.outposts[Pawn].last()
 	} else {
 		color = e.position.color ^ 1
-		wKing = 64 + ^e.position.king[Black]
-		bKing = 64 + ^e.position.king[White]
+		wKing = 64 + ^e.position.black.home
+		bKing = 64 + ^e.position.white.home
 		wPawn = 64 + ^e.position.outposts[BlackPawn].last()
 	}
 
@@ -100,7 +100,7 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	our, their := e.strongerSide()
 
 	pawns := e.position.outposts[pawn(our)]
-	row, col := coordinate(e.position.king[their&1])
+	row, col := coordinate(e.position.pick(their).home)
 
 	// Pawns on A file with bare king opposing them.
 	if (pawns & ^maskFile[A1]).noneʔ() && (pawns & ^maskInFront[their&1][row * 8]).noneʔ() && col <= B1 {

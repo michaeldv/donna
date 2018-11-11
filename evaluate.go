@@ -119,8 +119,8 @@ func (e *Evaluation) init(p *Position) *Evaluation {
 	e.attacks[Black] = e.attacks[BlackKing] | e.attacks[BlackPawn]
 
 	// Pinned pieces for both sides that have restricted mobility.
-	e.pins[White] = p.pins(p.king[White])
-	e.pins[Black] = p.pins(p.king[Black])
+	e.pins[White] = p.pins(p.white.home)
+	e.pins[Black] = p.pins(p.black.home)
 
 	return e
 }

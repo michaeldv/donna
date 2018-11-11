@@ -12,7 +12,8 @@ package donna
 func (gen *MoveGen) generateChecks() *MoveGen {
 	p := gen.p
 	our, their := p.colors()
-	square := p.king[their&1]
+	square := p.pick(their).home
+
 	r, c := coordinate(square)
 	prohibit := maskNone
 	empty := ^p.board

@@ -17,12 +17,22 @@ import (
 
 var tree [1024]Position
 var node, rootNode int
+type Side struct {
+	home         int
+	all          Bitmask
+	king         Bitmask
+	queens       Bitmask
+	rooks        Bitmask
+	bishops      Bitmask
+	knights      Bitmask
+	pawns        Bitmask
+}
 
 type Position struct {		 // 224 bytes long.
 	id           uint64	 // Polyglot hash value for the position.
 	pid          uint64	 // Polyglot hash value for position's pawn structure.
 	board        Bitmask	 // Bitmask of all pieces on the board.
-	king         [2]int	 // King's square for both colors.
+//	king         [2]int	 // King's square for both colors.
 	pieces       [64]Piece	 // Array of 64 squares with pieces on them.
 	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	tally        Score	 // Positional valuation score based on PST.
@@ -33,6 +43,8 @@ type Position struct {		 // 224 bytes long.
 	count50      int	 // 50 moves rule counter.
 	reversibleʔ  bool	 // Is this position reversible?
 	castles      uint8	 // Castle rights mask.
+	white        Side
+	black        Side
 }
 
 func NewPosition(game *Game, white, black string) *Position {
@@ -60,7 +72,11 @@ func NewPosition(game *Game, white, black string) *Position {
 			p.outposts[piece] |= bit(square)
 			p.outposts[piece.color()] |= bit(square)
 			if piece.kingʔ() {
-				p.king[piece.color()] = square
+				if piece.whiteʔ() {
+					p.white.home = square
+				} else {
+					p.black.home = square
+				}
 			}
 			p.balance += materialBalance[piece]
 		}
@@ -187,10 +203,10 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 			piece = BlackQueen
 		case 'K':
 			piece = King
-			p.king[White] = sq
+			p.white.home = sq
 		case 'k':
 			piece = BlackKing
-			p.king[Black] = sq
+			p.black.home = sq
 		case '/':
 			sq -= 16
 		case '1', '2', '3', '4', '5', '6', '7', '8':
@@ -321,6 +337,20 @@ func (p *Position) status(move Move, blendedScore int) int {
 	return InProgress
 }
 
+func (p *Position) side() *Side {
+	if p.color == White {
+		return &p.white
+	}
+	return &p.black
+}
+
+func (p *Position) pick(color int) *Side {
+	if color == White {
+		return &p.white
+	}
+	return &p.black
+}
+
 func (p *Position) colors() (int, int) {
 	return p.color, p.color^1
 }
@@ -425,7 +455,7 @@ func (p *Position) dcf() string {
 		}
 
 		// King.
-		pieces[color&1] = append(pieces[color&1], `K` + encode(p.king[color&1]))
+		pieces[color&1] = append(pieces[color&1], `K` + encode(p.pick(color).home))
 
 		// Queens, Rooks, Bishops, and Knights.
 		for outposts := p.outposts[queen(color)]; outposts.anyʔ(); outposts = outposts.pop() {

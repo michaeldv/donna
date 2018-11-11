@@ -117,7 +117,7 @@ func (p *Position) makeMove(move Move) *Position {
 	} else if piece.kingʔ() {
 		pp.movePiece(piece, from, to)
 		pp.count50++
-		pp.king[our&1] = to
+		pp.pick(our).home = to
 		if move.castleʔ() {
 			pp.reversibleʔ = false
 			if to == from + 2 {
@@ -171,7 +171,7 @@ func (p *Position) undoLastMove() *Position {
 }
 
 func (p *Position) inCheckʔ(our int) bool {
-	return p.attackedʔ(our^1, p.king[our&1])
+	return p.attackedʔ(our^1, p.pick(our).home)
 }
 
 func (p *Position) nlNodeʔ() bool {
