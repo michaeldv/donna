@@ -15,10 +15,11 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 
 	// Find out what pieces are checking the king. Usually it's a single
 	// piece but double check is also a possibility.
-	checkers := maskPawn[their&1][square] & p.outposts[pawn(their)]
-	checkers |= p.knightAttacksAt(square, our) & p.outposts[knight(their)]
-	checkers |= p.bishopAttacksAt(square, our) & (p.outposts[bishop(their)] | p.outposts[queen(their)])
-	checkers |= p.rookAttacksAt(square, our) & (p.outposts[rook(their)] | p.outposts[queen(their)])
+	side := p.pick(their)
+	checkers := maskPawn[their&1][square] & side.pawns
+	checkers |= p.knightAttacksAt(square, our) & side.knights
+	checkers |= p.bishopAttacksAt(square, our) & (side.bishops | side.queens)
+	checkers |= p.rookAttacksAt(square, our) & (side.rooks | side.queens)
 
 	// Generate possible king retreats first, i.e. moves to squares not
 	// occupied by friendly pieces and not attacked by the opponent.
@@ -49,7 +50,8 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 
 	// Pawn captures: do we have any pawns available that could capture
 	// the attacking piece?
-	for bm := maskPawn[our&1][attackSquare] & p.outposts[pawn(our)]; bm.anyʔ(); bm = bm.pop() {
+	side = p.pick(our)	// Switch sides.
+	for bm := maskPawn[our&1][attackSquare] & side.pawns; bm.anyʔ(); bm = bm.pop() {
 		move := NewMove(p, bm.first(), attackSquare)
 		if attackSquare >= A8 || attackSquare <= H1 {
 			move = move.promote(Queen)
@@ -62,7 +64,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// evaded by c5xd6 or e5xd6 en-passant captures.
 	if p.enpassant != 0 {
 		if enpassant := attackSquare + up[our&1]; enpassant == p.enpassant {
-			for bm := maskPawn[our&1][enpassant] & p.outposts[pawn(our)]; bm.anyʔ(); bm = bm.pop() {
+			for bm := maskPawn[our&1][enpassant] & side.pawns; bm.anyʔ(); bm = bm.pop() {
 				gen.add(NewMove(p, bm.first(), enpassant))
 			}
 		}
@@ -74,10 +76,10 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// Create masks for one-square pawn pushes and two-square jumps.
 	pawns, jumps := maskNone, ^p.board
 	if our == White {
-		pawns = (p.outposts[Pawn] << 8) & ^p.board
+		pawns = (p.white.pawns << 8) & ^p.board
 		jumps &= maskRank[3] & (pawns << 8)
 	} else {
-		pawns = (p.outposts[BlackPawn] >> 8) & ^p.board
+		pawns = (p.black.pawns >> 8) & ^p.board
 		jumps &= maskRank[4] & (pawns >> 8)
 	}
 
@@ -101,7 +103,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 
 	// What's left is to generate all possible knight, bishop, rook, and
 	// queen moves that evade the check.
-	for bm := p.outposts[our&1] & ^p.outposts[pawn(our)] & ^p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.all & ^side.pawns & ^side.king; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		gen.movePiece(from, p.targets(from) & block)
 	}

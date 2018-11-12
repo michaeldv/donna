@@ -36,11 +36,12 @@ func (e *Evaluation) threats(our int) (score Score) {
 	p, their := e.position, our^1
 
 	// Get our protected and non-hanging pawns.
-	pawns := p.outposts[pawn(our)] & (e.attacks[our] | ^e.attacks[their])
+	pawns := p.pick(our).pawns & (e.attacks[our&1] | ^e.attacks[their&1])
 
 	// Find enemy pieces attacked by our protected/non-hanging pawns.
-	pieces := p.outposts[their] ^ p.outposts[king(their)] 	// All pieces except king.
-	majors := pieces ^ p.outposts[pawn(their)]		// All pieces except king and pawns.
+	side := p.pick(their)
+	pieces := side.all ^ side.king	// All pieces except king.
+	majors := pieces ^ side.pawns	// All pieces except king and pawns.
 
 	// Bonus for each enemy piece attacked by our pawn.
 	for bm := majors & p.pawnTargets(our, pawns); bm.anyʔ(); bm = bm.pop() {
@@ -51,7 +52,7 @@ func (e *Evaluation) threats(our int) (score Score) {
 	// Find enemy pieces that might be our likely targets: major pieces
 	// attacked by our pawns and all attacked pieces not defended by pawns.
 	defended := majors & e.attacks[pawn(their)]
-	undefended := pieces & ^e.attacks[pawn(their)] & e.attacks[our]
+	undefended := pieces & ^e.attacks[pawn(their)] & e.attacks[our&1]
 
 	if likely := defended | undefended; likely.anyʔ() {
 		// Bonus for enemy pieces attacked by knights and bishops.
@@ -61,7 +62,7 @@ func (e *Evaluation) threats(our int) (score Score) {
 		}
 
 		// Bonus for enemy pieces attacked by rooks.
-		for bm := (undefended | p.outposts[queen(their)]) & e.attacks[rook(our)]; bm.anyʔ(); bm = bm.pop() {
+		for bm := (undefended | side.queens) & e.attacks[rook(our)]; bm.anyʔ(); bm = bm.pop() {
 			piece := p.pieces[bm.first()]
 			score.add(bonusRookThreat[piece.id()])
 		}
@@ -77,7 +78,7 @@ func (e *Evaluation) threats(our int) (score Score) {
 		}
 
 		// Extra bonus when attacking enemy pieces that are hanging.
-		if bm := undefended & ^e.attacks[their]; bm.anyʔ() {
+		if bm := undefended & ^e.attacks[their&1]; bm.anyʔ() {
 			if count := bm.count(); count > 0 {
 				score.add(hangingAttack.times(count))
 			}
@@ -90,8 +91,8 @@ func (e *Evaluation) threats(our int) (score Score) {
 func (e *Evaluation) center(our int) (score Score) {
 	p, their := e.position, our^1
 
-	turf := p.outposts[pawn(our)]
-	safe := homeTurf[our] & ^turf & ^e.attacks[pawn(their)] & (e.attacks[our] | ^e.attacks[their])
+	turf := p.pick(our).pawns
+	safe := homeTurf[our&1] & ^turf & ^e.attacks[pawn(their)] & (e.attacks[our&1] | ^e.attacks[their&1])
 
 	if our == White {
 		turf |= turf >> 8   // A4..H4 -> A3..H3

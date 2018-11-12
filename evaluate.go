@@ -163,7 +163,7 @@ func (e *Evaluation) checkpoint(tag string, metric interface{}) {
 }
 
 func (e *Evaluation) oppositeBishopsʔ() bool {
-	bishops := e.position.outposts[Bishop] | e.position.outposts[BlackBishop]
+	bishops := e.position.white.bishops | e.position.black.bishops
 
 	return (bishops & maskDark).anyʔ() && (bishops & ^maskDark).anyʔ()
 }

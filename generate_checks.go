@@ -12,23 +12,24 @@ package donna
 func (gen *MoveGen) generateChecks() *MoveGen {
 	p := gen.p
 	our, their := p.colors()
+	side := p.pick(our)
 	square := p.pick(their).home
 
 	r, c := coordinate(square)
 	prohibit := maskNone
 	empty := ^p.board
-	friendly := ^p.outposts[their&1]
+	friendly := ^p.pick(their).all
 
 	// Non-capturing Knight checks.
 	checks := knightMoves[square]
-	for bm := p.outposts[knight(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.knights; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		gen.movePiece(from, knightMoves[from] & checks & empty)
 	}
 
 	// Non-capturing Bishop or Queen checks.
 	checks = p.bishopAttacksAt(square, their)
-	for bm := p.outposts[bishop(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.bishops | side.queens; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		diagonal := (r != row(from) && c != col(from))
 		for bm := p.bishopAttacksAt(from, their) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
@@ -67,7 +68,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 
 	// Non-capturing Rook or Queen checks.
 	checks = p.rookAttacksAt(square, their)
-	for bm := p.outposts[rook(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.rooks | side.queens; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		straight := (r == row(from) || c == col(from))
 		for bm := p.rookAttacksAt(from, their) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
@@ -109,7 +110,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	}
 
 	// Non-capturing Pawn checks.
-	for bm := p.outposts[pawn(our)] & maskIsolated[c]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.pawns & maskIsolated[c]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		if bm := maskPawn[our&1][square] & p.targets(from); bm.anyʔ() {
 			gen.add(NewPawnMove(p, from, bm.first()))

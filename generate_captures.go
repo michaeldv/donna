@@ -15,9 +15,9 @@ func (gen *MoveGen) generateCaptures() *MoveGen {
 
 // Generates all pseudo-legal pawn captures and promotions.
 func (gen *MoveGen) pawnCaptures(our, their int) *MoveGen {
-	opponent := gen.p.outposts[their&1]
+	opponent := gen.p.pick(their).all
 
-	for pawns := gen.p.outposts[pawn(our)]; pawns.anyʔ(); pawns = pawns.pop() {
+	for pawns := gen.p.pick(our).pawns; pawns.anyʔ(); pawns = pawns.pop() {
 		square := pawns.first()
 
 		// For pawns on files 2-6 the moves include captures only,
@@ -39,13 +39,15 @@ func (gen *MoveGen) pawnCaptures(our, their int) *MoveGen {
 
 // Generates all pseudo-legal captures by pieces other than pawn.
 func (gen *MoveGen) pieceCaptures(our, their int) *MoveGen {
-	opponent := gen.p.outposts[their&1]
+	side := gen.p.pick(our)
+	opponent := gen.p.pick(their).all
 
-	for bm := gen.p.outposts[our&1] ^ gen.p.outposts[pawn(our)] ^ gen.p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.all ^ side.pawns ^ side.king; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePiece(square, gen.p.targets(square) & opponent)
 	}
-	if gen.p.outposts[king(our)].anyʔ() {
+
+	if side.king.anyʔ() {
 		square := gen.p.pick(our).home
 		gen.moveKing(square, gen.p.targets(square) & opponent)
 	}

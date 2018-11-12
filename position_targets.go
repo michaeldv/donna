@@ -51,7 +51,7 @@ func (p *Position) targets(square int) (bitmask Bitmask) {
 		empty := ^p.board
 		bitmask  = bit(square).up(our) & empty
 		bitmask |= bitmask.up(our) & empty & maskRank[A4H4 + our]
-		bitmask |= pawnAttacks[our&1][square] & p.outposts[their&1]
+		bitmask |= pawnAttacks[our&1][square] & p.pick(their).all
 
 		// If the last move set the en-passant square and it is diagonally adjacent
 		// to the current pawn, then add en-passant to the pawn's attack targets.
@@ -59,7 +59,7 @@ func (p *Position) targets(square int) (bitmask Bitmask) {
 			bitmask.set(p.enpassant)
 		}
 	} else {
-		bitmask = p.attacksFor(square, piece) & ^p.outposts[our&1]
+		bitmask = p.attacksFor(square, piece) & ^p.pick(our).all
 	}
 
 	return bitmask
@@ -95,10 +95,10 @@ func (p *Position) xrayAttacks(square int) Bitmask {
 func (p *Position) xrayAttacksFor(square int, piece Piece) (bitmask Bitmask) {
 	switch kind, our := piece.kind(), piece.color(); kind {
 	case Bishop:
-		board := p.board ^ p.outposts[queen(our)]
+		board := p.board ^ p.pick(our).queens
 		return p.bishopMovesAt(square, board)
 	case Rook:
-		board := p.board ^ p.outposts[rook(our)] ^ p.outposts[queen(our)]
+		board := p.board ^ p.pick(our).rooks ^ p.pick(our).queens
 		return p.rookMovesAt(square, board)
 	}
 
@@ -106,13 +106,14 @@ func (p *Position) xrayAttacksFor(square int, piece Piece) (bitmask Bitmask) {
 }
 
 func (p *Position) allAttacks(our int) (bitmask Bitmask) {
+	side := p.pick(our)
 	bitmask = p.pawnAttacks(our) | p.knightAttacks(our) | p.kingAttacks(our)
 
-	for bm := p.outposts[bishop(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.bishops | side.queens; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.bishopMoves(bm.first())
 	}
 
-	for bm := p.outposts[rook(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.rooks | side.queens; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.rookMoves(bm.first())
 	}
 
@@ -126,21 +127,23 @@ func (p *Position) allAttacks(our int) (bitmask Bitmask) {
 // board bitmask (p.board) we pass the one that gets continuously updated during
 // the evaluation.
 func (p *Position) attackers(our int, square int, board Bitmask) (bitmask Bitmask) {
-	bitmask  = knightMoves[square] & p.outposts[knight(our)]
-	bitmask |= maskPawn[our&1][square] & p.outposts[pawn(our)]
-	bitmask |= kingMoves[square] & p.outposts[king(our)]
-	bitmask |= p.rookMovesAt(square, board) & (p.outposts[rook(our)] | p.outposts[queen(our)])
-	bitmask |= p.bishopMovesAt(square, board) & (p.outposts[bishop(our)] | p.outposts[queen(our)])
-
+	side := p.pick(our)
+	bitmask  = knightMoves[square] & side.knights
+	bitmask |= maskPawn[our&1][square] & side.pawns
+	bitmask |= kingMoves[square] & side.king
+	bitmask |= p.rookMovesAt(square, board) & (side.rooks | side.queens)
+	bitmask |= p.bishopMovesAt(square, board) & (side.bishops | side.queens)
 	return bitmask
 }
 
 func (p *Position) attackedʔ(our int, square int) bool {
-	return (knightMoves[square] & p.outposts[knight(our)]).anyʔ() ||
-	       (maskPawn[our&1][square] & p.outposts[pawn(our)]).anyʔ() ||
-	       (kingMoves[square] & p.outposts[king(our)]).anyʔ() ||
-	       (p.rookMoves(square) & (p.outposts[rook(our)] | p.outposts[queen(our)])).anyʔ() ||
-	       (p.bishopMoves(square) & (p.outposts[bishop(our)] | p.outposts[queen(our)])).anyʔ()
+	side := p.pick(our)
+	return (maskPawn[our&1][square] & side.pawns).anyʔ() ||
+	       (knightMoves[square] & side.knights).anyʔ() ||
+	       (kingMoves[square] & side.king).anyʔ() ||
+	       (p.rookMoves(square) & (side.rooks | side.queens)).anyʔ() ||
+	       (p.bishopMoves(square) & (side.bishops | side.queens)).anyʔ()
+
 }
 
 func (p *Position) pawnTargets(our int, pawns Bitmask) Bitmask {
@@ -152,11 +155,11 @@ func (p *Position) pawnTargets(our int, pawns Bitmask) Bitmask {
 }
 
 func (p *Position) pawnAttacks(our int) Bitmask {
-	return p.pawnTargets(our, p.outposts[pawn(our)])
+	return p.pawnTargets(our, p.pick(our).pawns)
 }
 
 func (p *Position) knightAttacks(our int) (bitmask Bitmask) {
-	for bm := p.outposts[knight(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).knights; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= knightMoves[bm.first()]
 	}
 
@@ -164,7 +167,7 @@ func (p *Position) knightAttacks(our int) (bitmask Bitmask) {
 }
 
 func (p *Position) bishopAttacks(our int) (bitmask Bitmask) {
-	for bm := p.outposts[bishop(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).bishops; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.bishopMoves(bm.first())
 	}
 
@@ -172,7 +175,7 @@ func (p *Position) bishopAttacks(our int) (bitmask Bitmask) {
 }
 
 func (p *Position) rookAttacks(our int) (bitmask Bitmask) {
-	for bm := p.outposts[rook(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).rooks; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.rookMoves(bm.first())
 	}
 
@@ -180,7 +183,7 @@ func (p *Position) rookAttacks(our int) (bitmask Bitmask) {
 }
 
 func (p *Position) queenAttacks(our int) (bitmask Bitmask) {
-	for bm := p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).queens; bm.anyʔ(); bm = bm.pop() {
 		bitmask |= p.queenMoves(bm.first())
 	}
 
@@ -192,22 +195,22 @@ func (p *Position) kingAttacks(our int) Bitmask {
 }
 
 func (p *Position) knightAttacksAt(square int, our int) (bitmask Bitmask) {
-	return knightMoves[square] & ^p.outposts[our&1]
+	return knightMoves[square] & ^p.pick(our).all
 }
 
 func (p *Position) bishopAttacksAt(square int, our int) (bitmask Bitmask) {
-	return p.bishopMoves(square) & ^p.outposts[our&1]
+	return p.bishopMoves(square) & ^p.pick(our).all
 }
 
 func (p *Position) rookAttacksAt(square int, our int) (bitmask Bitmask) {
-	return p.rookMoves(square) & ^p.outposts[our&1]
+	return p.rookMoves(square) & ^p.pick(our).all
 }
 
 func (p *Position) queenAttacksAt(square int, our int) (bitmask Bitmask) {
-	return p.queenMoves(square) & ^p.outposts[our&1]
+	return p.queenMoves(square) & ^p.pick(our).all
 }
 
 func (p *Position) kingAttacksAt(square int, our int) Bitmask {
-	return kingMoves[square] & ^p.outposts[our&1]
+	return kingMoves[square] & ^p.pick(our).all
 }
 

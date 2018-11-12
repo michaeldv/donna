@@ -44,7 +44,7 @@ func NewPawnMove(p *Position, square, target int) Move {
 
 		// Check if pawn jump causes en-passant. This is done by verifying
 		// whether enemy pawns occupy squares ajacent to the target square.
-		pawns := p.outposts[pawn(p.color^1)]
+		pawns := p.pick(p.color^1).pawns
 		if pawns & maskIsolated[col(target)] & maskRank[row(target)] != 0 {
 			return NewEnpassant(p, square, target)
 		}

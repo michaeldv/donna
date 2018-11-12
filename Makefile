@@ -11,7 +11,7 @@ GOFLAGS = -gcflags -B
 PACKAGE = github.com/michaeldv/donna/cmd/donna
 
 build:
-	go build -x -a -o ./bin/donna $(GOFLAGS) $(PACKAGE)
+	go build -a -o ./bin/donna $(GOFLAGS) $(PACKAGE)
 
 install:
 	go install -x $(GOFLAGS) $(PACKAGE)

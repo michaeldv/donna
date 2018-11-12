@@ -8,11 +8,24 @@
 
 package donna
 
+func (p *Position) zap(piece Piece, bm Bitmask) {
+	side := p.pick(piece.color())
+	side.all ^= bm
+
+	switch piece.kind() {
+	case Pawn:   side.pawns   ^= bm
+	case Knight: side.knights ^= bm
+	case Bishop: side.bishops ^= bm
+	case Rook:   side.rooks   ^= bm
+	case Queen:  side.queens  ^= bm
+	case King:   side.king    ^= bm
+	}
+}
+
 func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	bm := bit(from) | bit(to)
-	p.pieces[from], p.pieces[to] = 0, piece
-	p.outposts[piece] ^= bm
-	p.outposts[piece.color()] ^= bm
+	p.pieces[from&63], p.pieces[to&63] = 0, piece
+	p.zap(piece, bm)
 
 	// Update position's hash values.
 	random := piece.polyglot(from) ^ piece.polyglot(to)
@@ -28,10 +41,9 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 }
 
 func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position {
-	p.pieces[from], p.pieces[to] = 0, promo
-	p.outposts[pawn] ^= bit(from)
-	p.outposts[promo] ^= bit(to)
-	p.outposts[pawn.color()] ^= bit(from) | bit(to)
+	p.pieces[from&63], p.pieces[to&63] = 0, promo
+	p.zap(pawn, bit(from))
+	p.zap(promo, bit(to))
 
 	// Update position's hash values and material balance.
 	random := pawn.polyglot(from)
@@ -46,8 +58,7 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 }
 
 func (p *Position) capturePiece(capture Piece, from, to int) *Position {
-	p.outposts[capture] ^= bit(to)
-	p.outposts[capture.color()] ^= bit(to)
+	p.zap(capture, bit(to))
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(to)
@@ -66,9 +77,8 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 	enpassant := to - up[capture.color()^1]
 
-	p.pieces[enpassant] = 0
-	p.outposts[capture] ^= bit(enpassant)
-	p.outposts[capture.color()] ^= bit(enpassant)
+	p.pieces[enpassant&63] = 0
+	p.zap(capture, bit(enpassant))
 
 	// Update position's hash values and material balance.
 	random := capture.polyglot(enpassant)
@@ -89,8 +99,8 @@ func (p *Position) makeMove(move Move) *Position {
 
 	// Copy over the contents of previous tree node to the current one.
 	node++
-	tree[node] = *p // => tree[node] = tree[node - 1]
-	pp := &tree[node]
+	tree[node&127] = *p // => tree[node] = tree[node - 1]
+	pp := &tree[node&127]
 
 	pp.enpassant, pp.reversibleʔ = 0, true
 
@@ -133,14 +143,14 @@ func (p *Position) makeMove(move Move) *Position {
 
 	// Set up the board bitmask, update castle rights, finish off incremental
 	// hash value, and flip the color.
-	pp.board = pp.outposts[White] | pp.outposts[Black]
+	pp.board = pp.white.all | pp.black.all
 	pp.castles &= castleRights[from] & castleRights[to]
 	pp.id ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
 	pp.id ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
 	pp.score = Unknown
 
-	return &tree[node] // pp
+	return &tree[node&127] // pp
 }
 
 // Makes "null" move by copying over previous node position (i.e. preserving all pieces
@@ -244,15 +254,17 @@ func (p *Position) pins(square int) (bitmask Bitmask) {
 	our := p.pieces[square].color()
 	their := our^1
 
-	attackers := (p.outposts[bishop(their)] | p.outposts[queen(their)]) & bishopMagicMoves[square][0]
-	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[square][0]
+	side := p.pick(their)
+	attackers := (side.bishops | side.queens) & bishopMagicMoves[square][0]
+	attackers |= (side.rooks | side.queens) & rookMagicMoves[square][0]
 
+	friendly := p.pick(our).all
 	for bm := attackers; bm.anyʔ(); bm = bm.pop() {
 		target := bm.first()
 		blockers := maskBlock[square][target] & ^bit(target) & p.board
 
 		if blockers.singleʔ() {
-			bitmask |= blockers & p.outposts[our&1] // Only friendly pieces are pinned.
+			bitmask |= blockers & friendly // Only friendly pieces are pinned.
 		}
 	}
 

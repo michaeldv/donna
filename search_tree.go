@@ -73,7 +73,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 	if !inCheckʔ && !pvNodeʔ {
 
 		// No razoring if pawns are on 7th rank.
-		if cachedMove.nullʔ() && depth < 3 && p.outposts[pawn(p.color)] & mask7th[p.color] == 0 {
+		if cachedMove.nullʔ() && depth < 3 && p.side().pawns & mask7th[p.color] == 0 {
 			razoringMargin := func(depth int) int {
 				return 96 + 64 * (depth - 1)
 			}
@@ -92,7 +92,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		// Futility pruning is only applicable if we don't have winning score
 		// yet and there are pieces other than pawns.
 		if !nlNodeʔ && depth < 14 && !mateʔ(beta) &&
-		   (p.outposts[p.color] & ^(p.outposts[king(p.color)] | p.outposts[pawn(p.color)])).anyʔ() {
+		   (p.side().all & ^(p.side().king | p.side().pawns)).anyʔ() {
 			// Largest conceivable positional gain.
 			if gain := p.score - 256 * depth; gain >= beta {
 				return gain
@@ -100,7 +100,7 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 		}
 
 		// Null move pruning.
-		if !nlNodeʔ && depth > 1 && p.outposts[p.color].count() > 5 {
+		if !nlNodeʔ && depth > 1 && p.side().all.count() > 5 {
 			position := p.makeNullMove()
 			game.nodes++
 			nullScore := -position.searchTree(-beta, -beta + 1, depth - 1 - 3)

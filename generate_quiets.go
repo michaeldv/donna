@@ -36,8 +36,9 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	}
 
 	// Pawns.
+	side := p.pick(our)
 	last := let(our == White, 7, 0)
-	for bm := p.outposts[pawn(our)].up(our) & empty & ^maskRank[last]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.pawns.up(our) & empty & ^maskRank[last]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		forward, backward := square + up[our&1], square - up[our&1]
 		if rank(our, square) == 2 && p.pieces[forward].noneʔ() {
@@ -47,7 +48,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	}
 
 	// Knights.
-	for bm := p.outposts[knight(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.knights; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		for bm := knightMoves[square] & empty; bm.anyʔ(); bm = bm.pop() {
 			gen.addQuiet(NewMove(p, square, bm.first()))
@@ -55,7 +56,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	}
 
 	// Bishops.
-	for bm := p.outposts[bishop(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.bishops; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		for bm := p.bishopMoves(square) & empty; bm.anyʔ(); bm = bm.pop() {
 			gen.addQuiet(NewMove(p, square, bm.first()))
@@ -63,7 +64,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	}
 
 	// Rooks.
-	for bm := p.outposts[rook(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.rooks; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		for bm := p.rookMoves(square) & empty; bm.anyʔ(); bm = bm.pop() {
 			gen.addQuiet(NewMove(p, square, bm.first()))
@@ -71,7 +72,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	}
 
 	// Queens.
-	for bm := p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := side.queens; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		for bm := (p.bishopMoves(square) | p.rookMoves(square)) & empty; bm.anyʔ(); bm = bm.pop() {
 			gen.addQuiet(NewMove(p, square, bm.first()))

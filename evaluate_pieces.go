@@ -29,14 +29,14 @@ func (e *Evaluation) analyzePieces() {
 	// Mobility masks for both sides exclude squares attacked by opponent's pawns,
 	// king squares, pawns on first two ranks, and blocked pawns on other ranks.
 	var pawnExclusions = [2]Bitmask {
-		p.outposts[Pawn] & (maskRank[A2H2] | maskRank[A3H3] | p.board.up(Black)),
-		p.outposts[BlackPawn] & (maskRank[A7H7] | maskRank[A6H6] | p.board.up(White)),
+		p.white.pawns & (maskRank[A2H2] | maskRank[A3H3] | p.board.up(Black)),
+		p.black.pawns & (maskRank[A7H7] | maskRank[A6H6] | p.board.up(White)),
 	}
 
 	// Initialize safe mobility zones for both sides.
 	var maskSafe = [2]Bitmask {
-		^(e.attacks[BlackPawn] | p.outposts[King] | pawnExclusions[White]),
-		^(e.attacks[Pawn] | p.outposts[BlackKing] | pawnExclusions[Black]),
+		^(e.attacks[BlackPawn] | p.white.king | pawnExclusions[White]),
+		^(e.attacks[Pawn] | p.black.king | pawnExclusions[Black]),
 	}
 
 	// Initialize flags to see if kings for both sides require safety evaluation.
@@ -51,34 +51,34 @@ func (e *Evaluation) analyzePieces() {
 	}
 
 	// Evaluate white pieces except the queen.
-	if p.outposts[Knight].anyʔ() {
+	if p.white.knights.anyʔ() {
 		knight.white, bonus = e.knights(White, maskSafe[White], isKingUnsafe[Black])
 		e.score.add(knight.white)
 		mobility.white.add(bonus)
 	}
-	if p.outposts[Bishop].anyʔ() {
+	if p.white.bishops.anyʔ() {
 		bishop.white, bonus = e.bishops(White, maskSafe[White], isKingUnsafe[Black])
 		e.score.add(bishop.white)
 		mobility.white.add(bonus)
 	}
-	if p.outposts[Rook].anyʔ() {
+	if p.white.rooks.anyʔ() {
 		rook.white, bonus  = e.rooks(White, maskSafe[White], isKingUnsafe[Black])
 		e.score.add(rook.white)
 		mobility.white.add(bonus)
 	}
 
 	// Evaluate black pieces except the queen.
-	if p.outposts[BlackKnight].anyʔ() {
+	if p.black.knights.anyʔ() {
 		knight.black, bonus = e.knights(Black, maskSafe[Black], isKingUnsafe[White])
 		e.score.sub(knight.black)
 		mobility.black.add(bonus)
 	}
-	if p.outposts[BlackBishop].anyʔ() {
+	if p.black.bishops.anyʔ() {
 		bishop.black, bonus = e.bishops(Black, maskSafe[Black], isKingUnsafe[White])
 		e.score.sub(bishop.black)
 		mobility.black.add(bonus)
 	}
-	if p.outposts[BlackRook].anyʔ() {
+	if p.black.rooks.anyʔ() {
 		rook.black, bonus = e.rooks(Black, maskSafe[Black], isKingUnsafe[White])
 		e.score.sub(rook.black)
 		mobility.black.add(bonus)
@@ -86,13 +86,13 @@ func (e *Evaluation) analyzePieces() {
 
 	// Now that we've built all attack bitmasks we can adjust mobility to exclude
 	// attacks by enemy's knights, bishops, and rooks and evaluate the queens.
-	if p.outposts[Queen].anyʔ() {
+	if p.white.queens.anyʔ() {
 		maskSafe[White] &= ^(e.attacks[BlackKnight] | e.attacks[BlackBishop] | e.attacks[BlackRook])
 		queen.white, bonus = e.queens(White, maskSafe[White], isKingUnsafe[Black])
 		e.score.add(queen.white)
 		mobility.white.add(bonus)
 	}
-	if p.outposts[BlackQueen].anyʔ() {
+	if p.black.queens.anyʔ() {
 		maskSafe[Black] &= ^(e.attacks[Knight] | e.attacks[Bishop] | e.attacks[Rook])
 		queen.black, bonus = e.queens(Black, maskSafe[Black], isKingUnsafe[White])
 		e.score.sub(queen.black)
@@ -111,23 +111,23 @@ func (e *Evaluation) analyzePieces() {
 func (e *Evaluation) knights(our int, maskSafe Bitmask, unsafeKingʔ bool) (score, mobility Score) {
 	p, their := e.position, our^1
 
-	for bm := p.outposts[knight(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).knights; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		attacks := maskNone
 
 		// Bonus for knight's mobility -- unless the knight is pinned.
-		if e.pins[our].offʔ(square) {
+		if e.pins[our&1].offʔ(square) {
 			attacks = p.attacks(square)
 			mobility.add(mobilityKnight[(attacks & maskSafe).count()])
 		}
 
 		// Penalty if knight is attacked by enemy's pawn.
-		if (maskPawn[their][square] & p.outposts[pawn(their)]).anyʔ() {
+		if (maskPawn[their&1][square] & p.pick(their).pawns).anyʔ() {
 			score.sub(penaltyPawnThreat[Knight/2])
 		}
 
 		// Bonus if knight is behind friendly pawn.
-		if rank(our, square) < 4 && p.outposts[pawn(our)].onʔ(square + up[our]) {
+		if rank(our, square) < 4 && p.pick(our).pawns.onʔ(square + up[our&1]) {
 			score.add(behindPawn)
 		}
 
@@ -146,29 +146,29 @@ func (e *Evaluation) knights(our int, maskSafe Bitmask, unsafeKingʔ bool) (scor
 func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKingʔ bool) (score, mobility Score) {
 	p, their := e.position, our^1
 
-	for bm := p.outposts[bishop(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).bishops; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for bishop's mobility: if the bishop is pinned then restrict the attacks.
-		if e.pins[our].onʔ(square) {
+		if e.pins[our&1].onʔ(square) {
 			attacks &= maskLine[p.pick(our).home][square]
 		}
 		mobility.add(mobilityBishop[(attacks & maskSafe).count()])
 
 
 		// Penalty for light/dark-colored pawns restricting a bishop.
-		if count := (same(square) & p.outposts[pawn(our)]).count(); count > 0 {
+		if count := (same(square) & p.pick(our).pawns).count(); count > 0 {
 			score.sub(bishopPawn.times(count))
 		}
 
 		// Penalty if bishop is attacked by enemy's pawn.
-		if (maskPawn[their][square] & p.outposts[pawn(their)]).anyʔ() {
+		if (maskPawn[their&1][square] & p.pick(their).pawns).anyʔ() {
 			score.sub(penaltyPawnThreat[Bishop/2])
 		}
 
 		// Bonus if bishop is behind friendly pawn.
-		if rank(our, square) < 4 && p.outposts[pawn(our)].onʔ(square + up[our]) {
+		if rank(our, square) < 4 && p.pick(our).pawns.onʔ(square + up[our&1]) {
 			score.add(behindPawn)
 		}
 
@@ -209,27 +209,27 @@ func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKingʔ bool) (scor
 
 func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score, mobility Score) {
 	p, their := e.position, our^1
-	ourPawns := p.outposts[pawn(our)]
-	theirPawns := p.outposts[pawn(their)]
+	ourPawns := p.pick(our).pawns
+	theirPawns := p.pick(their).pawns
 
 	// Bonus if rook is on 7th rank and enemy's king trapped on 8th.
-	if bm := (p.outposts[rook(our)] & mask7th[our]); bm.anyʔ() && (p.outposts[king(their)] & mask8th[our]).anyʔ() {
+	if bm := (p.pick(our).rooks & mask7th[our&1]); bm.anyʔ() && (p.pick(their).king & mask8th[our&1]).anyʔ() {
 		score.add(rookOn7th.times(bm.count()))
 	}
 
-	for bm := p.outposts[rook(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).rooks; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		attacks := p.xrayAttacks(square)
 
 		// Bonus for rook's mobility: if the rook is pinned then restrict the attacks.
-		if e.pins[our].onʔ(square) {
+		if e.pins[our&1].onʔ(square) {
 			attacks &= maskLine[p.pick(our).home][square]
 		}
 		safeSquares := (attacks & maskSafe).count()
 		mobility.add(mobilityRook[safeSquares])
 
 		// Penalty if rook is attacked by enemy's pawn.
-		if maskPawn[their][square] & theirPawns != 0 {
+		if maskPawn[their&1][square] & theirPawns != 0 {
 			score.sub(penaltyPawnThreat[Rook/2])
 		}
 
@@ -259,14 +259,14 @@ func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score,
 
 			// Queenside box: king on D/C/B vs. rook on A/B/C files. Increase the
 			// the penalty since no castle is possible.
-			if column < kingColumn && rookBoxA[our].onʔ(square) && kingBoxA[our].onʔ(kingSquare) {
+			if column < kingColumn && rookBoxA[our&1].onʔ(square) && kingBoxA[our&1].onʔ(kingSquare) {
 				score.midgame -= (rookBoxed.midgame - safeSquares * 10) * 2
 			}
 
 			// Kingside box: king on E/F/G vs. rook on H/G/F files.
-			if column > kingColumn && rookBoxH[our].onʔ(square) && kingBoxH[our].onʔ(kingSquare) {
+			if column > kingColumn && rookBoxH[our&1].onʔ(square) && kingBoxH[our&1].onʔ(kingSquare) {
 				score.midgame -= (rookBoxed.midgame - safeSquares * 10)
-				if p.castles & castleKingside[our] == 0 {
+				if p.castles & castleKingside[our&1] == 0 {
 					score.midgame -= (rookBoxed.midgame - safeSquares * 10)
 				}
 			}
@@ -287,18 +287,18 @@ func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score,
 func (e *Evaluation) queens(our int, maskSafe Bitmask, unsafeKingʔ bool) (score, mobility Score) {
 	p, their := e.position, our^1
 
-	for bm := p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := p.pick(our).queens; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		attacks := p.attacks(square)
 
 		// Bonus for queen's mobility: if the queen is pinned then restrict the attacks.
-		if e.pins[our].onʔ(square) {
+		if e.pins[our&1].onʔ(square) {
 			attacks &= maskLine[p.pick(our).home][square]
 		}
 		mobility.add(mobilityQueen[min(15, (attacks & maskSafe).count())])
 
 		// Penalty if queen is attacked by enemy's pawn.
-		if (maskPawn[their][square] & p.outposts[pawn(their)]).anyʔ() {
+		if (maskPawn[their&1][square] & p.pick(their).pawns).anyʔ() {
 			score.sub(penaltyPawnThreat[Queen/2])
 		}
 
@@ -318,11 +318,11 @@ func (e *Evaluation) queens(our int, maskSafe Bitmask, unsafeKingʔ bool) (score
 func (e *Evaluation) kingThreats(piece Piece, attacks Bitmask) {
 	their := piece.color()^1
 
-	if (attacks & e.safety[their].fort).anyʔ() {
-		e.safety[their].attackers++
-		e.safety[their].threats += kingThreat[piece.id()]
+	if (attacks & e.safety[their&1].fort).anyʔ() {
+		e.safety[their&1].attackers++
+		e.safety[their&1].threats += kingThreat[piece.id()]
 		if bits := attacks & e.attacks[king(their)]; bits.anyʔ() {
-			e.safety[their].attacks += bits.count()
+			e.safety[their&1].attacks += bits.count()
 		}
 	}
 }

@@ -45,7 +45,7 @@ func (gen *MoveGen) generateMoves() *MoveGen {
 }
 
 func (gen *MoveGen) pawnMoves(our int) *MoveGen {
-	for bm := gen.p.outposts[pawn(our)]; bm.anyʔ(); bm = bm.pop() {
+	for bm := gen.p.pick(our).pawns; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePawn(square, gen.p.targets(square))
 	}
@@ -55,7 +55,9 @@ func (gen *MoveGen) pawnMoves(our int) *MoveGen {
 
 // Go over all pieces except pawns and the king.
 func (gen *MoveGen) pieceMoves(our int) *MoveGen {
-	for bm := gen.p.outposts[our&1] ^ gen.p.outposts[pawn(our)] ^ gen.p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
+	side := gen.p.pick(our)
+
+	for bm := side.all ^ side.pawns ^ side.king; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		gen.movePiece(square, gen.p.targets(square))
 	}
@@ -64,7 +66,7 @@ func (gen *MoveGen) pieceMoves(our int) *MoveGen {
 }
 
 func (gen *MoveGen) kingMoves(our int) *MoveGen {
-	if gen.p.outposts[king(our)].anyʔ() {
+	if gen.p.pick(our).king.anyʔ() {
 		square := gen.p.pick(our).home
 		gen.moveKing(square, gen.p.targets(square))
 

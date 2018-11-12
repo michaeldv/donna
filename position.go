@@ -32,9 +32,7 @@ type Position struct {		 // 224 bytes long.
 	id           uint64	 // Polyglot hash value for the position.
 	pid          uint64	 // Polyglot hash value for position's pawn structure.
 	board        Bitmask	 // Bitmask of all pieces on the board.
-//	king         [2]int	 // King's square for both colors.
 	pieces       [64]Piece	 // Array of 64 squares with pieces on them.
-	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	tally        Score	 // Positional valuation score based on PST.
 	balance      int	 // Material balance index.
 	score        int	 // Blended evaluation score.
@@ -69,21 +67,28 @@ func NewPosition(game *Game, white, black string) *Position {
 
 	for square, piece := range p.pieces {
 		if piece.someʔ() {
-			p.outposts[piece] |= bit(square)
-			p.outposts[piece.color()] |= bit(square)
+			side := p.pick(piece.color())
+			side.all |= bit(square)
 			if piece.kingʔ() {
-				if piece.whiteʔ() {
-					p.white.home = square
-				} else {
-					p.black.home = square
-				}
+				side.home = square
+				side.king |= bit(square)
+			} else if piece.queenʔ() {
+				side.queens |= bit(square)
+			} else if piece.rookʔ() {
+				side.rooks |= bit(square)
+			} else if piece.bishopʔ() {
+				side.bishops |= bit(square)
+			} else if piece.knightʔ() {
+				side.knights |= bit(square)
+			} else if piece.pawnʔ() {
+				side.pawns |= bit(square)
 			}
 			p.balance += materialBalance[piece]
 		}
 	}
 
 	p.reversibleʔ = true
-	p.board = p.outposts[White] | p.outposts[Black]
+	p.board = p.white.all | p.black.all
 	p.id, p.pid = p.polyglot()
 	p.tally = p.valuation()
 	p.score = Unknown
@@ -180,42 +185,59 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	sq := A8
 	for _, char := range(matches[0]) {
 		piece := Piece(0)
+		var ptr *Bitmask
 		switch(char) {
 		case 'P':
 			piece = Pawn
+			ptr = &p.white.pawns
 		case 'p':
 			piece = BlackPawn
+			ptr = &p.black.pawns
 		case 'N':
 			piece = Knight
+			ptr = &p.white.knights
 		case 'n':
 			piece = BlackKnight
+			ptr = &p.black.knights
 		case 'B':
 			piece = Bishop
+			ptr = &p.white.bishops
 		case 'b':
 			piece = BlackBishop
+			ptr = &p.black.bishops
 		case 'R':
 			piece = Rook
+			ptr = &p.white.rooks
 		case 'r':
 			piece = BlackRook
+			ptr = &p.black.rooks
 		case 'Q':
 			piece = Queen
+			ptr = &p.white.queens
 		case 'q':
 			piece = BlackQueen
+			ptr = &p.black.queens
 		case 'K':
 			piece = King
+			ptr = &p.white.king
 			p.white.home = sq
 		case 'k':
 			piece = BlackKing
+			ptr = &p.black.king
 			p.black.home = sq
 		case '/':
 			sq -= 16
 		case '1', '2', '3', '4', '5', '6', '7', '8':
 			sq += int(char - '0')
 		}
-		if piece.someʔ() {
+		if ptr != nil && piece.someʔ() {
 			p.pieces[sq] = piece
-			p.outposts[piece] |= bit(sq)
-			p.outposts[piece.color()] |= bit(sq)
+			*ptr |= bit(sq)
+			if piece.whiteʔ() {
+				p.white.all |= bit(sq)
+			} else {
+				p.black.all |= bit(sq)
+			}
 			p.balance += materialBalance[piece]
 			sq++
 		}
@@ -252,7 +274,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	}
 
 	p.reversibleʔ = true
-	p.board = p.outposts[White] | p.outposts[Black]
+	p.board = p.white.all | p.black.all
 	p.id, p.pid = p.polyglot()
 	p.tally = p.valuation()
 	p.score = Unknown
@@ -453,22 +475,23 @@ func (p *Position) dcf() string {
 		if color == p.color && color == Black {
 			pieces[color&1] = append(pieces[color&1], `M`)
 		}
+		side := p.pick(color)
 
 		// King.
-		pieces[color&1] = append(pieces[color&1], `K` + encode(p.pick(color).home))
+		pieces[color&1] = append(pieces[color&1], `K` + encode(side.home))
 
 		// Queens, Rooks, Bishops, and Knights.
-		for outposts := p.outposts[queen(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `Q` + encode(outposts.first()))
+		for bm := side.queens; bm.anyʔ(); bm = bm.pop() {
+			pieces[color&1] = append(pieces[color&1], `Q` + encode(bm.first()))
 		}
-		for outposts := p.outposts[rook(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `R` + encode(outposts.first()))
+		for bm := side.rooks; bm.anyʔ(); bm = bm.pop() {
+			pieces[color&1] = append(pieces[color&1], `R` + encode(bm.first()))
 		}
-		for outposts := p.outposts[bishop(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `B` + encode(outposts.first()))
+		for bm := side.bishops; bm.anyʔ(); bm = bm.pop() {
+			pieces[color&1] = append(pieces[color&1], `B` + encode(bm.first()))
 		}
-		for outposts := p.outposts[knight(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `N` + encode(outposts.first()))
+		for bm := side.knights; bm.anyʔ(); bm = bm.pop() {
+			pieces[color&1] = append(pieces[color&1], `N` + encode(bm.first()))
 		}
 
 		// Castle rights.
@@ -488,8 +511,8 @@ func (p *Position) dcf() string {
 		}
 
 		// Pawns.
-		for outposts := p.outposts[pawn(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], encode(outposts.first()))
+		for bm := side.pawns; bm.anyʔ(); bm = bm.pop() {
+			pieces[color&1] = append(pieces[color&1], encode(bm.first()))
 		}
 	}
 

@@ -58,7 +58,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 	defended := e.attacks[pawn(our)] | e.attacks[knight(our)] |
 	            e.attacks[bishop(our)] | e.attacks[rook(our)] |
 	            e.attacks[queen(our)]
-	weak := e.attacks[king(our)] & e.attacks[their] & ^defended
+	weak := e.attacks[king(our)] & e.attacks[their&1] & ^defended
 
 	// Find possible queen checks on weak squares around the king.
 	// We only consider squares where the queen is protected and
@@ -66,7 +66,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 	protected := e.attacks[pawn(their)] | e.attacks[knight(their)] |
 		     e.attacks[bishop(their)] | e.attacks[rook(their)] |
 		     e.attacks[king(their)]
-	checks := weak & e.attacks[queen(their)] & protected & ^p.outposts[their]
+	checks := weak & e.attacks[queen(their)] & protected & ^p.pick(their).all
 	if checks.anyʔ() {
 		checkers++
 		safetyIndex += queenCheck * checks.count()
@@ -74,7 +74,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 
 	// Out of all squares available for enemy pieces select the ones
 	// that are not under our attack.
-	safe := ^(e.attacks[our] | p.outposts[their])
+	safe := ^(e.attacks[our&1] | p.pick(their).all)
 
 	// Are there any safe squares from where enemy Knight could give
 	// us a check?
@@ -103,9 +103,9 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 		safetyIndex += queenCheck / 2 * checks.count()
 	}
 
-	threatIndex := min(16, e.safety[our].attackers * e.safety[our].threats / 2) +
-			(e.safety[our].attacks + weak.count()) * 3 +
-			rank(our, square) - e.pawns.cover[our].midgame / 16
+	threatIndex := min(16, e.safety[our&1].attackers * e.safety[our&1].threats / 2) +
+			(e.safety[our&1].attacks + weak.count()) * 3 +
+			rank(our, square) - e.pawns.cover[our&1].midgame / 16
 	safetyIndex = min(63, max(0, safetyIndex + threatIndex))
 
 	score.midgame -= kingSafety[safetyIndex]
@@ -128,11 +128,11 @@ func (e *Evaluation) kingCover(our int) (score Score) {
 		// If we still have castle rights encourage castle pawns to stay intact
 		// by scoring least safe castle.
 		score.midgame = e.kingCoverBonus(our, square)
-		if p.castles & castleKingside[our] != 0 {
-			score.midgame = max(score.midgame, e.kingCoverBonus(our, homeKing[our] + 2))
+		if p.castles & castleKingside[our&1] != 0 {
+			score.midgame = max(score.midgame, e.kingCoverBonus(our, homeKing[our&1] + 2))
 		}
-		if p.castles & castleQueenside[our] != 0 {
-			score.midgame = max(score.midgame, e.kingCoverBonus(our, homeKing[our] - 2))
+		if p.castles & castleQueenside[our&1] != 0 {
+			score.midgame = max(score.midgame, e.kingCoverBonus(our, homeKing[our&1] - 2))
 		}
 	}
 
@@ -146,9 +146,9 @@ func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 
 	// Get pawns adjacent to and in front of the king.
 	row, col := coordinate(square)
-	area := maskRank[row] | maskPassed[our][square]
-	cover := e.position.outposts[pawn(our)] & area
-	storm := e.position.outposts[pawn(our^1)] & area
+	area := maskRank[row] | maskPassed[our&1][square]
+	cover := e.position.pick(our).pawns & area
+	storm := e.position.pick(our^1).pawns & area
 
 	// For each of the cover files find the closest friendly pawn. The penalty
 	// is carried if the pawn is missing or is too far from the king.
@@ -180,7 +180,7 @@ func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 
 // Calculates endgame penalty to encourage a king stay closer to friendly pawns.
 func (e *Evaluation) kingPawnProximity(our int, square int) (penalty int) {
-	pawns := e.position.outposts[pawn(our)]
+	pawns := e.position.pick(our).pawns
 
 	if pawns.anyʔ() && (pawns & e.attacks[king(our)]).noneʔ() {
 		proximity := 8
