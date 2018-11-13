@@ -63,7 +63,12 @@ func log(t *testing.T, actual, expected interface{}, passed bool) {
 	// All shortcuts have disappeared.
 	// Screen. Mind. Both are blank.
 	if !passed {
-		t.Errorf("\r        \x1B[31m%s line %d\nExpected: %v\n  Actual: %v\x1B[0m", file, line, expected, actual)
+		switch expected.(type) {
+		case uint64:
+			t.Errorf("\r        \x1B[31m%s line %d\nExpected: 0x%016X\n  Actual: 0x%016X\x1B[0m", file, line, expected, actual)
+		default:
+			t.Errorf("\r        \x1B[31m%s line %d\nExpected: %v\n  Actual: %v\x1B[0m", file, line, expected, actual)
+		}
 	} else if (testing.Verbose()) {
 		t.Logf("\r        \x1B[32m%s line %d: %v\x1B[0m", file, line, actual)
 	}
