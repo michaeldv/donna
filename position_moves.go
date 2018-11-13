@@ -92,15 +92,18 @@ func (p *Position) makeMove(move Move) *Position {
 	pp := &tree[node]
 
 	pp.enpassant, pp.reversibleʔ = 0, true
-
-	if capture != 0 && (to == 0 || to != p.enpassant) {
+	if capture == 0 {
+		if p.enpassant != 0 {
+			pp.id ^= hashEnpassant[p.enpassant & 7]
+		}
+	} else if p.enpassant == 0 || to != p.enpassant {
 		pp.count50, pp.reversibleʔ = 0, false
 		pp.capturePiece(capture, from, to)
 	}
 
 	if piece.pawnʔ() {
 		pp.count50, pp.reversibleʔ = 0, false
-		if to != 0 && to == p.enpassant {
+		if p.enpassant != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(their), from, to)
 			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
 		}

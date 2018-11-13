@@ -391,7 +391,7 @@ func TestPositionMoves260(t *testing.T) {
 	p = p.makeMove(NewMove(p, B7, B5))
 	p = p.makeMove(NewMove(p, H2, H4))
 	p = p.makeMove(NewMove(p, B5, B4))
-	p = p.makeMove(NewEnpassant(p, C2, C4))
+	p = p.makeMove(NewMove(p, C2, C4))
 	hash, pawnHash := p.polyglot()
 
 	expect.Eq(t, hash, uint64(0x3C8123EA7B067637))
@@ -411,7 +411,7 @@ func TestPositionMoves270(t *testing.T) {
 	p = p.makeMove(NewMove(p, B7, B5))
 	p = p.makeMove(NewMove(p, H2, H4))
 	p = p.makeMove(NewMove(p, B5, B4))
-	p = p.makeMove(NewEnpassant(p, C2, C4))
+	p = p.makeMove(NewMove(p, C2, C4))
 	p = p.makeMove(NewMove(p, B4, C3))
 	p = p.makeMove(NewMove(p, A1, A3))
 	hash, pawnHash := p.polyglot()
