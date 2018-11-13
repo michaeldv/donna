@@ -126,19 +126,6 @@ func TestMove120(t *testing.T) {
 	expect.Eq(t, move, m2)
 }
 
-func TestMove130(t *testing.T) {
-	p := NewGame().start()
-	p = p.makeMove(NewPawnMove(p, E2, E4))
-	p = p.makeMove(NewPawnMove(p, E7, E6))
-	p = p.makeMove(NewPawnMove(p, E4, E5))
-	move := NewPawnMove(p, D7, D5) // Causes en-passant on D6.
-
-	m1, _ := NewMoveFromString(p, `d7d5`)
-	m2, _ := NewMoveFromString(p, `d7-d5`)
-	expect.Eq(t, m1, move)
-	expect.True(t, m2.enpassantʔ())
-}
-
 // Move to UCI coordinate notation.
 func TestMove200(t *testing.T) {
 	p := NewGame().start()
@@ -199,17 +186,6 @@ func TestMove320(t *testing.T) {
 	p2 := NewGame(`Ke1`, `M,Ke8,Rh8`).start()
 	m2 := NewCastle(p2, E8, G8) // 0-0
 	expect.Eq(t, NewMoveFromNotation(p2, `e8g8`), m2)
-}
-
-func TestMove330(t *testing.T) {
-	p := NewGame().start()
-	p = p.makeMove(NewPawnMove(p, E2, E4))
-	p = p.makeMove(NewPawnMove(p, E7, E6))
-	p = p.makeMove(NewPawnMove(p, E4, E5))
-	move := NewPawnMove(p, D7, D5) // Causes en-passant on D6.
-
-	expect.Eq(t, NewMoveFromNotation(p, `d7d5`), move)
-	expect.True(t, NewMoveFromNotation(p, `d7d5`).enpassantʔ())
 }
 
 // Only pawns can do en-passant capture.

@@ -165,7 +165,7 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 		move := gen.list[i].move
 		if move == bestMove {
 			gen.list[i].score = 0xFFFF
-		} else if !move.quietʔ() || move.enpassantʔ() {
+		} else if !move.quietʔ() {
 			gen.list[i].score = 8192 + move.value()
 		} else if move == game.killers[gen.ply][0] {
 			gen.list[i].score = 4096
@@ -185,7 +185,7 @@ func (gen *MoveGen) quickRank() *MoveGen {
 	}
 
 	for i := gen.head; i < gen.tail; i++ {
-		if move := gen.list[i].move; !move.quietʔ() || move.enpassantʔ() {
+		if move := gen.list[i].move; !move.quietʔ() {
 			gen.list[i].score = 8192 + move.value()
 		} else {
 			gen.list[i].score = game.good(move)

@@ -17,7 +17,6 @@ const (
 	isCapture   = 0x00F00000
 	isPromo     = 0x0F000000
 	isCastle    = 0x10000000
-	isEnpassant = 0x20000000
 )
 
 // Bits 00:00:00:FF => Source square (0 .. 63).
@@ -25,7 +24,7 @@ const (
 // Bits 00:0F:00:00 => Piece making the move.
 // Bits 00:F0:00:00 => Captured piece if any.
 // Bits 0F:00:00:00 => Promoted piece if any.
-// Bits F0:00:00:00 => Castle and en-passant flags.
+// Bits F0:00:00:00 => Castle flags.
 type Move uint32
 
 // Moving pianos is dangerous. Moving pianos are dangerous.
@@ -40,21 +39,22 @@ func NewMove(p *Position, from, to int) Move {
 }
 
 func NewPawnMove(p *Position, square, target int) Move {
-	if abs(square - target) == 16 {
-
-		// Check if pawn jump causes en-passant. This is done by verifying
-		// whether enemy pawns occupy squares ajacent to the target square.
-		pawns := p.outposts[pawn(p.color^1)]
-		if pawns & maskIsolated[col(target)] & maskRank[row(target)] != 0 {
-			return NewEnpassant(p, square, target)
-		}
-	}
+	// if abs(square - target) == 16 {
+	//
+	// 	// Check if pawn jump causes en-passant. This is done by verifying
+	// 	// whether enemy pawns occupy squares ajacent to the target square.
+	// 	pawns := p.outposts[pawn(p.color^1)]
+	// 	if pawns & maskIsolated[col(target)] & maskRank[row(target)] != 0 {
+	// 		return NewEnpassant(p, square, target)
+	// 	}
+	// }
 
 	return NewMove(p, square, target)
 }
 
 func NewEnpassant(p *Position, from, to int) Move {
-	return Move(from | (to << 8) | (int(p.pieces[from] << 16)) | isEnpassant)
+	// return Move(from | (to << 8) | (int(p.pieces[from] << 16)) | isEnpassant)
+	return NewMove(p, from, to)
 }
 
 func NewCastle(p *Position, from, to int) Move {
@@ -205,9 +205,7 @@ func (m Move) promote(kind int) Move {
 // Capture value based on most valueable victim/least valueable attacker.
 func (m Move) value() (value int) {
 	value = pieceValue[m.capture().id()] - int(m.piece())
-	if m.enpassantʔ() {
-		value += valuePawn.midgame
-	} else if m.promoʔ() {
+	if m.promoʔ() {
 		value += pieceValue[m.promo().id()] - valuePawn.midgame
 	}
 	return
@@ -219,10 +217,6 @@ func (m Move) castleʔ() bool {
 
 func (m Move) captureʔ() bool {
 	return m & isCapture != 0
-}
-
-func (m Move) enpassantʔ() bool {
-	return m & isEnpassant != 0
 }
 
 func (m Move) promoʔ() bool {

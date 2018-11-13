@@ -64,7 +64,7 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 }
 
 func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
-	enpassant := to - up[capture.color()^1]
+	enpassant := to + up[capture.color()]
 
 	p.pieces[enpassant] = 0
 	p.outposts[capture] ^= bit(enpassant)
@@ -83,8 +83,7 @@ func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
 }
 
 func (p *Position) makeMove(move Move) *Position {
-	our := move.color()
-	their := our^1
+	our := move.color(); their := our^1
 	from, to, piece, capture := move.split()
 
 	// Copy over the contents of previous tree node to the current one.
@@ -109,8 +108,8 @@ func (p *Position) makeMove(move Move) *Position {
 			pp.promotePawn(piece, from, to, promo)
 		} else {
 			pp.movePiece(piece, from, to)
-			if move.enpassantʔ() {
-				pp.enpassant = from + up[our&1] // Save the en-passant square.
+			if from ^ to == 16 && (pawnAttacks[our][from + up[our]] & p.outposts[pawn(their)]).anyʔ() {
+				pp.enpassant = from + up[our] // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}

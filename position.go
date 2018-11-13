@@ -231,8 +231,10 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	}
 
 	// [4] - Number of half-moves.
-	if n, err := strconv.Atoi(matches[4]); err == nil {
-		p.count50 = n
+	if len(matches) > 4 {
+		if n, err := strconv.Atoi(matches[4]); err == nil {
+			p.count50 = n
+		}
 	}
 
 	p.reversibleʔ = true
