@@ -111,7 +111,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	for bm := p.outposts[pawn(our)] & maskIsolated[c]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		if bm := maskPawn[our&1][square] & p.targets(from); bm.anyʔ() {
-			gen.add(NewPawnMove(p, from, bm.first()))
+			gen.add(NewMove(p, from, bm.first()))
 		}
 	}
 

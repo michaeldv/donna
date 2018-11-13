@@ -85,18 +85,18 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	for bm := pawns & block; bm.anyʔ(); bm = bm.pop() {
 		to := bm.first()
 		from := to - up[our&1]
-		move := NewMove(p, from, to) // Can't cause en-passant.
+		move := NewMove(p, from, to)
 		if to >= A8 || to <= H1 {
 			move = move.promote(Queen)
 		}
 		gen.add(move)
 	}
 
-	// Handle two-square pawn jumps that can cause en-passant.
+	// Handle two-square pawn jumps.
 	for bm := jumps & block; bm.anyʔ(); bm = bm.pop() {
 		to := bm.first()
 		from := to - 2 * up[our&1]
-		gen.add(NewPawnMove(p, from, to))
+		gen.add(NewMove(p, from, to))
 	}
 
 	// What's left is to generate all possible knight, bishop, rook, and

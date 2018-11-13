@@ -191,7 +191,7 @@ func TestMove320(t *testing.T) {
 // Only pawns can do en-passant capture.
 func TestMove340(t *testing.T) {
 	p := NewGame(`Kg1,d2`, `Kc2,Qa3,Rh3,Be4,Nc1,c4`).start()
-	p = p.makeMove(NewEnpassant(p, D2, D4)) // Causes en-passant on D3.
+	p = p.makeMove(NewMove(p, D2, D4)) // Causes en-passant on D3.
 	bQ := NewMove(p, A3, D3)
 	bR := NewMove(p, H3, D3)
 	bB := NewMove(p, E4, D3)

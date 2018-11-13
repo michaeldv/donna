@@ -117,12 +117,6 @@ func (b *Book) move(p *Position, entry Entry) Move {
 		return NewCastle(p, from, G8)
 	} else if from == E8 && to == A8 {
 		return NewCastle(p, from, C8)
-	} else {
-		// Special treatment for non-promo pawn moves since they might
-		// cause en-passant.
-		if piece := p.pieces[from]; piece.pawnʔ() && to > H1 && to < A8 {
-			return NewPawnMove(p, from, to)
-		}
 	}
 
 	move := NewMove(p, from, to)

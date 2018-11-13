@@ -57,7 +57,7 @@ func TestGenerate150(t *testing.T) {
 // Vaditaing generated moves.
 func TestGenerate200(t *testing.T) {
 	p := NewGame(`Ke1,Qe2,d2`, `Ke8,e4`).start()
-	p = p.makeMove(NewEnpassant(p, D2, D4))
+	p = p.makeMove(NewMove(p, D2, D4))
 
 	// No e4xd3 en-passant capture.
 	black := NewMoveGen(p).generateMoves().validOnly()
@@ -66,7 +66,7 @@ func TestGenerate200(t *testing.T) {
 
 func TestGenerate210(t *testing.T) {
 	p := NewGame(`Ke1,Qg2,d2`, `Ka8,e4`).start()
-	p = p.makeMove(NewEnpassant(p, D2, D4))
+	p = p.makeMove(NewMove(p, D2, D4))
 
 	// Neither e4-e3 nor e4xd3 en-passant capture.
 	black := NewMoveGen(p).generateMoves().validOnly()

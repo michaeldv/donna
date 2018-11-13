@@ -38,34 +38,15 @@ func NewMove(p *Position, from, to int) Move {
 	return Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
 }
 
-func NewPawnMove(p *Position, square, target int) Move {
-	// if abs(square - target) == 16 {
-	//
-	// 	// Check if pawn jump causes en-passant. This is done by verifying
-	// 	// whether enemy pawns occupy squares ajacent to the target square.
-	// 	pawns := p.outposts[pawn(p.color^1)]
-	// 	if pawns & maskIsolated[col(target)] & maskRank[row(target)] != 0 {
-	// 		return NewEnpassant(p, square, target)
-	// 	}
-	// }
-
-	return NewMove(p, square, target)
-}
-
-func NewEnpassant(p *Position, from, to int) Move {
-	// return Move(from | (to << 8) | (int(p.pieces[from] << 16)) | isEnpassant)
-	return NewMove(p, from, to)
-}
-
 func NewCastle(p *Position, from, to int) Move {
 	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
 }
 
-func NewPromotion(p *Position, square, target int) (Move, Move, Move, Move) {
-	return NewMove(p, square, target).promote(Queen),
-	       NewMove(p, square, target).promote(Rook),
-	       NewMove(p, square, target).promote(Bishop),
-	       NewMove(p, square, target).promote(Knight)
+func NewPromotion(p *Position, from, to int) (Move, Move, Move, Move) {
+	return NewMove(p, from, to).promote(Queen),
+	       NewMove(p, from, to).promote(Rook),
+	       NewMove(p, from, to).promote(Bishop),
+	       NewMove(p, from, to).promote(Knight)
 }
 
 // Decodes a string in coordinate notation and returns a move. The string is
@@ -82,7 +63,7 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 	// Special handling for pawn pushes because they might cause en-passant
 	// and result in promotion.
 	if p.pieces[from].pawnʔ() {
-		move := NewPawnMove(p, from, to)
+		move := NewMove(p, from, to)
 		if len(e2e4) > 4 {
 			switch e2e4[4] {
 			case 'q', 'Q':

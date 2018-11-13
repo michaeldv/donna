@@ -23,7 +23,7 @@ func TestPositionMoves010(t *testing.T) {
 	p = p.makeMove(NewMove(p, E4, E5))
 	expect.Eq(t, p.enpassant, uint8(0))
 
-	p = p.makeMove(NewEnpassant(p, F7, F5))
+	p = p.makeMove(NewMove(p, F7, F5))
 	expect.Eq(t, p.enpassant, uint8(F6))
 }
 
@@ -330,7 +330,7 @@ func TestPositionMoves230(t *testing.T) {
 	p = p.makeMove(NewMove(p, E2, E4))
 	p = p.makeMove(NewMove(p, D7, D5))
 	p = p.makeMove(NewMove(p, E4, E5))
-	p = p.makeMove(NewEnpassant(p, F7, F5))
+	p = p.makeMove(NewMove(p, F7, F5))
 	hash, pawnHash := p.polyglot()
 
 	expect.Eq(t, hash, uint64(0x9796B5F5D1654751))
@@ -536,7 +536,7 @@ func TestPositionMoves291(t *testing.T) {
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 
 	p = p.makeMove(NewMove(p, E2, E4)); p = p.makeMove(NewMove(p, E7, E6))
-	p = p.makeMove(NewMove(p, E4, E5)); p = p.makeMove(NewEnpassant(p, D7, D5))
+	p = p.makeMove(NewMove(p, E4, E5)); p = p.makeMove(NewMove(p, D7, D5))
 	p = p.makeMove(NewMove(p, E5, D6))
 	expect.Eq(t, p.balance, len(materialBase) - 1 - materialBalance[BlackPawn])
 }
@@ -546,7 +546,7 @@ func TestPositionMoves292(t *testing.T) {
 	p := NewGame(`Kh1,c2`, `Ka8,d4`).start()
 	expect.Eq(t, p.balance, materialBalance[Pawn] + materialBalance[BlackPawn])
 
-	p = p.makeMove(NewEnpassant(p, C2, C4)); p = p.makeMove(NewMove(p, D4, C3))
+	p = p.makeMove(NewMove(p, C2, C4)); p = p.makeMove(NewMove(p, D4, C3))
 	expect.Eq(t, p.balance, materialBalance[BlackPawn])
 }
 

@@ -41,7 +41,7 @@ func TestTargets020(t *testing.T) {
 func TestTargets030(t *testing.T) {
 	game := NewGame(`Kd1,e2`, `Ke8,d4`)
 	position := game.start()
-	position = position.makeMove(NewEnpassant(position, E2, E4)) // Creates en-passant on e3.
+	position = position.makeMove(NewMove(position, E2, E4)) // Creates en-passant on e3.
 
 	expect.Eq(t, position.targets(E4), bit(E5))         // e5
 	expect.Eq(t, position.targets(D4), bit(D3)|bit(E3)) // d3, e3 (en-passant).
