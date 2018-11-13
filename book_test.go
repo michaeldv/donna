@@ -24,8 +24,10 @@ func TestBook000(t *testing.T) {
 	p := NewGame().start()
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x463B96181691FC9C))
-	expect.Eq(t, pawnHash, uint64(0x37FC40DA841E1692))
+	expect.Eq(t, hash, uint64(0x1A734D7E0DD57DD8))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0xC6918785471EC42C))
+	expect.Eq(t, pawnHash, p.pid)
 }
 
 func TestBook010(t *testing.T) { // 1. e4
@@ -33,8 +35,10 @@ func TestBook010(t *testing.T) { // 1. e4
 	p = p.makeMove(book.move(p, polyglotEntry(E2, E4)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x823C9B50FD114196))
-	expect.Eq(t, pawnHash, uint64(0x0B2D6B38C0B92E91))
+	expect.Eq(t, hash, uint64(0x16B3AA798A244C5C))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0x328746286FC870A1))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
@@ -45,8 +49,10 @@ func TestBook020(t *testing.T) { // 1. e4 d5
 	p = p.makeMove(book.move(p, polyglotEntry(D7, D5)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x0756B94461C50FB0))
-	expect.Eq(t, pawnHash, uint64(0x76916F86F34AE5BE))
+	expect.Eq(t, hash, uint64(0xFFEE236E9AB1D24B))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0x230CE995D07A6BBF))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
@@ -58,8 +64,10 @@ func TestBook030(t *testing.T) { // 1. e4 d5 2. e5
 	p = p.makeMove(book.move(p, polyglotEntry(E4, E5)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x662FAFB965DB29D4))
-	expect.Eq(t, pawnHash, uint64(0xEF3E5FD1587346D3))
+	expect.Eq(t, hash, uint64(0xD0E81E00A8B40DBD))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0xF4DCF2514D583140))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
@@ -72,8 +80,10 @@ func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 	p = p.makeMove(book.move(p, polyglotEntry(F7, F5)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x22A48B5A8E47FF78))
-	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
+	expect.Eq(t, hash, uint64(0x9796B5F5D1654751))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, F6)
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
@@ -87,8 +97,10 @@ func TestBook050(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
 	p = p.makeMove(book.move(p, polyglotEntry(E1, E2)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x652A607CA3F242C1))
-	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
+	expect.Eq(t, hash, uint64(0x6AC160CCBC8F24CC))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, castleKingside[Black]|castleQueenside[Black])
 }
@@ -103,8 +115,10 @@ func TestBook060(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castl
 	p = p.makeMove(book.move(p, polyglotEntry(E8, F7)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x00FDD303C946BDD9))
-	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
+	expect.Eq(t, hash, uint64(0x7CA4772D3AC3FEE0))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, uint8(0))
 }
@@ -118,8 +132,10 @@ func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpass
 	p = p.makeMove(book.move(p, polyglotEntry(C2, C4)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x3C8123EA7B067637))
-	expect.Eq(t, pawnHash, uint64(0xB5AA405AF42E7052))
+	expect.Eq(t, hash, uint64(0xF5A62AE51DD0F3FB))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0xD1A8556C4ABCA664))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, C3)
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
@@ -135,8 +151,10 @@ func TestBook080(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. R
 	p = p.makeMove(book.move(p, polyglotEntry(A1, A3)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x5C3F9B829B279560))
-	expect.Eq(t, pawnHash, uint64(0xE214F040EAA135A0))
+	expect.Eq(t, hash, uint64(0xB5C8873B19358920))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0xA1AF43655164A4B8))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, castleKingside[White]|castleKingside[Black]|castleQueenside[Black])
 }
@@ -147,8 +165,10 @@ func TestBook100(t *testing.T) { // 1. e4 e5
 	p = p.makeMove(book.move(p, polyglotEntry(E7, E5)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x0844931A6EF4B9A0))
-	expect.Eq(t, pawnHash, uint64(0x798345D8FC7B53AE))
+	expect.Eq(t, hash, uint64(0x3F33F2AEB33E6F5B))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0xE3D13855F9F5D6AF))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
@@ -159,8 +179,10 @@ func TestBook110(t *testing.T) { // 1. d4 d5
 	p = p.makeMove(book.move(p, polyglotEntry(D7, D5)))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x06649BA69B8C9FF8))
-	expect.Eq(t, pawnHash, uint64(0x77A34D64090375F6))
+	expect.Eq(t, hash, uint64(0xC22ADACEB0B462F2))
+	expect.Eq(t, hash, p.id)
+	expect.Eq(t, pawnHash, uint64(0x1EC81035FA7FDB06))
+	expect.Eq(t, pawnHash, p.pid)
 	expect.Eq(t, p.enpassant, 0)
 	expect.Eq(t, p.castles, uint8(0x0F))
 }

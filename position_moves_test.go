@@ -257,8 +257,8 @@ func TestPositionMoves130(t *testing.T) {
 		H4, G4, F4, E4, D4, C4, B4, A4,
 		A5, B5, C5, D5, E5, F5, G5, H5,
 		H6, G6, F6, E6, D6, C6, B6, A6,
-	        A5, B5, C5, D5, E5, F5, G5, H5,
-	        H4, G4, F4, E4, D4, C4, B4, A4,
+		A5, B5, C5, D5, E5, F5, G5, H5,
+		H4, G4, F4, E4, D4, C4, B4, A4,
 	}
 
 	// White rook is zigzaging while black king bounces back and forth.
@@ -280,9 +280,9 @@ func TestPositionMoves200(t *testing.T) { // 1. e4
 	p = p.makeMove(NewMove(p, E2, E4))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x823C9B50FD114196))
+	expect.Eq(t, hash, uint64(0x16B3AA798A244C5C))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0x0B2D6B38C0B92E91))
+	expect.Eq(t, pawnHash, uint64(0x328746286FC870A1))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
@@ -296,9 +296,9 @@ func TestPositionMoves210(t *testing.T) { // 1. e4 d5
 	p = p.makeMove(NewMove(p, D7, D5))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x0756B94461C50FB0))
+	expect.Eq(t, hash, uint64(0xFFEE236E9AB1D24B))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0x76916F86F34AE5BE))
+	expect.Eq(t, pawnHash, uint64(0x230CE995D07A6BBF))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
@@ -314,9 +314,9 @@ func TestPositionMoves220(t *testing.T) {
 	p = p.makeMove(NewMove(p, E4, E5))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x662FAFB965DB29D4))
+	expect.Eq(t, hash, uint64(0xD0E81E00A8B40DBD))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0xEF3E5FD1587346D3))
+	expect.Eq(t, pawnHash, uint64(0xF4DCF2514D583140))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
@@ -333,9 +333,9 @@ func TestPositionMoves230(t *testing.T) {
 	p = p.makeMove(NewEnpassant(p, F7, F5))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x22A48B5A8E47FF78))
+	expect.Eq(t, hash, uint64(0x9796B5F5D1654751))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
+	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
@@ -353,9 +353,9 @@ func TestPositionMoves240(t *testing.T) {
 	p = p.makeMove(NewMove(p, E1, E2))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x652A607CA3F242C1))
+	expect.Eq(t, hash, uint64(0x6AC160CCBC8F24CC))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
+	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
@@ -374,9 +374,9 @@ func TestPositionMoves250(t *testing.T) {
 	p = p.makeMove(NewMove(p, E8, F7))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x00FDD303C946BDD9))
+	expect.Eq(t, hash, uint64(0x7CA4772D3AC3FEE0))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0x83871FE249DCEE04))
+	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
@@ -394,9 +394,9 @@ func TestPositionMoves260(t *testing.T) {
 	p = p.makeMove(NewMove(p, C2, C4))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x3C8123EA7B067637))
+	expect.Eq(t, hash, uint64(0xF5A62AE51DD0F3FB))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0xB5AA405AF42E7052))
+	expect.Eq(t, pawnHash, uint64(0xD1A8556C4ABCA664))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
@@ -416,9 +416,9 @@ func TestPositionMoves270(t *testing.T) {
 	p = p.makeMove(NewMove(p, A1, A3))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0x5C3F9B829B279560))
+	expect.Eq(t, hash, uint64(0xB5C8873B19358920))
 	expect.Eq(t, hash, p.id)
-	expect.Eq(t, pawnHash, uint64(0xE214F040EAA135A0))
+	expect.Eq(t, pawnHash, uint64(0xA1AF43655164A4B8))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1 - materialBalance[Pawn])
