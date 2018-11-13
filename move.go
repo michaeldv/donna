@@ -203,12 +203,13 @@ func (m Move) promote(kind int) Move {
 }
 
 // Capture value based on most valueable victim/least valueable attacker.
-func (m Move) value() (value int) {
-	value = pieceValue[m.capture().id()] - int(m.piece())
+func (m Move) value() int {
+	value := m.capture().value() - int(m.piece())
 	if m.promoʔ() {
-		value += pieceValue[m.promo().id()] - valuePawn.midgame
+		value += m.promo().value() - valuePawn.midgame
 	}
-	return
+
+	return value
 }
 
 func (m Move) castleʔ() bool {

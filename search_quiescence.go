@@ -103,7 +103,7 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheckʔ bool) (sco
 		giveCheck := position.inCheckʔ(position.color)
 
 		// Prune useless captures -- but make sure it's not a capture move that checks.
-		if !inCheckʔ && !giveCheck && !pvNodeʔ && capture != 0 && !move.promoʔ() && p.score + pieceValue[capture.id()] + 72 < alpha {
+		if !inCheckʔ && !giveCheck && !pvNodeʔ && capture != 0 && !move.promoʔ() && p.score + capture.value() + 72 < alpha {
 			position.undoLastMove()
 			continue
 		}

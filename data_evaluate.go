@@ -8,7 +8,6 @@
 
 package donna
 
-// One man's constant is another man's variable.
 const onePawn = 100
 const unstoppablePawn = onePawn * 10
 var (
@@ -46,8 +45,14 @@ var (
 
 // Piece values for calculating most valueable victim/least valueable attacker,
 // indexed by piece.
-var pieceValue = [7]int{
-	0, valuePawn.midgame, valueKnight.midgame, valueBishop.midgame, valueRook.midgame, valueQueen.midgame, 0,
+var pieceValue = [14]int{
+	0, 0,
+	valuePawn.midgame, valuePawn.midgame,
+	valueKnight.midgame, valueKnight.midgame,
+	valueBishop.midgame, valueBishop.midgame,
+	valueRook.midgame, valueRook.midgame,
+	valueQueen.midgame, valueQueen.midgame,
+	0, 0,
 }
 
 // Piece/square table: gets initilized on startup from the bonus arrays below.
@@ -240,24 +245,48 @@ var extraBishop = [64]int{
      //^^^^^^^^^^^^ White ^^^^^^^^^^^^
 }
 
-// Non-hanging pawn attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
-var bonusPawnThreat = [6]Score{
-	{0, 0}, {0, 0}, {88, 69}, {65, 63}, {108, 109}, {101, 107},
+// Non-hanging pawn attacking opponent's pieces.
+var bonusPawnThreat = [14]Score{
+	{  0,   0}, {  0,   0}, 	// N/A
+	{  0,   0}, {  0,   0}, 	// Pawns
+	{ 88,  69}, { 88,  69}, 	// Knights
+	{ 65,  63}, { 65,  63}, 	// Bishops
+	{108, 109}, {108, 109}, 	// Rooks
+	{101, 107}, {101, 107}, 	// Queens
+	{  0,   0}, {  0,   0}, 	// N/A
 }
 
-// Knigh or bishop attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
-var bonusMinorThreat = [6]Score{
-	{0, 0}, {0, 16}, {12, 19}, {14, 22}, {21, 49}, {17, 52},
+// Knight or bishop attacking opponent's pieces.
+var bonusMinorThreat = [14]Score{
+	{ 0,  0}, { 0,  0}, 		// N/A
+	{ 0, 16}, { 0, 16}, 		// Pawns
+	{12, 19}, {12, 19}, 		// Knights
+	{14, 22}, {14, 22}, 		// Bishops
+	{21, 49}, {21, 49}, 		// Rooks
+	{17, 52}, {17, 52}, 		// Queens
+	{ 0,  0}, { 0,  0}, 		// N/A
 }
 
-// Rook attacking [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
-var bonusRookThreat = [6]Score{
-	{0, 0}, {0, 13}, {13, 26}, {13, 26}, {0, 15}, {12, 25},
+// Rook attacking opponent's pieces.
+var bonusRookThreat = [14]Score{
+	{ 0,  0}, { 0,  0}, 		// N/A
+	{ 0, 13}, { 0, 13}, 		// Pawns
+	{13, 26}, {13, 26}, 		// Knights
+	{13, 26}, {13, 26}, 		// Bishops
+	{ 0, 15}, { 0, 15}, 		// Rooks
+	{12, 25}, {12, 25}, 		// Queens
+	{ 0,  0}, { 0,  0}, 		// N/A
 }
 
-// King being attacked by [1] Pawn, [2] Knight, [3] Bishop, [4] Rook, [5] Queen.
-var kingThreat = [6]int {
-	0, 0, 2, 2, 3, 5,
+// King being attacked by  opponent's pieces.
+var kingThreat = [14]int {
+	0, 0, 				// N/A
+	0, 0, 				// Pawns
+	2, 2, 				// Knights
+	2, 2, 				// Bishops
+	3, 3, 				// Rooks
+	5, 5, 				// Queens
+	0, 0, 				// N/A
 }
 
 const queenCheck = 4

@@ -60,15 +60,11 @@ func (p Piece) someʔ() bool {
 }
 
 func (p Piece) polyglot(square int) uint64 {
-	return polyglotRandom[polyglotBase[p] + square]
+	return polyglotRandom[p-2][square]
 }
 
 func (p Piece) color() int {
 	return int(p) & 1
-}
-
-func (p Piece) id() int {
-	return int(p) >> 1
 }
 
 func (p Piece) kind() int {
@@ -76,7 +72,7 @@ func (p Piece) kind() int {
 }
 
 func (p Piece) value() int {
-	return pieceValue[p.id()]
+	return pieceValue[p]
 }
 
 func (p Piece) whiteʔ() bool {

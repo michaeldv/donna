@@ -320,7 +320,7 @@ func (e *Evaluation) kingThreats(piece Piece, attacks Bitmask) {
 
 	if (attacks & e.safety[their].fort).anyʔ() {
 		e.safety[their].attackers++
-		e.safety[their].threats += kingThreat[piece.id()]
+		e.safety[their].threats += kingThreat[piece]
 		if bits := attacks & e.attacks[king(their)]; bits.anyʔ() {
 			e.safety[their].attacks += bits.count()
 		}

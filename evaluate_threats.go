@@ -45,7 +45,7 @@ func (e *Evaluation) threats(our int) (score Score) {
 	// Bonus for each enemy piece attacked by our pawn.
 	for bm := majors & p.pawnTargets(our, pawns); bm.anyʔ(); bm = bm.pop() {
 		piece := p.pieces[bm.first()]
-		score.add(bonusPawnThreat[piece.id()])
+		score.add(bonusPawnThreat[piece])
 	}
 
 	// Find enemy pieces that might be our likely targets: major pieces
@@ -57,13 +57,13 @@ func (e *Evaluation) threats(our int) (score Score) {
 		// Bonus for enemy pieces attacked by knights and bishops.
 		for bm := likely & (e.attacks[knight(our)] | e.attacks[bishop(our)]); bm.anyʔ(); bm = bm.pop() {
 			piece := p.pieces[bm.first()]
-			score.add(bonusMinorThreat[piece.id()])
+			score.add(bonusMinorThreat[piece])
 		}
 
 		// Bonus for enemy pieces attacked by rooks.
 		for bm := (undefended | p.outposts[queen(their)]) & e.attacks[rook(our)]; bm.anyʔ(); bm = bm.pop() {
 			piece := p.pieces[bm.first()]
-			score.add(bonusRookThreat[piece.id()])
+			score.add(bonusRookThreat[piece])
 		}
 
 		// Bonus for enemy pieces attacked by the king.
