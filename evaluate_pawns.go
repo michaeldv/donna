@@ -129,7 +129,7 @@ func (e *Evaluation) pawnStructure(our int) (score Score) {
 
 		// Bonus if the pawn has good chance to become a passed pawn.
 		if exposedʔ && !isolatedʔ && !passedʔ && !backwardʔ {
-			his := maskPassed[their][square + up[our]] & maskIsolated[col] & ourPawns
+			his := maskPassed[their][square.push(our)] & maskIsolated[col] & ourPawns
 			her := maskPassed[our][square] & maskIsolated[col] & theirPawns
 			if his.count() >= her.count() {
 				score.add(bonusSemiPassedPawn[square.rank(our)])
@@ -153,7 +153,7 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 
 		if rank > A2H2 {
 			extra := extraPassedPawn[rank]
-			nextSquare := square + up[our]
+			nextSquare := square.push(our)
 
 			// Adjust endgame bonus based on how close the kings are from the
 			// step forward square.

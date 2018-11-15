@@ -140,7 +140,7 @@ func (e *Engine) Repl() *Engine {
 			start := time.Now()
 			total := position.Perft(depth)
 			finish := since(start)
-			fmt.Printf("Depth: %d, nodes %d, elapsed %s, nodes/s %dK\n", depth, total, ms(finish), total / max64(1, finish))
+			fmt.Printf("Depth %d, nodes %d, time %s, nodes/s %dK\n", depth, total, ms(finish), total / max64(1, finish))
 		}
 	}
 

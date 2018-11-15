@@ -54,13 +54,31 @@ func (sq Square) same() Bitmask {
 	return ^maskDark
 }
 
-func (sq Square) distance(square Square) int {
-	return abs(int(sq) - int(square))
+// Resturns a distance between two squares *when they are on the same rank*.
+func (sq Square) upto(square Square) int {
+	if sq > square {
+		return int(sq - square)
+	}
+	return int(square - sq)
 }
 
+// Returns a square in front of the given square.
 func (sq Square) push(color int) Square {
 	if color == White {
 		return sq + 8
 	}
 	return sq - 8
+}
+
+// Returns a square two ranks in front of the given square.
+func (sq Square) jump(color int) Square {
+	if color == White {
+		return sq + 16
+	}
+	return sq - 16
+}
+
+// Returns string representation of the square.
+func (sq Square) str() string {
+	return string(sq.col() + 'a') + string(sq.row() + '1')
 }

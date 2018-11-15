@@ -25,7 +25,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 
 	// Castles.
 	if !p.inCheckʔ(our) {
-		home := homeKing[our&1]
+		home := homeKing[our]
 		kingside, queenside := p.canCastleʔ(our)
 		if kingside {
 			gen.addQuiet(NewCastle(p, home, home + 2))
@@ -39,7 +39,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	last := let(our == White, 7, 0)
 	for bm := p.outposts[pawn(our)].up(our) & empty & ^maskRank[last]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
-		forward, backward := square + up[our&1], square - up[our&1]
+		forward, backward := square.push(our), square.push(our^1)
 		if square.rank(our) == 2 && p.pieces[forward].noneʔ() {
 			gen.addQuiet(NewMove(gen.p, backward, forward)) // Jump.
 		}
@@ -79,7 +79,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	}
 
 	// King.
-	square := p.king[our&1]
+	square := p.king[our]
 	for bm := (kingMoves[square] & empty); bm.anyʔ(); bm = bm.pop() {
 		gen.addQuiet(NewMove(p, square, bm.first()))
 	}

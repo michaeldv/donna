@@ -83,7 +83,7 @@ func initMasks() {
 			distance[sq][i] = max(abs(row - r), abs(col - c))
 			setupMasks(sq, i, row, col, r, c)
 
-			if i == sq || abs(int(i) - int(sq)) > 17 {
+			if i == sq || i.upto(sq) > 17 {
 				continue // No king or knight can reach that far.
 			}
 			rows, cols := abs(row - r), abs(col - c)

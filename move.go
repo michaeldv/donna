@@ -56,7 +56,7 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 	to := square(int(e2e4[3] - '1'), int(e2e4[2] - 'a'))
 
 	// Check if this is a castle.
-	if p.pieces[from].kingʔ() && abs(int(from) - int(to)) == 2 {
+	if p.pieces[from].kingʔ() && from.upto(to) == 2 {
 		return NewCastle(p, from, to)
 	}
 
@@ -255,12 +255,10 @@ func (m Move) notation() string {
 	var buffer bytes.Buffer
 
 	from, to, _, _ := m.split()
-	buffer.WriteByte(byte(from.col()) + 'a')
-	buffer.WriteByte(byte(from.row()) + '1')
-	buffer.WriteByte(byte(to.col()) + 'a')
-	buffer.WriteByte(byte(to.row()) + '1')
-	if m & isPromo != 0 {
-		buffer.WriteByte(m.promo().char() + 32)
+	buffer.WriteString(from.str())
+	buffer.WriteString(to.str())
+	if promo := m.promo(); promo.someʔ() {
+		buffer.WriteByte(promo.char() + 32)
 	}
 
 	return buffer.String()
@@ -294,15 +292,13 @@ func (m Move) String() (str string) {
 	if !piece.pawnʔ() {
 		buffer.WriteByte(piece.char())
 	}
-	buffer.WriteByte(byte(from.col()) + 'a')
-	buffer.WriteByte(byte(from.row()) + '1')
+	buffer.WriteString(from.str())
 	if capture == 0 {
 		buffer.WriteByte('-')
 	} else {
 		buffer.WriteByte('x')
 	}
-	buffer.WriteByte(byte(to.col()) + 'a')
-	buffer.WriteByte(byte(to.row()) + '1')
+	buffer.WriteString(to.str())
 	if promo := m.promo(); promo.someʔ() {
 		buffer.WriteByte(promo.char())
 	}

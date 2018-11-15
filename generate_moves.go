@@ -97,7 +97,7 @@ func (gen *MoveGen) movePawn(sq Square, targets Bitmask) *MoveGen {
 func (gen *MoveGen) moveKing(sq Square, targets Bitmask) *MoveGen {
 	for bm := targets; bm.anyʔ(); bm = bm.pop() {
 		target := bm.first()
-		if abs(int(sq) - int(target)) == 2 {
+		if sq.upto(target) == 2 {
 			gen.add(NewCastle(gen.p, sq, target))
 		} else {
 			gen.add(NewMove(gen.p, sq, target))

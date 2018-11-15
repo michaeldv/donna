@@ -64,7 +64,7 @@ func (p *Position) capturePiece(capture Piece, from, to Square) *Position {
 }
 
 func (p *Position) captureEnpassant(capture Piece, from, to Square) *Position {
-	enpassant := to + up[capture.color()]
+	enpassant := to.push(capture.color())
 
 	p.pieces[enpassant] = 0
 	p.outposts[capture] ^= bit(enpassant)
@@ -111,8 +111,8 @@ func (p *Position) makeMove(move Move) *Position {
 			pp.promotePawn(piece, from, to, promo)
 		} else {
 			pp.movePiece(piece, from, to)
-			if from ^ to == 16 && (pawnAttacks[our][from + up[our]] & p.outposts[pawn(their)]).anyʔ() {
-				pp.enpassant = from + up[our] // Save the en-passant square.
+			if from ^ to == 16 && (pawnAttacks[our][from.push(our)] & p.outposts[pawn(their)]).anyʔ() {
+				pp.enpassant = from.push(our) // Save the en-passant square.
 				pp.id ^= hashEnpassant[pp.enpassant & 7]
 			}
 		}

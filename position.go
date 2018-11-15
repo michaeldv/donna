@@ -412,8 +412,7 @@ func (p *Position) dcf() string {
 	encode := func (sq Square) string {
 		var buffer bytes.Buffer
 
-		buffer.WriteByte(byte(sq.col()) + 'a')
-		buffer.WriteByte(byte(sq.row()) + '1')
+		buffer.WriteString(sq.str())
 
 		return buffer.String()
 	}
