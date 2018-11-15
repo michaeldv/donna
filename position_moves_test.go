@@ -250,7 +250,7 @@ func TestPositionMoves120(t *testing.T) {
 // 50 moves draw (no captures, no pawn moves).
 func TestPositionMoves130(t *testing.T) {
 	p := NewGame(`Kh8,Ra1`, `Ka8,a7,b7`).start()
-	squares := [64]int{
+	squares := [64]Square{
 		A1, B1, C1, D1, E1, F1, G1, H1,
 		H2, G2, F2, E2, D2, C2, B2, A2,
 		A3, B3, C3, D3, E3, F3, G3, H3,

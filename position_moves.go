@@ -8,7 +8,7 @@
 
 package donna
 
-func (p *Position) movePiece(piece Piece, from, to int) *Position {
+func (p *Position) movePiece(piece Piece, from, to Square) *Position {
 	bm := bit(from) | bit(to)
 	p.pieces[from], p.pieces[to] = 0, piece
 	p.outposts[piece] ^= bm
@@ -27,7 +27,7 @@ func (p *Position) movePiece(piece Piece, from, to int) *Position {
 	return p
 }
 
-func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position {
+func (p *Position) promotePawn(pawn Piece, from, to Square, promo Piece) *Position {
 	p.pieces[from], p.pieces[to] = 0, promo
 	p.outposts[pawn] ^= bit(from)
 	p.outposts[promo] ^= bit(to)
@@ -45,7 +45,7 @@ func (p *Position) promotePawn(pawn Piece, from, to int, promo Piece) *Position 
 	return p
 }
 
-func (p *Position) capturePiece(capture Piece, from, to int) *Position {
+func (p *Position) capturePiece(capture Piece, from, to Square) *Position {
 	p.outposts[capture] ^= bit(to)
 	p.outposts[capture.color()] ^= bit(to)
 
@@ -63,7 +63,7 @@ func (p *Position) capturePiece(capture Piece, from, to int) *Position {
 	return p
 }
 
-func (p *Position) captureEnpassant(capture Piece, from, to int) *Position {
+func (p *Position) captureEnpassant(capture Piece, from, to Square) *Position {
 	enpassant := to + up[capture.color()]
 
 	p.pieces[enpassant] = 0
@@ -242,16 +242,16 @@ func (p *Position) canCastleʔ(our int) (kingside, queenside bool) {
 
 // Returns a bitmask of all pinned pieces preventing a check for the king on
 // given square. The color of the pieces match the color of the king.
-func (p *Position) pins(square int) (bitmask Bitmask) {
-	our := p.pieces[square].color()
+func (p *Position) pins(sq Square) (bitmask Bitmask) {
+	our := p.pieces[sq].color()
 	their := our^1
 
-	attackers := (p.outposts[bishop(their)] | p.outposts[queen(their)]) & bishopMagicMoves[square][0]
-	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[square][0]
+	attackers := (p.outposts[bishop(their)] | p.outposts[queen(their)]) & bishopMagicMoves[sq][0]
+	attackers |= (p.outposts[rook(their)] | p.outposts[queen(their)]) & rookMagicMoves[sq][0]
 
 	for bm := attackers; bm.anyʔ(); bm = bm.pop() {
 		target := bm.first()
-		blockers := maskBlock[square][target] & ^bit(target) & p.board
+		blockers := maskBlock[sq][target] & ^bit(target) & p.board
 
 		if blockers.singleʔ() {
 			bitmask |= blockers & p.outposts[our&1] // Only friendly pieces are pinned.

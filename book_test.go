@@ -14,9 +14,9 @@ func openBook() (*Book, *Position) {
 	return &Book{}, NewGame().start()
 }
 
-func polyglotEntry(source, target int) Entry {
-	return Entry{Move: uint16(row(source)<<9) | uint16(col(source)<<6) |
-		uint16(row(target)<<3) | uint16(col(target))}
+func polyglotEntry(source, target Square) Entry {
+	return Entry{Move: uint16(source.row()<<9) | uint16(source.col()<<6) |
+		uint16(target.row()<<3) | uint16(target.col())}
 }
 
 // See test key values at http://hardy.uhasselt.be/Toga/book_format.html
@@ -39,7 +39,7 @@ func TestBook010(t *testing.T) { // 1. e4
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x328746286FC870A1))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -53,7 +53,7 @@ func TestBook020(t *testing.T) { // 1. e4 d5
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x230CE995D07A6BBF))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -68,7 +68,7 @@ func TestBook030(t *testing.T) { // 1. e4 d5 2. e5
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xF4DCF2514D583140))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -84,7 +84,7 @@ func TestBook040(t *testing.T) { // 1. e4 d5 2. e5 f5 <-- Enpassant
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, F6)
+	expect.Eq(t, p.enpassant, Square(F6))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -101,7 +101,7 @@ func TestBook050(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, castleKingside[Black]|castleQueenside[Black])
 }
 
@@ -119,7 +119,7 @@ func TestBook060(t *testing.T) { // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castl
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x9B903D74CEBA05D7))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, uint8(0))
 }
 
@@ -136,7 +136,7 @@ func TestBook070(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpass
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xD1A8556C4ABCA664))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, C3)
+	expect.Eq(t, p.enpassant, Square(C3))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -155,7 +155,7 @@ func TestBook080(t *testing.T) { // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. R
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xA1AF43655164A4B8))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, castleKingside[White]|castleKingside[Black]|castleQueenside[Black])
 }
 
@@ -169,7 +169,7 @@ func TestBook100(t *testing.T) { // 1. e4 e5
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xE3D13855F9F5D6AF))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }
 
@@ -183,6 +183,6 @@ func TestBook110(t *testing.T) { // 1. d4 d5
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0x1EC81035FA7FDB06))
 	expect.Eq(t, pawnHash, p.pid)
-	expect.Eq(t, p.enpassant, 0)
+	expect.Eq(t, p.enpassant, Square(0))
 	expect.Eq(t, p.castles, uint8(0x0F))
 }

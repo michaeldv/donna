@@ -128,12 +128,12 @@ func (b *Book) move(p *Position, entry Entry) Move {
 }
 
 // Converts polyglot encoded "from" coordinate to our square.
-func (e *Entry) from() int {
+func (e *Entry) from() Square {
 	return square(int((e.Move >> 9) & 7), int((e.Move >> 6) & 7))
 }
 
 // Converts polyglot encoded "to" coordinate to our square.
-func (e *Entry) to() int {
+func (e *Entry) to() Square {
 	return square(int((e.Move >> 3) & 7), int(e.Move & 7))
 }
 

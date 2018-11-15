@@ -110,7 +110,7 @@ func TestGenEvasions385(t *testing.T) {
 	white := NewMoveGen(black.makeMove(NewMove(black, D7, D5))).generateEvasions()
 	for move := white.nextMove(); move != 0; move = white.nextMove() {
 		if move.piece() == Pawn {
-			expect.Eq(t, move.to(), D6)
+			expect.Eq(t, move.to(), Square(D6))
 			expect.Eq(t, move.color(), uint8(White))
 			expect.Eq(t, Piece(move.capture()), Piece(BlackPawn))
 			expect.Eq(t, Piece(move.promo()), Piece(0))

@@ -105,7 +105,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 
 	threatIndex := min(16, e.safety[our].attackers * e.safety[our].threats / 2) +
 			(e.safety[our].attacks + weak.count()) * 3 +
-			rank(our, square) - e.pawns.cover[our].midgame / 16
+			square.rank(our) - e.pawns.cover[our].midgame / 16
 	safetyIndex = min(63, max(0, safetyIndex + threatIndex))
 
 	score.midgame -= kingSafety[safetyIndex]
@@ -124,7 +124,7 @@ func (e *Evaluation) kingCover(our int) (score Score) {
 	p, square := e.position, e.position.king[our]
 
 	// Don't bother with the cover if the king is too far out.
-	if rank(our, square) <= A3H3 {
+	if square.rank(our) <= A3H3 {
 		// If we still have castle rights encourage castle pawns to stay intact
 		// by scoring least safe castle.
 		score.midgame = e.kingCoverBonus(our, square)
@@ -141,12 +141,12 @@ func (e *Evaluation) kingCover(our int) (score Score) {
 	return score
 }
 
-func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
+func (e *Evaluation) kingCoverBonus(our int, sq Square) (bonus int) {
 	bonus = onePawn + onePawn / 3
 
 	// Get pawns adjacent to and in front of the king.
-	row, col := coordinate(square)
-	area := maskRank[row] | maskPassed[our][square]
+	row, col := sq.coordinate()
+	area := maskRank[row] | maskPassed[our][sq]
 	cover := e.position.outposts[pawn(our)] & area
 	storm := e.position.outposts[pawn(our^1)] & area
 
@@ -158,13 +158,13 @@ func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 		// Friendly pawns protecting the kings.
 		closest := 0
 		if pawns := (cover & maskFile[c]); pawns.anyʔ() {
-			closest = rank(our, pawns.closest(our))
+			closest = pawns.closest(our).rank(our)
 		}
 		bonus -= penaltyCover[closest]
 
 		// Enemy pawns facing the king.
 		if pawns := (storm & maskFile[c]); pawns.anyʔ() {
-			farthest := rank(our, pawns.farthest(our^1))
+			farthest := pawns.farthest(our^1).rank(our)
 			if closest == 0 { // No opposing friendly pawn.
 				bonus -= penaltyStorm[farthest]
 			} else if farthest == closest + 1 {
@@ -179,14 +179,14 @@ func (e *Evaluation) kingCoverBonus(our int, square int) (bonus int) {
 }
 
 // Calculates endgame penalty to encourage a king stay closer to friendly pawns.
-func (e *Evaluation) kingPawnProximity(our int, square int) (penalty int) {
+func (e *Evaluation) kingPawnProximity(our int, sq Square) (penalty int) {
 	pawns := e.position.outposts[pawn(our)]
 
 	if pawns.anyʔ() && (pawns & e.attacks[king(our)]).noneʔ() {
 		proximity := 8
 
 		for bm := pawns; bm.anyʔ(); bm = bm.pop() {
-			proximity = min(proximity, distance[square][bm.first()])
+			proximity = min(proximity, distance[sq][bm.first()])
 		}
 
 		penalty = -kingByPawn.endgame * (proximity - 1)

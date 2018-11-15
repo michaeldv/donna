@@ -73,17 +73,17 @@ func init() {
 }
 
 func initMasks() {
-	for sq := A1; sq <= H8; sq++ {
-		row, col := coordinate(sq)
+	for sq := Square(A1); sq <= H8; sq++ {
+		row, col := sq.coordinate()
 
 		// Distance, Blocks, Evasions, Lines, Knights, and Kings.
-		for i := A1; i <= H8; i++ {
-			r, c := coordinate(i)
+		for i := Square(A1); i <= H8; i++ {
+			r, c := i.coordinate()
 
 			distance[sq][i] = max(abs(row - r), abs(col - c))
 			setupMasks(sq, i, row, col, r, c)
 
-			if i == sq || abs(i-sq) > 17 {
+			if i == sq || abs(int(i) - int(sq)) > 17 {
 				continue // No king or knight can reach that far.
 			}
 			rows, cols := abs(row - r), abs(col - c)
@@ -99,7 +99,7 @@ func initMasks() {
 		mask := createRookMask(sq)
 		bits := uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := mask.charm(i)
+			bitmask := mask.charm(Square(i))
 			index := (bitmask * rookMagic[sq].magic) >> 52
 			rookMagicMoves[sq][index] = createRookAttacks(sq, bitmask)
 		}
@@ -108,7 +108,7 @@ func initMasks() {
 		mask = createBishopMask(sq)
 		bits = uint(mask.count())
 		for i := 0; i < (1 << bits); i++ {
-			bitmask := mask.charm(i)
+			bitmask := mask.charm(Square(i))
 			index := (bitmask * bishopMagic[sq].magic) >> 55
 			bishopMagicMoves[sq][index] = createBishopAttacks(sq, bitmask)
 		}
@@ -144,8 +144,8 @@ func initMasks() {
 		}
 
 		// Vertical squares in front of a pawn.
-		maskInFront[White][sq] = (maskBlock[sq][A8+col] | bit(A8+col)) & ^bit(sq)
-		maskInFront[Black][sq] = (maskBlock[A1+col][sq] | bit(A1+col)) & ^bit(sq)
+		maskInFront[White][sq] = (maskBlock[sq][A8+col] | bit(Square(A8+col))) & ^bit(sq)
+		maskInFront[Black][sq] = (maskBlock[A1+col][sq] | bit(Square(A1+col))) & ^bit(sq)
 
 		// Masks to check for passed pawns.
 		if col > 0 {
@@ -385,25 +385,25 @@ func endgames(wP, wN, wB, wR, wQ, bP, bN, bB, bR, bQ int) (flags uint8, endgame 
 	return
 }
 
-func createRookMask(square int) (bitmask Bitmask) {
-	r, c := coordinate(square)
-	bitmask = (maskRank[r] | maskFile[c]) ^ bit(square)
+func createRookMask(sq Square) (bitmask Bitmask) {
+	r, c := sq.coordinate()
+	bitmask = (maskRank[r] | maskFile[c]) ^ bit(sq)
 
 	return *bitmask.trim(r, c)
 }
 
-func createBishopMask(square int) (bitmask Bitmask) {
-	r, c := coordinate(square)
+func createBishopMask(square Square) (bitmask Bitmask) {
+	r, c := square.coordinate()
 
-	if sq := square + 7; sq <= H8 && col(sq) == c - 1 {
+	if sq := square + 7; sq <= H8 && sq.col() == c - 1 {
 		bitmask = maskLine[square][sq]
-	} else if sq := square - 7; sq >= A1 && col(sq) == c + 1 {
+	} else if sq := square - 7; sq >= A1 && sq.col() == c + 1 {
 		bitmask = maskLine[square][sq]
 	}
 
-	if sq := square + 9; sq <= H8 && col(sq) == c + 1 {
+	if sq := square + 9; sq <= H8 && sq.col() == c + 1 {
 		bitmask |= maskLine[square][sq]
-	} else if sq := square - 9; sq >= A1 && col(sq) == c - 1 {
+	} else if sq := square - 9; sq >= A1 && sq.col() == c - 1 {
 		bitmask |= maskLine[square][sq]
 	}
 	bitmask ^= bit(square)
@@ -411,8 +411,8 @@ func createBishopMask(square int) (bitmask Bitmask) {
 	return *bitmask.trim(r, c)
 }
 
-func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
-	row, col := coordinate(sq)
+func createRookAttacks(target Square, mask Bitmask) (bitmask Bitmask) {
+	row, col := target.coordinate()
 
 	// North.
 	for r := row + 1; r <= 7; r++ {
@@ -449,8 +449,8 @@ func createRookAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	return
 }
 
-func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
-	row, col := coordinate(sq)
+func createBishopAttacks(target Square, mask Bitmask) (bitmask Bitmask) {
+	row, col := target.coordinate()
 
 	// North East.
 	for c, r := col + 1, row + 1; c <= 7 && r <= 7; c, r = c+1, r+1 {
@@ -487,7 +487,7 @@ func createBishopAttacks(sq int, mask Bitmask) (bitmask Bitmask) {
 	return
 }
 
-func setupMasks(square, target, row, col, r, c int) {
+func setupMasks(square, target Square, row, col, r, c int) {
 	if row == r {
 		if col < c {
 			maskBlock[square][target].fill(square, 1, bit(target), maskFull)

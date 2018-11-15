@@ -59,8 +59,8 @@ func (p Piece) someʔ() bool {
 	return p != Piece(0)
 }
 
-func (p Piece) polyglot(square int) uint64 {
-	return polyglotRandom[p-2][square]
+func (p Piece) polyglot(sq Square) uint64 {
+	return polyglotRandom[p-2][sq]
 }
 
 func (p Piece) color() int {

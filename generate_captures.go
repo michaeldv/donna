@@ -23,7 +23,7 @@ func (gen *MoveGen) pawnCaptures(our, their int) *MoveGen {
 		// For pawns on files 2-6 the moves include captures only,
 		// while for pawns on the 7th file the moves include captures
 		// as well as queen promotion.
-		if rank(our, square) != A7H7 {
+		if square.rank(our) != A7H7 {
 			gen.movePawn(square, gen.p.targets(square) & opponent)
 		} else {
 			for bm := gen.p.targets(square); bm.anyʔ(); bm = bm.pop() {

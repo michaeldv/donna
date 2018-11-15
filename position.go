@@ -22,14 +22,14 @@ type Position struct {		 // 224 bytes long.
 	id           uint64	 // Polyglot hash value for the position.
 	pid          uint64	 // Polyglot hash value for position's pawn structure.
 	board        Bitmask	 // Bitmask of all pieces on the board.
-	king         [2]int	 // King's square for both colors.
+	king         [2]Square	 // King's square for both colors.
 	pieces       [64]Piece	 // Array of 64 squares with pieces on them.
 	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
+	enpassant    Square	 // En-passant square caused by previous move.
 	tally        Score	 // Positional valuation score based on PST.
 	balance      int	 // Material balance index.
 	score        int	 // Blended evaluation score.
 	color        int	 // Side to make next move.
-	enpassant    int	 // En-passant square caused by previous move.
 	count50      int	 // 50 moves rule counter.
 	reversibleʔ  bool	 // Is this position reversible?
 	castles      uint8	 // Castle rights mask.
@@ -55,12 +55,12 @@ func NewPosition(game *Game, white, black string) *Position {
 		p.castles &= ^castleQueenside[Black]
 	}
 
-	for square, piece := range p.pieces {
+	for i, piece := range p.pieces {
 		if piece.someʔ() {
-			p.outposts[piece] |= bit(square)
-			p.outposts[piece.color()] |= bit(square)
+			p.outposts[piece] |= bit(Square(i))
+			p.outposts[piece.color()] |= bit(Square(i))
 			if piece.kingʔ() {
-				p.king[piece.color()] = square
+				p.king[piece.color()] = Square(i)
 			}
 			p.balance += materialBalance[piece]
 		}
@@ -123,9 +123,9 @@ func (p *Position) setupSide(str string, our int) *Position {
 			case 'E':
 				p.enpassant = square
 			case 'C':
-				if (square == C1 + our) || (square == C8 + our) {
+				if (square == Square(C1 + our)) || (square == Square(C8 + our)) {
 					p.castles |= castleQueenside[our&1]
-				} else if (square == G1 + our) || (square == G8 + our) {
+				} else if (square == Square(G1 + our)) || (square == Square(G8 + our)) {
 					p.castles |= castleKingside[our&1]
 				}
 			default:
@@ -161,7 +161,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	}
 
 	// [0] - Pieces (entire board).
-	sq := A8
+	sq := Square(A8)
 	for _, char := range(matches[0]) {
 		piece := Piece(0)
 		switch(char) {
@@ -194,7 +194,7 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 		case '/':
 			sq -= 16
 		case '1', '2', '3', '4', '5', '6', '7', '8':
-			sq += int(char - '0')
+			sq += Square(char - '0')
 		}
 		if piece.someʔ() {
 			p.pieces[sq] = piece
@@ -389,7 +389,7 @@ func (p *Position) fen() (fen string) {
 
 	// En-passant square, if any.
 	if p.enpassant != 0 {
-		row, col := coordinate(p.enpassant)
+		row, col := p.enpassant.coordinate()
 		fen += fmt.Sprintf(` %c%d`, col + 'a', row + 1)
 	} else {
 		fen += ` -`
@@ -409,11 +409,11 @@ func (p *Position) dcf() string {
 	fancy := engine.fancyʔ
 	engine.fancyʔ = false; defer func() { engine.fancyʔ = fancy }()
 
-	encode := func (square int) string {
+	encode := func (sq Square) string {
 		var buffer bytes.Buffer
 
-		buffer.WriteByte(byte(col(square)) + 'a')
-		buffer.WriteByte(byte(row(square)) + '1')
+		buffer.WriteByte(byte(sq.col()) + 'a')
+		buffer.WriteByte(byte(sq.row()) + '1')
 
 		return buffer.String()
 	}
@@ -446,10 +446,10 @@ func (p *Position) dcf() string {
 		// Castle rights.
 		if p.castles & castleQueenside[color&1] == 0 || p.castles & castleKingside[color&1] == 0 {
 			if p.castles & castleQueenside[color&1] != 0 {
-				pieces[color&1] = append(pieces[color&1], `C` + encode(C1 + 56 * color))
+				pieces[color&1] = append(pieces[color&1], `C` + encode(Square(C1 + 56 * color)))
 			}
 			if p.castles & castleKingside[color&1] != 0 {
-				pieces[color&1] = append(pieces[color&1], `C` + encode(G1 + 56 * color))
+				pieces[color&1] = append(pieces[color&1], `C` + encode(Square(G1 + 56 * color)))
 			}
 		}
 

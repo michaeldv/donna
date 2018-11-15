@@ -70,23 +70,23 @@ func (gen *MoveGen) kingMoves(our int) *MoveGen {
 
 		kingside, queenside := gen.p.canCastleʔ(our)
 		if kingside {
-			gen.moveKing(square, bit(G1 + 56 * our))
+			gen.moveKing(square, bit(Square(G1 + 56 * our)))
 		}
 		if queenside {
-			gen.moveKing(square, bit(C1 + 56 * our))
+			gen.moveKing(square, bit(Square(C1 + 56 * our)))
 		}
 	}
 
 	return gen
 }
 
-func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
+func (gen *MoveGen) movePawn(sq Square, targets Bitmask) *MoveGen {
 	for bm := targets; bm.anyʔ(); bm = bm.pop() {
 		target := bm.first()
 		if target > H1 && target < A8 {
-			gen.add(NewMove(gen.p, square, target))
+			gen.add(NewMove(gen.p, sq, target))
 		} else { // Promotion.
-			mQ, mR, mB, mN := NewPromotion(gen.p, square, target)
+			mQ, mR, mB, mN := NewPromotion(gen.p, sq, target)
 			gen.add(mQ).add(mN).add(mR).add(mB)
 		}
 	}
@@ -94,22 +94,22 @@ func (gen *MoveGen) movePawn(square int, targets Bitmask) *MoveGen {
 	return gen
 }
 
-func (gen *MoveGen) moveKing(square int, targets Bitmask) *MoveGen {
+func (gen *MoveGen) moveKing(sq Square, targets Bitmask) *MoveGen {
 	for bm := targets; bm.anyʔ(); bm = bm.pop() {
 		target := bm.first()
-		if abs(square - target) == 2 {
-			gen.add(NewCastle(gen.p, square, target))
+		if abs(int(sq) - int(target)) == 2 {
+			gen.add(NewCastle(gen.p, sq, target))
 		} else {
-			gen.add(NewMove(gen.p, square, target))
+			gen.add(NewMove(gen.p, sq, target))
 		}
 	}
 
 	return gen
 }
 
-func (gen *MoveGen) movePiece(square int, targets Bitmask) *MoveGen {
+func (gen *MoveGen) movePiece(sq Square, targets Bitmask) *MoveGen {
 	for bm := targets; bm.anyʔ(); bm = bm.pop() {
-		gen.add(NewMove(gen.p, square, bm.first()))
+		gen.add(NewMove(gen.p, sq, bm.first()))
 	}
 
 	return gen

@@ -127,7 +127,7 @@ func (e *Evaluation) knights(our int, maskSafe Bitmask, unsafeKingʔ bool) (scor
 		}
 
 		// Bonus if knight is behind friendly pawn.
-		if rank(our, square) < 4 && p.outposts[pawn(our)].onʔ(square + up[our]) {
+		if square.rank(our) < 4 && p.outposts[pawn(our)].onʔ(square + up[our]) {
 			score.add(behindPawn)
 		}
 
@@ -158,7 +158,7 @@ func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKingʔ bool) (scor
 
 
 		// Penalty for light/dark-colored pawns restricting a bishop.
-		if count := (same(square) & p.outposts[pawn(our)]).count(); count > 0 {
+		if count := (square.same() & p.outposts[pawn(our)]).count(); count > 0 {
 			score.sub(bishopPawn.times(count))
 		}
 
@@ -168,7 +168,7 @@ func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKingʔ bool) (scor
 		}
 
 		// Bonus if bishop is behind friendly pawn.
-		if rank(our, square) < 4 && p.outposts[pawn(our)].onʔ(square + up[our]) {
+		if square.rank(our) < 4 && p.outposts[pawn(our)].onʔ(square + up[our]) {
 			score.add(behindPawn)
 		}
 
@@ -189,7 +189,7 @@ func (e *Evaluation) bishops(our int, maskSafe Bitmask, unsafeKingʔ bool) (scor
 
 		// Extra bonus if bishop is on central ranks.
 		extra := Score{0, 0}
-		if extra.midgame = extraBishop[flip(our, square)]; extra.midgame > 0 {
+		if extra.midgame = extraBishop[square.flip(our)]; extra.midgame > 0 {
 			extra.endgame = extra.midgame / 2
 			score.add(extra)
 		}
@@ -234,14 +234,14 @@ func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score,
 		}
 
 		// Bonus if rook is attacking enemy's pawns.
-		if rank(our, square) >= 4 {
+		if square.rank(our) >= 4 {
 			if count := (attacks & theirPawns).count(); count > 0 {
 				score.add(rookOnPawn.times(count))
 			}
 		}
 
 		// Bonuses if rook is on open or semi-open file.
-		column := col(square)
+		column := square.col()
 		isFileAjar := (ourPawns & maskFile[column] == 0)
 		if isFileAjar {
 			if theirPawns & maskFile[column] == 0 {
@@ -255,7 +255,7 @@ func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score,
 		// rights have been lost.
 		if safeSquares <= 3 || !isFileAjar {
 			kingSquare := p.king[our]
-			kingColumn := col(kingSquare)
+			kingColumn := kingSquare.col()
 
 			// Queenside box: king on D/C/B vs. rook on A/B/C files. Increase the
 			// the penalty since no castle is possible.

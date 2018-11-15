@@ -11,7 +11,7 @@ package donna
 type PawnEntry struct {
 	id       uint64 	// Pawn hash key.
 	score    Score 		// Static score for the given pawn structure.
-	king     [2]int 	// King square for both sides.
+	king     [2]Square 	// King square for both sides.
 	cover    [2]Score 	// King cover penalties for both sides.
 	passers  [2]Bitmask 	// Passed pawn bitmasks for both sides.
 }
@@ -68,7 +68,7 @@ func (e *Evaluation) pawnStructure(our int) (score Score) {
 
 	for bm := ourPawns; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
-		row, col := coordinate(square)
+		row, col := square.coordinate()
 
 		isolatedʔ := (maskIsolated[col] & ourPawns).noneʔ()
 		exposedʔ := (maskInFront[our][square] & theirPawns).noneʔ()
@@ -132,7 +132,7 @@ func (e *Evaluation) pawnStructure(our int) (score Score) {
 			his := maskPassed[their][square + up[our]] & maskIsolated[col] & ourPawns
 			her := maskPassed[our][square] & maskIsolated[col] & theirPawns
 			if his.count() >= her.count() {
-				score.add(bonusSemiPassedPawn[rank(our, square)])
+				score.add(bonusSemiPassedPawn[square.rank(our)])
 			}
 		}
 	}
@@ -148,7 +148,7 @@ func (e *Evaluation) pawnPassers(our int) (score Score) {
 
 	for bm := e.pawns.passers[our]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
-		rank := rank(our, square)
+		rank := square.rank(our)
 		bonus := bonusPassedPawn[rank]
 
 		if rank > A2H2 {

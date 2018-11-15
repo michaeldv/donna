@@ -12,7 +12,7 @@ import(`bytes`; `fmt`)
 
 type Bitmask uint64
 
-var deBruijn = [64]int{
+var deBruijn = [64]Square{
 	 0, 47,  1, 56, 48, 27,  2, 60,
 	57, 49, 41, 37, 28, 16,  3, 61,
 	54, 58, 35, 52, 50, 42, 21, 44,
@@ -24,7 +24,7 @@ var deBruijn = [64]int{
 }
 
 // Most-significant bit (MSB) lookup table.
-var msbLookup[256]int
+var msbLookup[256]Square
 
 func init() {
 	for i := 0; i < len(msbLookup); i++ {
@@ -46,9 +46,9 @@ func init() {
 	}
 }
 
-// Returns a bitmask with bit set at `offset` within 0..63 range.
-func bit(offset int) Bitmask {
-	return 1 << (uint(offset) & 63)
+// Returns a bitmask with bit set at given square.
+func bit(sq Square) Bitmask {
+	return 1 << (uint(sq) & 63)
 }
 
 // Returns true if all bitmask bits are clear. Even if it's wrong, it's only
@@ -62,14 +62,14 @@ func (b Bitmask) anyʔ() bool {
 	return b != 0
 }
 
-// Returns true if a bit at given offset is set.
-func (b Bitmask) onʔ(offset int) bool {
-	return (b & bit(offset)).anyʔ()
+// Returns true if a bit at given square is set.
+func (b Bitmask) onʔ(sq Square) bool {
+	return (b & bit(sq)).anyʔ()
 }
 
-// Returns true if a bit at given offset is clear.
-func (b Bitmask) offʔ(offset int) bool {
-	return !b.onʔ(offset)
+// Returns true if a bit at given square is clear.
+func (b Bitmask) offʔ(sq Square) bool {
+	return !b.onʔ(sq)
 }
 
 // Returns true if a bitmask has single bit set.
@@ -95,33 +95,33 @@ func (b Bitmask) count() int {
 
 // Finds least significant bit set (LSB) in non-zero bitmask. Returns
 // an integer in 0..63 range.
-func (b Bitmask) first() int {
+func (b Bitmask) first() Square {
 	return deBruijn[((b ^ (b - 1)) * 0x03F79D71B4CB0A89) >> 58] & 63
 }
 
 // Eugene Nalimov's bitScanReverse: finds most significant bit set (MSB).
-func (b Bitmask) last() (offset int) {
+func (b Bitmask) last() (sq Square) {
 	if b > 0xFFFFFFFF {
-		b >>= 32; offset = 32
+		b >>= 32; sq = 32
 	}
 	if b > 0xFFFF {
-		b >>= 16; offset += 16
+		b >>= 16; sq += 16
 	}
 	if b > 0xFF {
-		b >>= 8; offset += 8
+		b >>= 8; sq += 8
 	}
 
-	return offset + msbLookup[b]
+	return sq + msbLookup[b]
 }
 
-func (b Bitmask) closest(color int) int {
+func (b Bitmask) closest(color int) Square {
 	if color == White {
 		return b.first()
 	}
 	return b.last()
 }
 
-func (b Bitmask) farthest(color int) int {
+func (b Bitmask) farthest(color int) Square {
     if color == White {
         return b.last()
     }
@@ -140,15 +140,15 @@ func (b Bitmask) pop() Bitmask {
 	return b & (b - 1)
 }
 
-// Sets a bit at given offset.
-func (b *Bitmask) set(offset int) *Bitmask {
-	*b |= bit(offset)
+// Sets a bit at given square.
+func (b *Bitmask) set(sq Square) *Bitmask {
+	*b |= bit(sq)
 	return b
 }
 
-// Clears a bit at given offset.
-func (b *Bitmask) clear(offset int) *Bitmask {
-	*b &= ^bit(offset)
+// Clears a bit at given square.
+func (b *Bitmask) clear(sq Square) *Bitmask {
+	*b &= ^bit(sq)
 	return b
 }
 
@@ -160,13 +160,13 @@ func (b Bitmask) shift(offset int) Bitmask {
 	return b >> -uint(offset)
 }
 
-func (b Bitmask) charm(offset int) (bitmask Bitmask) {
+func (b Bitmask) charm(sq Square) (bitmask Bitmask) {
 	count := b.count()
 
 	for i := 0; i < count; i++ {
 		pop := b ^ b.pop()
 		b = b.pop()
-		if (bit(i) & Bitmask(offset)).anyʔ() {
+		if (bit(Square(i)) & Bitmask(sq)).anyʔ() {
 			bitmask |= pop
 		}
 	}
@@ -174,8 +174,8 @@ func (b Bitmask) charm(offset int) (bitmask Bitmask) {
 	return bitmask
 }
 
-func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask {
-	for bm := (bit(square) & board).shift(direction); bm.anyʔ(); bm = bm.shift(direction) {
+func (b *Bitmask) fill(sq Square, offset int, occupied, board Bitmask) *Bitmask {
+	for bm := (bit(sq) & board).shift(offset); bm.anyʔ(); bm = bm.shift(offset) {
 		*b |= bm
 		if (bm & occupied).anyʔ() {
 			break
@@ -186,8 +186,8 @@ func (b *Bitmask) fill(square, direction int, occupied, board Bitmask) *Bitmask 
 	return b
 }
 
-func (b *Bitmask) spot(square, direction int, board Bitmask) *Bitmask {
-	*b = ^((bit(square) & board).shift(direction))
+func (b *Bitmask) spot(sq Square, offset int, board Bitmask) *Bitmask {
+	*b = ^((bit(sq) & board).shift(offset))
 	return b
 }
 
@@ -214,9 +214,9 @@ func (b Bitmask) String() string {
 	for row := 7; row >= 0; row-- {
 		buffer.WriteByte('1' + byte(row))
 		for col := 0; col <= 7; col++ {
-			offset := row << 3 + col
+			sq := square(row, col)
 			buffer.WriteByte(' ')
-			if b.onʔ(offset) {
+			if b.onʔ(sq) {
 				buffer.WriteString("\u2022") // Set
 			} else {
 				buffer.WriteString("\u22C5") // Clear

@@ -68,7 +68,8 @@ func (e *Evaluation) twoBishopsVsBareKing() int { 	// STUB.
 }
 
 func (e *Evaluation) kingAndPawnVsBareKing() int {
-	var color, wKing, bKing, wPawn int
+	var color int
+	var wKing, bKing, wPawn Square
 
 	stronger, _ := e.strongerSide()
 	if stronger == White {
@@ -83,7 +84,7 @@ func (e *Evaluation) kingAndPawnVsBareKing() int {
 		wPawn = 64 + ^e.position.outposts[BlackPawn].last()
 	}
 
-	index := color + (wKing << 1) + (bKing << 7) + ((wPawn - 8) << 13)
+	index := Square(color) + (wKing << 1) + (bKing << 7) + ((wPawn - 8) << 13)
 	if (bitbase[index / 64] & bit(index)).noneʔ() {
 		return DrawScore
 	}
@@ -100,15 +101,15 @@ func (e *Evaluation) kingAndPawnsVsBareKing() int {
 	our, their := e.strongerSide()
 
 	pawns := e.position.outposts[pawn(our)]
-	row, col := coordinate(e.position.king[their&1])
+	row, col := e.position.king[their].coordinate()
 
 	// Pawns on A file with bare king opposing them.
-	if (pawns & ^maskFile[A1]).noneʔ() && (pawns & ^maskInFront[their&1][row * 8]).noneʔ() && col <= B1 {
+	if (pawns & ^maskFile[A1]).noneʔ() && (pawns & ^maskInFront[their][row * 8]).noneʔ() && col <= B1 {
 		return DrawScore
 	}
 
 	// Pawns on H file with bare king opposing them.
-	if (pawns & ^maskFile[H1]).noneʔ() && (pawns & ^maskInFront[their&1][row * 8 + 7]).noneʔ() && col >= G1 {
+	if (pawns & ^maskFile[H1]).noneʔ() && (pawns & ^maskInFront[their][row * 8 + 7]).noneʔ() && col >= G1 {
 		return DrawScore
 	}
 
@@ -152,15 +153,15 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 
 	p := e.position
 
-	unstoppableʔ := func(our int, square int) bool {
+	unstoppableʔ := func(our int, sq Square) bool {
 		their := our^1
 
-		if (p.outposts[their&1] & maskInFront[our&1][square]).noneʔ() {
+		if (p.outposts[their] & maskInFront[our][sq]).noneʔ() {
 			mask := maskNone
 			if p.color == our {
-				mask = maskSquare[our&1][square]
+				mask = maskSquare[our][sq]
 			} else {
-				mask = maskSquareEx[our&1][square]
+				mask = maskSquareEx[our][sq]
 			}
 			return (mask & p.outposts[king(their)]).noneʔ()
 		}
@@ -187,7 +188,7 @@ func (e *Evaluation) kingAndPawnVsKingAndPawn() int {
 	piece := pawn(our)
 	pawns := p.outposts[piece]
 	square := pawns.first()
-	if rank(our, pawns.first()) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).anyʔ() {
+	if pawns.first().rank(our) < A5H5 || (pawns & (maskFile[0] | maskFile[7])).anyʔ() {
 
 		// Temporarily remove opponent's pawn.
 		piece = pawn(their)
@@ -252,7 +253,7 @@ func (e *Evaluation) noPawnsLeft() int {
 	if whiteMinorOnly && blackMinorOnly && outposts[Knight].noneʔ() && outposts[BlackKnight].noneʔ() && e.oppositeBishopsʔ() {
 		pawn := outposts[pawn(our)]			// The passer.
 		king := outposts[king(their)]			// Defending king.
-		path := maskInFront[our&1][pawn.first()]	// Path in front of the passer.
+		path := maskInFront[our][pawn.first()]	// Path in front of the passer.
 		safe := maskDark				// Safe squares for king to block on.
 		if (outposts[bishop(our)] & maskDark).anyʔ() {
 			safe = ^maskDark

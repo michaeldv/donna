@@ -13,57 +13,13 @@ import (
 	`time`
 )
 
-// Returns row number in 0..7 range for the given square.
-func row(square int) int {
-	return square >> 3
-}
-
-// Returns column number in 0..7 range for the given square.
-func col(square int) int {
-	return square & 7
-}
-
-// Returns both row and column numbers for the given square.
-func coordinate(square int) (int, int) {
-	return row(square), col(square)
-}
-
-// Returns relative rank for the square in 0..7 range. For example E2 is rank 1
-// for white and rank 6 for black.
-func rank(color int, square int) int {
-	return row(square) ^ (color * 7)
-}
-
-// Returns 0..63 square number for the given row/column coordinate.
-func square(row, column int) int {
-	return (row << 3) + column
-}
-
-// Poor man's ternary. Works best with scalar yes and no.
+// Poor man's ternary. Works best with scalar `yes` and `no`.
 func let(ok bool, yes, no int) int {
 	if ok {
 		return yes
 	}
 
 	return no
-}
-
-// Flips the square verically for white (ex. E2 becomes E7).
-func flip(color int, square int) int {
-	if color == White {
-		return square ^ 56
-	}
-	return square
-}
-
-// Returns a bitmask with light or dark squares set matching the color of the
-// square.
-func same(square int) Bitmask {
-	if (bit(square) & maskDark).anyʔ() {
-		return maskDark
-	}
-
-	return ^maskDark
 }
 
 // Returns a distance between current node and the root one.

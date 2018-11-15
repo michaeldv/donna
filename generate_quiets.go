@@ -40,7 +40,7 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	for bm := p.outposts[pawn(our)].up(our) & empty & ^maskRank[last]; bm.anyʔ(); bm = bm.pop() {
 		square := bm.first()
 		forward, backward := square + up[our&1], square - up[our&1]
-		if rank(our, square) == 2 && p.pieces[forward].noneʔ() {
+		if square.rank(our) == 2 && p.pieces[forward].noneʔ() {
 			gen.addQuiet(NewMove(gen.p, backward, forward)) // Jump.
 		}
 		gen.addQuiet(NewMove(gen.p, backward, square)) // Push.

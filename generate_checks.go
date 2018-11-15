@@ -13,7 +13,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	p := gen.p
 	our, their := p.colors()
 	square := p.king[their&1]
-	r, c := coordinate(square)
+	r, c := square.coordinate()
 	prohibit := maskNone
 	empty := ^p.board
 	friendly := ^p.outposts[their&1]
@@ -29,7 +29,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	checks = p.bishopAttacksAt(square, their)
 	for bm := p.outposts[bishop(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
-		diagonal := (r != row(from) && c != col(from))
+		diagonal := (r != from.row() && c != from.col())
 		for bm := p.bishopAttacksAt(from, their) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
@@ -68,7 +68,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	checks = p.rookAttacksAt(square, their)
 	for bm := p.outposts[rook(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
-		straight := (r == row(from) || c == col(from))
+		straight := (r == from.row() || c == from.col())
 		for bm := p.rookAttacksAt(from, their) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
@@ -82,7 +82,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					// If pawn and rook share the same file then non-capturing
 					// discovered check is not possible since the pawn is going
 					// to stay on the same file no matter what.
-					if col(from) == col(to) {
+					if from.col() == to.col() {
 						continue
 					}
 					// Block pawn promotions (since they are treated as captures)
@@ -94,7 +94,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					gen.movePawn(to, p.targets(to) & empty & ^prohibit)
 				case King:
 					// Make sure the king steps out of attack file or rank.
-					if row(from) == r {
+					if from.row() == r {
 						prohibit = maskRank[r]
 					} else {
 						prohibit = maskFile[c]

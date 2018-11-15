@@ -28,21 +28,21 @@ const (
 type Move uint32
 
 // Moving pianos is dangerous. Moving pianos are dangerous.
-func NewMove(p *Position, from, to int) Move {
+func NewMove(p *Position, from, to Square) Move {
 	piece, capture := p.pieces[from], p.pieces[to]
 
 	if p.enpassant != 0 && to == p.enpassant && piece.pawnʔ() {
 		capture = pawn(piece.color()^1)
 	}
 
-	return Move(from | (to << 8) | (int(piece) << 16) | (int(capture) << 20))
+	return Move(int(from) | (int(to) << 8) | (int(piece) << 16) | (int(capture) << 20))
 }
 
-func NewCastle(p *Position, from, to int) Move {
-	return Move(from | (to << 8) | (int(p.pieces[from]) << 16) | isCastle)
+func NewCastle(p *Position, from, to Square) Move {
+	return Move(int(from) | (int(to) << 8) | (int(p.pieces[from]) << 16) | isCastle)
 }
 
-func NewPromotion(p *Position, from, to int) (Move, Move, Move, Move) {
+func NewPromotion(p *Position, from, to Square) (Move, Move, Move, Move) {
 	return NewMove(p, from, to).promote(Queen),
 	       NewMove(p, from, to).promote(Rook),
 	       NewMove(p, from, to).promote(Bishop),
@@ -56,7 +56,7 @@ func NewMoveFromNotation(p *Position, e2e4 string) Move {
 	to := square(int(e2e4[3] - '1'), int(e2e4[2] - 'a'))
 
 	// Check if this is a castle.
-	if p.pieces[from].kingʔ() && abs(from - to) == 2 {
+	if p.pieces[from].kingʔ() && abs(int(from) - int(to)) == 2 {
 		return NewCastle(p, from, to)
 	}
 
@@ -129,12 +129,12 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 	if e2e4 == `0-0` || e2e4 == `0-0-0` {
 		kingside, queenside := p.canCastleʔ(p.color)
 		if e2e4 == `0-0` && kingside {
-			from, to := p.king[p.color&1], G1 + p.color * A8
+			from, to := p.king[p.color&1], Square(G1 + p.color * A8)
 			move = NewCastle(p, from, to)
 			return
 		}
 		if e2e4 == `0-0-0` && queenside {
-			from, to := p.king[p.color&1], C1 + p.color * A8
+			from, to := p.king[p.color&1], Square(C1 + p.color * A8)
 			move = NewCastle(p, from, to)
 			return
 		}
@@ -150,12 +150,12 @@ func (m Move) someʔ() bool {
 	return m != Move(0)
 }
 
-func (m Move) from() int {
-	return int(m & 0x3F)
+func (m Move) from() Square {
+	return Square(m & 0x3F)
 }
 
-func (m Move) to() int {
-	return int((m >> 8) & 0x3F)
+func (m Move) to() Square {
+	return Square((m >> 8) & 0x3F)
 }
 
 func (m Move) piece() Piece {
@@ -170,8 +170,8 @@ func (m Move) capture() Piece {
 	return Piece((m >> 20) & 0x0F)
 }
 
-func (m Move) split() (from, to int, piece, capture Piece) {
-	return int(m & 0x3F), int((m >> 8) & 0x3F), Piece((m >> 16) & 0x0F), Piece((m >> 20) & 0x0F)
+func (m Move) split() (from, to Square, piece, capture Piece) {
+	return Square(m & 0x3F), Square((m >> 8) & 0x3F), Piece((m >> 16) & 0x0F), Piece((m >> 20) & 0x0F)
 }
 
 func (m Move) promo() Piece {
@@ -212,7 +212,7 @@ func (m Move) quietʔ() bool {
 
 // Returns true for pawn pushes beyond home half of the board.
 func (m Move) pawnAdvanceʔ() bool {
-	return m.piece().pawnʔ() && rank(m.color(), m.to()) > A4H4
+	return m.piece().pawnʔ() && m.to().rank(m.color()) > A4H4
 }
 
 // Returns true is the move is one of the killer moves at given ply.
@@ -255,10 +255,10 @@ func (m Move) notation() string {
 	var buffer bytes.Buffer
 
 	from, to, _, _ := m.split()
-	buffer.WriteByte(byte(col(from)) + 'a')
-	buffer.WriteByte(byte(row(from)) + '1')
-	buffer.WriteByte(byte(col(to)) + 'a')
-	buffer.WriteByte(byte(row(to)) + '1')
+	buffer.WriteByte(byte(from.col()) + 'a')
+	buffer.WriteByte(byte(from.row()) + '1')
+	buffer.WriteByte(byte(to.col()) + 'a')
+	buffer.WriteByte(byte(to.row()) + '1')
 	if m & isPromo != 0 {
 		buffer.WriteByte(m.promo().char() + 32)
 	}
@@ -294,15 +294,15 @@ func (m Move) String() (str string) {
 	if !piece.pawnʔ() {
 		buffer.WriteByte(piece.char())
 	}
-	buffer.WriteByte(byte(col(from)) + 'a')
-	buffer.WriteByte(byte(row(from)) + '1')
+	buffer.WriteByte(byte(from.col()) + 'a')
+	buffer.WriteByte(byte(from.row()) + '1')
 	if capture == 0 {
 		buffer.WriteByte('-')
 	} else {
 		buffer.WriteByte('x')
 	}
-	buffer.WriteByte(byte(col(to)) + 'a')
-	buffer.WriteByte(byte(row(to)) + '1')
+	buffer.WriteByte(byte(to.col()) + 'a')
+	buffer.WriteByte(byte(to.row()) + '1')
 	if promo := m.promo(); promo.someʔ() {
 		buffer.WriteByte(promo.char())
 	}
