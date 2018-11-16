@@ -266,7 +266,7 @@ func (e *Evaluation) rooks(our int, maskSafe Bitmask, unsafeKingʔ bool) (score,
 			// Kingside box: king on E/F/G vs. rook on H/G/F files.
 			if column > kingColumn && rookBoxH[our].onʔ(square) && kingBoxH[our].onʔ(kingSquare) {
 				score.midgame -= (rookBoxed.midgame - safeSquares * 10)
-				if p.castles & castleKingside[our] == 0 {
+				if p.castles.offʔ(Square(H1).flip(their)) {
 					score.midgame -= (rookBoxed.midgame - safeSquares * 10)
 				}
 			}

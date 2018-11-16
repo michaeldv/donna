@@ -94,7 +94,7 @@ func (p *Position) makeMove(move Move) *Position {
 	pp.enpassant, pp.reversibleʔ = 0, true
 	if capture == 0 {
 		if p.enpassant != 0 {
-			pp.id ^= hashEnpassant[p.enpassant & 7]
+			pp.id ^= polyglotRandomEp[p.enpassant & 7]
 		}
 	} else if p.enpassant == 0 || to != p.enpassant {
 		pp.count50, pp.reversibleʔ = 0, false
@@ -105,7 +105,7 @@ func (p *Position) makeMove(move Move) *Position {
 		pp.count50, pp.reversibleʔ = 0, false
 		if p.enpassant != 0 && to == p.enpassant {
 			pp.captureEnpassant(pawn(their), from, to)
-			pp.id ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
+			pp.id ^= polyglotRandomEp[p.enpassant & 7] // p.enpassant column.
 		}
 		if promo := move.promo(); promo != 0 {
 			pp.promotePawn(piece, from, to, promo)
@@ -113,13 +113,14 @@ func (p *Position) makeMove(move Move) *Position {
 			pp.movePiece(piece, from, to)
 			if from ^ to == 16 && (pawnAttacks[our][from.push(our)] & p.outposts[pawn(their)]).anyʔ() {
 				pp.enpassant = from.push(our) // Save the en-passant square.
-				pp.id ^= hashEnpassant[pp.enpassant & 7]
+				pp.id ^= polyglotRandomEp[pp.enpassant & 7]
 			}
 		}
 	} else if piece.kingʔ() {
 		pp.movePiece(piece, from, to)
 		pp.count50++
-		pp.king[our&1] = to
+		pp.king[our] = to
+		pp.castles &= ^maskRank[7*our] // Both castling rights are gone.
 		if move.castleʔ() {
 			pp.reversibleʔ = false
 			if to == from + 2 {
@@ -136,8 +137,8 @@ func (p *Position) makeMove(move Move) *Position {
 	// Set up the board bitmask, update castle rights, finish off incremental
 	// hash value, and flip the color.
 	pp.board = pp.outposts[White] | pp.outposts[Black]
-	pp.castles &= castleRights[from] & castleRights[to]
-	pp.id ^= hashCastle[p.castles] ^ hashCastle[pp.castles]
+	pp.castles &= ^(bit(from) | bit(to))
+	pp.id ^= p.polycast() ^ pp.polycast()
 	pp.id ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
 	pp.score = Unknown
@@ -154,7 +155,7 @@ func (p *Position) makeNullMove() *Position {
 
 	// Flipping side to move obviously invalidates the enpassant square.
 	if pp.enpassant != 0 {
-		pp.id ^= hashEnpassant[pp.enpassant & 7]
+		pp.id ^= polyglotRandomEp[pp.enpassant & 7]
 		pp.enpassant = 0
 	}
 	pp.id ^= polyglotRandomWhite
@@ -173,7 +174,7 @@ func (p *Position) undoLastMove() *Position {
 }
 
 func (p *Position) inCheckʔ(our int) bool {
-	return p.attackedʔ(our^1, p.king[our&1])
+	return p.attackedʔ(our^1, p.king[our])
 }
 
 func (p *Position) nlNodeʔ() bool {
@@ -224,17 +225,18 @@ func (p *Position) thirdRepetitionʔ() bool {
 // Returns a pair of booleans that indicate whether given side is allowed to
 // castle kingside and queenside.
 func (p *Position) canCastleʔ(our int) (kingside, queenside bool) {
+	their := our^1
 
 	// Start off with simple checks.
-	kingside = (p.castles & castleKingside[our&1] != 0) && (gapKing[our&1] & p.board).noneʔ()
-	queenside = (p.castles & castleQueenside[our&1] != 0) && (gapQueen[our&1] & p.board).noneʔ()
+	kingside = p.castles.onʔ(Square(H1).flip(their)) && (gapKing[our] & p.board).noneʔ()
+	queenside = p.castles.onʔ(Square(A1).flip(their)) && (gapQueen[our] & p.board).noneʔ()
 
 	// If it still looks like the castles are possible perform more expensive
 	// final check.
 	if kingside || queenside {
-		attacks := p.allAttacks(our^1)
-		kingside = kingside && (castleKing[our&1] & attacks).noneʔ()
-		queenside = queenside && (castleQueen[our&1] & attacks).noneʔ()
+		attacks := p.allAttacks(their)
+		kingside = kingside && (castleKing[our] & attacks).noneʔ()
+		queenside = queenside && (castleQueen[our] & attacks).noneʔ()
 	}
 
 	return kingside, queenside
@@ -254,7 +256,7 @@ func (p *Position) pins(sq Square) (bitmask Bitmask) {
 		blockers := maskBlock[sq][target] & ^bit(target) & p.board
 
 		if blockers.singleʔ() {
-			bitmask |= blockers & p.outposts[our&1] // Only friendly pieces are pinned.
+			bitmask |= blockers & p.outposts[our] // Only friendly pieces are pinned.
 		}
 	}
 

@@ -287,7 +287,7 @@ func TestPositionMoves200(t *testing.T) { // 1. e4
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.castles, uint8(0x0F))
+	expect.Eq(t, p.castles, bit(A1)|bit(H1)|bit(A8)|bit(H8))
 }
 
 func TestPositionMoves210(t *testing.T) { // 1. e4 d5
@@ -303,7 +303,7 @@ func TestPositionMoves210(t *testing.T) { // 1. e4 d5
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.castles, uint8(0x0F))
+	expect.Eq(t, p.castles, bit(A1)|bit(H1)|bit(A8)|bit(H8))
 }
 
 // 1. e4 d5 2. e5
@@ -321,7 +321,7 @@ func TestPositionMoves220(t *testing.T) {
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.castles, uint8(0x0F))
+	expect.Eq(t, p.castles, bit(A1)|bit(H1)|bit(A8)|bit(H8))
 }
 
 // 1. e4 d5 2. e5 f5 <-- Enpassant
@@ -340,7 +340,7 @@ func TestPositionMoves230(t *testing.T) {
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(F6))
-	expect.Eq(t, p.castles, uint8(0x0F))
+	expect.Eq(t, p.castles, bit(A1)|bit(H1)|bit(A8)|bit(H8))
 }
 
 // 1. e4 d5 2. e5 f5 3. Ke2 <-- White Castle
@@ -360,7 +360,7 @@ func TestPositionMoves240(t *testing.T) {
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.castles, castleKingside[Black]|castleQueenside[Black])
+	expect.Eq(t, p.castles, bit(A8)|bit(H8))
 }
 
 // 1. e4 d5 2. e5 f5 3. Ke2 Kf7 <-- Black Castle
@@ -381,7 +381,7 @@ func TestPositionMoves250(t *testing.T) {
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.castles, uint8(0))
+	expect.Eq(t, p.castles, maskNone)
 }
 
 // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 <-- Enpassant
@@ -401,7 +401,7 @@ func TestPositionMoves260(t *testing.T) {
 
 	expect.Eq(t, p.balance, len(materialBase) - 1)
 	expect.Eq(t, p.enpassant, uint8(C3))
-	expect.Eq(t, p.castles, uint8(0x0F))
+	expect.Eq(t, p.castles, bit(A1)|bit(H1)|bit(A8)|bit(H8))
 }
 
 // 1. a2a4 b7b5 2. h2h4 b5b4 3. c2c4 b4xc3 4. Ra1a3 <-- Enpassant/Castle
@@ -416,14 +416,14 @@ func TestPositionMoves270(t *testing.T) {
 	p = p.makeMove(NewMove(p, A1, A3))
 	hash, pawnHash := p.polyglot()
 
-	expect.Eq(t, hash, uint64(0xB5C8873B19358920))
+	expect.Eq(t, hash, uint64(0x757A2F72A20ECBA0))
 	expect.Eq(t, hash, p.id)
 	expect.Eq(t, pawnHash, uint64(0xA1AF43655164A4B8))
 	expect.Eq(t, pawnHash, p.pid)
 
 	expect.Eq(t, p.balance, len(materialBase) - 1 - materialBalance[Pawn])
 	expect.Eq(t, p.enpassant, uint8(0))
-	expect.Eq(t, p.castles, castleKingside[White] | castleKingside[Black] | castleQueenside[Black])
+	expect.Eq(t, p.castles, bit(H1)|bit(A8)|bit(H8))
 }
 
 // Incremental material hash calculation.

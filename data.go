@@ -71,19 +71,6 @@ const (
 	maskH1A8 = Bitmask(0x0102040810204080)
 )
 
-var castleKingside = [2]uint8{ 1, 4 }
-var castleQueenside = [2]uint8{ 2, 8 }
-var castleRights = [64]uint8{
-	13, 15, 15, 15, 12, 15, 15, 14,
-	15, 15, 15, 15, 15, 15, 15, 15,
-	15, 15, 15, 15, 15, 15, 15, 15,
-	15, 15, 15, 15, 15, 15, 15, 15,
-	15, 15, 15, 15, 15, 15, 15, 15,
-	15, 15, 15, 15, 15, 15, 15, 15,
-	15, 15, 15, 15, 15, 15, 15, 15,
-	 7, 15, 15, 15,  3, 15, 15, 11,
-}
-
 var reMove = regexp.MustCompile(`([KQRBNEC]?)([a-h])([1-8])`)
 
 var maskRank = [8]Bitmask{ // 0 to 8
@@ -344,7 +331,7 @@ var polyglotRandomCastle = [4]uint64{
 	0x1EF6E6DBB1961EC9, // polyglotRandom[771] (black queenside)
 }
 
-var polyglotRandomEnpassant = [8]uint64{
+var polyglotRandomEp = [8]uint64{
 	0x70CC73D90BC26E24, // polyglotRandom[772 + A1]
 	0xE21A6B35DF0C3AD7, // polyglotRandom[772 + B1]
 	0x003A93D8B2806962, // polyglotRandom[772 + C1]

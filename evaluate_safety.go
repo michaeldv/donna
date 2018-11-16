@@ -121,6 +121,7 @@ func (e *Evaluation) kingSafety(our int) (score Score) {
 }
 
 func (e *Evaluation) kingCover(our int) (score Score) {
+	their := our^1
 	p, square := e.position, e.position.king[our]
 
 	// Don't bother with the cover if the king is too far out.
@@ -128,10 +129,10 @@ func (e *Evaluation) kingCover(our int) (score Score) {
 		// If we still have castle rights encourage castle pawns to stay intact
 		// by scoring least safe castle.
 		score.midgame = e.kingCoverBonus(our, square)
-		if p.castles & castleKingside[our] != 0 {
+		if p.castles.onʔ(Square(H1).flip(their)) {
 			score.midgame = max(score.midgame, e.kingCoverBonus(our, homeKing[our] + 2))
 		}
-		if p.castles & castleQueenside[our] != 0 {
+		if p.castles.onʔ(Square(A1).flip(their)) {
 			score.midgame = max(score.midgame, e.kingCoverBonus(our, homeKing[our] - 2))
 		}
 	}

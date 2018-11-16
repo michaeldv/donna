@@ -22,9 +22,10 @@ type Position struct {		 // 224 bytes long.
 	id           uint64	 // Polyglot hash value for the position.
 	pid          uint64	 // Polyglot hash value for position's pawn structure.
 	board        Bitmask	 // Bitmask of all pieces on the board.
+	castles      Bitmask	 // Bitmask with corner squares set when castles are allowed.
+	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	king         [2]Square	 // King's square for both colors.
 	pieces       [64]Piece	 // Array of 64 squares with pieces on them.
-	outposts     [14]Bitmask // Bitmasks of each piece on the board; [0] all white, [1] all black.
 	enpassant    Square	 // En-passant square caused by previous move.
 	tally        Score	 // Positional valuation score based on PST.
 	balance      int	 // Material balance index.
@@ -32,7 +33,6 @@ type Position struct {		 // 224 bytes long.
 	color        int	 // Side to make next move.
 	count50      int	 // 50 moves rule counter.
 	reversibleʔ  bool	 // Is this position reversible?
-	castles      uint8	 // Castle rights mask.
 }
 
 func NewPosition(game *Game, white, black string) *Position {
@@ -41,18 +41,18 @@ func NewPosition(game *Game, white, black string) *Position {
 
 	p.setupSide(white, White).setupSide(black, Black)
 
-	p.castles = castleKingside[White] | castleQueenside[White] | castleKingside[Black] | castleQueenside[Black]
+	p.castles = bit(A1) | bit(H1) | bit(A8) | bit(H8)
 	if p.pieces[E1] != King || p.pieces[H1] != Rook {
-		p.castles &= ^castleKingside[White]
+		p.castles &= ^bit(H1)
 	}
 	if p.pieces[E1] != King || p.pieces[A1] != Rook {
-		p.castles &= ^castleQueenside[White]
+		p.castles &= ^bit(A1)
 	}
 	if p.pieces[E8] != BlackKing || p.pieces[H8] != BlackRook {
-		p.castles &= ^castleKingside[Black]
+		p.castles &= ^bit(H8)
 	}
 	if p.pieces[E8] != BlackKing || p.pieces[A8] != BlackRook {
-		p.castles &= ^castleQueenside[Black]
+		p.castles &= ^bit(A8)
 	}
 
 	for i, piece := range p.pieces {
@@ -123,10 +123,10 @@ func (p *Position) setupSide(str string, our int) *Position {
 			case 'E':
 				p.enpassant = square
 			case 'C':
-				if (square == Square(C1 + our)) || (square == Square(C8 + our)) {
-					p.castles |= castleQueenside[our&1]
-				} else if (square == Square(G1 + our)) || (square == Square(G8 + our)) {
-					p.castles |= castleKingside[our&1]
+				if square == Square(C1) || square == Square(C8) {
+					p.castles |= bit(square - 2)
+				} else if square == Square(G1) || square == Square(G8) {
+					p.castles |= bit(square + 2)
 				}
 			default:
 				// When everything else fails, read the instructions.
@@ -212,13 +212,13 @@ func NewPositionFromFEN(game *Game, fen string) *Position {
 	for _, char := range(matches[2]) {
 		switch(char) {
 		case 'K':
-			p.castles |= castleKingside[White]
+			p.castles |= bit(H1)
 		case 'Q':
-			p.castles |= castleQueenside[White]
+			p.castles |= bit(A1)
 		case 'k':
-			p.castles |= castleKingside[Black]
+			p.castles |= bit(H8)
 		case 'q':
-			p.castles |= castleQueenside[Black]
+			p.castles |= bit(A8)
 		case '-':
 			// No castling rights.
 		}
@@ -259,15 +259,25 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 		}
 	}
 
-	hash ^= hashCastle[p.castles]
+	hash ^= p.polycast()
 	if p.enpassant != 0 {
-		hash ^= hashEnpassant[p.enpassant & 7] // p.enpassant column.
+		hash ^= polyglotRandomEp[p.enpassant & 7] // p.enpassant column.
 	}
 	if p.color == White {
 		hash ^= polyglotRandomWhite
 	}
 
 	return hash, pawnHash
+}
+
+// Computes polyglot hash for the castling rights.
+func (p *Position) polycast() (hash uint64) {
+	if p.castles.onʔ(Square(A1)) { hash ^= polyglotRandomCastle[0] }
+	if p.castles.onʔ(Square(H1)) { hash ^= polyglotRandomCastle[1] }
+	if p.castles.onʔ(Square(A8)) { hash ^= polyglotRandomCastle[2] }
+	if p.castles.onʔ(Square(H8)) { hash ^= polyglotRandomCastle[3] }
+
+	return hash
 }
 
 // Computes positional valuation score based on PST. When making a move the
@@ -369,18 +379,18 @@ func (p *Position) fen() (fen string) {
 	}
 
 	// Castle rights for both sides, if any.
-	if p.castles & 0x0F != 0 {
+	if p.castles.anyʔ() {
 		fen += ` `
-		if p.castles & castleKingside[White] != 0 {
+		if p.castles.onʔ(Square(H1)) {
 			fen += `K`
 		}
-		if p.castles & castleQueenside[White] != 0 {
+		if p.castles.onʔ(Square(A1)) {
 			fen += `Q`
 		}
-		if p.castles & castleKingside[Black] != 0 {
+		if p.castles.onʔ(Square(H8)) {
 			fen += `k`
 		}
-		if p.castles & castleQueenside[Black] != 0 {
+		if p.castles.onʔ(Square(A8)) {
 			fen += `q`
 		}
 	} else {
@@ -409,58 +419,51 @@ func (p *Position) dcf() string {
 	fancy := engine.fancyʔ
 	engine.fancyʔ = false; defer func() { engine.fancyʔ = fancy }()
 
-	encode := func (sq Square) string {
-		var buffer bytes.Buffer
-
-		buffer.WriteString(sq.str())
-
-		return buffer.String()
-	}
-
 	var pieces [2][]string
 
 	for color := White; color <= Black; color++ {
 		// Right to move and (TODO) move number.
 		if color == p.color && color == Black {
-			pieces[color&1] = append(pieces[color&1], `M`)
+			pieces[color] = append(pieces[color], `M`)
 		}
 
 		// King.
-		pieces[color&1] = append(pieces[color&1], `K` + encode(p.king[color&1]))
+		pieces[color] = append(pieces[color], `K` + p.king[color].str())
 
 		// Queens, Rooks, Bishops, and Knights.
 		for outposts := p.outposts[queen(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `Q` + encode(outposts.first()))
+			pieces[color] = append(pieces[color], `Q` + outposts.first().str())
 		}
 		for outposts := p.outposts[rook(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `R` + encode(outposts.first()))
+			pieces[color] = append(pieces[color], `R` + outposts.first().str())
 		}
 		for outposts := p.outposts[bishop(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `B` + encode(outposts.first()))
+			pieces[color] = append(pieces[color], `B` + outposts.first().str())
 		}
 		for outposts := p.outposts[knight(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], `N` + encode(outposts.first()))
+			pieces[color] = append(pieces[color], `N` + outposts.first().str())
 		}
 
 		// Castle rights.
-		if p.castles & castleQueenside[color&1] == 0 || p.castles & castleKingside[color&1] == 0 {
-			if p.castles & castleQueenside[color&1] != 0 {
-				pieces[color&1] = append(pieces[color&1], `C` + encode(Square(C1 + 56 * color)))
+		kside, qside := bit(H1) | bit(H8), bit(A1) | bit(A8)
+		if (p.castles & kside).noneʔ() || (p.castles & qside).noneʔ() {
+			if (p.castles & kside).anyʔ() {
+				pieces[color] = append(pieces[color], `C` + Square(G1 + 56 * color).str())
 			}
-			if p.castles & castleKingside[color&1] != 0 {
-				pieces[color&1] = append(pieces[color&1], `C` + encode(Square(G1 + 56 * color)))
+			if (p.castles & qside).anyʔ() {
+				pieces[color] = append(pieces[color], `C` + Square(C1 + 56 * color).str())
 			}
 		}
 
 		// En-passant square if any. Note that this gets assigned to the
 		// current side to move.
 		if p.enpassant != 0 && color == p.color {
-			pieces[color&1] = append(pieces[color&1], `E` + encode(p.enpassant))
+			pieces[color] = append(pieces[color], `E` + p.enpassant.str())
 		}
 
 		// Pawns.
 		for outposts := p.outposts[pawn(color)]; outposts.anyʔ(); outposts = outposts.pop() {
-			pieces[color&1] = append(pieces[color&1], encode(outposts.first()))
+			pieces[color] = append(pieces[color], outposts.first().str())
 		}
 	}
 

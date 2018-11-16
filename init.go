@@ -50,10 +50,6 @@ var (
 	maskSquare[2][64]Bitmask   // King doesn't have the right to move.
 	maskSquareEx[2][64]Bitmask // King has the right to move (border bits added).
 
-	// Two arrays to simplify incremental polyglot hash computation.
-	hashCastle [16]uint64
-	hashEnpassant [8]uint64
-
 	// Distance between two squares.
 	distance [64][64]int
 
@@ -160,28 +156,6 @@ func initMasks() {
 }
 
 func initArrays() {
-
-	// Castle hash values.
-	for mask := uint8(0); mask < 16; mask++ {
-		if mask & castleKingside[White] != 0 {
-			hashCastle[mask] ^= polyglotRandomCastle[0]
-		}
-		if mask & castleQueenside[White] != 0 {
-			hashCastle[mask] ^= polyglotRandomCastle[1]
-		}
-		if mask & castleKingside[Black] != 0 {
-			hashCastle[mask] ^= polyglotRandomCastle[2]
-		}
-		if mask & castleQueenside[Black] != 0 {
-			hashCastle[mask] ^= polyglotRandomCastle[3]
-		}
-	}
-
-	// Enpassant hash values.
-	for col := A1; col <= H1; col++ {
-		hashEnpassant[col] = polyglotRandomEnpassant[col]
-	}
-
 	// Late move reductions.
 	for i := 0; i < 64; i++ {
 		for j := 0; j < 64; j++ {

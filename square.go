@@ -54,12 +54,9 @@ func (sq Square) same() Bitmask {
 	return ^maskDark
 }
 
-// Resturns a distance between two squares *when they are on the same rank*.
+// Resturns a distance between two squares.
 func (sq Square) upto(square Square) int {
-	if sq > square {
-		return int(sq - square)
-	}
-	return int(square - sq)
+	return distance[sq][square]
 }
 
 // Returns a square in front of the given square.
