@@ -30,7 +30,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	for bm := p.outposts[bishop(our)] | p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
 		diagonal := (r != from.row() && c != from.col())
-		for bm := p.bishopAttacksAt(from, their) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
+		for bm := p.bishopMoves(from) & checks & friendly; bm.anyʔ(); bm = bm.pop() {
 			to := bm.first()
 			if piece := p.pieces[to]; piece == 0 {
 				// Empty square: simply move a bishop to check.
@@ -49,7 +49,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					gen.movePawn(to, p.targets(to) & empty & ^prohibit)
 				case King:
 					// Make sure the king steps out of attack diaginal.
-					gen.moveKing(to, p.targets(to) & empty & ^maskBlock[from][square])
+					gen.moveKing(to, kingMoves[to] & empty & ^maskBlock[from][square])
 				default:
 					gen.movePiece(to, p.targets(to) & empty)
 				}
@@ -58,8 +58,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 		if p.pieces[from].queenʔ() {
 			// Queen could move straight as a rook and check diagonally as a bishop
 			// or move diagonally as a bishop and check straight as a rook.
-			targets := (p.rookAttacksAt(from, our) & checks) |
-				   (p.bishopAttacksAt(from, our) & p.rookAttacksAt(square, our))
+			targets := (p.rookMoves(from) & checks) | (p.bishopMoves(from) & p.rookMoves(square))
 			gen.movePiece(from, targets & empty)
 		}
 	}
@@ -99,7 +98,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					} else {
 						prohibit = maskFile[c]
 					}
-					gen.moveKing(to, p.targets(to) & empty & ^prohibit)
+					gen.moveKing(to, kingMoves[to] & empty & ^prohibit)
 				default:
 					gen.movePiece(to, p.targets(to) & empty)
 				}

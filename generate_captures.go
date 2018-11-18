@@ -47,7 +47,7 @@ func (gen *MoveGen) pieceCaptures(our, their int) *MoveGen {
 	}
 	if gen.p.outposts[king(our)].anyʔ() {
 		square := gen.p.king[our&1]
-		gen.moveKing(square, gen.p.targets(square) & opponent)
+		gen.moveKing(square, kingMoves[square] & opponent)
 	}
 
 	return gen
