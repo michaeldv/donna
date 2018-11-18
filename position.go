@@ -258,11 +258,7 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 			pawnHash ^= random
 		}
 	}
-
-	hash ^= p.polycast()
-	if p.enpassant != 0 {
-		hash ^= polyglotRandomEp[p.enpassant & 7] // p.enpassant column.
-	}
+	hash ^= p.miniglot()
 	if p.color == White {
 		hash ^= polyglotRandomWhite
 	}
@@ -270,12 +266,13 @@ func (p *Position) polyglot() (hash, pawnHash uint64) {
 	return hash, pawnHash
 }
 
-// Computes polyglot hash for the castling rights.
-func (p *Position) polycast() (hash uint64) {
-	if p.castles.onʔ(Square(A1)) { hash ^= polyglotRandomCastle[0] }
-	if p.castles.onʔ(Square(H1)) { hash ^= polyglotRandomCastle[1] }
-	if p.castles.onʔ(Square(A8)) { hash ^= polyglotRandomCastle[2] }
-	if p.castles.onʔ(Square(H8)) { hash ^= polyglotRandomCastle[3] }
+// Computes polyglot hash for the enpassant square and castling rights mask.
+func (p *Position) miniglot() (hash uint64) {
+	if p.enpassant != 0 { hash ^= polyglotRandomEp[p.enpassant & 7] }
+	if p.castles.onʔ(Square(A1))  { hash ^= polyglotRandomCastle[0] }
+	if p.castles.onʔ(Square(H1))  { hash ^= polyglotRandomCastle[1] }
+	if p.castles.onʔ(Square(A8))  { hash ^= polyglotRandomCastle[2] }
+	if p.castles.onʔ(Square(H8))  { hash ^= polyglotRandomCastle[3] }
 
 	return hash
 }

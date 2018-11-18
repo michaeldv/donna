@@ -92,55 +92,47 @@ func (p *Position) makeMove(move Move) *Position {
 	pp := &tree[node]
 
 	pp.enpassant, pp.reversibleʔ = 0, true
-	if capture == 0 {
-		if p.enpassant != 0 {
-			pp.id ^= polyglotRandomEp[p.enpassant & 7]
-		}
-	} else if p.enpassant == 0 || to != p.enpassant {
+	if capture != 0 && (p.enpassant == 0 || to != p.enpassant) {
 		pp.count50, pp.reversibleʔ = 0, false
 		pp.capturePiece(capture, from, to)
 	}
 
 	if piece.pawnʔ() {
 		pp.count50, pp.reversibleʔ = 0, false
-		if p.enpassant != 0 && to == p.enpassant {
-			pp.captureEnpassant(pawn(their), from, to)
-			pp.id ^= polyglotRandomEp[p.enpassant & 7] // p.enpassant column.
-		}
 		if promo := move.promo(); promo != 0 {
 			pp.promotePawn(piece, from, to, promo)
 		} else {
+			if p.enpassant != 0 && to == p.enpassant {
+				pp.captureEnpassant(pawn(their), from, to)
+			}
 			pp.movePiece(piece, from, to)
 			if from ^ to == 16 && (pawnAttacks[our][from.push(our)] & p.outposts[pawn(their)]).anyʔ() {
 				pp.enpassant = from.push(our) // Save the en-passant square.
-				pp.id ^= polyglotRandomEp[pp.enpassant & 7]
-			}
-		}
-	} else if piece.kingʔ() {
-		pp.movePiece(piece, from, to)
-		pp.count50++
-		pp.king[our] = to
-		pp.castles &= ^maskRank[7*our] // Both castling rights are gone.
-		if move.castleʔ() {
-			pp.reversibleʔ = false
-			if to == from + 2 {
-				pp.movePiece(rook(our), to + 1, to - 1)
-			} else if to == from - 2 {
-				pp.movePiece(rook(our), to - 2, to + 1)
 			}
 		}
 	} else {
 		pp.movePiece(piece, from, to)
 		pp.count50++
+		if piece.kingʔ() {
+			pp.king[our] = to
+			pp.castles &= ^maskRank[7*our] // Both castling rights are gone.
+			if move.castleʔ() {
+				pp.reversibleʔ = false
+				if to == from + 2 {
+					pp.movePiece(rook(our), to + 1, to - 1)
+				} else if to == from - 2 {
+					pp.movePiece(rook(our), to - 2, to + 1)
+				}
+			}
+		}
 	}
 
 	// Set up the board bitmask, update castle rights, finish off incremental
-	// hash value, and flip the color.
+	// position id value, and flip the color.
 	pp.board = pp.outposts[White] | pp.outposts[Black]
 	pp.castles &= ^(bit(from) | bit(to))
-	pp.id ^= p.polycast() ^ pp.polycast()
-	pp.id ^= polyglotRandomWhite
-	pp.color ^= 1 // <-- Flip side to move.
+	pp.id ^= p.miniglot() ^ pp.miniglot() ^ polyglotRandomWhite
+	pp.color = their // <-- Flip side to move.
 	pp.score = Unknown
 
 	return &tree[node] // pp
