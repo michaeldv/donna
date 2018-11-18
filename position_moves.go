@@ -160,7 +160,6 @@ func (p *Position) makeNullMove() *Position {
 	}
 	pp.id ^= polyglotRandomWhite
 	pp.color ^= 1 // <-- Flip side to move.
-	pp.count50++
 
 	return &tree[node] // pp
 }

@@ -43,10 +43,9 @@ func NewCastle(p *Position, from, to Square) Move {
 }
 
 func NewPromotion(p *Position, from, to Square) (Move, Move, Move, Move) {
-	return NewMove(p, from, to).promote(Queen),
-	       NewMove(p, from, to).promote(Rook),
-	       NewMove(p, from, to).promote(Bishop),
-	       NewMove(p, from, to).promote(Knight)
+	move := NewMove(p, from, to)
+
+	return move.promote(Queen), move.promote(Rook), move.promote(Bishop), move.promote(Knight)
 }
 
 // Decodes a string in coordinate notation and returns a move. The string is
