@@ -51,15 +51,15 @@ func (p *Position) targets(sq Square) (bitmask Bitmask) {
 		empty := ^p.board
 		bitmask  = bit(sq).up(our) & empty
 		bitmask |= bitmask.up(our) & empty & maskRank[A4H4 + our]
-		bitmask |= pawnAttacks[our&1][sq] & p.outposts[their&1]
+		bitmask |= pawnAttacks[our][sq] & p.outposts[their]
 
 		// If the last move set the en-passant square and it is diagonally adjacent
 		// to the current pawn, then add en-passant to the pawn's attack targets.
-		if p.enpassant != 0 && maskPawn[our&1][p.enpassant].onʔ(sq) {
+		if p.enpassant != 0 && maskPawn[our][p.enpassant].onʔ(sq) {
 			bitmask.set(p.enpassant)
 		}
 	} else {
-		bitmask = p.attacksFor(sq, piece) & ^p.outposts[our&1]
+		bitmask = p.attacksFor(sq, piece) & ^p.outposts[our]
 	}
 
 	return bitmask
@@ -72,7 +72,7 @@ func (p *Position) attacks(sq Square) Bitmask {
 func (p *Position) attacksFor(sq Square, piece Piece) (bitmask Bitmask) {
 	switch piece.kind() {
 	case Pawn:
-		return pawnAttacks[piece.color()&1][sq]
+		return pawnAttacks[piece.color()][sq]
 	case Knight:
 		return knightMoves[sq]
 	case Bishop:
@@ -127,7 +127,7 @@ func (p *Position) allAttacks(our int) (bitmask Bitmask) {
 // the evaluation.
 func (p *Position) attackers(our int, sq Square, board Bitmask) (bitmask Bitmask) {
 	bitmask  = knightMoves[sq] & p.outposts[knight(our)]
-	bitmask |= maskPawn[our&1][sq] & p.outposts[pawn(our)]
+	bitmask |= maskPawn[our][sq] & p.outposts[pawn(our)]
 	bitmask |= kingMoves[sq] & p.outposts[king(our)]
 	bitmask |= p.rookMovesAt(sq, board) & (p.outposts[rook(our)] | p.outposts[queen(our)])
 	bitmask |= p.bishopMovesAt(sq, board) & (p.outposts[bishop(our)] | p.outposts[queen(our)])
@@ -137,7 +137,7 @@ func (p *Position) attackers(our int, sq Square, board Bitmask) (bitmask Bitmask
 
 func (p *Position) attackedʔ(our int, sq Square) bool {
 	return (knightMoves[sq] & p.outposts[knight(our)]).anyʔ() ||
-	       (maskPawn[our&1][sq] & p.outposts[pawn(our)]).anyʔ() ||
+	       (maskPawn[our][sq] & p.outposts[pawn(our)]).anyʔ() ||
 	       (kingMoves[sq] & p.outposts[king(our)]).anyʔ() ||
 	       (p.rookMoves(sq) & (p.outposts[rook(our)] | p.outposts[queen(our)])).anyʔ() ||
 	       (p.bishopMoves(sq) & (p.outposts[bishop(our)] | p.outposts[queen(our)])).anyʔ()
@@ -188,26 +188,26 @@ func (p *Position) queenAttacks(our int) (bitmask Bitmask) {
 }
 
 func (p *Position) kingAttacks(our int) Bitmask {
-	return kingMoves[p.king[our&1]]
+	return kingMoves[p.king[our]]
 }
 
 func (p *Position) knightAttacksAt(sq Square, our int) (bitmask Bitmask) {
-	return knightMoves[sq] & ^p.outposts[our&1]
+	return knightMoves[sq] & ^p.outposts[our]
 }
 
 func (p *Position) bishopAttacksAt(sq Square, our int) (bitmask Bitmask) {
-	return p.bishopMoves(sq) & ^p.outposts[our&1]
+	return p.bishopMoves(sq) & ^p.outposts[our]
 }
 
 func (p *Position) rookAttacksAt(sq Square, our int) (bitmask Bitmask) {
-	return p.rookMoves(sq) & ^p.outposts[our&1]
+	return p.rookMoves(sq) & ^p.outposts[our]
 }
 
 func (p *Position) queenAttacksAt(sq Square, our int) (bitmask Bitmask) {
-	return p.queenMoves(sq) & ^p.outposts[our&1]
+	return p.queenMoves(sq) & ^p.outposts[our]
 }
 
 func (p *Position) kingAttacksAt(sq Square, our int) Bitmask {
-	return kingMoves[sq] & ^p.outposts[our&1]
+	return kingMoves[sq] & ^p.outposts[our]
 }
 

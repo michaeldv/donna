@@ -12,11 +12,11 @@ package donna
 func (gen *MoveGen) generateChecks() *MoveGen {
 	p := gen.p
 	our, their := p.colors()
-	square := p.king[their&1]
+	square := p.king[their]
 	r, c := square.coordinate()
 	prohibit := maskNone
 	empty := ^p.board
-	friendly := ^p.outposts[their&1]
+	friendly := ^p.outposts[their]
 
 	// Non-capturing Knight checks.
 	checks := knightMoves[square]
@@ -109,7 +109,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	// Non-capturing Pawn checks.
 	for bm := p.outposts[pawn(our)] & maskIsolated[c]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
-		if bm := maskPawn[our&1][square] & p.targets(from); bm.anyʔ() {
+		if bm := maskPawn[our][square] & p.targets(from); bm.anyʔ() {
 			gen.add(NewMove(p, from, bm.first()))
 		}
 	}
