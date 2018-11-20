@@ -8,8 +8,7 @@
 
 package donna
 
-func (gen *MoveGen) generateEvasions() *MoveGen {
-	p := gen.p
+func (gen *MoveGen) generateEvasions(p *Position) *MoveGen {
 	our, their := p.colors()
 	square := p.king[our]
 
@@ -40,12 +39,12 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 		if p.pieces[attackSquare] != pawn(their) {
 			retreats &= maskEvade[square][attackSquare]
 		}
-		return gen.movePiece(square, retreats)
+		return gen.movePiece(p, square, retreats)
 	}
 
 	// Generate king retreats. Since castle is not an option there is no
-	// reason to use moveKing().
-	gen.movePiece(square, retreats)
+	// reason to use `moveKing()`.
+	gen.movePiece(p, square, retreats)
 
 	// Pawn captures: do we have any pawns available that could capture
 	// the attacking piece?
@@ -103,7 +102,7 @@ func (gen *MoveGen) generateEvasions() *MoveGen {
 	// queen moves that evade the check.
 	for bm := p.outposts[our] & ^p.outposts[pawn(our)] & ^p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
-		gen.movePiece(from, p.targets(from) & block)
+		gen.movePiece(p, from, p.targets(from) & block)
 	}
 
 	return gen

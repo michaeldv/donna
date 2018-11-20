@@ -16,9 +16,8 @@ func (gen *MoveGen) addQuiet(move Move) *MoveGen {
 
 // Generates pseudo-legal moves that preserve material balance, i.e.
 // no captures or pawn promotions are allowed.
-func (gen *MoveGen) generateQuiets() *MoveGen {
-	p := gen.p
-	our := p.color
+func (gen *MoveGen) generateQuiets(p *Position) *MoveGen {
+	our := p.color; their := our^1
 	empty := ^p.board
 
 	// Castles.
@@ -36,50 +35,50 @@ func (gen *MoveGen) generateQuiets() *MoveGen {
 	// Pawns.
 	last := let(our == White, 7, 0)
 	for bm := p.outposts[pawn(our)].up(our) & empty & ^maskRank[last]; bm.anyʔ(); bm = bm.pop() {
-		square := bm.first()
-		forward, backward := square.push(our), square.push(our^1)
-		if square.rank(our) == 2 && p.pieces[forward].noneʔ() {
-			gen.addQuiet(NewMove(gen.p, backward, forward)) // Jump.
+		sq := bm.first()
+		forward, backward := sq.push(our), sq.push(their)
+		if sq.rank(our) == 2 && p.pieces[forward].noneʔ() {
+			gen.addQuiet(NewMove(p, backward, forward)) // Jump.
 		}
-		gen.addQuiet(NewMove(gen.p, backward, square)) // Push.
+		gen.addQuiet(NewMove(p, backward, sq)) // Push.
 	}
 
 	// Knights.
 	for bm := p.outposts[knight(our)]; bm.anyʔ(); bm = bm.pop() {
-		square := bm.first()
-		for bm := knightMoves[square] & empty; bm.anyʔ(); bm = bm.pop() {
-			gen.addQuiet(NewMove(p, square, bm.first()))
+		sq := bm.first()
+		for bm := knightMoves[sq] & empty; bm.anyʔ(); bm = bm.pop() {
+			gen.addQuiet(NewMove(p, sq, bm.first()))
 		}
 	}
 
 	// Bishops.
 	for bm := p.outposts[bishop(our)]; bm.anyʔ(); bm = bm.pop() {
-		square := bm.first()
-		for bm := p.bishopMoves(square) & empty; bm.anyʔ(); bm = bm.pop() {
-			gen.addQuiet(NewMove(p, square, bm.first()))
+		sq := bm.first()
+		for bm := p.bishopMoves(sq) & empty; bm.anyʔ(); bm = bm.pop() {
+			gen.addQuiet(NewMove(p, sq, bm.first()))
 		}
 	}
 
 	// Rooks.
 	for bm := p.outposts[rook(our)]; bm.anyʔ(); bm = bm.pop() {
-		square := bm.first()
-		for bm := p.rookMoves(square) & empty; bm.anyʔ(); bm = bm.pop() {
-			gen.addQuiet(NewMove(p, square, bm.first()))
+		sq := bm.first()
+		for bm := p.rookMoves(sq) & empty; bm.anyʔ(); bm = bm.pop() {
+			gen.addQuiet(NewMove(p, sq, bm.first()))
 		}
 	}
 
 	// Queens.
 	for bm := p.outposts[queen(our)]; bm.anyʔ(); bm = bm.pop() {
-		square := bm.first()
-		for bm := (p.bishopMoves(square) | p.rookMoves(square)) & empty; bm.anyʔ(); bm = bm.pop() {
-			gen.addQuiet(NewMove(p, square, bm.first()))
+		sq := bm.first()
+		for bm := (p.bishopMoves(sq) | p.rookMoves(sq)) & empty; bm.anyʔ(); bm = bm.pop() {
+			gen.addQuiet(NewMove(p, sq, bm.first()))
 		}
 	}
 
 	// King.
-	square := p.king[our]
-	for bm := (kingMoves[square] & empty); bm.anyʔ(); bm = bm.pop() {
-		gen.addQuiet(NewMove(p, square, bm.first()))
+	sq := p.king[our]
+	for bm := (kingMoves[sq] & empty); bm.anyʔ(); bm = bm.pop() {
+		gen.addQuiet(NewMove(p, sq, bm.first()))
 	}
 
 	return gen

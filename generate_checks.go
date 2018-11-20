@@ -9,8 +9,7 @@
 package donna
 
 // Non-capturing checks.
-func (gen *MoveGen) generateChecks() *MoveGen {
-	p := gen.p
+func (gen *MoveGen) generateChecks(p *Position) *MoveGen {
 	our, their := p.colors()
 	square := p.king[their]
 	r, c := square.coordinate()
@@ -22,7 +21,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 	checks := knightMoves[square]
 	for bm := p.outposts[knight(our)]; bm.anyʔ(); bm = bm.pop() {
 		from := bm.first()
-		gen.movePiece(from, knightMoves[from] & checks & empty)
+		gen.movePiece(p, from, knightMoves[from] & checks & empty)
 	}
 
 	// Non-capturing Bishop or Queen checks.
@@ -46,12 +45,12 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					if p.enpassant != 0 {
 						prohibit.set(p.enpassant)
 					}
-					gen.movePawn(to, p.targets(to) & empty & ^prohibit)
+					gen.movePawn(p, to, p.targets(to) & empty & ^prohibit)
 				case King:
 					// Make sure the king steps out of attack diaginal.
-					gen.moveKing(to, kingMoves[to] & empty & ^maskBlock[from][square])
+					gen.moveKing(p, to, kingMoves[to] & empty & ^maskBlock[from][square])
 				default:
-					gen.movePiece(to, p.targets(to) & empty)
+					gen.movePiece(p, to, p.targets(to) & empty)
 				}
 			}
 		}
@@ -59,7 +58,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 			// Queen could move straight as a rook and check diagonally as a bishop
 			// or move diagonally as a bishop and check straight as a rook.
 			targets := (p.rookMoves(from) & checks) | (p.bishopMoves(from) & p.rookMoves(square))
-			gen.movePiece(from, targets & empty)
+			gen.movePiece(p, from, targets & empty)
 		}
 	}
 
@@ -90,7 +89,7 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					if p.enpassant != 0 {
 						prohibit.set(p.enpassant)
 					}
-					gen.movePawn(to, p.targets(to) & empty & ^prohibit)
+					gen.movePawn(p, to, p.targets(to) & empty & ^prohibit)
 				case King:
 					// Make sure the king steps out of attack file or rank.
 					if from.row() == r {
@@ -98,9 +97,9 @@ func (gen *MoveGen) generateChecks() *MoveGen {
 					} else {
 						prohibit = maskFile[c]
 					}
-					gen.moveKing(to, kingMoves[to] & empty & ^prohibit)
+					gen.moveKing(p, to, kingMoves[to] & empty & ^prohibit)
 				default:
-					gen.movePiece(to, p.targets(to) & empty)
+					gen.movePiece(p, to, p.targets(to) & empty)
 				}
 			}
 		}

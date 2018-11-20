@@ -80,11 +80,11 @@ func (p *Position) searchQuiescence(alpha, beta, depth int, inCheckʔ bool) (sco
 	// Generate check evasions or captures.
 	gen := NewGen(p, ply)
 	if inCheckʔ {
-		gen.generateEvasions().quickRank()
+		gen.generateEvasions(p).quickRank()
 	} else {
-		gen.generateCaptures()
+		gen.generateCaptures(p)
 		if depth == 0 {
-			gen.generateChecks()
+			gen.generateChecks(p)
 		}
 		gen.rank(cachedMove)
 	}

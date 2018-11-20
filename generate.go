@@ -14,11 +14,11 @@ type MoveWithScore struct {
 }
 
 type MoveGen struct {
-	p	*Position
-	list	[]MoveWithScore
-	ply	int
-	head	int
-	pins	Bitmask
+	position  *Position
+	ply	   int
+	head	   int
+	pins	   Bitmask
+	list	 []MoveWithScore
 }
 
 // Pre-allocate move generator array (one entry per ply) to avoid garbage
@@ -31,7 +31,7 @@ var moveList [MaxPly+1]MoveGen
 // array element re-initializing all its data.
 func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen = &moveList[ply]
-	gen.p = p
+	gen.position = p
 	gen.ply = ply
 	gen.head = 0
 	gen.pins = p.pins(p.king[p.color])
@@ -82,7 +82,7 @@ func (gen *MoveGen) nextMove() (move Move) {
 // to avoid filtering out invalid moves on each iteration.
 func (gen *MoveGen) validOnly() *MoveGen {
 	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
-		if !move.validʔ(gen.p, gen.pins) {
+		if !move.validʔ(gen.position, gen.pins) {
 			gen.remove()
 		}
 	}
@@ -94,7 +94,7 @@ func (gen *MoveGen) validOnly() *MoveGen {
 // one valid move.
 func (gen *MoveGen) anyValidʔ() bool {
 	for move := gen.nextMove(); move.someʔ(); move = gen.nextMove() {
-		if move.validʔ(gen.p, gen.pins) {
+		if move.validʔ(gen.position, gen.pins) {
 			return true
 		}
 	}

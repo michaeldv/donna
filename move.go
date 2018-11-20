@@ -89,7 +89,7 @@ func NewMoveFromString(p *Position, e2e4 string) (move Move, validMoves []Move) 
 
 	// Before returning the move make sure it is valid in current position.
 	defer func() {
-		gen := NewMoveGen(p).generateAllMoves().validOnly()
+		gen := NewMoveGen(p).generateAllMoves(p).validOnly()
 		validMoves = gen.allMoves()
 		if move.someʔ() && !gen.amongValidʔ(move) {
 			move = Move(0)

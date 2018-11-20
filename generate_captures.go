@@ -8,28 +8,29 @@
 
 package donna
 
-func (gen *MoveGen) generateCaptures() *MoveGen {
-	our, their := gen.p.colors()
-	return gen.pawnCaptures(our, their).pieceCaptures(our, their)
+func (gen *MoveGen) generateCaptures(p *Position) *MoveGen {
+	return gen.pawnCaptures(p).pieceCaptures(p)
 }
 
 // Generates all pseudo-legal pawn captures and promotions.
-func (gen *MoveGen) pawnCaptures(our, their int) *MoveGen {
-	opponent := gen.p.outposts[their]
+func (gen *MoveGen) pawnCaptures(p *Position) *MoveGen {
+	our, their := p.colors()
+	opponent := p.outposts[their]
 
-	for pawns := gen.p.outposts[pawn(our)]; pawns.anyʔ(); pawns = pawns.pop() {
-		square := pawns.first()
+	for pawns := p.outposts[pawn(our)]; pawns.anyʔ(); pawns = pawns.pop() {
+		sq := pawns.first()
 
 		// For pawns on files 2-6 the moves include captures only,
 		// while for pawns on the 7th file the moves include captures
 		// as well as queen promotion.
-		if square.rank(our) != A7H7 {
-			gen.movePawn(square, gen.p.targets(square) & opponent)
+		if sq.rank(our) != A7H7 {
+			gen.movePawn(p, sq, p.targets(sq) & opponent)
 		} else {
-			for bm := gen.p.targets(square); bm.anyʔ(); bm = bm.pop() {
+			for bm := p.targets(sq); bm.anyʔ(); bm = bm.pop() {
 				target := bm.first()
-				mQ, _, _, _ := NewPromotion(gen.p, square, target)
-				gen.add(mQ)
+				//- mQ, _, _, _ := NewPromotion(p, sq, target)
+				//- gen.add(mQ)
+				gen.add(NewMove(p, sq, target).promote(Queen))
 			}
 		}
 	}
@@ -38,16 +39,18 @@ func (gen *MoveGen) pawnCaptures(our, their int) *MoveGen {
 }
 
 // Generates all pseudo-legal captures by pieces other than pawn.
-func (gen *MoveGen) pieceCaptures(our, their int) *MoveGen {
-	opponent := gen.p.outposts[their]
+func (gen *MoveGen) pieceCaptures(p *Position) *MoveGen {
+	our, their := p.colors()
+	opponent := p.outposts[their]
 
-	for bm := gen.p.outposts[our] ^ gen.p.outposts[pawn(our)] ^ gen.p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
-		square := bm.first()
-		gen.movePiece(square, gen.p.targets(square) & opponent)
+	for bm := p.outposts[our] ^ p.outposts[pawn(our)] ^ p.outposts[king(our)]; bm.anyʔ(); bm = bm.pop() {
+		sq := bm.first()
+		gen.movePiece(p, sq, p.targets(sq) & opponent)
 	}
-	if gen.p.outposts[king(our)].anyʔ() {
-		square := gen.p.king[our]
-		gen.moveKing(square, kingMoves[square] & opponent)
+
+	if p.outposts[king(our)].anyʔ() {
+		sq := p.king[our]
+		gen.moveKing(p, sq, kingMoves[sq] & opponent)
 	}
 
 	return gen

@@ -17,7 +17,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 	// best move found so far is always the first one we search.
 	gen := NewRootGen(p, depth)
 	if depth == 1 {
-		gen.generateRootMoves()
+		gen.generateRootMoves(p)
 	} else {
 		gen.reset()
 	}
@@ -127,7 +127,7 @@ func (p *Position) search(alpha, beta, depth int) (score int) {
 // Testing helper method to test root search.
 func (p *Position) solve(depth int) Move {
 	if depth != 1 {
-		NewRootGen(p, 1).generateRootMoves()
+		NewRootGen(p, 1).generateRootMoves(p)
 	}
 	p.search(-Checkmate, Checkmate, depth)
 	return game.pv[0].moves[0]
@@ -138,7 +138,7 @@ func (p *Position) Perft(depth int) (total int64) {
 		return 1
 	}
 
-	gen := NewGen(p, depth).generateAllMoves().validOnly()
+	gen := NewGen(p, depth).generateAllMoves(p).validOnly()
 	if depth == 1 {
 		return int64(len(gen.list))
 	}

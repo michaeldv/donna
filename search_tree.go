@@ -129,9 +129,9 @@ func (p *Position) searchTree(alpha, beta, depth int) (score int) {
 
 	gen := NewGen(p, ply)
 	if inCheckʔ {
-		gen.generateEvasions().quickRank()
+		gen.generateEvasions(p).quickRank()
 	} else {
-		gen.generateMoves().rank(cachedMove)
+		gen.generateMoves(p).rank(cachedMove)
 	}
 
 	bestScore := alpha
