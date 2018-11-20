@@ -15,10 +15,9 @@ type MoveWithScore struct {
 
 type MoveGen struct {
 	p	*Position
-	list	[128]MoveWithScore
+	list	[]MoveWithScore
 	ply	int
 	head	int
-	tail	int
 	pins	Bitmask
 }
 
@@ -33,10 +32,14 @@ var moveList [MaxPly+1]MoveGen
 func NewGen(p *Position, ply int) (gen *MoveGen) {
 	gen = &moveList[ply]
 	gen.p = p
-	gen.list = [128]MoveWithScore{}
 	gen.ply = ply
-	gen.head, gen.tail = 0, 0
+	gen.head = 0
 	gen.pins = p.pins(p.king[p.color])
+	if gen.list != nil {
+		gen.list = gen.list[:0] // Shrink to remove all existing entries.
+	} else {
+		gen.list = make([]MoveWithScore, 0, 128) // Initial alllocation.
+	}
 
 	return gen
 }
@@ -62,17 +65,15 @@ func (gen *MoveGen) reset() *MoveGen {
 	return gen
 }
 
-func (gen *MoveGen) size() int {
-	return gen.tail
-}
-
 func (gen *MoveGen) onlyMoveʔ() bool {
-	return gen.tail == 1
+	return len(gen.list) == 1
 }
 
 func (gen *MoveGen) nextMove() (move Move) {
-	move = gen.list[gen.head].move
-	gen.head++
+	if gen.head < len(gen.list) {
+		move = gen.list[gen.head].move
+		gen.head++
+	}
 
 	return move
 }
@@ -135,7 +136,7 @@ func (gen *MoveGen) scoreMove(depth, score int) *MoveGen {
 // 		}
 // 	}
 func (gen *MoveGen) sort() *MoveGen {
-	total := gen.tail - gen.head
+	total := len(gen.list) - gen.head
 	count := total
 	pocket := MoveWithScore{}
 	ever := true
@@ -157,11 +158,11 @@ func (gen *MoveGen) sort() *MoveGen {
 }
 
 func (gen *MoveGen) rank(bestMove Move) *MoveGen {
-	if gen.size() < 2 {
+	if len(gen.list) < 2 {
 		return gen
 	}
 
-	for i := gen.head; i < gen.tail; i++ {
+	for i := gen.head; i < len(gen.list); i++ {
 		move := gen.list[i].move
 		if move == bestMove {
 			gen.list[i].score = 0xFFFF
@@ -180,11 +181,11 @@ func (gen *MoveGen) rank(bestMove Move) *MoveGen {
 }
 
 func (gen *MoveGen) quickRank() *MoveGen {
-	if gen.size() < 2 {
+	if len(gen.list) < 2 {
 		return gen
 	}
 
-	for i := gen.head; i < gen.tail; i++ {
+	for i := gen.head; i < len(gen.list); i++ {
 		if move := gen.list[i].move; !move.quietʔ() {
 			gen.list[i].score = 8192 + move.value()
 		} else {
@@ -196,18 +197,16 @@ func (gen *MoveGen) quickRank() *MoveGen {
 }
 
 func (gen *MoveGen) add(move Move) *MoveGen {
-	gen.list[gen.tail].move = move
-	gen.tail++
+	gen.list = append(gen.list, MoveWithScore{move, Unknown})
 
 	return gen
 }
 
-// Removes current move from the list by copying over the ramaining moves. Head and
-// tail pointers get decremented so that calling NexMove() works as expected.
+// Removes current move from the list by copying over the ramaining moves. The head
+// pointer get decremented so that calling `nexMove()` works as expected.
 func (gen *MoveGen) remove() *MoveGen {
-	copy(gen.list[gen.head-1:], gen.list[gen.head:])
+	gen.list = append(gen.list[:gen.head-1], gen.list[gen.head:]...)
 	gen.head--
-	gen.tail--
 
 	return gen
 }

@@ -9,9 +9,7 @@
 package donna
 
 func (gen *MoveGen) addQuiet(move Move) *MoveGen {
-	gen.list[gen.tail].move = move
-	gen.list[gen.tail].score = game.good(move)
-	gen.tail++
+	gen.list = append(gen.list, MoveWithScore{move, game.good(move)})
 
 	return gen
 }

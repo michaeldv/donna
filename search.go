@@ -140,7 +140,7 @@ func (p *Position) Perft(depth int) (total int64) {
 
 	gen := NewGen(p, depth).generateAllMoves().validOnly()
 	if depth == 1 {
-		return int64(gen.size())
+		return int64(len(gen.list))
 	}
 
 	for move := gen.nextMove(); move != 0; move = gen.nextMove() {
