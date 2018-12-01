@@ -166,7 +166,7 @@ func (b Bitmask) charm(sq Square) (bitmask Bitmask) {
 	for i := 0; i < count; i++ {
 		pop := b ^ b.pop()
 		b = b.pop()
-		if (bit(Square(i)) & Bitmask(sq)).anyʔ() {
+		if Bitmask(sq).onʔ(Square(i)) {
 			bitmask |= pop
 		}
 	}

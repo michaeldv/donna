@@ -14,8 +14,17 @@ import (
 )
 
 // Poor man's ternary. Works best with scalar `yes` and `no`.
-func let(ok bool, yes, no int) int {
-	if ok {
+func bet(trueʔ bool, yes, no Bitmask) Bitmask {
+	if trueʔ {
+		return yes
+	}
+
+	return no
+}
+
+// Ditto for integers.
+func let(trueʔ bool, yes, no int) int {
+	if trueʔ {
 		return yes
 	}
 

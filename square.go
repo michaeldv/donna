@@ -47,7 +47,7 @@ func (sq Square) flip(color int) Square {
 // Returns a bitmask with light or dark squares set matching the color of
 // the given square.
 func (sq Square) same() Bitmask {
-	if (bit(sq) & maskDark).anyʔ() {
+	if maskDark.onʔ(sq) {
 		return maskDark
 	}
 

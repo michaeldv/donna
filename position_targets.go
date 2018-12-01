@@ -43,8 +43,7 @@ func (p *Position) queenMovesAt(sq Square, board Bitmask) Bitmask {
 
 func (p *Position) targets(sq Square) (bitmask Bitmask) {
 	piece := p.pieces[sq]
-	our := piece.color()
-	their := our^1
+	our := piece.color(); their := our^1
 
 	if piece.pawnʔ() {
 		// Start with one square push, then try the second square.
@@ -136,11 +135,15 @@ func (p *Position) attackers(our int, sq Square, board Bitmask) (bitmask Bitmask
 }
 
 func (p *Position) attackedʔ(our int, sq Square) bool {
+	return p.attackedAtʔ(our, sq, p.board)
+}
+
+func (p *Position) attackedAtʔ(our int, sq Square, board Bitmask) bool {
 	return (knightMoves[sq] & p.outposts[knight(our)]).anyʔ() ||
 	       (maskPawn[our][sq] & p.outposts[pawn(our)]).anyʔ() ||
 	       (kingMoves[sq] & p.outposts[king(our)]).anyʔ() ||
-	       (p.rookMoves(sq) & (p.outposts[rook(our)] | p.outposts[queen(our)])).anyʔ() ||
-	       (p.bishopMoves(sq) & (p.outposts[bishop(our)] | p.outposts[queen(our)])).anyʔ()
+	       (p.rookMovesAt(sq, board) & (p.outposts[rook(our)] | p.outposts[queen(our)])).anyʔ() ||
+	       (p.bishopMovesAt(sq, board) & (p.outposts[bishop(our)] | p.outposts[queen(our)])).anyʔ()
 }
 
 func (p *Position) pawnTargets(our int, pawns Bitmask) Bitmask {
